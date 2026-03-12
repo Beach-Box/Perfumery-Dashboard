@@ -1809,18 +1809,18 @@ const RAW_DB = {
     0.0003,
     500,
     0.5,
-    "base",
+    "carrier",
     "SYNTH",
     false,
     "Perfumers Apprentice",
-    "Balsamic fixative anti-sensitizer; classic base",
+    "High-boiling solvent/fixative; very low odor",
     "Benzyl Benzoate",
     0,
     "120-51-4",
     "Benzyl Benzoate",
-    "Balsamic",
-    "Balsamic fixative classic fine fragrance base",
-    "One of the oldest and most important materials in perfumery. Sweet, balsamic, slightly floral base note. Primarily functions as a fixative and solvent, greatly enhancing the longevity and blending of other materials. Found in virtually every oriental, amber, and floral base.",
+    "Carrier",
+    "High-boiling fixative solvent and co-solvent",
+    "Classic perfumery solvent/fixative with excellent solvency for resins, absolutes, and heavy aroma chemicals. Very low odor impact in use, slows evaporation, and improves blend homogeneity in concentrates.",
     null,
     1.12,
     null, null, null, null, null, null, null
@@ -9577,28 +9577,28 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Isopropyl Myristate (IPM)": [
-    null,
-    0.944,
-    null,
+    270.45,
+    7.9,
+    26.3,
     0,
-    0,
-    null,
-    null,
-    null,
-    "mid",
-    "SYNTH",
+    2,
+    0.00001,
+    100000,
+    0.5,
+    "carrier",
+    "CARRIER",
     false,
     "Fraterworks",
-    "Aromatic synth by Fraterworks",
-    null,
+    "Dry-slip ester solvent; non-greasy carrier",
+    "Isopropyl Myristate",
     0,
+    "110-27-0",
+    "Isopropyl Myristate",
+    "Carrier",
+    "Low-odor emollient carrier and solvent",
+    "Widely used carrier ester with excellent skin feel. Improves spreadability, reduces tack versus glycols, and helps dissolve musks and heavy bases. Ideal for oil perfumes and skin-feel optimization studies.",
     null,
-    "Isopropyl Myristate (IPM)",
-    "Aromatic",
-    "Isopropyl Myristate (IPM)",
-    "Aromatic synth by Fraterworks",
-    null,
-    null,
+    0.85,
     null, null, null, null, null, null, null
   ],
   "Compound Feminité": [
@@ -25527,28 +25527,28 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Triethyl Citrate, Natural (TEC)": [
-    null,
-    0.944,
-    null,
+    276.28,
+    -0.2,
+    104.6,
     0,
-    0,
-    null,
-    null,
-    null,
-    "mid",
-    "SYNTH",
+    7,
+    0.0002,
+    100000,
+    0.5,
+    "carrier",
+    "CARRIER",
     false,
     "Fraterworks",
-    "Aromatic synth by Bestally",
-    null,
+    "Low-odor citrate solvent; excellent diluent",
+    "Triethyl Citrate",
     0,
+    "77-93-0",
+    "Triethyl Citrate",
+    "Carrier",
+    "Odor-minimal citrate co-solvent and diluent",
+    "Low-volatility citrate ester used as a solvent and fixative extender for naturals and aroma chemicals. Helpful when you need cleaner odor profile than glycols while maintaining good concentrate stability.",
     null,
-    "Triethyl Citrate, Natural (TEC)",
-    "Aromatic",
-    "Triethyl Citrate, Natural (TEC)",
-    "Aromatic synth by Bestally",
-    null,
-    null,
+    1.14,
     null, null, null, null, null, null, null
   ],
   Isoeugenol: [
@@ -53548,7 +53548,6 @@ function perfScore(ingredients) {
   const chem = computeChemistry(ingredients);
   const total = ingredients.reduce((s, i) => s + i.g, 0) || 1;
   const bases = chem.filter((i) => i.note === "base" && i.d);
-  const mids = chem.filter((i) => i.note === "mid" && i.d);
   const tops = chem.filter((i) => i.note === "top" && i.d);
   // Longevity: low VP bases, high xLogP, fixatives
   const fixatives = [
@@ -53580,22 +53579,32 @@ function perfScore(ingredients) {
       bases.reduce((s, i) => s + i.wfrac, 0),
       0.01
     );
+  const carrierPct =
+    ingredients
+      .filter((i) => i.note === "carrier" || DB[i.name]?.scentClass === "Carrier")
+      .reduce((s, i) => s + i.g, 0) / total;
   const longevity = Math.min(
     10,
-    (baseLogP / 7) * 3 + (baseLogInvVP / 5) * 4 + fixPct * 6
+    (baseLogP / 7) * 2.8 + (baseLogInvVP / 5) * 4.2 + fixPct * 5.5 + carrierPct * 1.2
   );
-  // Sillage: physics-based — diffusion rate ∝ √VP / √MW, weighted by OV-intensity and wfrac
-  // Cap intensity to prevent ultra-potent molecules (Calone, Ambroxan) from saturating score
+
+  // Sillage: diffusion contribution weighted by perceived intensity and volatility window.
   const diffusionScore = chem.reduce((s, i) => {
     if (!i.d || i.OV < 0.1 || !i.d.VP || !i.d.MW) return s;
-    const cappedInt = Math.min(i.intensity, 500);
-    return s + cappedInt * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac;
+    const cappedInt = Math.min(i.intensity, 700);
+    const ovWeight = Math.log10(i.OV + 1);
+    const noteFactor = i.note === "top" ? 1.15 : i.note === "mid" ? 1.0 : 0.85;
+    return s + cappedInt * ovWeight * noteFactor * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac;
   }, 0);
-  const sillage = Math.min(10, Math.log10(diffusionScore * 1e4 + 1) * 3.5);
-  // Projection: top intensity, high OV tops
-  const topInt = tops.reduce((s, i) => s + i.intensity, 0);
+  const sillage = Math.min(10, Math.log10(diffusionScore * 1e4 + 1) * 3.1);
+
+  // Projection: first-hour impact using highly volatile top+mid contributors.
+  const topInt = tops.reduce((s, i) => s + i.intensity * Math.log10((i.d?.VP || 0) * 1000 + 1), 0);
   const topPct = tops.reduce((s, i) => s + i.g, 0) / total;
-  const projection = Math.min(10, Math.log10(topInt + 1) * 2 + topPct * 8);
+  const fastMidImpact = chem
+    .filter((i) => i.note === "mid" && i.d?.VP > 0.002)
+    .reduce((s, i) => s + Math.min(i.intensity, 500) * Math.log10(i.OV + 1) * i.wfrac, 0);
+  const projection = Math.min(10, Math.log10(topInt + fastMidImpact * 400 + 1) * 1.7 + topPct * 7.5);
   return {
     longevity: Math.max(0, longevity),
     sillage: Math.max(0, sillage),
@@ -54052,7 +54061,7 @@ function IngredientDetailPanel({ name, onClose }) {
               ["CAS", d.cas],
               ["INCI", d.inci],
               ["Rep. Odorant", d.rep],
-              ["IFRA Limit", d.ifraLimit || "No restriction"],
+              ["IFRA (legacy)", d.ifraLimit || "No restriction"],
             ].map(([l, v]) => (
               <div
                 key={l}
@@ -54077,6 +54086,39 @@ function IngredientDetailPanel({ name, onClose }) {
                 </span>
               </div>
             ))}
+          </div>
+          <div
+            style={{
+              background: "#060E1E",
+              borderRadius: 10,
+              padding: 14,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#475569",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                margin: "0 0 10px",
+              }}
+            >
+              IFRA Categories
+            </p>
+            {d.ifraLimits ? (
+              Object.entries({ cat4: "Fine Fragrance", cat5b: "Face Moisturizer", cat9: "Body Lotion", cat1: "Lip Product", cat11a: "Rinse-off Body" }).map(([cat, label]) => (
+                <div key={cat} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 11 }}>
+                  <span style={{ color: "#475569" }}>{label}</span>
+                  <span style={{ color: "#F59E0B", fontFamily: "monospace" }}>
+                    {d.ifraLimits[cat] != null ? `${d.ifraLimits[cat]}%` : "—"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div style={{ color: "#64748B", fontSize: 10 }}>No IFRA category limits tracked for this ingredient.</div>
+            )}
           </div>
           <div
             style={{
@@ -56543,8 +56585,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     const vpForDecay = hasRealVP ? d.VP : (VP_FALLBACK[ing.note] ?? 0.005);
                     const mwForDecay = (d && d.MW) ? d.MW : 200;
                     const dilFactor = (d && d.dilutionFactor) ? d.dilutionFactor : 1.0;
-                    const k = vpForDecay * dilFactor / Math.sqrt(mwForDecay) * 25;
-                    return { name: ing.name, g0: ing.g, k, d, note: ing.note, hasRealVP };
+                    const vpNorm = Math.max(vpForDecay * dilFactor, 1e-6);
+                    const mwNorm = Math.max(mwForDecay, 80);
+                    const halfLifeHours = Math.max(0.35, Math.min(96, 8 * Math.sqrt(mwNorm / 200) / Math.sqrt(vpNorm / 0.005)));
+                    const k = Math.log(2) / halfLifeHours;
+                    return { name: ing.name, g0: ing.g, k, d, note: ing.note, hasRealVP, halfLifeHours };
                   });
                   // Compute intensity at each time step for each ingredient
                   const peakOV = {};
@@ -56583,7 +56628,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
-                        Evaporation Timeline — OV Intensity Over Time
+                        Evaporation Timeline — OV Intensity Over Time (half-life normalized)
                       </p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                         {activeIngs.map((i) => (
@@ -57372,6 +57417,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
           >
             {/* LEFT: Search + Accordion Palette */}
             <div>
+              <div style={{ marginBottom: 10, background: "#062033", border: `1px solid ${ACC}40`, borderRadius: 10, padding: "8px 12px", color: "#7DD3FC", fontSize: 11, fontWeight: 700 }}>
+                Examining formula: {formula.emoji} {formula.name}
+              </div>
               <div
                 style={{
                   background: CARD,
@@ -58916,7 +58964,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     margin: "0 0 14px",
                   }}
                 >
-                  💡 Ingredient Impact Guide
+                  💡 Ingredient Impact Guide · {formula.name}
                 </p>
                 {[
                   {
@@ -59052,7 +59100,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 return (
                   <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
-                      🎶 Harmony Report
+                      🎶 Harmony Report · {formula.name}
                     </p>
                     {harmonious.map((p) => (
                       <div key={p.a + p.b} style={{ background: "#0A1E0A", border: "1px solid #166534", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 9.5 }}>
@@ -59127,7 +59175,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 return (
                   <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
-                      🎨 Accord Recognition
+                      🎨 Accord Recognition · {formula.name}
                     </p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {accords.map(acc => (
@@ -59181,7 +59229,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 return (
                   <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
-                      📋 Formula Report Card
+                      📋 Formula Report Card · {formula.name}
                     </p>
                     {bars.map(({ label, score, color, tip }) => (
                       <div key={label} style={{ marginBottom: 10 }}>
