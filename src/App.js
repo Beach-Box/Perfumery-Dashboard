@@ -53571,22 +53571,25 @@ function perfScore(ingredients) {
       bases.reduce((s, i) => s + i.wfrac, 0),
       0.01
     );
-  const baseVP =
-    bases.reduce((s, i) => s + (1 / (i.d.VP + 0.00001)) * i.wfrac, 0) /
+  // baseLogInvVP: log(1/VP) per base ingredient — ~4.5 for musks, ~2 for light bases
+  const baseLogInvVP =
+    bases.reduce((s, i) => s + Math.log10(1 / (i.d.VP + 1e-9)) * i.wfrac, 0) /
     Math.max(
       bases.reduce((s, i) => s + i.wfrac, 0),
       0.01
     );
   const longevity = Math.min(
     10,
-    (baseLogP / 7) * 4 + Math.log10(baseVP + 1) * 2 + fixPct * 8
+    (baseLogP / 7) * 3 + (baseLogInvVP / 5) * 4 + fixPct * 6
   );
   // Sillage: physics-based — diffusion rate ∝ √VP / √MW, weighted by OV-intensity and wfrac
+  // Cap intensity to prevent ultra-potent molecules (Calone, Ambroxan) from saturating score
   const diffusionScore = chem.reduce((s, i) => {
     if (!i.d || i.OV < 0.1 || !i.d.VP || !i.d.MW) return s;
-    return s + i.intensity * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac;
+    const cappedInt = Math.min(i.intensity, 500);
+    return s + cappedInt * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac;
   }, 0);
-  const sillage = Math.min(10, Math.log10(diffusionScore * 1e6 + 1) * 3.5);
+  const sillage = Math.min(10, Math.log10(diffusionScore * 1e4 + 1) * 3.5);
   // Projection: top intensity, high OV tops
   const topInt = tops.reduce((s, i) => s + i.intensity, 0);
   const topPct = tops.reduce((s, i) => s + i.g, 0) / total;
@@ -56171,7 +56174,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                 interval={0}
                               />
                               <YAxis
-                                tick={{ fill: "#334155", fontSize: 8 }}
+                                tick={{ fill: "#94A3B8", fontSize: 8 }}
                                 scale={key === "VP" ? "log" : "auto"}
                                 domain={
                                   key === "VP" ? ["auto", "auto"] : undefined
@@ -56183,8 +56186,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                   border: `1px solid ${BORDER}`,
                                   borderRadius: 8,
                                   fontSize: 11,
+                            color: "#CBD5E1",
                                 }}
-                              />
+                          itemStyle={{ color: "#94A3B8" }}
+                          labelStyle={{ color: "#94A3B8" }}
+                          />
                               <Bar dataKey={dk} radius={[3, 3, 0, 0]}>
                                 {data.map((e, i) => (
                                   <Cell
@@ -56293,13 +56299,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         >
                           <XAxis
                             dataKey="name"
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             angle={-45}
                             textAnchor="end"
                             interval={0}
                           />
                           <YAxis
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             tickFormatter={(v) => v.toExponential(0)}
                           />
                           <Tooltip
@@ -56308,7 +56314,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               border: `1px solid ${BORDER}`,
                               borderRadius: 8,
                               fontSize: 11,
+                            color: "#CBD5E1",
                             }}
+                          itemStyle={{ color: "#94A3B8" }}
+                          labelStyle={{ color: "#94A3B8" }}
                           />
                           <Bar dataKey="OV" radius={[3, 3, 0, 0]}>
                             {[...chem]
@@ -56368,13 +56377,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         >
                           <XAxis
                             dataKey="name"
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             angle={-45}
                             textAnchor="end"
                             interval={0}
                           />
                           <YAxis
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             scale="log"
                             domain={["auto", "auto"]}
                           />
@@ -56384,7 +56393,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               border: `1px solid ${BORDER}`,
                               borderRadius: 8,
                               fontSize: 11,
+                            color: "#CBD5E1",
                             }}
+                          itemStyle={{ color: "#94A3B8" }}
+                          labelStyle={{ color: "#94A3B8" }}
                           />
                           <Bar dataKey="ppbv" radius={[3, 3, 0, 0]}>
                             {[...chem]
@@ -56427,10 +56439,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       </p>
                       <ResponsiveContainer width="100%" height={200}>
                         <ScatterChart margin={{ top: 6, right: 8, left: 4, bottom: 20 }}>
-                          <XAxis dataKey="mw" type="number" name="MW" tick={{ fill: "#334155", fontSize: 8 }} label={{ value: "MW (g/mol)", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 9 }} />
-                          <YAxis dataKey="logVP" type="number" name="log₁₀(VP)" tick={{ fill: "#334155", fontSize: 8 }} label={{ value: "log₁₀(VP mmHg)", angle: -90, position: "insideLeft", fill: "#475569", fontSize: 9 }} />
+                          <XAxis dataKey="mw" type="number" name="MW" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "MW (g/mol)", position: "insideBottom", offset: -10, fill: "#64748B", fontSize: 9 }} />
+                          <YAxis dataKey="logVP" type="number" name="log₁₀(VP)" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "log₁₀(VP mmHg)", angle: -90, position: "insideLeft", fill: "#64748B", fontSize: 9 }} />
                           <ZAxis dataKey="z" range={[20, 200]} />
-                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10 }}
+                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }}
                             content={({ payload }) => {
                               if (!payload || !payload.length) return null;
                               const p = payload[0].payload;
@@ -56474,9 +56486,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           })()}
                           margin={{ top: 4, right: 8, left: 4, bottom: 4 }}
                         >
-                          <XAxis dataKey="label" tick={{ fill: "#334155", fontSize: 9 }} />
-                          <YAxis tick={{ fill: "#334155", fontSize: 8 }} tickFormatter={(v) => `${v}%`} />
-                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10 }} formatter={(v) => [`${v}%`, "wt%"]} />
+                          <XAxis dataKey="label" tick={{ fill: "#94A3B8", fontSize: 9 }} />
+                          <YAxis tick={{ fill: "#94A3B8", fontSize: 8 }} tickFormatter={(v) => `${v}%`} />
+                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }} formatter={(v) => [`${v}%`, "wt%"]} />
                           <Bar dataKey="wfrac" radius={[3, 3, 0, 0]} fill="#818CF8" />
                         </BarChart>
                       </ResponsiveContainer>
@@ -56494,7 +56506,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   const ingData = formula.ingredients.map((ing) => {
                     const d = DB[ing.name];
                     if (!d || !d.VP || !d.MW || !d.ODT) return null;
-                    const k = (d.VP * (d.dilutionFactor || 1)) / Math.sqrt(d.MW || 200) * 0.15;
+                    const k = (d.VP * (d.dilutionFactor || 1)) / Math.sqrt(d.MW || 200) * 25;
                     return { name: ing.name, g0: ing.g, k, d };
                   }).filter(Boolean);
                   // Compute OV at each time step for each ingredient
@@ -56533,9 +56545,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       </div>
                       <ResponsiveContainer width="100%" height={280}>
                         <LineChart data={timeData} margin={{ top: 4, right: 12, left: 0, bottom: 4 }}>
-                          <XAxis dataKey="t" tick={{ fill: "#334155", fontSize: 8 }} label={{ value: "Hours", position: "insideBottomRight", offset: -4, fill: "#475569", fontSize: 9 }} />
-                          <YAxis tick={{ fill: "#334155", fontSize: 8 }} tickFormatter={(v) => v > 0 ? v.toFixed(1) : "0"} />
-                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10 }} formatter={(v, n) => [v.toFixed(3), n]} labelFormatter={(v) => `${v}h`} />
+                          <XAxis dataKey="t" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "Hours", position: "insideBottomRight", offset: -4, fill: "#64748B", fontSize: 9 }} />
+                          <YAxis tick={{ fill: "#94A3B8", fontSize: 8 }} tickFormatter={(v) => v > 0 ? v.toFixed(1) : "0"} />
+                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }} formatter={(v, n) => [v.toFixed(3), n]} labelFormatter={(v) => `${v}h`} />
                           <Legend wrapperStyle={{ fontSize: 8, color: "#475569" }} />
                           {activeIngs.map((i) => (
                             <Line key={i.name} type="monotone" dataKey={i.name} stroke={noteColor(i.d.note)} strokeWidth={1.5} dot={false} />
@@ -56590,10 +56602,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       </p>
                       <ResponsiveContainer width="100%" height={340}>
                         <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
-                          <XAxis dataKey="x" type="number" name="log₁₀(ODT)" tick={{ fill: "#334155", fontSize: 8 }} label={{ value: "log₁₀(ODT  ppbv)", position: "insideBottom", offset: -10, fill: "#475569", fontSize: 9 }} domain={["auto","auto"]} />
-                          <YAxis dataKey="y" type="number" name="log₁₀(Csat)" tick={{ fill: "#334155", fontSize: 8 }} label={{ value: "log₁₀(Csat ng/L)", angle: -90, position: "insideLeft", fill: "#475569", fontSize: 9 }} domain={["auto","auto"]} />
+                          <XAxis dataKey="x" type="number" name="log₁₀(ODT)" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "log₁₀(ODT  ppbv)", position: "insideBottom", offset: -10, fill: "#64748B", fontSize: 9 }} domain={["auto","auto"]} />
+                          <YAxis dataKey="y" type="number" name="log₁₀(Csat)" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "log₁₀(Csat ng/L)", angle: -90, position: "insideLeft", fill: "#64748B", fontSize: 9 }} domain={["auto","auto"]} />
                           <ZAxis dataKey="z" range={[30, 300]} />
-                          <Tooltip cursor={{ strokeDasharray: "3 3" }} contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10 }}
+                          <Tooltip cursor={{ strokeDasharray: "3 3" }} contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }}
                             content={({ payload }) => {
                               if (!payload || !payload.length) return null;
                               const p = payload[0].payload;
@@ -57990,13 +58002,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         >
                           <XAxis
                             dataKey="name"
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             angle={-45}
                             textAnchor="end"
                             interval={0}
                           />
                           <YAxis
-                            tick={{ fill: "#334155", fontSize: 8 }}
+                            tick={{ fill: "#94A3B8", fontSize: 8 }}
                             tickFormatter={(v) => v.toExponential(0)}
                           />
                           <Tooltip
@@ -58386,6 +58398,8 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       padding: 14,
                       cursor: "pointer",
                       transition: "border-color 0.2s,box-shadow 0.2s",
+                      overflow: "hidden",
+                      minWidth: 0,
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = ACC;
@@ -58457,6 +58471,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             fontWeight: 700,
                             color: "#E2E8F0",
                             marginBottom: 2,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
                           }}
                           onClick={() => setDetailName(name)}
                         >
@@ -58467,6 +58484,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             fontSize: 10,
                             color: "#475569",
                             marginBottom: 4,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
                           }}
                         >
                           {d.scentClass} ·{" "}
@@ -58546,8 +58567,8 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             >
                               {sup}
                             </a>
-                            <div style={{ display: "flex", gap: 5 }}>
-                              {S.map(([qty, unit, price], i) => (
+                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: "100%" }}>
+                              {S.slice(0, 4).map(([qty, unit, price], i) => (
                                 <span
                                   key={i}
                                   style={{
