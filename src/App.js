@@ -52934,6 +52934,25 @@ export default function App() {
   });
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
+  // ── Dilution Calculator ──
+  const [dilConc, setDilConc] = useState("100");
+  const [dilVolume, setDilVolume] = useState("30");
+  const [dilType, setDilType] = useState("EDP");
+  const [dilAlcohol, setDilAlcohol] = useState(false);
+  // ── Formula Notes ──
+  const [formulaNotes, setFormulaNotes] = useState(() => {
+    try {
+      const s = localStorage.getItem("bb_formula_notes");
+      return s ? JSON.parse(s) : {};
+    } catch { return {}; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("bb_formula_notes", JSON.stringify(formulaNotes)); } catch(e) {}
+  }, [formulaNotes]);
+  // ── AI Formula Critique ──
+  const [critiqueText, setCritiqueText] = useState("");
+  const [critiqueLoading, setCritiqueLoading] = useState(false);
+  const [critiqueFormula, setCritiqueFormula] = useState(null);
   const [pricesState, setPricesState] = useState(() => {
     try {
       const saved = localStorage.getItem("bb_supplier_data_v4");
@@ -53116,6 +53135,65 @@ export default function App() {
       }));
     }
     setRefreshLoading((prev) => ({ ...prev, [ingName]: false }));
+  };
+
+  const runAiCritique = async (targetFormula) => {
+    if (!apiKeyRef.current) {
+      setCritiqueText("No API key set — add your Claude API key in the Suppliers tab.");
+      return;
+    }
+    setCritiqueLoading(true);
+    setCritiqueText("");
+    setCritiqueFormula(targetFormula.name);
+    try {
+      const total = targetFormula.ingredients.reduce((s, i) => s + i.g, 0);
+      const ingList = targetFormula.ingredients
+        .map((i) => {
+          const d = DB[i.name];
+          return `  • ${i.name} (${i.g}g, ${((i.g/total)*100).toFixed(1)}%, ${i.note}${d ? `, ${d.scentClass}` : ""})`;
+        })
+        .join("\n");
+      const score = perfScore(targetFormula.ingredients);
+      const prompt = `You are an expert perfumer reviewing a fragrance concentrate formula. Analyze the following formula and provide concise, actionable feedback.
+
+Formula: "${targetFormula.name}" — ${targetFormula.tagline}
+Total: ${total}g concentrate
+
+Ingredients:
+${ingList}
+
+Performance scores: Longevity ${score.longevity.toFixed(1)}/10, Sillage ${score.sillage.toFixed(1)}/10, Projection ${score.projection.toFixed(1)}/10
+
+Provide a critique covering:
+1. **Accord balance** – Are top/mid/base notes well-balanced? Any note gaps?
+2. **Dominant character** – What is the olfactory signature?
+3. **Strengths** – What works well in this formula?
+4. **Issues** – Any overdosing, clashing notes, or fixative problems?
+5. **Specific suggestions** – 2-3 concrete ingredient adjustments (add, remove, or change ratios) to improve it.
+
+Be specific, reference ingredient names, keep it under 300 words.`;
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKeyRef.current,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 600,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || "API error");
+      const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
+      setCritiqueText(text || "No response from AI.");
+    } catch (e) {
+      setCritiqueText("Error: " + String(e.message || e).slice(0, 120));
+    }
+    setCritiqueLoading(false);
   };
 
   const mainTabStyle = (k) => ({
@@ -54075,6 +54153,7 @@ export default function App() {
               ["advisor", "💡 Advisor"],
               ["suppliers", "⚙️ Suppliers"],
               ["inventory", "📦 Inventory"],
+              ["dilution", "💧 Dilution"],
             ].map(([k, l]) => (
               <button
                 key={k}
@@ -54212,7 +54291,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
-                  {["formula", "edit", "cost", "chemistry", "analysis"].map(
+                  {["formula", "edit", "cost", "chemistry", "analysis", "notes", "critique"].map(
                     (k) => (
                       <button
                         key={k}
@@ -54227,6 +54306,10 @@ export default function App() {
                           ? "💰 Cost"
                           : k === "chemistry"
                           ? "⚗️ Chemistry"
+                          : k === "notes"
+                          ? "📝 Notes"
+                          : k === "critique"
+                          ? "🤖 AI Critique"
                           : "📊 Odor Analysis"}
                       </button>
                     )
@@ -55489,6 +55572,108 @@ export default function App() {
                 )}
                 {/* ─── COST BREAKDOWN SUB-TAB ─────────────────────────────────────────────────── */}
                 {subTab === "cost" && costTabContent}
+
+                {/* ── NOTES SUB-TAB ── */}
+                {subTab === "notes" && (
+                  <div style={{ maxWidth: 680 }}>
+                    <p style={{ fontSize: 11, color: "#64748B", marginBottom: 10, lineHeight: 1.6 }}>
+                      Iteration log for <strong style={{ color: ACC }}>{formula.name}</strong>. Track changes, impressions, and next steps.
+                    </p>
+                    <textarea
+                      value={formulaNotes[formula.name] || ""}
+                      onChange={(e) =>
+                        setFormulaNotes((prev) => ({ ...prev, [formula.name]: e.target.value }))
+                      }
+                      placeholder={`Notes for ${formula.name}…\n\nExamples:\n• 2026-03-12 – Batch #1: sillage feels thin, consider +10g Habanolide\n• 2026-03-18 – Batch #2: much better projection, sweetness slightly high\n• TODO: try replacing DPG with Isopropyl Myristate for skin-feel test`}
+                      style={{
+                        width: "100%",
+                        minHeight: 280,
+                        background: "#060E1E",
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: 10,
+                        color: "#CBD5E1",
+                        fontSize: 11,
+                        fontFamily: "inherit",
+                        padding: 14,
+                        resize: "vertical",
+                        lineHeight: 1.7,
+                        boxSizing: "border-box",
+                        outline: "none",
+                      }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                      <span style={{ fontSize: 10, color: "#334155" }}>
+                        Auto-saved to browser storage · {(formulaNotes[formula.name] || "").length} chars
+                      </span>
+                      {formulaNotes[formula.name] && (
+                        <button
+                          onClick={() => setFormulaNotes((prev) => { const n = {...prev}; delete n[formula.name]; return n; })}
+                          style={{ background: "none", border: "1px solid #1E3A52", borderRadius: 6, color: "#475569", fontSize: 10, padding: "3px 10px", cursor: "pointer" }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── AI CRITIQUE SUB-TAB ── */}
+                {subTab === "critique" && (
+                  <div style={{ maxWidth: 680 }}>
+                    <p style={{ fontSize: 11, color: "#64748B", marginBottom: 12, lineHeight: 1.6 }}>
+                      Get an AI perfumer's critique of <strong style={{ color: ACC }}>{formula.name}</strong> — accord balance, strengths, issues, and specific improvement suggestions. Requires API key in Suppliers tab.
+                    </p>
+                    <button
+                      onClick={() => runAiCritique(formula)}
+                      disabled={critiqueLoading}
+                      style={{
+                        background: critiqueLoading ? "#0A2540" : "linear-gradient(135deg,#0E4D6E,#1A6D9A)",
+                        border: `1px solid ${critiqueLoading ? BORDER : "#38BDF8"}`,
+                        borderRadius: 10,
+                        color: critiqueLoading ? "#475569" : "#7DD3FC",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: "9px 20px",
+                        cursor: critiqueLoading ? "not-allowed" : "pointer",
+                        marginBottom: 14,
+                        letterSpacing: "0.07em",
+                      }}
+                    >
+                      {critiqueLoading ? "⏳ Analyzing…" : "🤖 Critique This Formula"}
+                    </button>
+                    {critiqueText && (
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: `1px solid ${critiqueFormula === formula.name ? "#22D3EE40" : BORDER}`,
+                          borderRadius: 10,
+                          padding: 16,
+                          fontSize: 11,
+                          color: "#CBD5E1",
+                          lineHeight: 1.8,
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {critiqueFormula !== formula.name && (
+                          <div style={{ fontSize: 10, color: "#F59E0B", marginBottom: 8 }}>
+                            ⚠️ This critique is for <strong>{critiqueFormula}</strong> — click the button above to analyze the current formula.
+                          </div>
+                        )}
+                        {critiqueText.split(/(\*\*[^*]+\*\*)/).map((part, idx) =>
+                          part.startsWith("**") && part.endsWith("**")
+                            ? <strong key={idx} style={{ color: ACC }}>{part.slice(2, -2)}</strong>
+                            : <span key={idx}>{part}</span>
+                        )}
+                      </div>
+                    )}
+                    {!critiqueText && !critiqueLoading && (
+                      <div style={{ fontSize: 10, color: "#334155", fontStyle: "italic" }}>
+                        Click the button to send this formula to Claude for a perfumer's critique.
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </div>
             </div>
           </div>
@@ -58226,6 +58411,211 @@ export default function App() {
               </div>
             );
           })()}
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* DILUTION CALCULATOR TAB */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {mainTab === "dilution" && (() => {
+          const TYPES = {
+            "Extrait":  { pct: 25, label: "Extrait de Parfum",  range: "20–30%" },
+            "EDP":      { pct: 17.5, label: "Eau de Parfum",    range: "15–20%" },
+            "EDT":      { pct: 12.5, label: "Eau de Toilette",  range: "10–15%" },
+            "EDC":      { pct: 7.5,  label: "Eau de Cologne",   range: "5–10%"  },
+            "Mist":     { pct: 3.5,  label: "Body Mist",        range: "2–5%"   },
+          };
+          const concG = parseFloat(dilConc) || 0;
+          const volMl = parseFloat(dilVolume) || 0;
+          const chosen = TYPES[dilType] || TYPES["EDP"];
+          // concentrate pct of final volume (assume concentrate density ≈ 1 g/mL)
+          const concMl = concG; // approx
+          const totalFinalMl = concMl / (chosen.pct / 100);
+          const carrierMl = totalFinalMl - concMl;
+          // If user specified a target volume, scale everything:
+          const scale = volMl > 0 ? volMl / totalFinalMl : 1;
+          const scaledConcMl = concMl * scale;
+          const scaledCarrierMl = carrierMl * scale;
+          const scaledTotalMl = totalFinalMl * scale;
+          const actualPct = scaledTotalMl > 0 ? (scaledConcMl / scaledTotalMl * 100) : 0;
+
+          // Per-ingredient breakdown in final product
+          const activeFormula = formula;
+          const formulaTotal = activeFormula.ingredients.reduce((s, i) => s + i.g, 0) || 1;
+
+          return (
+            <div style={{ maxWidth: 900 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 4 }}>
+                💧 Dilution Calculator
+              </h2>
+              <p style={{ fontSize: 11, color: "#475569", marginBottom: 20, lineHeight: 1.6 }}>
+                Calculate carrier/alcohol volumes to achieve a target fragrance concentration. Uses the currently selected formula as reference for per-ingredient breakdown.
+              </p>
+
+              {/* Input row */}
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+                <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "14px 18px", minWidth: 180 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 6 }}>CONCENTRATE (g)</div>
+                  <input
+                    type="number"
+                    value={dilConc}
+                    onChange={(e) => setDilConc(e.target.value)}
+                    min="0"
+                    step="1"
+                    style={{ background: "#060E1E", border: `1px solid ${BORDER}`, borderRadius: 7, color: ACC, fontSize: 18, fontWeight: 700, padding: "5px 10px", width: "100%", outline: "none", boxSizing: "border-box" }}
+                  />
+                  <div style={{ fontSize: 9, color: "#334155", marginTop: 4 }}>grams of pure concentrate</div>
+                </div>
+
+                <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "14px 18px", minWidth: 200 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 6 }}>FRAGRANCE TYPE</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    {Object.entries(TYPES).map(([k, v]) => (
+                      <button
+                        key={k}
+                        onClick={() => setDilType(k)}
+                        style={{
+                          background: dilType === k ? "linear-gradient(135deg,#0E4D6E,#1A6D9A)" : "#060E1E",
+                          border: `1px solid ${dilType === k ? "#38BDF8" : BORDER}`,
+                          borderRadius: 8,
+                          color: dilType === k ? "#7DD3FC" : "#475569",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "4px 10px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {k}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#475569", marginTop: 6 }}>{chosen.label} · {chosen.range}</div>
+                </div>
+
+                <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "14px 18px", minWidth: 180 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 6 }}>TARGET VOLUME (mL) <span style={{ color: "#334155", fontWeight: 400 }}>optional</span></div>
+                  <input
+                    type="number"
+                    value={dilVolume}
+                    onChange={(e) => setDilVolume(e.target.value)}
+                    min="0"
+                    step="5"
+                    style={{ background: "#060E1E", border: `1px solid ${BORDER}`, borderRadius: 7, color: "#A78BFA", fontSize: 18, fontWeight: 700, padding: "5px 10px", width: "100%", outline: "none", boxSizing: "border-box" }}
+                  />
+                  <div style={{ fontSize: 9, color: "#334155", marginTop: 4 }}>scale to bottle size</div>
+                </div>
+              </div>
+
+              {/* Results row */}
+              {concG > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }}>
+                  {/* Mixing recipe */}
+                  <div style={{ background: CARD, border: `1px solid #22D3EE30`, borderRadius: 14, padding: 18 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 14 }}>MIXING RECIPE</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, color: "#94A3B8" }}>🧪 Concentrate</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: ACC }}>{scaledConcMl.toFixed(1)} mL</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, color: "#94A3B8" }}>{dilAlcohol ? "🍶 Alcohol (190-proof)" : "💧 Carrier (IPM/DPG)"}</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: "#A78BFA" }}>{scaledCarrierMl.toFixed(1)} mL</span>
+                      </div>
+                      <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, color: "#94A3B8" }}>Total volume</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{scaledTotalMl.toFixed(1)} mL</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, color: "#94A3B8" }}>Actual concentration</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#34D399" }}>{actualPct.toFixed(1)}% · {chosen.label}</span>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                      <input
+                        type="checkbox"
+                        id="dilAlcohol"
+                        checked={dilAlcohol}
+                        onChange={(e) => setDilAlcohol(e.target.checked)}
+                        style={{ cursor: "pointer", accentColor: ACC }}
+                      />
+                      <label htmlFor="dilAlcohol" style={{ fontSize: 10, color: "#64748B", cursor: "pointer" }}>
+                        Use alcohol carrier (eau de toilette/cologne style)
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Per-ingredient breakdown */}
+                  <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: 18 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 10 }}>
+                      INGREDIENT BREAKDOWN IN FINAL PRODUCT
+                      <span style={{ fontWeight: 400, color: "#334155", marginLeft: 6 }}>({activeFormula.name})</span>
+                    </div>
+                    <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 10 }}>
+                        <thead>
+                          <tr style={{ color: "#334155", borderBottom: `1px solid ${BORDER}` }}>
+                            <th style={{ textAlign: "left", padding: "3px 0", fontWeight: 600 }}>Ingredient</th>
+                            <th style={{ textAlign: "right", padding: "3px 0", fontWeight: 600 }}>in Conc.</th>
+                            <th style={{ textAlign: "right", padding: "3px 0", fontWeight: 600 }}>in Final</th>
+                            <th style={{ textAlign: "right", padding: "3px 0", fontWeight: 600 }}>Final %</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeFormula.ingredients
+                            .filter((i) => i.note !== "carrier")
+                            .map((ing) => {
+                              const ingPctInConc = ing.g / formulaTotal;
+                              const ingGInConc = ingPctInConc * scaledConcMl;
+                              const ingPctInFinal = ingGInConc / scaledTotalMl * 100;
+                              const noteColor = ing.note === "top" ? "#F59E0B" : ing.note === "mid" ? "#10B981" : "#818CF8";
+                              return (
+                                <tr key={ing.name} style={{ borderBottom: `1px solid #0A1628` }}>
+                                  <td style={{ padding: "4px 0", color: "#94A3B8" }}>
+                                    <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: noteColor, marginRight: 5, verticalAlign: "middle" }} />
+                                    {ing.name}
+                                  </td>
+                                  <td style={{ textAlign: "right", color: "#64748B" }}>{ingGInConc.toFixed(2)}g</td>
+                                  <td style={{ textAlign: "right", color: "#64748B" }}>{(ingGInConc).toFixed(2)}g</td>
+                                  <td style={{ textAlign: "right", color: ingPctInFinal > 1 ? "#F59E0B" : "#475569" }}>{ingPctInFinal.toFixed(2)}%</td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Strength comparison guide */}
+              <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: 18 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#64748B", letterSpacing: "0.1em", marginBottom: 12 }}>FRAGRANCE CONCENTRATION REFERENCE</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8 }}>
+                  {Object.entries(TYPES).map(([k, v]) => (
+                    <div
+                      key={k}
+                      style={{
+                        background: dilType === k ? "#0E3D60" : "#060E1E",
+                        border: `1px solid ${dilType === k ? "#38BDF8" : "#0A1628"}`,
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setDilType(k)}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 800, color: dilType === k ? ACC : "#475569", marginBottom: 3 }}>{k}</div>
+                      <div style={{ fontSize: 9, color: "#64748B" }}>{v.label}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: dilType === k ? "#34D399" : "#334155", marginTop: 4 }}>{v.range}</div>
+                      {concG > 0 && (
+                        <div style={{ fontSize: 9, color: "#475569", marginTop: 3 }}>
+                          {(concG / (v.pct / 100)).toFixed(1)} mL total
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* INVENTORY TAB */}
