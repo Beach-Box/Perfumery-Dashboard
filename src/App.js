@@ -53057,22 +53057,27 @@ export default function App() {
     );
 
   // AI price refresh — ONLY updates sizes, NEVER overwrites existing URLs
-  const refreshPrice = async (ingName) => {
-    setRefreshLoading((prev) => ({ ...prev, [ingName]: true }));
-    setRefreshStatus((prev) => ({ ...prev, [ingName]: "Estimating..." }));
+  // targetSup: if provided, only refresh that specific supplier row (keyed as "ing|sup")
+  const refreshPrice = async (ingName, targetSup = null) => {
+    const stateKey = targetSup ? `${ingName}|${targetSup}` : ingName;
+    setRefreshLoading((prev) => ({ ...prev, [stateKey]: true }));
+    setRefreshStatus((prev) => ({ ...prev, [stateKey]: "Searching..." }));
     try {
       const db = DB[ingName] || {};
       const existingPricing = pricesState[ingName] || PRICING[ingName] || {};
-      const knownSuppliers =
-        Object.keys(existingPricing).join(", ") ||
-        "Fraterworks, Eden Botanicals, Perfumers Apprentice";
+      const suppliersToSearch = targetSup
+        ? [targetSup]
+        : Object.keys(existingPricing).length
+        ? Object.keys(existingPricing)
+        : ["Fraterworks", "Eden Botanicals", "Perfumers Apprentice"];
+      const knownSuppliers = suppliersToSearch.join(", ");
       const sysPrompt =
         "You are a fragrance ingredient pricing expert. Output ONLY raw valid JSON — no markdown fences, no backticks, no preamble, no trailing text. Just the JSON object.";
-      const userPrompt = `Provide estimated retail USD pricing for the fragrance ingredient "${ingName}" (INCI: ${
+      const userPrompt = `Search the web for current retail USD pricing for the fragrance ingredient "${ingName}" (INCI: ${
         db.inci || ingName
       }, CAS: ${db.cas || "N/A"}, type: ${
         db.scentClass || "Aroma Chemical"
-      }) from these specific suppliers: ${knownSuppliers}.\n\nReturn ONLY this exact JSON structure with ONLY the supplier names listed above:\n{"SupplierName":{"sizes":[[qty,"g_or_mL",price],...]},...}\n\nRules:\n- Include ONLY suppliers from the list: ${knownSuppliers}\n- Do NOT include a "url" field — URLs are managed separately\n- Use "g" for solids/powders/aromachemicals, "mL" for liquid oils/absolutes\n- 3-5 realistic size tiers based on how this material is actually sold\n- Prices in USD as sold on the supplier website`;
+      }) from these specific suppliers: ${knownSuppliers}.\n\nReturn ONLY this exact JSON structure with ONLY the supplier names listed above:\n{"SupplierName":{"sizes":[[qty,"g_or_mL",price,dilution],...]},...}\n\nRules:\n- Include ONLY suppliers from the list: ${knownSuppliers}\n- Do NOT include a "url" field — URLs are managed separately\n- Use "g" for solids/powders/aromachemicals, "mL" for liquid oils/absolutes\n- 3-5 realistic size tiers based on how this material is actually sold\n- Prices in USD as sold on the supplier website\n- The 4th element "dilution" must be null for pure/undiluted product, or a string like "10%" if sold pre-diluted in DPG or solvent\n- If both pure and diluted versions exist, include both as separate entries with their dilution values`;
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -53083,36 +53088,60 @@ export default function App() {
         },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
-          max_tokens: 900,
+          max_tokens: 1200,
           system: sysPrompt,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
           messages: [{ role: "user", content: userPrompt }],
         }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error.message || "API error");
+      // Collect all text blocks (final assistant turn after tool use)
       const textBlocks = (data.content || []).filter((b) => b.type === "text");
       if (!textBlocks.length) throw new Error("No text in response");
-      let raw = textBlocks
-        .map((b) => b.text)
-        .join("")
-        .trim();
-      const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (fenceMatch) raw = fenceMatch[1].trim();
-      const start = raw.indexOf("{");
-      const end = raw.lastIndexOf("}");
-      if (start === -1 || end === -1) throw new Error("No JSON object found");
-      const jsonStr = raw.slice(start, end + 1);
-      const parsed = JSON.parse(jsonStr);
+      let raw = textBlocks.map((b) => b.text).join("").trim();
+      // Multi-strategy JSON parsing
+      let parsed = null;
+      // Strategy 1: direct parse
+      try { parsed = JSON.parse(raw); } catch {}
+      // Strategy 2: strip markdown fences
+      if (!parsed) {
+        const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (fenceMatch) try { parsed = JSON.parse(fenceMatch[1].trim()); } catch {}
+      }
+      // Strategy 3: extract outermost {...}
+      if (!parsed) {
+        const s = raw.indexOf("{"), e = raw.lastIndexOf("}");
+        if (s !== -1 && e !== -1) try { parsed = JSON.parse(raw.slice(s, e + 1)); } catch {}
+      }
+      // Strategy 4: greedy — find any parseable JSON object
+      if (!parsed) {
+        for (const m of (raw.match(/\{[\s\S]+?\}/g) || [])) {
+          try { const o = JSON.parse(m); if (o && typeof o === "object") { parsed = o; break; } } catch {}
+        }
+      }
+      if (!parsed) throw new Error("Could not parse JSON from response");
       let updatedCount = 0;
       setPricesState((prev) => {
-        const next = { ...prev, [ingName]: { ...prev[ingName] } };
+        const next = { ...prev, [ingName]: { ...(prev[ingName] || {}) } };
         Object.entries(parsed).forEach(([sup, v]) => {
           const sizes = v.sizes || v.S;
           if (!Array.isArray(sizes) || sizes.length === 0) return;
+          // Fuzzy supplier name match (case-insensitive)
+          const canonSup =
+            Object.keys(next[ingName]).find(
+              (k) => k.toLowerCase() === sup.toLowerCase()
+            ) ||
+            suppliersToSearch.find(
+              (k) => k.toLowerCase() === sup.toLowerCase()
+            ) ||
+            sup;
+          // If targeting a specific supplier, skip entries for others
+          if (targetSup && canonSup.toLowerCase() !== targetSup.toLowerCase())
+            return;
           // PRESERVE existing URL — never overwrite from AI
-          const existingUrl =
-            prev[ingName]?.[sup]?.url || existingPricing[sup]?.url || "";
-          next[ingName][sup] = { url: existingUrl, S: sizes };
+          const existingUrl = prev[ingName]?.[canonSup]?.url || "";
+          next[ingName][canonSup] = { url: existingUrl, S: sizes };
           updatedCount++;
         });
         return next;
@@ -53120,21 +53149,21 @@ export default function App() {
       if (updatedCount > 0) {
         setRefreshStatus((prev) => ({
           ...prev,
-          [ingName]: `✓ Est. ${new Date().toLocaleDateString()}`,
+          [stateKey]: `✓ ${new Date().toLocaleDateString()}`,
         }));
       } else {
         setRefreshStatus((prev) => ({
           ...prev,
-          [ingName]: "No size data returned",
+          [stateKey]: "No size data returned",
         }));
       }
     } catch (e) {
       setRefreshStatus((prev) => ({
         ...prev,
-        [ingName]: "Error: " + String(e.message || e).slice(0, 50),
+        [stateKey]: "Error: " + String(e.message || e).slice(0, 50),
       }));
     }
-    setRefreshLoading((prev) => ({ ...prev, [ingName]: false }));
+    setRefreshLoading((prev) => ({ ...prev, [stateKey]: false }));
   };
 
   const runAiCritique = async (targetFormula) => {
@@ -57705,6 +57734,177 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   sizes follow [qty, "g" or "mL", price] format.
                 </div>
 
+                {/* FRATERWORKS SCRAPER PANEL */}
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #22D3EE30",
+                    borderRadius: 12,
+                    padding: 14,
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#7DD3FC" }}>
+                        🕷️ Fraterworks — Bulk Price Refresh
+                      </span>
+                      <span style={{ fontSize: 8.5, color: "#475569", marginLeft: 10 }}>
+                        Searches fraterworks.com/collections/all for current pricing
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      {paScraperStatus === "running" && (
+                        <span style={{ fontSize: 9, color: "#F59E0B" }}>⏳ Fetching...</span>
+                      )}
+                      {paScraperStatus === "done" && (
+                        <span style={{ fontSize: 9, color: "#34D399" }}>✅ Complete</span>
+                      )}
+                      {paScraperStatus === "error" && (
+                        <span style={{ fontSize: 9, color: "#F87171" }}>❌ Error</span>
+                      )}
+                      <button
+                        disabled={paScraperStatus === "running"}
+                        onClick={async () => {
+                          setPaScraperStatus("running");
+                          setPaScraperLog(["Searching Fraterworks catalog..."]);
+                          try {
+                            const response = await fetch(
+                              "https://api.anthropic.com/v1/messages",
+                              {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  "x-api-key": apiKeyRef.current || "",
+                                  "anthropic-version": "2023-06-01",
+                                  "anthropic-dangerous-direct-browser-access": "true",
+                                },
+                                body: JSON.stringify({
+                                  model: "claude-sonnet-4-20250514",
+                                  max_tokens: 8000,
+                                  tools: [{ type: "web_search_20250305", name: "web_search" }],
+                                  messages: [
+                                    {
+                                      role: "user",
+                                      content: `Search https://fraterworks.com/collections/all for fragrance ingredient products and their prices. Return a JSON array of all products found. Each item should have: {"name": string, "url": string, "price": number, "size": string, "dilution": null_or_string}. The "dilution" field should be null for pure products or a string like "10%" if the product is a dilution. Return ONLY a valid JSON array, no markdown, no explanation. Aim for 30+ items.`,
+                                    },
+                                  ],
+                                }),
+                              }
+                            );
+                            const data = await response.json();
+                            const text =
+                              (data.content || [])
+                                .filter((b) => b.type === "text")
+                                .map((b) => b.text)
+                                .join("") || "";
+                            setPaScraperLog((prev) => [...prev, "Response received. Parsing..."]);
+                            // Multi-strategy JSON array parse
+                            let items = null;
+                            try { const p = JSON.parse(text); if (Array.isArray(p)) items = p; } catch {}
+                            if (!items) {
+                              const m = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+                              if (m) try { items = JSON.parse(m[0]); } catch {}
+                            }
+                            if (!items) throw new Error("No JSON array found in response");
+                            setPaScraperLog((prev) => [
+                              ...prev,
+                              `Parsed ${items.length} items. Injecting into pricing...`,
+                            ]);
+                            let added = 0;
+                            const newOverrides = {};
+                            items.forEach((item) => {
+                              if (!item.name || !item.price) return;
+                              const sizeMatch = (item.size || "").match(/([\d.]+)\s*(ml|mL|g|oz|lb)/i);
+                              if (!sizeMatch) return;
+                              const qty = parseFloat(sizeMatch[1]);
+                              const unit = sizeMatch[2].toLowerCase() === "ml" ? "mL" : "g";
+                              if (!newOverrides[item.name]) newOverrides[item.name] = {};
+                              if (!newOverrides[item.name]["Fraterworks"]) {
+                                newOverrides[item.name]["Fraterworks"] = {
+                                  url: item.url || "https://fraterworks.com/collections/all",
+                                  S: [],
+                                };
+                                added++;
+                              }
+                              newOverrides[item.name]["Fraterworks"].S.push(
+                                [qty, unit, item.price, item.dilution || null]
+                              );
+                            });
+                            setPricesState((prev) => {
+                              const merged = { ...prev };
+                              Object.keys(newOverrides).forEach((ing) => {
+                                if (!merged[ing]) merged[ing] = {};
+                                merged[ing]["Fraterworks"] = newOverrides[ing]["Fraterworks"];
+                              });
+                              return merged;
+                            });
+                            setPaScraperLog((prev) => [
+                              ...prev,
+                              `✅ Done! Added/updated ${added} Fraterworks ingredients.`,
+                            ]);
+                            setPaScraperStatus("done");
+                          } catch (err) {
+                            setPaScraperLog((prev) => [...prev, `❌ Error: ${err.message}`]);
+                            setPaScraperStatus("error");
+                          }
+                        }}
+                        style={{
+                          background:
+                            paScraperStatus === "running"
+                              ? "#1E3A52"
+                              : "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                          border: "1px solid #22D3EE40",
+                          borderRadius: 7,
+                          color: paScraperStatus === "running" ? "#475569" : "#7DD3FC",
+                          padding: "6px 14px",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          cursor: paScraperStatus === "running" ? "not-allowed" : "pointer",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {paScraperStatus === "running" ? "FETCHING..." : "🔄 Fetch Fraterworks Prices"}
+                      </button>
+                    </div>
+                  </div>
+                  {paScraperLog.length > 0 && (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 6,
+                        padding: "8px 12px",
+                        maxHeight: 100,
+                        overflowY: "auto",
+                      }}
+                    >
+                      {paScraperLog.map((line, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            fontSize: 8.5,
+                            color: line.startsWith("✅") ? "#34D399" : line.startsWith("❌") ? "#F87171" : "#64748B",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ marginTop: 8, fontSize: 8.5, color: "#334155" }}>
+                    ⚠️ Requires API key above · Results merge into Supplier Hub under "Fraterworks"
+                  </div>
+                </div>
+
                 {/* PA SCRAPER PANEL */}
                 <div
                   style={{
@@ -58244,26 +58444,45 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                   gap: 3,
                                 }}
                               >
-                                {S.map(([qty, unit, price], i) => (
-                                  <span
-                                    key={i}
-                                    style={{
-                                      background: "#060E1E",
-                                      border: `1px solid ${BORDER}`,
-                                      borderRadius: 5,
-                                      padding: "1px 6px",
-                                      fontSize: 8.5,
-                                      color: "#CBD5E1",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {qty}
-                                    {unit} ·{" "}
-                                    <span style={{ color: "#34D399" }}>
-                                      ${price}
+                                {S.map((entry, i) => {
+                                  const [qty, unit, price, dilution] = entry;
+                                  return (
+                                    <span
+                                      key={i}
+                                      style={{
+                                        background: "#060E1E",
+                                        border: `1px solid ${BORDER}`,
+                                        borderRadius: 5,
+                                        padding: "1px 6px",
+                                        fontSize: 8.5,
+                                        color: "#CBD5E1",
+                                        whiteSpace: "nowrap",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 4,
+                                      }}
+                                    >
+                                      {qty}{unit} ·{" "}
+                                      <span style={{ color: "#34D399" }}>${price}</span>
+                                      {dilution != null && (
+                                        <span
+                                          style={{
+                                            background: dilution === null ? "#0A2E1A" : "#2A1A00",
+                                            border: `1px solid ${dilution === null ? "#166534" : "#78350F"}`,
+                                            borderRadius: 3,
+                                            padding: "0px 4px",
+                                            fontSize: 7.5,
+                                            fontWeight: 700,
+                                            color: dilution === null ? "#34D399" : "#F59E0B",
+                                            letterSpacing: "0.05em",
+                                          }}
+                                        >
+                                          {dilution}
+                                        </span>
+                                      )}
                                     </span>
-                                  </span>
-                                ))}
+                                  );
+                                })}
                                 {S.length === 0 && sup && (
                                   <span
                                     style={{
@@ -58338,14 +58557,14 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       ↗
                                     </button>
                                     <button
-                                      title="AI estimate prices"
-                                      onClick={() => refreshPrice(ing)}
-                                      disabled={refreshLoading[ing]}
+                                      title="AI search prices for this supplier"
+                                      onClick={() => refreshPrice(ing, sup)}
+                                      disabled={refreshLoading[`${ing}|${sup}`]}
                                       style={{
                                         background: "none",
                                         border: `1px solid #F59E0B40`,
                                         borderRadius: 5,
-                                        color: refreshLoading[ing]
+                                        color: refreshLoading[`${ing}|${sup}`]
                                           ? "#F59E0B"
                                           : "#64748B",
                                         padding: "3px 6px",
@@ -58353,7 +58572,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                         cursor: "pointer",
                                       }}
                                     >
-                                      🔄
+                                      {refreshLoading[`${ing}|${sup}`] ? "⏳" : "🔄"}
                                     </button>
                                   </>
                                 )}
@@ -58388,17 +58607,17 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                   </button>
                                 )}
                               </div>
-                              {refreshStatus[ing] && (
+                              {refreshStatus[`${ing}|${sup}`] && (
                                 <div
                                   style={{
                                     fontSize: 7.5,
-                                    color: refreshStatus[ing].startsWith("✓")
+                                    color: refreshStatus[`${ing}|${sup}`].startsWith("✓")
                                       ? "#34D399"
                                       : "#F59E0B",
                                     marginTop: 3,
                                   }}
                                 >
-                                  {refreshStatus[ing]}
+                                  {refreshStatus[`${ing}|${sup}`]}
                                 </div>
                               )}
                             </td>
