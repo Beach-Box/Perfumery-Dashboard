@@ -18,6 +18,7 @@ import {
   Scatter,
   ZAxis,
   ReferenceLine,
+  ReferenceArea,
 } from "recharts";
 
 // ─────────────────────────────────────────────────────────────
@@ -47,16 +48,16 @@ const RAW_DB = {
     "DPG is the industry-standard odorless carrier for perfume concentrates. Water-miscible, low irritation, excellent solvency for both polar and non-polar odorants. The backbone of any serious formula.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Habanolide: [
-    266.38,
-    5.0,
+    238.371,
+    5.45,
     26.3,
     0,
     2,
-    0.00003,
-    0.01,
+    2.25e-7,
+    0.012,
     0.4,
     "base",
     "SYNTH",
@@ -72,15 +73,15 @@ const RAW_DB = {
     "Exaltolide-type macrolide lactone with a skin-warm, powdery-clean diffusion. One of the most laundry-fresh musks in perfumery — bright, sheer, and radiating. Blends seamlessly with floral and woody bases.",
     null,
     0.92,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Helvetolide: [
-    310.46,
-    6.2,
+    284.44,
+    5.117,
     26.3,
     0,
     2,
-    0.00001,
+    0.000001275,
     0.008,
     0.4,
     "base",
@@ -97,15 +98,15 @@ const RAW_DB = {
     "Polycyclic macrolide with extraordinary tenacity on skin. Soft, velvety clean character with subtle sweetness. Excellent for creating the 'second-skin' effect in skin musks and transparent bases.",
     null,
     0.93,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethylene Brassylate": [
-    270.37,
-    3.8,
+    270.369,
+    2.773,
     52.6,
     0,
     4,
-    0.0001,
+    0.01,
     0.05,
     0.45,
     "base",
@@ -122,16 +123,16 @@ const RAW_DB = {
     "Macrocyclic diester prized for its sweet, clean white-musk character. More floral and soft than other musks. Blends beautifully with white florals, gourmands, and clean bases. Outstanding longevity.",
     null,
     0.94,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ambrettolide: [
-    252.35,
-    5.4,
+    252.398,
+    6.51,
     26.3,
     0,
     2,
-    0.00002,
-    0.012,
+    0.000158,
+    0.05,
     0.4,
     "base",
     "SYNTH",
@@ -147,7 +148,7 @@ const RAW_DB = {
     "Natural macrolide from ambrette seed. Warm, musky, slightly winey and fatty. A biodegradable nature-identical musk with more complexity than the purely synthetic variants. Pairs beautifully with woody and amber bases.",
     null,
     0.92,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrette Seed Absolute": [
     252.35,
@@ -172,15 +173,15 @@ const RAW_DB = {
     "The complete absolute from ambrette seed, richer and more complex than the synthetic ambrettolide. Nutty, winey, slightly earthy musk character. Rare and prized in natural perfumery. Excellent skin retention.",
     null,
     0.98,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambroxan Crystals": [
-    236.39,
-    4.5,
+    236.398,
+    5.411,
     9.2,
     0,
     1,
-    0.0001,
+    0.000975,
     0.03,
     0.5,
     "base",
@@ -197,16 +198,16 @@ const RAW_DB = {
     "Ambroxan (Ambroxide) is the synthetic equivalent of the key ambergris odorant. Extremely diffusive, radiant, warm-mineral character. Amplifies all surrounding notes and adds skin-warming depth. The modern perfumer's essential 'radiance' molecule.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iso E Super": [
-    208.3,
-    3.5,
+    234.2,
+    5.65,
     17.1,
     0,
     1,
-    0.01,
-    5.0,
+    0.001735,
+    5,
     0.5,
     "base",
     "SYNTH",
@@ -222,7 +223,7 @@ const RAW_DB = {
     "The quintessential 'radiance molecule' — diffusive, cedar-velvet warmth that becomes almost imperceptible at high concentrations (superoleic effect). Amplifies surrounding notes, adds texture and depth. Essential in modern masculines and skin musks.",
     null,
     0.96,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot EO FCF": [
     154.25,
@@ -247,7 +248,7 @@ const RAW_DB = {
     "Bergamot FCF (furocoumarin-free) — the benchmark citrus opening note. Green, floral-citrus sparkle driven by linalool and linalyl acetate with a characteristic bergamot bitterness. Versatile, bright, essential in fougères and chypres.",
     null,
     0.88,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Orange Absolute": [
     136.23,
@@ -272,7 +273,7 @@ const RAW_DB = {
     "Unlike the EO, the absolute carries the full ripe orange juice and peel character — honeyed, warm, slightly waxy. Adds weight and longevity to citrus openings that the EO cannot. Excellent with coconut and vanilla.",
     null,
     0.85,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lime CO2 Extract": [
     136.23,
@@ -297,7 +298,7 @@ const RAW_DB = {
     "CO2 extraction preserves the full fresh lime character including the raw citral and terpene complexity. More vibrant and 'real lime' than distilled versions. Superb for aquatic, fresh, and tropical accords.",
     null,
     0.86,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Litsea Cubeba EO": [
     152.23,
@@ -322,7 +323,7 @@ const RAW_DB = {
     "High citral content gives an intense, clean lemon-lime character. More tenacious than citrus peel oils. Pairs beautifully with marine, green, and floral notes. A secret weapon for longevity in citrus accords.",
     null,
     0.88,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pineapple CO2 Extract": [
     128.17,
@@ -347,7 +348,7 @@ const RAW_DB = {
     "CO2 pineapple captures the volatile ester character that makes fresh pineapple so distinctive. Allyl hexanoate-dominant with sulfurous edge. Brilliant in tropical accords, pairs with coconut, mango, and marine notes.",
     null,
     0.85,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neroli Absolute": [
     154.25,
@@ -372,7 +373,7 @@ const RAW_DB = {
     "The absolute version of neroli — richer, more animalic, and honeyed than the EO. Captures the waxy-green indolic facets of fresh orange blossom. Pricey but transformative in floral and chypre accords. Extraordinary tenacity.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang Ylang Extra Absolute": [
     150.17,
@@ -397,7 +398,7 @@ const RAW_DB = {
     "The 'Extra' grade absolute (first distillation) is the most complex and expensive. Rich benzyl acetate-driven banana-creamy floral with spicy eugenol facets. Extraordinarily powerful — use at low percentages for tropical florals.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamon Bark EO": [
     132.16,
@@ -422,7 +423,7 @@ const RAW_DB = {
     "Intensely fiery-sweet cinnamaldehyde-dominant spice. The most powerful natural spice in perfumery but severely IFRA restricted due to sensitization risk. Cinnamaldehyde is a Category B restricted material. Use with extreme caution — maximum 0.05% in leave-on skin products.",
     "0.05% cat.3 leave-on",
     0.9,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pink Peppercorn CO2": [
     204.35,
@@ -447,7 +448,7 @@ const RAW_DB = {
     "CO2 pink peppercorn captures both the spicy terpene character and the distinctive rosy-woody facets. More complex and nuanced than black pepper. Brings warmth without harshness. Brilliant with amber, rose, and citrus.",
     null,
     0.88,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Pepper CO2": [
     204.35,
@@ -472,7 +473,7 @@ const RAW_DB = {
     "CO2 black pepper preserves the full spectrum including green woody terpenes and beta-caryophyllene. Sharper and more complex than steam-distilled versions. Essential in masculine fougères, woody orientals, and modern aromatic accords.",
     null,
     0.87,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Eucalyptus Blue Gum EO": [
     154.25,
@@ -497,7 +498,7 @@ const RAW_DB = {
     "1,8-Cineole (eucalyptol) dominant — sharp, piercing, clean and medicinal. Creates instant openness and freshness. Pairs beautifully with marine notes (Calone), mint, and rosemary in coastal and herbal accords.",
     null,
     0.91,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Menthol Natural Crystals": [
     156.27,
@@ -522,7 +523,7 @@ const RAW_DB = {
     "L-Menthol from natural sources — the definitive cooling agent in perfumery. Activates TRPM8 cold receptors for a physiological cooling sensation. Extraordinary odor intensity at very low concentrations. Use sparingly; pairs with marine, citrus, and aquatic notes.",
     null,
     0.89,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydromyrcenol: [
     158.28,
@@ -547,15 +548,15 @@ const RAW_DB = {
     "The backbone of modern marine-fresh masculines. Lime-metallic-clean character that reads as 'aquatic laundry' freshness. Essential in Cool Water-type accords. Extremely diffusive opening note — pairs beautifully with juniper, bergamot, and Calone.",
     null,
     0.84,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Pamplemousse": [
-    164.2,
-    2.9,
+    186.295,
+    4.3,
     17.1,
     0,
     1,
-    0.08,
+    0.217518,
     1.0,
     0.5,
     "top",
@@ -572,7 +573,7 @@ const RAW_DB = {
     "Synthetic grapefruit with more tenacity than natural citrus oils. Bright, tart, juicy quality. A key molecule for extending grapefruit character well beyond the natural EO's lifespan. Excellent in freshness accords.",
     null,
     0.93,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Bigarade EO": [
     196.29,
@@ -597,7 +598,7 @@ const RAW_DB = {
     "From the leaves and twigs of bitter orange — a woody-green, slightly floral citrus bridge note. Linalyl acetate dominant. Bridges the gap between citrus tops and floral/woody hearts beautifully. Essential in classic fougères and modern masculines.",
     null,
     0.88,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cognac Absolute": [
     116.16,
@@ -622,7 +623,7 @@ const RAW_DB = {
     "The distillate absolute captures the complex character of aged brandy — grape, spirit, warm oak nuances. Ethyl octanoate dominant. Adds sophisticated boozy warmth to oriental, tobacco, and amber accords. A secret weapon for gourmand complexity.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rum Absolute": [
     88.11,
@@ -647,15 +648,15 @@ const RAW_DB = {
     "Ethyl butyrate-rich rum character — tropical, sweet, slightly estery and boozy. Pairs perfectly with vanilla, coconut, and citrus in tropical gourmand accords. More tenacious than it seems due to the heavy molasses components.",
     null,
     0.98,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Calone 1951": [
-    160.17,
-    2.2,
+    178.187,
+    2.43,
     44.8,
     0,
     3,
-    0.005,
+    0.00000285,
     0.00001,
     0.6,
     "top",
@@ -672,7 +673,7 @@ const RAW_DB = {
     "The original marine odorant — extraordinarily powerful at ppb levels. Cold, metallic, melon-marine character that instantly evokes the sea. At correct dosage (0.1-0.5% of formula) it's transformative. At too high it becomes overpowering and synthetic.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-11 Undecylenic": [
     170.29,
@@ -697,7 +698,7 @@ const RAW_DB = {
     "C-11 undecylenic aldehyde — soapy, waxy, slightly fatty and abstract. A classic Chanel No.5-lineage aldehyde. Adds lift, luminosity, and a distinctive 'classic perfumery' character to any formula. Use at 0.5-3% for effect.",
     null,
     0.85,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rosemary EO": [
     136.23,
@@ -722,7 +723,7 @@ const RAW_DB = {
     "Mediterranean herbal freshness driven by alpha-pinene, camphor, and 1,8-cineole. Brings an authentic coastal herb character — the smell of wild rosemary on a sun-baked hillside above the sea. Essential in fougères and marine accords.",
     null,
     0.9,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalool Natural": [
     154.25,
@@ -747,7 +748,7 @@ const RAW_DB = {
     "The most important terpene in perfumery — soft, floral-citrus character that bridges top and heart notes. Present in over 200 natural materials. Adds smoothness, lift, and a characteristic 'floral clean' quality. Essential for blending.",
     null,
     0.86,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coconut CO2": [
     156.22,
@@ -772,7 +773,7 @@ const RAW_DB = {
     "CO2 coconut captures the full creamy lactonic quality of fresh coconut. gamma-Nonalactone dominant. The definitive tropical-beach note — pairs with vanilla, pineapple, orange, and musks. A Beach Box essential.",
     null,
     0.92,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Heliotropin: [
     150.13,
@@ -797,7 +798,7 @@ const RAW_DB = {
     "Piperonal (heliotropin) — sweet, almond-like, with a distinctive heliotrope floral facet. A remarkable coconut enhancer when combined with gamma-nonalactone. Also adds powdery softness to any formula. Bridges floral and gourmand.",
     null,
     1.1,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla CO2 10%": [
     152.15,
@@ -822,7 +823,7 @@ const RAW_DB = {
     "CO2 extraction preserves the full vanilla bean complexity — vanillin, coumarin, and numerous aromatic aldehydes. More natural and rounded than synthetics, less 'flat'. 10% dilution in DPG makes it easy to work with at formula percentages.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Vanillin": [
     166.17,
@@ -847,7 +848,7 @@ const RAW_DB = {
     "3-4x stronger than vanillin with a richer, creamier-sweeter character. Adds 'weight' to vanilla accords and gourmand bases. Pairs beautifully with coumarin, heliotropin, and musks for a full dessert foundation.",
     null,
     1.08,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Nonalactone": [
     156.22,
@@ -872,7 +873,7 @@ const RAW_DB = {
     "The definitive lactone for creamy-fruity accords. Peach-coconut character that adds soft creaminess and tropical warmth. Essential in 'beach' accords — pairs with heliotropin for maximum coconut effect.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Coumarin: [
     146.15,
@@ -897,7 +898,7 @@ const RAW_DB = {
     "The founding molecule of fougère perfumery (Fougère Royale, 1882). Sweet, hay-like, tonka-warm character. Essential in fougères, orientals, and modern gourmands. Powerful fixative that anchors and extends floral and woody accords.",
     null,
     0.94,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Ionone Gamma Coeur": [
     192.28,
@@ -922,7 +923,7 @@ const RAW_DB = {
     "Gamma methyl ionone — the softest, most powdery of the ionones. Iris-violet character without the orris-root earthiness. Adds elegance, feminine powder, and depth as a heart note bridge. Essential in violet, iris, and powdery florals.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Salicylate": [
     228.25,
@@ -947,7 +948,7 @@ const RAW_DB = {
     "Multi-functional: a fixative, UV-absorber, and pleasant green-balsamic-floral note. Sweet, slightly green with a soft balsamic character. One of the most important bases in perfumery — adds lasting power and a classic fine-fragrance character.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Acetate": [
     150.17,
@@ -972,7 +973,7 @@ const RAW_DB = {
     "The dominant odorant in jasmine and ylang ylang. Sweet, fruity-floral with a distinctive jasmine character. Essential for building jasmine accords and adding sweet floral body to any heart note construction.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Cinnamic Aldehyde": [
     216.32,
@@ -997,7 +998,7 @@ const RAW_DB = {
     "Sweet, warm floral with magnolia and lily facets. One of the most widely-used synthetic materials in perfumery. Also a UV-absorber like benzyl salicylate. Adds warmth, sweetness, and lasting power to any floral or oriental accord.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cardamom EO": [
     154.25,
@@ -1022,7 +1023,7 @@ const RAW_DB = {
     "1,8-Cineole dominant with sweet-spicy aromatic facets. Cardamom is uniquely versatile — adds warmth without heaviness, brightness to darker accords, and an oriental complexity to anything it touches. Crucial in masculine and unisex accords.",
     null,
     0.93,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Cardamom CO2": [
     154.25,
@@ -1047,7 +1048,7 @@ const RAW_DB = {
     "Unlike green cardamom, black cardamom has an assertive smokiness alongside the spice. CO2 extraction preserves this distinctive character. Adds depth, mystery, and a camphoraceous-smoky dimension to oriental and aromatic accords.",
     null,
     0.9,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Juniper Berry CO2": [
     136.23,
@@ -1072,7 +1073,7 @@ const RAW_DB = {
     "CO2 juniper captures the authentic gin character — fresh, piney, with a slight dark-resinous undercurrent. More complex than the steam-distilled EO. Essential in maritime and fougère accords. Brings a refined herbal structure.",
     null,
     0.87,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galbanum Absolute": [
     166.22,
@@ -1097,7 +1098,7 @@ const RAW_DB = {
     "One of the most potent and challenging naturals in perfumery. 2-Methoxypyrazine gives a vegetable-green, almost pepper-green intensity at trace levels. Extraordinary ODT — a single drop can define the entire formula. Used in traces in Chanel No.19, Alliage. Handle with great care.",
     null,
     0.98,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Violet Leaf Absolute": [
     138.21,
@@ -1122,7 +1123,7 @@ const RAW_DB = {
     "Exceptional potency — traces create a watery, green, cucumber-like freshness with an almost ozonic quality. 2,6-Nonadienal is the key odorant. IFRA restricted due to sensitization potential. Used in tiny amounts in chypres, green accords, and aquatics.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Seaweed Absolute": [
     150.0,
@@ -1147,7 +1148,7 @@ const RAW_DB = {
     "The raw, feral smell of seaweed on a beach at low tide — iodine, brine, dark green marine algae character. More animalic and complex than synthetic marine materials. Adds authentic coastal roughness to marine accords.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tobacco Absolute": [
     192.21,
@@ -1172,7 +1173,7 @@ const RAW_DB = {
     "Solanone-rich absolute from cured tobacco leaf. Sweet-hay-dry tobacco character — warm, complex, slightly sweet. Extraordinary tenacity. Essential in oriental, leather, and gourmand masculines. Pairs beautifully with vanilla, amber, and leather.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cocoa Absolute": [
     94.11,
@@ -1197,7 +1198,7 @@ const RAW_DB = {
     "Pyrazine-rich chocolate absolute — deep, roasted, slightly bitter dark chocolate character. More complex and realistic than any synthetic substitute. Extraordinarily tenacious despite high apparent VP (pyrazines have low ODTs). Essential for gourmand oriental accords.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Labdanum Absolute 10%": [
     272.42,
@@ -1222,7 +1223,7 @@ const RAW_DB = {
     "The 10% dilution of the dense resin absolute. Labdanum creates the classical amber base — warm, slightly animalic, leathery-resinous and balsamic. The key ingredient in amber accords and chypres. Extraordinary fixative properties.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Sambac Absolute": [
     150.17,
@@ -1247,7 +1248,7 @@ const RAW_DB = {
     "Sambac jasmine — more tropical, indolic, and honeyed than grandiflorum. The scent of leis, tropical evenings, and Indian temples. Heady, rich, with benzyl acetate sweetness and an animalic depth. Pairs with coconut, citrus, and musks.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Blossom Water Abs": [
     151.16,
@@ -1272,7 +1273,7 @@ const RAW_DB = {
     "Methyl anthranilate gives this absolute a distinctive grapey-citrus quality alongside the orange blossom. More delicate and aqueous than the full absolute. Adds a unique freshness to white floral accords.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedarwood Virginia EO": [
     222.37,
@@ -1297,7 +1298,7 @@ const RAW_DB = {
     "Cedrol-rich Virginia cedarwood — the smell of freshly sharpened pencils. Dry, slightly sweet pencil-cedar character. Excellent fixative and woody backbone. More affordable than Atlas or Himalayan cedarwood with a distinctive American character.",
     null,
     0.94,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clove Bud Absolute": [
     164.2,
@@ -1322,7 +1323,7 @@ const RAW_DB = {
     "Eugenol-dominant absolute from clove buds. Warming, medicinal-spice character with a slightly anesthetic quality. IFRA restricted due to eugenol sensitization potential. Essential in oriental and leather accords at compliant levels.",
     "0.5% cat.3 leave-on",
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oakmoss Absolute": [
     182.17,
@@ -1347,7 +1348,7 @@ const RAW_DB = {
     "The quintessential chypre ingredient — damp, earthy, forest floor mossy depth. Severely IFRA restricted due to atranol and chloroatranol sensitizers. Maximum 0.1% in leave-on products effectively means it can only be used as a trace note today. A ghost of its former perfumery self.",
     "0.1% cat.3 leave-on",
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzoin Siam Absolute": [
     212.25,
@@ -1372,7 +1373,7 @@ const RAW_DB = {
     "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Bourbon EO": [
     222.37,
@@ -1397,7 +1398,7 @@ const RAW_DB = {
     "Bourbon (Réunion) vetiver — the benchmark. Khusimol-rich, deep, earthy, smoky-rootsy with mineral nuances. The perfect base note for grounding any formula. Extraordinary longevity on skin and fabric. Essential in masculine bases and chypres.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Dark EO": [
     222.37,
@@ -1422,7 +1423,7 @@ const RAW_DB = {
     "Dark, aged patchouli — camphoraceous, earthly, animalic with the rich complexity that develops over time. Patchoulol dominant. Lower camphor content than fresh patchouli, deeper and more resinous. The backbone of oriental, leather, and chypre accords.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Mysore EO": [
     220.35,
@@ -1447,7 +1448,7 @@ const RAW_DB = {
     "The world's finest sandalwood — alpha-santalol dominant, creamy, milky, soft woody character. Extraordinary tenacity and skin-affinity. Endangered and expensive. Works beautifully as a primary base note or as an accord enhancer.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Absolute": [
     152.15,
@@ -1472,7 +1473,7 @@ const RAW_DB = {
     "Full vanilla bean absolute — rich, complex, warm. Goes beyond vanillin to include coumarin, para-hydroxybenzaldehyde, and numerous trace aromatic compounds. The most natural-smelling vanilla option. Extraordinary fixative properties.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Bourbon Absolute": [
     152.15,
@@ -1497,7 +1498,7 @@ const RAW_DB = {
     "Bourbon vanilla from Réunion/Madagascar — richer, creamier, and slightly darker than Tahitian vanilla. High vanillin content with additional coumarin warmth. The definitive vanilla for oriental and gourmand bases.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Balsam Peru EO": [
     212.25,
@@ -1522,7 +1523,7 @@ const RAW_DB = {
     "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
     null,
     1.05,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedarwood Atlantic EO": [
     236.44,
@@ -1547,7 +1548,7 @@ const RAW_DB = {
     "Moroccan Atlas cedarwood — atlantone-rich with a distinctive dry, mineral, pencil-shavings character. More austere and elegant than Virginia cedarwood. Excellent for adding woody structure and longevity to any accord.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Himalayan Cedarwood EO": [
     222.37,
@@ -1572,7 +1573,7 @@ const RAW_DB = {
     "Cedrus deodara — the softest and cleanest of the cedars. Subtle spice from sesquiterpenes. Dry, fresh-woody character that adds refinement without the earthiness of Atlas or the sharpness of Virginia. An elegant base option.",
     null,
     0.94,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud CO2 10%": [
     256.38,
@@ -1597,15 +1598,15 @@ const RAW_DB = {
     "10% CO2 oud dilution — preserves the full spectrum of agarwood's complexity: dark woody resin, rose-animalic facets, deep balsamic character. More affordable way to work with oud's complexity while maintaining the signature depth.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galaxolide 50% IPM": [
-    396.55,
-    6.2,
+    258.4,
+    5.9,
     9.2,
     0,
     1,
-    0.000005,
+    0.000143,
     0.5,
     0.4,
     "base",
@@ -1622,15 +1623,15 @@ const RAW_DB = {
     "The most widely-used synthetic musk in the world. Clean, powdery white musk with a warm woody undertone. 50% solution in IPM makes it easy to measure. The backbone of almost every commercial laundry and personal care fragrance. Pairs with Ethylene Brassylate for the classic clean musk accord.",
     null,
     0.98,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Hedione: [
-    254.32,
-    2.7,
+    226.316,
+    2.653,
     43.7,
     0,
     3,
-    0.002,
+    0.000005325,
     2.0,
     0.5,
     "mid",
@@ -1647,15 +1648,15 @@ const RAW_DB = {
     "Methyl dihydrojasmonate — one of the most important molecules in modern perfumery. Clean jasmine-citrus radiance that amplifies surrounding florals. Essential in the Grojsman accord. Found in hundreds of major fragrances from Cool Water to Eternity. Adds lift and diffusion to any formula.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galaxolide Pure": [
-    396.55,
-    6.2,
+    258.4,
+    5.9,
     9.2,
     0,
     1,
-    0.000005,
+    0.000143,
     0.5,
     0.4,
     "base",
@@ -1672,7 +1673,7 @@ const RAW_DB = {
     "Pure Galaxolide for when you need maximum control over dosing. Extraordinarily powerful and persistent. The foundation of clean, soft musks in commercial perfumery. A little goes very long way.",
     null,
     1.03,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender EO France": [
     154.25,
@@ -1697,16 +1698,16 @@ const RAW_DB = {
     "True Lavender from Haute-Provence — the benchmark floral-aromatic top note. Linalool and linalyl acetate dominant. Clean, fresh, and versatile. Essential in fougères, aromatic masculines, and anything that needs fresh floral lift. The most universally beloved single ingredient in perfumery.",
     null,
     0.88,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cetalox: [
-    236.39,
-    4.5,
+    236.398,
+    5.256,
     9.2,
     0,
     1,
-    0.0001,
-    0.03,
+    0.000016426,
+    0.001,
     0.5,
     "base",
     "SYNTH",
@@ -1722,16 +1723,16 @@ const RAW_DB = {
     "The original name for Ambroxan in its classic form. Warm, mineral, skin-radiant ambergris character. Amplifies and boosts everything around it. Essential for adding depth, warmth, and the signature 'molecule 02' skin warmth effect.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cashmeran: [
-    220.35,
+    206.2,
     4.2,
     17.1,
     0,
     1,
-    0.003,
-    3.0,
+    0.009316,
+    2,
     0.5,
     "base",
     "SYNTH",
@@ -1747,7 +1748,7 @@ const RAW_DB = {
     "IFF captive with an incomparable warm, woody, slightly spicy 'cashmere' character. Used in the iris-powder accord of many luxury fragrances. Adds warmth without heaviness. Pairs beautifully with musks, iris, vanilla, and amber bases. One of the most prized IFF materials.",
     null,
     0.96,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galaxolide 50% DPG": [
     396.55,
@@ -1772,7 +1773,7 @@ const RAW_DB = {
     "50% Galaxolide solution in DPG — the easiest way to work with this powerful material. Great for precise dosing in small formula batches. Same clean, powdery musk character.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Safraleine: [
     296.4,
@@ -1797,7 +1798,7 @@ const RAW_DB = {
     "Givaudan material that captures the exotic, saffron-leather-carrot quality of real saffron at affordable cost. Warm, dry, slightly metallic spice character. Essential for leather accords, amber orientals, and anything with a Middle Eastern inspiration. Pairs beautifully with oud and rose.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Benzoate": [
     212.24,
@@ -1822,7 +1823,7 @@ const RAW_DB = {
     "One of the oldest and most important materials in perfumery. Sweet, balsamic, slightly floral base note. Primarily functions as a fixative and solvent, greatly enhancing the longevity and blending of other materials. Found in virtually every oriental, amber, and floral base.",
     null,
     1.12,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Norlimbanol: [
     236.44,
@@ -1847,7 +1848,7 @@ const RAW_DB = {
     "Firmenich captive with an extraordinary dry, earthy, woody-vetiver character. Highly substantive. Adds an almost unearthy depth and dryness to woody bases. Used in Terre d'Hermès-type accords. One of the most sophisticated dry-wood materials available.",
     null,
     1.02,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranium Bourbon EO": [
     196.29,
@@ -1872,7 +1873,7 @@ const RAW_DB = {
     "Bourbon geranium from Réunion — citronellol-rich, green-rosy floral with an extraordinary rose character. The essential bridge between green top notes and rose-floral heart. Adds natural rose greenness that cannot be replicated synthetically. Used in virtually every significant rose accord.",
     null,
     0.89,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Musclone: [
     264.4,
@@ -1897,7 +1898,7 @@ const RAW_DB = {
     "The macrocyclic ketone musk with an assertive, animalic, skin-like quality. More animalic than the cleaner macrolide musks. Adds depth, sensuality, and a natural skin-warmth that modern clean musks cannot provide. Use sparingly to add mystery to any base.",
     null,
     0.92,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Terpineol Alpha": [
     154.25,
@@ -1922,7 +1923,7 @@ const RAW_DB = {
     "Alpha-Terpineol — the classic 'lilac' terpene. Clean, floral-woody, slightly sweet with a distinctive lilac character. Essential in white floral, lily, and clean-floral accords. Also used as a modifier in marine and fresh bases to add naturalness.",
     null,
     0.93,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Eugenol: [
     164.2,
@@ -1947,7 +1948,7 @@ const RAW_DB = {
     "The primary odorant of clove. Warm, spicy, woody-sweet with a medicinal undertone. Essential for spice accords, oriental bases, and any composition requiring clove. IFRA restricted due to sensitization potential — use at compliant levels only.",
     "0.5% cat.3",
     1.07,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrette Seed CO2": [
     252.35,
@@ -1972,7 +1973,7 @@ const RAW_DB = {
     "The finest grade of ambrette seed extract via CO2. Cleaner and more complete than steam-distilled versions. Nutty, winey, warm musk character with extraordinary skin retention. The most prized natural musk replacement. Expensive but transformative.",
     null,
     0.97,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon EO Italy": [
     136.23,
@@ -1997,7 +1998,7 @@ const RAW_DB = {
     "Cold-pressed Italian lemon — the brightest citrus opening. Citral and limonene dominant. Clean, transparent lemon sparkle with slight green-waxy facets. Short-lived but irreplaceable for authentic citrus openings. Use with fixatives like Iso E Super or benzyl salicylate to extend longevity.",
     null,
     0.85,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Grandiflorum Abs": [
     150.17,
@@ -2022,7 +2023,7 @@ const RAW_DB = {
     "The absolute standard for jasmine in perfumery. From Jasminum grandiflorum — more classic, less tropical than sambac. Rich benzyl acetate sweetness with indolic depth, waxy facets, and a honeyed warmth. Extraordinarily expensive but irreplaceable. The signature material of classical perfumery.",
     null,
     1.01,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Otto Bulgarian": [
     154.25,
@@ -2047,7 +2048,7 @@ const RAW_DB = {
     "Steam-distilled Rosa Damascena from the Valley of Roses. The defining luxury ingredient in perfumery — deep, complex rose with honey, green, spicy and waxy facets. Citronellol and geraniol dominant. Extraordinarily expensive but irreplaceable for classic rose accords.",
     null,
     0.85,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   // ── New Fraterworks additions ──────────────────────────────────────────────
   "Paradise Molecule": [
@@ -2073,7 +2074,7 @@ const RAW_DB = {
     "Givaudan's Paradisone — a macro-ring compound bridging sandalwood radiance and amber warmth. Extraordinarily diffusive skin radiance that amplifies all surrounding materials. One of the most important modern bases in prestige perfumery. Works synergistically with Ambroxan.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Decalactone": [
     170.25,
@@ -2098,7 +2099,7 @@ const RAW_DB = {
     "The definitive ripe peach lactone — richer and more tenacious than gamma-nonalactone. Warm, sweet, almost buttery peach character. Essential for peach accords, gourmand compositions, and adding creaminess to fruity florals. Pairs beautifully with rose, jasmine, and vanilla.",
     null,
     0.95,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neobutenone Alpha": [
     136.19,
@@ -2123,7 +2124,7 @@ const RAW_DB = {
     "Firmenich captive with an extraordinary metallic-rosy-blackcurrant character. Adds a distinctive modern metallic freshness to rose accords. Used in iconic modern florals. Extremely diffusive — use at 0.5-2%. Transforms ordinary rose compositions into something unmistakably contemporary.",
     null,
     0.93,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muscone Laevo": [
     238.41,
@@ -2148,7 +2149,7 @@ const RAW_DB = {
     "The levo-enantiomer of muscone — the key odorant of natural Himalayan musk deer. Warm, animalic, skin-intimate quality that is the archetype of all musk perfumery. Firmenich natural-identical. More animalic and skin-close than macrolide musks. Rare and expensive — a transformative base note.",
     null,
     0.92,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ambrofix: [
     236.39,
@@ -2173,7 +2174,7 @@ const RAW_DB = {
     "Givaudan's branded ambroxan (Ambrofix) — the same ambroxide molecule but sourced directly from Givaudan. Warm mineral ambergris radiance with extraordinary diffusion. Some perfumers prefer this grade for its slightly softer character vs other sources. Essential modern base.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Lindenol: [
     156.27,
@@ -2198,7 +2199,7 @@ const RAW_DB = {
     "IFF captive with an extraordinary linden blossom character — green, floral, slightly aldehydic with lily-of-the-valley nuances. Adds naturalness and green-floral airiness. Bridging note between fresh citrus tops and floral hearts. Essential in muguet, lily, and transparent floral accords.",
     null,
     0.87,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Pallida Resinoid": [
     298.5,
@@ -2223,7 +2224,7 @@ const RAW_DB = {
     "Fraterworks 'Signature' Orris Pallida resinoid — intensely powdery, violet-iris, slightly sweet with carrot-earthy facets from the irone complex. One of the most expensive natural ingredients. A defining luxury material that transforms any formula with incomparable softness and depth.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Styrax Resinoid Wild": [
     210.28,
@@ -2248,7 +2249,7 @@ const RAW_DB = {
     "Wild-harvested Liquidambar orientalis resinoid from Anatolia. Complex leather-balsamic-cinnamic character with phenylethyl alcohol and cinnamyl acetate. Extraordinary tenacity and complexity. Foundation of classic leather and oriental accords. Completely irreplaceable — adds raw natural power.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Haiti EO": [
     222.37,
@@ -2273,7 +2274,7 @@ const RAW_DB = {
     "Haitian vetiver — earthier, smokier, and more animal than Bourbon/Réunion variety. Khusimol-dominant with distinctive smoky-clay facets. Pairs beautifully with leather, oud, and dark orientals. A complementary alternative to the cleaner Bourbon style. Dark, brooding, extraordinarily tenacious.",
     null,
     0.99,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchoulol Crystals": [
     222.37,
@@ -2298,7 +2299,7 @@ const RAW_DB = {
     "Patchoulol (Patchouli Alcohol) isolated to 99%+ purity — the 'PA99' grade from Fraterworks. Cleaner, smoother version of patchouli's earthy character without the dark/smoky components. Allows precise, controlled patchouli dosing. Essential for modern woody and earthy bases.",
     null,
     1.01,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Saxon Moss": [
     350.5,
@@ -2323,7 +2324,7 @@ const RAW_DB = {
     "Fraterworks' in-house IFRA-compliant oakmoss accord — capturing the damp, woody, marine-earthy character of true oakmoss without the restricted atranol/chloroatranol components. Formulated for modern compliance. The go-to oakmoss alternative for chypre and fougère construction.",
     null,
     1.0,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Birch Tar Oil, Purified": [
     null,
@@ -2348,7 +2349,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Karo Karounde TruAbs®": [
     null,
@@ -2373,7 +2374,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thioxane Base 38375 D": [
     null,
@@ -2398,7 +2399,7 @@ const RAW_DB = {
     "Aromatic base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cantryl®": [
     null,
@@ -2423,7 +2424,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Parmentier Pyrazine": [
     null,
@@ -2448,7 +2449,7 @@ const RAW_DB = {
     "Leather synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mitti Attar": [
     null,
@@ -2473,7 +2474,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Kewda Attar": [
     null,
@@ -2498,7 +2499,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cadamba Attar": [
     null,
@@ -2523,7 +2524,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Choya Raal": [
     null,
@@ -2548,7 +2549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Choya Nakh": [
     null,
@@ -2573,7 +2574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Choya Loban": [
     null,
@@ -2598,7 +2599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ruh Khus": [
     null,
@@ -2623,7 +2624,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cananga Oil": [
     null,
@@ -2648,7 +2649,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Piperitone: [
     null,
@@ -2673,7 +2674,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Cyclogeranate": [
     null,
@@ -2698,7 +2699,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydroanethol: [
     null,
@@ -2723,7 +2724,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2-Octenal": [
     null,
@@ -2748,7 +2749,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyacinth Body": [
     null,
@@ -2773,7 +2774,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Diethyl Hexyl Adipate": [
     null,
@@ -2798,7 +2799,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cetylic Alcohol": [
     null,
@@ -2823,7 +2824,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-9": [
     null,
@@ -2848,7 +2849,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-7": [
     null,
@@ -2873,7 +2874,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Levulinic Acid": [
     null,
@@ -2898,7 +2899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Kyphi Vert": [
     null,
@@ -2923,7 +2924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Baume Ambré": [
     null,
@@ -2948,7 +2949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Miel de Ciste": [
     null,
@@ -2973,7 +2974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ombre d’Iris": [
     null,
@@ -2998,7 +2999,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Osmanthe sur Gurjun": [
     null,
@@ -3023,7 +3024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Framboise Base 184039 D": [
     null,
@@ -3048,7 +3049,7 @@ const RAW_DB = {
     "Woody base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Jacintheme: [
     null,
@@ -3073,7 +3074,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Parmantheme: [
     null,
@@ -3098,7 +3099,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Blackwood Base 199939 RF17": [
     null,
@@ -3123,7 +3124,7 @@ const RAW_DB = {
     "Woody base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nectarol 184139 D": [
     null,
@@ -3148,7 +3149,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grapefruit Base 184062 D": [
     null,
@@ -3173,7 +3174,7 @@ const RAW_DB = {
     "Citrus base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Indocolore: [
     null,
@@ -3198,7 +3199,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Biomuguet: [
     null,
@@ -3223,7 +3224,7 @@ const RAW_DB = {
     "Floral synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Haiti SFE": [
     null,
@@ -3248,7 +3249,7 @@ const RAW_DB = {
     "Woody co2 by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Periploca Root Oil 10% TEC": [
     null,
@@ -3273,7 +3274,7 @@ const RAW_DB = {
     "Aromatic eo by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Pepper Absolute": [
     null,
@@ -3298,7 +3299,7 @@ const RAW_DB = {
     "Spicy abs by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Microcare PEHG": [
     null,
@@ -3323,7 +3324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Oud Wood": [
     null,
@@ -3348,7 +3349,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bran Absolute": [
     null,
@@ -3373,7 +3374,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coffee Espresso SFE": [
     null,
@@ -3398,7 +3399,7 @@ const RAW_DB = {
     "Fruity co2 by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamon “Gold” Absolute": [
     null,
@@ -3423,7 +3424,7 @@ const RAW_DB = {
     "Spicy abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grapefruit Heart": [
     null,
@@ -3448,7 +3449,7 @@ const RAW_DB = {
     "Citrus synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lime Heart": [
     null,
@@ -3473,7 +3474,7 @@ const RAW_DB = {
     "Citrus synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Heart": [
     null,
@@ -3498,7 +3499,7 @@ const RAW_DB = {
     "Citrus synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Heart": [
     null,
@@ -3523,7 +3524,7 @@ const RAW_DB = {
     "Citrus synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grapefruit Oil, Pink": [
     null,
@@ -3548,7 +3549,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot Oil FCF, Côte d'Ivoire": [
     null,
@@ -3573,7 +3574,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot Oil FCF, Organic": [
     null,
@@ -3598,7 +3599,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rosewood Oil": [
     null,
@@ -3623,7 +3624,7 @@ const RAW_DB = {
     "Woody eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Myristate": [
     null,
@@ -3648,7 +3649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ultravanil: [
     null,
@@ -3673,7 +3674,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rosyrane Super": [
     null,
@@ -3698,7 +3699,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedrenyl Acetate": [
     null,
@@ -3723,7 +3724,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tabanon: [
     null,
@@ -3748,7 +3749,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Violettyne MIP": [
     null,
@@ -3773,7 +3774,7 @@ const RAW_DB = {
     "Floral synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Grisalva: [
     null,
@@ -3798,7 +3799,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Kohinool®": [
     null,
@@ -3823,7 +3824,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Pinoacetaldehyde: [
     null,
@@ -3848,7 +3849,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Insensé": [
     null,
@@ -3873,7 +3874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclemax™": [
     null,
@@ -3898,7 +3899,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Verdone: [
     null,
@@ -3923,7 +3924,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Verdol: [
     null,
@@ -3948,7 +3949,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Furaneol": [
     null,
@@ -3973,7 +3974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Lemonile: [
     null,
@@ -3998,7 +3999,7 @@ const RAW_DB = {
     "Citrus synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydromyrcenyl Acetate": [
     null,
@@ -4023,7 +4024,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cornmint Oil": [
     null,
@@ -4048,7 +4049,7 @@ const RAW_DB = {
     "Herbal eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cognac Oil, White": [
     null,
@@ -4073,7 +4074,7 @@ const RAW_DB = {
     "Fruity eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cognac Oil, Green": [
     null,
@@ -4098,7 +4099,7 @@ const RAW_DB = {
     "Green eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzoin Oliffac": [
     null,
@@ -4123,7 +4124,7 @@ const RAW_DB = {
     "Amber synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tonquitone: [
     null,
@@ -4148,7 +4149,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Attar Base N.27": [
     null,
@@ -4173,7 +4174,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fir Balsam Oliffac": [
     null,
@@ -4198,7 +4199,7 @@ const RAW_DB = {
     "Woody synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grenoble Pyrazine": [
     null,
@@ -4223,7 +4224,7 @@ const RAW_DB = {
     "Leather synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Attar Base N.18": [
     null,
@@ -4248,7 +4249,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sesame SFE Absolute": [
     null,
@@ -4273,7 +4274,7 @@ const RAW_DB = {
     "Aromatic abs by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bois de Cendres": [
     null,
@@ -4298,7 +4299,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Deluxe Attar Bottle": [
     null,
@@ -4323,7 +4324,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Raspberry Glycidate": [
     null,
@@ -4348,7 +4349,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Cool": [
     null,
@@ -4373,7 +4374,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Castoreum Synth 184004D": [
     null,
@@ -4398,7 +4399,7 @@ const RAW_DB = {
     "Leather synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Malacca": [
     null,
@@ -4423,7 +4424,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2-Hexenol": [
     null,
@@ -4448,7 +4449,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Berryflor: [
     null,
@@ -4473,7 +4474,7 @@ const RAW_DB = {
     "Fruity synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Mesifuran: [
     null,
@@ -4498,7 +4499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanillin Acetate": [
     null,
@@ -4523,7 +4524,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Trifernal: [
     null,
@@ -4548,7 +4549,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Aurelione: [
     null,
@@ -4573,7 +4574,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grape Butyrate": [
     null,
@@ -4598,7 +4599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Firascone: [
     null,
@@ -4623,7 +4624,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Doremox: [
     null,
@@ -4648,7 +4649,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cyclozonal: [
     null,
@@ -4673,7 +4674,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Delphol HC": [
     null,
@@ -4698,7 +4699,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Delphone: [
     null,
@@ -4723,7 +4724,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclomethylene Citronellol": [
     null,
@@ -4748,7 +4749,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Centifolether: [
     null,
@@ -4773,7 +4774,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alpha Angelica Lactone": [
     null,
@@ -4798,7 +4799,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Undecylenate": [
     null,
@@ -4823,7 +4824,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Acetyl Methyl Anthranilate": [
     null,
@@ -4848,7 +4849,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Frangipani Absolute": [
     null,
@@ -4873,7 +4874,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Allyl Anthranilate": [
     null,
@@ -4898,7 +4899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Myroxide: [
     null,
@@ -4923,7 +4924,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Levistamel 25% TEC": [
     null,
@@ -4948,7 +4949,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-11 MOA": [
     null,
@@ -4957,7 +4958,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.05,
     null,
     "top",
     "SYNTH",
@@ -4973,7 +4974,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nutty Furan": [
     null,
@@ -4998,7 +4999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclohexyl Ethyl Alcohol": [
     null,
@@ -5023,7 +5024,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "2-Isopropyl Phenol": [
     null,
@@ -5048,7 +5049,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Armenian Wood Base": [
     null,
@@ -5073,7 +5074,7 @@ const RAW_DB = {
     "Woody base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Boronal: [
     null,
@@ -5098,7 +5099,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tonka Bean CO2 Abs": [
     null,
@@ -5123,7 +5124,7 @@ const RAW_DB = {
     "Amber abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Verbena Absolute": [
     null,
@@ -5148,7 +5149,7 @@ const RAW_DB = {
     "Citrus abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tagetes Oil": [
     null,
@@ -5173,7 +5174,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pine Oil, Cembra": [
     null,
@@ -5198,7 +5199,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pine Needle Oil, Sylvestris": [
     null,
@@ -5223,7 +5224,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyssop Oil": [
     null,
@@ -5248,7 +5249,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Eucalyptus Oil, Globulus": [
     null,
@@ -5273,7 +5274,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bay Oil, Dominica": [
     null,
@@ -5298,7 +5299,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Angelica Seed Oil": [
     null,
@@ -5323,7 +5324,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Angelica Root Oil": [
     null,
@@ -5348,7 +5349,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Squalane: [
     null,
@@ -5373,7 +5374,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "PEG 60 HCO": [
     null,
@@ -5398,7 +5399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cycloverdyl Propionate": [
     null,
@@ -5423,7 +5424,7 @@ const RAW_DB = {
     "Spicy synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-4-Decenal": [
     null,
@@ -5448,7 +5449,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bourgeonal®": [
     null,
@@ -5473,7 +5474,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmophore® 184195": [
     null,
@@ -5498,7 +5499,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-10": [
     null,
@@ -5523,7 +5524,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Isobutyrate": [
     null,
@@ -5548,7 +5549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isobornyl Acetate": [
     null,
@@ -5573,7 +5574,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Cresyl Methyl Ether": [
     null,
@@ -5598,7 +5599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iralia® Total": [
     null,
@@ -5623,7 +5624,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Octinoxate: [
     null,
@@ -5648,7 +5649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Avobenzone: [
     null,
@@ -5673,7 +5674,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "2-Ethylhexyl Salicylate": [
     null,
@@ -5698,7 +5699,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Palmarosa Oil": [
     null,
@@ -5723,7 +5724,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Beta Pinene": [
     null,
@@ -5748,7 +5749,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alpha Pinene": [
     null,
@@ -5773,7 +5774,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Camphor Crystals": [
     null,
@@ -5798,7 +5799,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Apritone: [
     null,
@@ -5823,7 +5824,7 @@ const RAW_DB = {
     "Aromatic synth by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Prenyl Acetate": [
     null,
@@ -5848,7 +5849,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Caproate": [
     null,
@@ -5873,7 +5874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-12 Lauric": [
     null,
@@ -5898,7 +5899,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmonyl®": [
     null,
@@ -5923,7 +5924,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguissimo™": [
     null,
@@ -5948,7 +5949,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Castoreum Firbest®": [
     null,
@@ -5973,7 +5974,7 @@ const RAW_DB = {
     "Leather synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranyl Butyrate": [
     null,
@@ -5998,7 +5999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rhodinyl Formate": [
     null,
@@ -6023,7 +6024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Silvanone® Supra": [
     null,
@@ -6048,7 +6049,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Syringa Aldehyde": [
     null,
@@ -6073,7 +6074,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Palmitate": [
     null,
@@ -6098,7 +6099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Neomagnolan: [
     null,
@@ -6123,7 +6124,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender Oil, English": [
     null,
@@ -6148,7 +6149,7 @@ const RAW_DB = {
     "Floral eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Acetate C-9": [
     null,
@@ -6173,7 +6174,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Butyrate": [
     null,
@@ -6198,7 +6199,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Delta Decalactone": [
     null,
@@ -6223,7 +6224,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Myristate": [
     null,
@@ -6248,7 +6249,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Cinnamate": [
     null,
@@ -6273,7 +6274,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Cinnamate": [
     null,
@@ -6298,7 +6299,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Formate": [
     null,
@@ -6323,7 +6324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sabinene, Natural": [
     null,
@@ -6348,7 +6349,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Damascenone Total": [
     null,
@@ -6373,7 +6374,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedryl Acetate, Liquid": [
     null,
@@ -6398,7 +6399,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Terpinolene, Rectified": [
     null,
@@ -6423,7 +6424,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-11 Undecylenic": [
     null,
@@ -6448,7 +6449,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Propionate": [
     null,
@@ -6473,7 +6474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isobutyl Salicylate": [
     null,
@@ -6498,7 +6499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Isobutyrate": [
     null,
@@ -6523,7 +6524,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Formate": [
     null,
@@ -6548,7 +6549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyl Phenyl Acetate": [
     null,
@@ -6573,7 +6574,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-9": [
     null,
@@ -6598,7 +6599,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Zenolide: [
     null,
@@ -6623,7 +6624,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Propyl Alcohol": [
     null,
@@ -6648,7 +6649,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyl Cinnamic Aldehyde": [
     null,
@@ -6673,7 +6674,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Caryophyllene Beta": [
     null,
@@ -6698,7 +6699,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Opoponax Oil": [
     null,
@@ -6723,7 +6724,7 @@ const RAW_DB = {
     "Amber eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedarwood Oil Rect, Texas": [
     null,
@@ -6748,7 +6749,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Eucalyptus Oil, Citriodora": [
     null,
@@ -6773,7 +6774,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Raspberry Leaf Absolute": [
     null,
@@ -6798,7 +6799,7 @@ const RAW_DB = {
     "Fruity abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Alcohol ex Rose": [
     null,
@@ -6823,7 +6824,7 @@ const RAW_DB = {
     "Aromatic isolate by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Floramat: [
     null,
@@ -6848,7 +6849,7 @@ const RAW_DB = {
     "Aromatic synth by Kao",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tetrahydrolinalool: [
     null,
@@ -6873,7 +6874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Furfural: [
     null,
@@ -6898,7 +6899,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Nectarate: [
     null,
@@ -6923,7 +6924,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Furfuryl Acetate": [
     null,
@@ -6948,7 +6949,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydrorose Oxide": [
     null,
@@ -6973,7 +6974,7 @@ const RAW_DB = {
     "Floral isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydroterpinyl Acetate": [
     null,
@@ -6998,7 +6999,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Citronellyl Acetate": [
     null,
@@ -7023,7 +7024,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambermax® 50": [
     null,
@@ -7048,7 +7049,7 @@ const RAW_DB = {
     "Amber synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Acetoin: [
     null,
@@ -7073,7 +7074,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cypriol Heart “Superior” Rect.": [
     null,
@@ -7098,7 +7099,7 @@ const RAW_DB = {
     "Aromatic synth by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Allyl Heptanoate": [
     null,
@@ -7123,7 +7124,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Oil, Australia": [
     null,
@@ -7148,7 +7149,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Nectaryl: [
     null,
@@ -7173,7 +7174,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Heptenone": [
     null,
@@ -7198,7 +7199,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "D-Limonene": [
     null,
@@ -7223,7 +7224,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Roasted Barley Extract 40% ETH": [
     null,
@@ -7248,7 +7249,7 @@ const RAW_DB = {
     "Aromatic synth by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nopyl Acetate": [
     null,
@@ -7273,7 +7274,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oxane 50 TEC": [
     null,
@@ -7298,7 +7299,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Karanal: [
     null,
@@ -7323,7 +7324,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-11 Intreleven": [
     null,
@@ -7332,7 +7333,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.05,
     null,
     "top",
     "SYNTH",
@@ -7348,7 +7349,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Aldambre: [
     null,
@@ -7373,7 +7374,7 @@ const RAW_DB = {
     "Aromatic synth by Synarome",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isojasmone B-11": [
     null,
@@ -7398,7 +7399,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Metal Oxazole": [
     null,
@@ -7423,7 +7424,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thesaron®": [
     null,
@@ -7448,7 +7449,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Diacetyl: [
     null,
@@ -7473,7 +7474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Allyl Hexanoate": [
     null,
@@ -7498,7 +7499,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anethole ex Star Anise": [
     null,
@@ -7523,7 +7524,7 @@ const RAW_DB = {
     "Spicy synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cinnamaldehyde: [
     null,
@@ -7548,7 +7549,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Cresyl Acetate": [
     null,
@@ -7573,7 +7574,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nerolin, Bromelia": [
     null,
@@ -7598,7 +7599,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Eucalyptol: [
     null,
@@ -7623,7 +7624,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ocimene: [
     null,
@@ -7648,7 +7649,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Phenyl Acetate": [
     null,
@@ -7673,7 +7674,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Isobutyrate": [
     null,
@@ -7698,7 +7699,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thymol Crystals": [
     null,
@@ -7723,7 +7724,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anisyl Acetate": [
     null,
@@ -7748,7 +7749,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carbinol Muguet": [
     null,
@@ -7773,7 +7774,7 @@ const RAW_DB = {
     "Floral synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Peomosa: [
     null,
@@ -7798,7 +7799,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Diethyl Malonate": [
     null,
@@ -7823,7 +7824,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Matsutake Alcohol": [
     null,
@@ -7848,7 +7849,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Praslin Pyrazine": [
     null,
@@ -7873,7 +7874,7 @@ const RAW_DB = {
     "Leather synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Torref Pyrazine": [
     null,
@@ -7898,7 +7899,7 @@ const RAW_DB = {
     "Leather synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Honey Provence Firabs": [
     null,
@@ -7923,7 +7924,7 @@ const RAW_DB = {
     "Fruity synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine DEC Abs MD, India": [
     null,
@@ -7948,7 +7949,7 @@ const RAW_DB = {
     "Floral synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Mefranal: [
     null,
@@ -7973,7 +7974,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambra Velvet": [
     null,
@@ -7998,7 +7999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dynascone: [
     null,
@@ -8023,7 +8024,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-10": [
     null,
@@ -8048,7 +8049,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Rhumacetal: [
     null,
@@ -8073,7 +8074,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dewfruit: [
     null,
@@ -8098,7 +8099,7 @@ const RAW_DB = {
     "Fruity synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Chocovan: [
     null,
@@ -8123,7 +8124,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Acetyl Propionyl": [
     null,
@@ -8148,7 +8149,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Biocyclamol: [
     null,
@@ -8173,7 +8174,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Farnesol: [
     null,
@@ -8198,7 +8199,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Butyrate": [
     null,
@@ -8223,7 +8224,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Isobutyrate": [
     null,
@@ -8248,7 +8249,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Butylated Hydroxytoluene (BHT)": [
     null,
@@ -8273,7 +8274,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Benzoate": [
     null,
@@ -8298,7 +8299,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Formate": [
     null,
@@ -8323,7 +8324,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Terpenes": [
     null,
@@ -8348,7 +8349,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Troenan: [
     null,
@@ -8373,7 +8374,7 @@ const RAW_DB = {
     "Aromatic synth by Kao",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Tiglate": [
     null,
@@ -8398,7 +8399,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Acetoacetate": [
     null,
@@ -8423,7 +8424,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Isobutyrate": [
     null,
@@ -8448,7 +8449,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Isoeugenol": [
     null,
@@ -8473,7 +8474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl 2-Methyl Butyrate": [
     null,
@@ -8498,7 +8499,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Caryophyllene Oxide": [
     null,
@@ -8523,7 +8524,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Armenie": [
     null,
@@ -8548,7 +8549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Tobacco Vanille": [
     null,
@@ -8573,7 +8574,7 @@ const RAW_DB = {
     "Leather synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Outlands": [
     null,
@@ -8598,7 +8599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Oceanol: [
     null,
@@ -8623,7 +8624,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Petalux: [
     null,
@@ -8648,7 +8649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oxide": [
     null,
@@ -8673,7 +8674,7 @@ const RAW_DB = {
     "Floral isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isopropyl Quinoline": [
     null,
@@ -8698,7 +8699,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Indole: [
     null,
@@ -8723,7 +8724,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Musk Xylene": [
     null,
@@ -8748,7 +8749,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Indolarome: [
     null,
@@ -8773,7 +8774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Methyl Acetophenone": [
     null,
@@ -8798,7 +8799,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Lactojasmone: [
     null,
@@ -8823,7 +8824,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2-Nonenal": [
     null,
@@ -8848,7 +8849,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2-Decenal": [
     null,
@@ -8873,7 +8874,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isobutyl Phenyl Acetate": [
     null,
@@ -8898,7 +8899,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Afternoon": [
     null,
@@ -8923,7 +8924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ysamber® K": [
     null,
@@ -8948,7 +8949,7 @@ const RAW_DB = {
     "Amber synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Hydroquinone": [
     null,
@@ -8973,7 +8974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Acetate": [
     null,
@@ -8998,7 +8999,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydrolinalool: [
     null,
@@ -9023,7 +9024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Linalyl Acetate": [
     null,
@@ -9048,7 +9049,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Aldemone: [
     null,
@@ -9073,7 +9074,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Green “Enfleurage” CO2": [
     null,
@@ -9098,7 +9099,7 @@ const RAW_DB = {
     "Floral co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Sambac “Enfleurage” CO2": [
     null,
@@ -9123,7 +9124,7 @@ const RAW_DB = {
     "Floral co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Grand “Enfleurage” CO2": [
     null,
@@ -9148,7 +9149,7 @@ const RAW_DB = {
     "Floral co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Imperial": [
     null,
@@ -9173,7 +9174,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "White Paris Mushroom Extract": [
     null,
@@ -9198,7 +9199,7 @@ const RAW_DB = {
     "Aromatic synth by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cocoa Hexenal": [
     null,
@@ -9223,7 +9224,7 @@ const RAW_DB = {
     "Fruity isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Syvertal: [
     null,
@@ -9248,7 +9249,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Maritima: [
     null,
@@ -9273,7 +9274,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Strawberry Furanone": [
     null,
@@ -9298,7 +9299,7 @@ const RAW_DB = {
     "Fruity synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Althair": [
     null,
@@ -9323,7 +9324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Portrait": [
     null,
@@ -9348,7 +9349,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Pallida Butter": [
     null,
@@ -9373,7 +9374,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound 33": [
     null,
@@ -9398,7 +9399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Benzophenone: [
     null,
@@ -9423,7 +9424,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Tuberate": [
     null,
@@ -9448,7 +9449,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ebanol: [
     null,
@@ -9473,7 +9474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carvacryl Methyl Ether": [
     null,
@@ -9498,7 +9499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Silvial®": [
     null,
@@ -9523,7 +9524,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Male": [
     null,
@@ -9548,7 +9549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Imagination": [
     null,
@@ -9573,7 +9574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isopropyl Myristate (IPM)": [
     null,
@@ -9598,7 +9599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Feminité": [
     null,
@@ -9623,7 +9624,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   'Ginger "Top Note" CO2, P. Jungle Essence': [
     null,
@@ -9648,7 +9649,7 @@ const RAW_DB = {
     "Spicy co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pistachio Thiazole": [
     null,
@@ -9673,7 +9674,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Musk R1": [
     null,
@@ -9698,7 +9699,7 @@ const RAW_DB = {
     "Musk synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Datura": [
     null,
@@ -9723,7 +9724,7 @@ const RAW_DB = {
     "Aromatic synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Chloroxylenol: [
     null,
@@ -9748,7 +9749,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl 2-Methyl Butyrate": [
     null,
@@ -9773,7 +9774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Acetate": [
     null,
@@ -9798,7 +9799,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Tiglate": [
     null,
@@ -9823,7 +9824,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoamyl Benzoate": [
     null,
@@ -9848,7 +9849,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Isovalerate": [
     null,
@@ -9873,7 +9874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ginger Oil Fresh, Madagascar": [
     null,
@@ -9898,7 +9899,7 @@ const RAW_DB = {
     "Spicy eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-7": [
     null,
@@ -9923,7 +9924,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Alcohol C-6": [
     null,
@@ -9948,7 +9949,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Isovalerate": [
     null,
@@ -9973,7 +9974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Butyrate": [
     null,
@@ -9998,7 +9999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Cis-3-Hexanoate": [
     null,
@@ -10023,7 +10024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Propionate": [
     null,
@@ -10048,7 +10049,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fenugreek “Signature” Absolute": [
     null,
@@ -10073,7 +10074,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Laevo Menthol": [
     null,
@@ -10098,7 +10099,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-12 Lauric": [
     null,
@@ -10123,7 +10124,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bacdanol®": [
     null,
@@ -10148,7 +10149,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tobacco Absolute MD": [
     null,
@@ -10173,7 +10174,7 @@ const RAW_DB = {
     "Leather abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cocoa Absolute 5% IPM": [
     null,
@@ -10198,7 +10199,7 @@ const RAW_DB = {
     "Fruity abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender Oil, Balkans": [
     null,
@@ -10223,7 +10224,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Irival Oliffac": [
     null,
@@ -10248,15 +10249,15 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   AmberXtreme: [
-    null,
-    4.72,
+    264.452,
+    7.1,
     null,
     0,
     0,
-    null,
+    0.005516,
     null,
     null,
     "base",
@@ -10273,7 +10274,7 @@ const RAW_DB = {
     "Amber synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Menthone: [
     null,
@@ -10298,7 +10299,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Terpinyl Acetate": [
     null,
@@ -10323,7 +10324,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleuramone™": [
     null,
@@ -10348,7 +10349,7 @@ const RAW_DB = {
     "Floral synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Propionate": [
     null,
@@ -10373,7 +10374,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Myrcene: [
     null,
@@ -10398,7 +10399,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tropicalia™": [
     null,
@@ -10423,7 +10424,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Delta Nonalactone": [
     null,
@@ -10448,7 +10449,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ketoisophorone: [
     null,
@@ -10473,7 +10474,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hydratropic Aldehyde": [
     null,
@@ -10498,7 +10499,7 @@ const RAW_DB = {
     "Aromatic isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cetalox®": [
     null,
@@ -10523,7 +10524,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dark Ginger CO2, P. Jungle Essence": [
     null,
@@ -10548,7 +10549,7 @@ const RAW_DB = {
     "Spicy co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Muscone: [
     null,
@@ -10573,7 +10574,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sclareolate®": [
     null,
@@ -10598,7 +10599,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender Diva Oil": [
     null,
@@ -10623,7 +10624,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Tiglate": [
     null,
@@ -10648,7 +10649,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Night Queen": [
     null,
@@ -10673,7 +10674,7 @@ const RAW_DB = {
     "Aromatic synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Citronellal: [
     null,
@@ -10698,7 +10699,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Fructone: [
     null,
@@ -10723,7 +10724,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamoxal™": [
     null,
@@ -10748,7 +10749,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cuminaldehyde: [
     null,
@@ -10773,7 +10774,7 @@ const RAW_DB = {
     "Spicy isolate by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pastry Carbaldehyde": [
     null,
@@ -10798,7 +10799,7 @@ const RAW_DB = {
     "Aromatic isolate by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Linoleate": [
     null,
@@ -10823,7 +10824,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Isocyclocitral: [
     null,
@@ -10848,7 +10849,7 @@ const RAW_DB = {
     "Citrus synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Narcisse Base 184092D": [
     null,
@@ -10873,7 +10874,7 @@ const RAW_DB = {
     "Aromatic base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Koavone®": [
     null,
@@ -10898,7 +10899,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Peonile: [
     null,
@@ -10923,7 +10924,7 @@ const RAW_DB = {
     "Aromatic synth by Tadimety",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ivy Dioxolane": [
     null,
@@ -10948,7 +10949,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Lilial: [
     null,
@@ -10973,7 +10974,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linden Blossom Absolute": [
     null,
@@ -10998,7 +10999,7 @@ const RAW_DB = {
     "Floral abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Liatrix TruAbs®": [
     null,
@@ -11023,7 +11024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyacinth Body No. 3": [
     null,
@@ -11048,7 +11049,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Tolyl Aldehyde": [
     null,
@@ -11073,7 +11074,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Pivalate": [
     null,
@@ -11098,7 +11099,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydrocarveol: [
     null,
@@ -11123,7 +11124,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Almond Pyrazine": [
     null,
@@ -11148,7 +11149,7 @@ const RAW_DB = {
     "Leather synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Asparagus Twigs Absolute": [
     null,
@@ -11173,7 +11174,7 @@ const RAW_DB = {
     "Aromatic abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mushroom Abs, Deco": [
     null,
@@ -11198,7 +11199,7 @@ const RAW_DB = {
     "Aromatic synth by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Clover Absolute": [
     null,
@@ -11223,7 +11224,7 @@ const RAW_DB = {
     "Spicy abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood By-Absolute": [
     null,
@@ -11248,7 +11249,7 @@ const RAW_DB = {
     "Woody abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyraceum “Signature” Absolute": [
     null,
@@ -11273,7 +11274,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Isobutyrate": [
     null,
@@ -11298,7 +11299,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedrol Crystals": [
     null,
@@ -11323,7 +11324,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Citronellyl Formate": [
     null,
@@ -11348,7 +11349,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranyl Formate": [
     null,
@@ -11373,7 +11374,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Romandolide®": [
     null,
@@ -11398,7 +11399,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranyl Propionate": [
     null,
@@ -11423,7 +11424,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Phenylacetate": [
     null,
@@ -11448,7 +11449,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Delta Dodecalactone": [
     null,
@@ -11473,7 +11474,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Dodecalactone": [
     null,
@@ -11498,7 +11499,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Nerolidol: [
     null,
@@ -11523,7 +11524,7 @@ const RAW_DB = {
     "Floral synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tolu Absolute Replacer 50%": [
     null,
@@ -11548,7 +11549,7 @@ const RAW_DB = {
     "Aromatic abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoamyl Acetate": [
     null,
@@ -11573,7 +11574,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Acetaldehyde 50% PEA": [
     null,
@@ -11598,7 +11599,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Propionate": [
     null,
@@ -11623,7 +11624,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anisyl Acetone": [
     null,
@@ -11648,7 +11649,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fir Oil, Canada": [
     null,
@@ -11673,7 +11674,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galbanum Resinoid": [
     null,
@@ -11698,7 +11699,7 @@ const RAW_DB = {
     "Amber abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sage Officinalis Oil": [
     null,
@@ -11723,7 +11724,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalool Laevo ex Ho Wood": [
     null,
@@ -11748,7 +11749,7 @@ const RAW_DB = {
     "Woody synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Peru Balsam Essential Oil": [
     null,
@@ -11773,7 +11774,7 @@ const RAW_DB = {
     "Amber eo by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Isophytol: [
     null,
@@ -11798,7 +11799,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Flower Ether": [
     null,
@@ -11823,7 +11824,7 @@ const RAW_DB = {
     "Floral synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Bisabolene: [
     null,
@@ -11848,7 +11849,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tetrahydrogeraniol: [
     null,
@@ -11873,7 +11874,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Carvacrol: [
     null,
@@ -11898,7 +11899,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anisyl Alcohol": [
     null,
@@ -11923,7 +11924,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranyl Acetone": [
     null,
@@ -11948,7 +11949,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amboryl Acetate": [
     null,
@@ -11973,7 +11974,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hexyl Salicylate": [
     null,
@@ -11998,7 +11999,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Butyrate": [
     null,
@@ -12023,7 +12024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Traseolide: [
     null,
@@ -12048,7 +12049,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Wild Marjoram Oil": [
     null,
@@ -12073,7 +12074,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Creosol: [
     null,
@@ -12098,7 +12099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Zingerone: [
     null,
@@ -12123,7 +12124,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Veloutone: [
     null,
@@ -12148,7 +12149,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Onestolide®": [
     null,
@@ -12173,7 +12174,7 @@ const RAW_DB = {
     "Aromatic synth by Synarome",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Opoponax Doux, Natural": [
     null,
@@ -12198,7 +12199,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Timberide®": [
     null,
@@ -12223,7 +12224,7 @@ const RAW_DB = {
     "Woody synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mandarinal® SAEF": [
     null,
@@ -12248,7 +12249,7 @@ const RAW_DB = {
     "Citrus synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fruit Sec": [
     null,
@@ -12273,7 +12274,7 @@ const RAW_DB = {
     "Fruity synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Citroasis: [
     null,
@@ -12298,7 +12299,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Leather Oud": [
     null,
@@ -12323,7 +12324,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tolu Balsam Absolute 50% TEC": [
     null,
@@ -12348,7 +12349,7 @@ const RAW_DB = {
     "Amber abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dorinia SA E": [
     null,
@@ -12373,7 +12374,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Romascone: [
     null,
@@ -12398,7 +12399,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iris Nitrile": [
     null,
@@ -12423,7 +12424,7 @@ const RAW_DB = {
     "Floral synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Blackcurrant Mercaptan": [
     null,
@@ -12448,7 +12449,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2,Cis-6-Nonadienol": [
     null,
@@ -12473,7 +12474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cyclopidene: [
     null,
@@ -12498,7 +12499,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Absolute, Select": [
     null,
@@ -12523,7 +12524,7 @@ const RAW_DB = {
     "Floral abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Magnolia Leaf Oil": [
     null,
@@ -12548,7 +12549,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Blackcurrant Bud Absolute": [
     null,
@@ -12573,7 +12574,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fennel Seed Oil": [
     null,
@@ -12598,7 +12599,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hay “Super Premium” Absolute": [
     null,
@@ -12623,7 +12624,7 @@ const RAW_DB = {
     "Green abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amber Flux": [
     null,
@@ -12648,7 +12649,7 @@ const RAW_DB = {
     "Amber synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amber Crave": [
     null,
@@ -12673,7 +12674,7 @@ const RAW_DB = {
     "Amber synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amber Genesis": [
     null,
@@ -12698,7 +12699,7 @@ const RAW_DB = {
     "Amber synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambertonic™": [
     null,
@@ -12723,7 +12724,7 @@ const RAW_DB = {
     "Amber synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Absolute, Select": [
     null,
@@ -12748,7 +12749,7 @@ const RAW_DB = {
     "Floral abs by Fraterworks® Value",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oil, Select": [
     null,
@@ -12773,7 +12774,7 @@ const RAW_DB = {
     "Floral eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Laurel Noble Oil": [
     null,
@@ -12798,7 +12799,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Red Thyme Oil": [
     null,
@@ -12823,7 +12824,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Elemi Oil": [
     null,
@@ -12848,7 +12849,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oxynex® ST": [
     null,
@@ -12873,7 +12874,7 @@ const RAW_DB = {
     "Aromatic synth by Tadimety",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Edenolide: [
     null,
@@ -12898,7 +12899,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Alcohol, Natural": [
     null,
@@ -12923,7 +12924,7 @@ const RAW_DB = {
     "Aromatic isolate by Novorate Biotech",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Red Champaca TruAbs®": [
     null,
@@ -12948,7 +12949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Saffron Hamra Attar Type Formula": [
     null,
@@ -12973,7 +12974,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Blue Cypress Oil": [
     null,
@@ -12998,7 +12999,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Z11™ HD 8.5 MIP": [
     null,
@@ -13023,7 +13024,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Majantol®": [
     null,
@@ -13048,7 +13049,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Diphenyl Oxide": [
     null,
@@ -13073,7 +13074,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Oil, Java": [
     null,
@@ -13098,7 +13099,7 @@ const RAW_DB = {
     "Woody eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Woodol®": [
     null,
@@ -13123,7 +13124,7 @@ const RAW_DB = {
     "Woody synth by Tadimety",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neo Patchouli": [
     null,
@@ -13148,7 +13149,7 @@ const RAW_DB = {
     "Woody synth by Tadimety",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Citral: [
     null,
@@ -13173,7 +13174,7 @@ const RAW_DB = {
     "Citrus synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Heptalactone": [
     null,
@@ -13198,7 +13199,7 @@ const RAW_DB = {
     "Aromatic isolate by Vidara",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Cinnamate": [
     null,
@@ -13223,7 +13224,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Boisambrene Forte": [
     null,
@@ -13248,7 +13249,7 @@ const RAW_DB = {
     "Woody synth by Kao",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Herbac®": [
     null,
@@ -13273,7 +13274,7 @@ const RAW_DB = {
     "Herbal synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orivone®": [
     null,
@@ -13298,7 +13299,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nootkatone Crystals": [
     null,
@@ -13323,7 +13324,7 @@ const RAW_DB = {
     "Aromatic isolate by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Star Anise Oil": [
     null,
@@ -13348,7 +13349,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cypress Oil": [
     null,
@@ -13373,7 +13374,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tocopherol (Vitamin E)": [
     null,
@@ -13398,7 +13399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoamyl Salicylate": [
     null,
@@ -13423,7 +13424,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lilyflore®": [
     null,
@@ -13448,7 +13449,7 @@ const RAW_DB = {
     "Floral synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Alcohol": [
     null,
@@ -13473,7 +13474,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Acetanisole Crystals": [
     null,
@@ -13498,7 +13499,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Levulinate": [
     null,
@@ -13523,7 +13524,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Canthoxalia: [
     null,
@@ -13548,7 +13549,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orcinyl 3": [
     null,
@@ -13573,7 +13574,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalyl Cinnamate": [
     null,
@@ -13598,7 +13599,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anisic Aldehyde": [
     null,
@@ -13623,7 +13624,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sulfurol (Milky)": [
     null,
@@ -13648,7 +13649,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Madranol: [
     null,
@@ -13673,7 +13674,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lotus Storm": [
     null,
@@ -13698,7 +13699,7 @@ const RAW_DB = {
     "Aromatic synth by Duchaufour x Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olibanum CO2": [
     null,
@@ -13723,7 +13724,7 @@ const RAW_DB = {
     "Amber co2 by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cardamom CO2": [
     null,
@@ -13748,7 +13749,7 @@ const RAW_DB = {
     "Spicy co2 by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Corylone": [
     null,
@@ -13773,7 +13774,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jessemal®": [
     null,
@@ -13798,7 +13799,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cervolide®": [
     null,
@@ -13823,7 +13824,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Civettone: [
     null,
@@ -13848,7 +13849,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jabir Type Formula": [
     null,
@@ -13873,7 +13874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranium Oil, Egypt": [
     null,
@@ -13898,7 +13899,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Benzoate": [
     null,
@@ -13923,7 +13924,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrinol 95": [
     null,
@@ -13948,7 +13949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Heart SFE": [
     null,
@@ -13973,7 +13974,7 @@ const RAW_DB = {
     "Woody co2 by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Tetrarome®": [
     null,
@@ -13998,7 +13999,7 @@ const RAW_DB = {
     "Citrus synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzoin Sumatra Resinoid 50% TEC": [
     null,
@@ -14023,7 +14024,7 @@ const RAW_DB = {
     "Amber abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Salicylate": [
     null,
@@ -14048,7 +14049,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Benzoate": [
     null,
@@ -14073,7 +14074,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neryl Acetate": [
     null,
@@ -14098,7 +14099,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "TCD Alcohol DM": [
     null,
@@ -14123,7 +14124,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Saffron Oleoresin 5% PG": [
     null,
@@ -14148,7 +14149,7 @@ const RAW_DB = {
     "Amber abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Maple Lactone": [
     null,
@@ -14173,7 +14174,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Benzyl Carbinol": [
     null,
@@ -14198,7 +14199,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Benzyl Carbinyl Acetate": [
     null,
@@ -14223,7 +14224,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Benzyl Carbinyl Butyrate": [
     null,
@@ -14248,7 +14249,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Maltol Isobutyrate": [
     null,
@@ -14273,7 +14274,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Oscar": [
     null,
@@ -14298,7 +14299,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mandarin Oil, Red": [
     null,
@@ -14323,7 +14324,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mandarin Oil, Yellow": [
     null,
@@ -14348,7 +14349,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olive Fruit Absolute": [
     null,
@@ -14373,7 +14374,7 @@ const RAW_DB = {
     "Fruity abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ambranum: [
     null,
@@ -14398,7 +14399,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cistus Green Absolute": [
     null,
@@ -14423,7 +14424,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Firbest®": [
     null,
@@ -14448,7 +14449,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Laos Firbest®": [
     null,
@@ -14473,7 +14474,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyacinth Storm": [
     null,
@@ -14498,7 +14499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tonka Bean “Luxe” Absolute": [
     null,
@@ -14523,7 +14524,7 @@ const RAW_DB = {
     "Amber abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Assafi®": [
     null,
@@ -14548,7 +14549,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Exaltenone: [
     null,
@@ -14573,7 +14574,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carnation “Signature” Absolute": [
     null,
@@ -14598,7 +14599,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jonquille Absolute, France": [
     null,
@@ -14623,7 +14624,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Flower Absolute, Egypt": [
     null,
@@ -14648,7 +14649,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pretty Oud": [
     null,
@@ -14673,7 +14674,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neroli Oil, Morocco": [
     null,
@@ -14698,7 +14699,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hinoki Wood Oil": [
     null,
@@ -14723,7 +14724,7 @@ const RAW_DB = {
     "Woody eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tubereuse 184108": [
     null,
@@ -14748,7 +14749,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oil, Isparta": [
     null,
@@ -14773,7 +14774,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Oil, New Caledonia": [
     null,
@@ -14798,7 +14799,7 @@ const RAW_DB = {
     "Woody eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine “Signature” Absolute, India": [
     null,
@@ -14823,7 +14824,7 @@ const RAW_DB = {
     "Floral abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Firsantol®": [
     null,
@@ -14848,7 +14849,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Exaltone® Crystals": [
     null,
@@ -14873,7 +14874,7 @@ const RAW_DB = {
     "Musk isolate by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Javanol®": [
     null,
@@ -14898,7 +14899,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Deluxe Sample Spray Bottles, 2ml": [
     null,
@@ -14923,7 +14924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fig Signature": [
     null,
@@ -14948,7 +14949,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fumencens HTC": [
     null,
@@ -14973,7 +14974,7 @@ const RAW_DB = {
     "Aromatic synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Absolute, Morocco": [
     null,
@@ -14998,7 +14999,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Oudhbois: [
     null,
@@ -15023,7 +15024,7 @@ const RAW_DB = {
     "Woody synth by Tadimety",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldron®": [
     null,
@@ -15048,7 +15049,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenoxanol®": [
     null,
@@ -15073,7 +15074,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Centifolia Absolute, Tunisia": [
     null,
@@ -15098,7 +15099,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Barka Attar Type Formula": [
     null,
@@ -15123,7 +15124,7 @@ const RAW_DB = {
     "Amber eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Absolute, Isparta": [
     null,
@@ -15148,7 +15149,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Civette Synth 039648": [
     null,
@@ -15173,7 +15174,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Octalactone": [
     null,
@@ -15198,7 +15199,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Safranal: [
     null,
@@ -15223,7 +15224,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lyral®": [
     null,
@@ -15248,7 +15249,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galbex®": [
     null,
@@ -15273,7 +15274,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Persian Lime Oil, FCF": [
     null,
@@ -15298,7 +15299,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyl Salicylate": [
     null,
@@ -15323,7 +15324,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimetol®": [
     null,
@@ -15348,7 +15349,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mayol®": [
     null,
@@ -15373,7 +15374,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Acetophenone: [
     null,
@@ -15398,7 +15399,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tobacarol: [
     null,
@@ -15423,7 +15424,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hivernal® Neo": [
     null,
@@ -15448,7 +15449,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Whisky CO2": [
     null,
@@ -15473,7 +15474,7 @@ const RAW_DB = {
     "Aromatic co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "White Rose Absolute, Moldova": [
     null,
@@ -15498,7 +15499,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Blonde Amber Type Formula": [
     null,
@@ -15523,7 +15524,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-12 MNA": [
     null,
@@ -15548,7 +15549,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Allyl Ionone": [
     null,
@@ -15573,7 +15574,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pear Ester": [
     null,
@@ -15598,7 +15599,7 @@ const RAW_DB = {
     "Fruity synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Diethyl Phthalate (DEP)": [
     null,
@@ -15623,7 +15624,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cedramber: [
     null,
@@ -15648,7 +15649,7 @@ const RAW_DB = {
     "Amber synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedroxyde®": [
     null,
@@ -15673,7 +15674,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trimofix®": [
     null,
@@ -15698,7 +15699,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrox® DL": [
     null,
@@ -15723,7 +15724,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Myrrh Oil": [
     null,
@@ -15748,7 +15749,7 @@ const RAW_DB = {
     "Amber eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Diantilis®": [
     null,
@@ -15773,7 +15774,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranium Oil, China": [
     null,
@@ -15798,7 +15799,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Laitone 10% DPG": [
     null,
@@ -15823,7 +15824,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Apo Patchone Coeur": [
     null,
@@ -15848,7 +15849,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambroxan® Crystals": [
     null,
@@ -15873,7 +15874,7 @@ const RAW_DB = {
     "Musk isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Homage Attar Type Formula": [
     null,
@@ -15898,7 +15899,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bois Noir Type Formula": [
     null,
@@ -15923,7 +15924,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "1872 Men Type Formula": [
     null,
@@ -15948,7 +15949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Veratraldehyde: [
     null,
@@ -15973,7 +15974,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Bourbon Absolute": [
     null,
@@ -15998,7 +15999,7 @@ const RAW_DB = {
     "Woody abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Laevo Citronellol": [
     null,
@@ -16023,7 +16024,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dipropylene Glycol (DPG)": [
     null,
@@ -16048,7 +16049,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tamisone: [
     null,
@@ -16073,7 +16074,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Gris™": [
     null,
@@ -16098,7 +16099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Caress Musk": [
     null,
@@ -16123,7 +16124,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Irone Alpha": [
     null,
@@ -16148,7 +16149,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Spicyrup™": [
     null,
@@ -16173,7 +16174,7 @@ const RAW_DB = {
     "Aromatic synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Antillone™": [
     null,
@@ -16198,7 +16199,7 @@ const RAW_DB = {
     "Aromatic synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Butter “Signature” CO2": [
     null,
@@ -16223,7 +16224,7 @@ const RAW_DB = {
     "Aromatic co2 by Flavex",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sublimolide™": [
     null,
@@ -16248,7 +16249,7 @@ const RAW_DB = {
     "Aromatic synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrox® Super": [
     null,
@@ -16273,7 +16274,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Costus Oliffac": [
     null,
@@ -16298,7 +16299,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedarwood Oil, Alaska": [
     null,
@@ -16323,7 +16324,7 @@ const RAW_DB = {
     "Woody eo by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Prunella®": [
     null,
@@ -16348,7 +16349,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyris “Signature” Oil, Haiti": [
     null,
@@ -16373,7 +16374,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Homme™": [
     null,
@@ -16398,7 +16399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchoulyl Acetate": [
     null,
@@ -16423,7 +16424,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Salicylate": [
     null,
@@ -16448,7 +16449,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   PADMA: [
     null,
@@ -16473,7 +16474,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiveryl Acetate 20326": [
     null,
@@ -16498,7 +16499,7 @@ const RAW_DB = {
     "Woody synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Extra Oil, Comoros": [
     null,
@@ -16523,7 +16524,7 @@ const RAW_DB = {
     "Floral eo by Robertet",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Absolute, Egypt": [
     null,
@@ -16548,7 +16549,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pink Pepper CO2": [
     null,
@@ -16573,7 +16574,7 @@ const RAW_DB = {
     "Spicy co2 by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Violet Leaf Absolute, France": [
     null,
@@ -16598,7 +16599,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Absolute, France": [
     null,
@@ -16623,7 +16624,7 @@ const RAW_DB = {
     "Floral abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Absolute, France": [
     null,
@@ -16648,7 +16649,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose de Mai Absolute, France": [
     null,
@@ -16673,7 +16674,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Frankincense Sacra Oil, Oman": [
     null,
@@ -16698,7 +16699,7 @@ const RAW_DB = {
     "Amber eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambergris Tincture 2%": [
     null,
@@ -16723,7 +16724,7 @@ const RAW_DB = {
     "Amber abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fir Balsam Absolute 50% TEC": [
     null,
@@ -16748,7 +16749,7 @@ const RAW_DB = {
     "Woody abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Tea “Signature” Resinoid": [
     null,
@@ -16773,7 +16774,7 @@ const RAW_DB = {
     "Amber abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mate “Signature” Abs 40% TEC": [
     null,
@@ -16798,7 +16799,7 @@ const RAW_DB = {
     "Aromatic synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cardamom Absolute": [
     null,
@@ -16823,7 +16824,7 @@ const RAW_DB = {
     "Spicy abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Birch Tar “Signature” Oil, Clear": [
     null,
@@ -16848,7 +16849,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Buchu “Extra” Oil": [
     null,
@@ -16873,7 +16874,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grapefruit Oil, White": [
     null,
@@ -16898,7 +16899,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lime Oil, Distilled": [
     null,
@@ -16923,7 +16924,7 @@ const RAW_DB = {
     "Citrus eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Oil, Washed": [
     null,
@@ -16948,7 +16949,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Acetate “Signature”": [
     null,
@@ -16973,7 +16974,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Taïf Base": [
     null,
@@ -16998,7 +16999,7 @@ const RAW_DB = {
     "Floral base by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Octine Carbonate": [
     null,
@@ -17023,7 +17024,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olibanum Resinoid Vulcain": [
     null,
@@ -17048,7 +17049,7 @@ const RAW_DB = {
     "Amber abs by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Guaiac Wood Oil": [
     null,
@@ -17073,7 +17074,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Cresyl Phenyl Acetate": [
     null,
@@ -17098,7 +17099,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Plicatone: [
     null,
@@ -17123,7 +17124,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tobacco “Signature” Absolute": [
     null,
@@ -17148,7 +17149,7 @@ const RAW_DB = {
     "Leather abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cocoa Resinoid 20% TEC": [
     null,
@@ -17173,7 +17174,7 @@ const RAW_DB = {
     "Amber abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Magnolan: [
     null,
@@ -17198,7 +17199,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavandin Super Oil": [
     null,
@@ -17223,7 +17224,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavandin Absolute": [
     null,
@@ -17248,7 +17249,7 @@ const RAW_DB = {
     "Herbal abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oakwood CO2 Extra": [
     null,
@@ -17273,7 +17274,7 @@ const RAW_DB = {
     "Woody co2 by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Melozone®": [
     null,
@@ -17298,7 +17299,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Melonal: [
     null,
@@ -17323,7 +17324,7 @@ const RAW_DB = {
     "Fruity synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Phenyl Acetate": [
     null,
@@ -17348,7 +17349,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Tonalide: [
     null,
@@ -17373,7 +17374,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavandin Abrialis Oil": [
     null,
@@ -17398,7 +17399,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coumarin ex Tonka Bean, Natural": [
     null,
@@ -17423,7 +17424,7 @@ const RAW_DB = {
     "Amber synth by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender Absolute, Decolourised": [
     null,
@@ -17448,7 +17449,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Corinal® 184008B": [
     null,
@@ -17473,7 +17474,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lactone Storm": [
     null,
@@ -17498,7 +17499,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Balade™": [
     null,
@@ -17523,7 +17524,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Akigala Extreme": [
     null,
@@ -17548,7 +17549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clearwood® PRISMA": [
     null,
@@ -17573,7 +17574,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Supreme": [
     null,
@@ -17598,7 +17599,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Bicyclononalactone: [
     null,
@@ -17623,7 +17624,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Raspberry Ketone": [
     null,
@@ -17648,7 +17649,7 @@ const RAW_DB = {
     "Fruity isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Green™": [
     null,
@@ -17673,7 +17674,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bois d'Encens": [
     null,
@@ -17698,7 +17699,7 @@ const RAW_DB = {
     "Woody synth by Robertet",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Hydrocarboresine: [
     null,
@@ -17723,7 +17724,7 @@ const RAW_DB = {
     "Amber synth by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aprifloren®": [
     null,
@@ -17748,7 +17749,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Treemoss “Non-IFRA” Absolute": [
     null,
@@ -17773,7 +17774,7 @@ const RAW_DB = {
     "Green abs by Robertet",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amaretto Saronno": [
     null,
@@ -17798,7 +17799,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coconut Delight": [
     null,
@@ -17823,7 +17824,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Raspberry Ripple": [
     null,
@@ -17848,7 +17849,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Norlimbanol®": [
     null,
@@ -17873,7 +17874,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Basil Oil ct Linalool": [
     null,
@@ -17898,7 +17899,7 @@ const RAW_DB = {
     "Herbal eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Currant Bud Abs MD 37% TEC": [
     null,
@@ -17923,7 +17924,7 @@ const RAW_DB = {
     "Aromatic synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrette Seed Oil": [
     null,
@@ -17948,7 +17949,7 @@ const RAW_DB = {
     "Aromatic eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Damascone Delta": [
     null,
@@ -17973,7 +17974,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Givco® 204/20": [
     null,
@@ -17998,7 +17999,7 @@ const RAW_DB = {
     "Floral synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Anisaldehyde, Natural": [
     null,
@@ -18023,7 +18024,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Givescone®": [
     null,
@@ -18048,7 +18049,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetikolacetat®": [
     null,
@@ -18073,16 +18074,16 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Exaltolide® Total": [
-    null,
-    3.84,
+    240.387,
+    5.79,
     null,
     0,
     0,
-    null,
-    null,
+    2.25e-7,
+    0.1,
     null,
     "mid",
     "SYNTH",
@@ -18098,7 +18099,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Hexalactone": [
     null,
@@ -18123,7 +18124,7 @@ const RAW_DB = {
     "Aromatic isolate by Vidara",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Piconia: [
     null,
@@ -18148,7 +18149,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Linalool": [
     null,
@@ -18173,7 +18174,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Heliotropin Repl X24": [
     null,
@@ -18198,7 +18199,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Synth 184007": [
     null,
@@ -18223,7 +18224,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olibanum Absolute": [
     null,
@@ -18248,7 +18249,7 @@ const RAW_DB = {
     "Amber abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sampafleur™": [
     null,
@@ -18273,7 +18274,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Aphermate: [
     null,
@@ -18298,7 +18299,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Milk Lactone": [
     null,
@@ -18323,7 +18324,7 @@ const RAW_DB = {
     "Aromatic isolate by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cade Oil, Rectified": [
     null,
@@ -18348,7 +18349,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Popcorn Pyrazine 1% DPG": [
     null,
@@ -18373,7 +18374,7 @@ const RAW_DB = {
     "Leather synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clonal™": [
     null,
@@ -18398,7 +18399,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mandarin Aldehyde Total 10 TEC": [
     null,
@@ -18423,7 +18424,7 @@ const RAW_DB = {
     "Citrus synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Brut™": [
     null,
@@ -18448,7 +18449,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Paradisamide®": [
     null,
@@ -18473,7 +18474,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Agar Givco® 215/2": [
     null,
@@ -18498,7 +18499,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Stemone®": [
     null,
@@ -18523,7 +18524,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Blue®": [
     null,
@@ -18548,7 +18549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amber Core": [
     null,
@@ -18573,7 +18574,7 @@ const RAW_DB = {
     "Amber synth by Kao",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Celsius™": [
     null,
@@ -18598,7 +18599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Safraleine®": [
     null,
@@ -18623,7 +18624,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandela® 85 IPM": [
     null,
@@ -18648,7 +18649,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Tea Supreme": [
     null,
@@ -18673,7 +18674,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thiocineole 0.1% DPG": [
     null,
@@ -18698,7 +18699,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neobergamate Forte": [
     null,
@@ -18723,7 +18724,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isobutyl Quinoline": [
     null,
@@ -18732,7 +18733,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.001,
     null,
     "mid",
     "SYNTH",
@@ -18748,7 +18749,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pomelo Grandis": [
     null,
@@ -18773,7 +18774,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Pepper Oil": [
     null,
@@ -18798,7 +18799,7 @@ const RAW_DB = {
     "Spicy eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gnidia Flower Absolute": [
     null,
@@ -18823,7 +18824,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Tweed™": [
     null,
@@ -18848,7 +18849,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound XJ 1861™": [
     null,
@@ -18873,7 +18874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Isobutavan: [
     null,
@@ -18898,7 +18899,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Damascenone: [
     null,
@@ -18923,7 +18924,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Damascone Beta": [
     null,
@@ -18948,7 +18949,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Orange Oil, Terpeneless": [
     null,
@@ -18973,7 +18974,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Damascone Alpha": [
     null,
@@ -18998,7 +18999,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Wool Absolute": [
     null,
@@ -19023,7 +19024,7 @@ const RAW_DB = {
     "Aromatic abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lilac Supreme": [
     null,
@@ -19048,7 +19049,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Timut Pepper Oil": [
     null,
@@ -19073,7 +19074,7 @@ const RAW_DB = {
     "Spicy eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rum CO2": [
     null,
@@ -19098,7 +19099,7 @@ const RAW_DB = {
     "Fruity co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pineapple Natpop™": [
     null,
@@ -19123,7 +19124,7 @@ const RAW_DB = {
     "Woody synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamyl Alcohol": [
     null,
@@ -19148,7 +19149,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dartanol®": [
     null,
@@ -19173,7 +19174,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nutty Pyrazine 0.1% DPG": [
     null,
@@ -19198,7 +19199,7 @@ const RAW_DB = {
     "Leather synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Passifloran 0.1% DPG": [
     null,
@@ -19223,16 +19224,16 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muscenone®": [
-    null,
-    7.08,
+    238.414,
+    6.1,
     null,
     0,
     0,
-    null,
-    null,
+    0.000001875,
+    0.005,
     null,
     "mid",
     "SYNTH",
@@ -19248,7 +19249,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Beeswax Absolute, Glacé": [
     null,
@@ -19273,7 +19274,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Ultimate Extract": [
     null,
@@ -19298,7 +19299,7 @@ const RAW_DB = {
     "Floral synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Celestolide: [
     null,
@@ -19323,7 +19324,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Saffron Attar FW": [
     null,
@@ -19348,7 +19349,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Whiskey Lactone": [
     null,
@@ -19373,7 +19374,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coriander Seed Oil": [
     null,
@@ -19398,7 +19399,7 @@ const RAW_DB = {
     "Spicy eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Honeyflor 1% DPG": [
     null,
@@ -19423,7 +19424,7 @@ const RAW_DB = {
     "Fruity synth by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamyl Propionate": [
     null,
@@ -19448,7 +19449,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cabreuva Wood Oil": [
     null,
@@ -19473,7 +19474,7 @@ const RAW_DB = {
     "Woody eo by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalyl Acetate": [
     null,
@@ -19498,7 +19499,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ultramber® Xtreme": [
     null,
@@ -19523,7 +19524,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Copaiba Oil Coeur": [
     null,
@@ -19548,7 +19549,7 @@ const RAW_DB = {
     "Aromatic eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   MMB: [
     null,
@@ -19573,7 +19574,7 @@ const RAW_DB = {
     "Aromatic synth by Kuraray",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Spirambrene: [
     null,
@@ -19598,7 +19599,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Davana Oil": [
     null,
@@ -19623,7 +19624,7 @@ const RAW_DB = {
     "Aromatic eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Shipping Protection": [
     null,
@@ -19648,7 +19649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gurjun Balsam Oil": [
     null,
@@ -19673,7 +19674,7 @@ const RAW_DB = {
     "Amber eo by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Oil, Fractionated": [
     null,
@@ -19698,7 +19699,7 @@ const RAW_DB = {
     "Woody eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oxide HC": [
     null,
@@ -19723,7 +19724,7 @@ const RAW_DB = {
     "Floral synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cypriol “Signature” Oil": [
     null,
@@ -19748,7 +19749,7 @@ const RAW_DB = {
     "Aromatic eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dynamone: [
     null,
@@ -19773,7 +19774,7 @@ const RAW_DB = {
     "Aromatic synth by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nutmeg Absolute": [
     null,
@@ -19798,7 +19799,7 @@ const RAW_DB = {
     "Spicy abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orbitone® T Neo": [
     null,
@@ -19823,7 +19824,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Theaspirane: [
     null,
@@ -19848,7 +19849,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Paraguay": [
     null,
@@ -19873,7 +19874,7 @@ const RAW_DB = {
     "Citrus synth by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Elderflower TruAbs®": [
     null,
@@ -19898,7 +19899,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyacinth TruAbs®": [
     null,
@@ -19923,7 +19924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Suederal® LT 0710": [
     null,
@@ -19948,7 +19949,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Acetate": [
     null,
@@ -19973,7 +19974,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Manzanate: [
     null,
@@ -19998,7 +19999,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Nerol: [
     null,
@@ -20023,7 +20024,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Velberry™": [
     null,
@@ -20048,7 +20049,7 @@ const RAW_DB = {
     "Fruity synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Oil FCF, Terpeneless": [
     null,
@@ -20073,7 +20074,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Oil, Haiti": [
     null,
@@ -20098,7 +20099,7 @@ const RAW_DB = {
     "Woody eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot Oil FCF, Terpeneless": [
     null,
@@ -20123,7 +20124,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bitter Orange Oil": [
     null,
@@ -20148,7 +20149,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon “Superior” Oil, FCF": [
     null,
@@ -20173,7 +20174,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Mandarinier Oil": [
     null,
@@ -20198,7 +20199,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Orange “Signature” Oil": [
     null,
@@ -20223,7 +20224,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehyde C-8": [
     null,
@@ -20248,7 +20249,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Osyrol: [
     null,
@@ -20273,7 +20274,7 @@ const RAW_DB = {
     "Aromatic synth by Innospec",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Verdox HC": [
     null,
@@ -20298,7 +20299,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coffee Arabica CO2": [
     null,
@@ -20323,7 +20324,7 @@ const RAW_DB = {
     "Fruity co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Guaiacol: [
     null,
@@ -20348,7 +20349,7 @@ const RAW_DB = {
     "Woody synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Solafleur™": [
     null,
@@ -20373,7 +20374,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Liffarome: [
     null,
@@ -20398,7 +20399,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Allyl Amyl Glycolate": [
     null,
@@ -20423,7 +20424,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmoneige™": [
     null,
@@ -20448,7 +20449,7 @@ const RAW_DB = {
     "Aromatic synth by Zeon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranyl Acetate": [
     null,
@@ -20473,7 +20474,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Isomuscone: [
     null,
@@ -20498,7 +20499,7 @@ const RAW_DB = {
     "Musk synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Osmanthus “Gold” Absolute": [
     null,
@@ -20523,7 +20524,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Triplal: [
     null,
@@ -20548,7 +20549,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Polysantol®": [
     null,
@@ -20557,7 +20558,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.1,
     null,
     "mid",
     "SYNTH",
@@ -20573,7 +20574,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Oil, South India": [
     null,
@@ -20598,7 +20599,7 @@ const RAW_DB = {
     "Woody eo by TMV",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ho Wood “Superior” Oil": [
     null,
@@ -20623,16 +20624,16 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Timbersilk: [
-    null,
-    0.944,
+    234.2,
+    5.7,
     null,
     0,
     0,
-    null,
-    null,
+    0.001735,
+    3,
     null,
     "mid",
     "SYNTH",
@@ -20648,7 +20649,7 @@ const RAW_DB = {
     "Woody synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Coranol: [
     null,
@@ -20673,7 +20674,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Flouve “Signature” Absolute": [
     null,
@@ -20698,7 +20699,7 @@ const RAW_DB = {
     "Aromatic abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Tiglate": [
     null,
@@ -20723,7 +20724,7 @@ const RAW_DB = {
     "Aromatic synth by Bedoukian",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Guaiyl Acetate": [
     null,
@@ -20748,7 +20749,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Chiris": [
     null,
@@ -20773,7 +20774,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pink Pepper Oil, Molle": [
     null,
@@ -20798,7 +20799,7 @@ const RAW_DB = {
     "Spicy eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carrot Heart MD": [
     null,
@@ -20823,7 +20824,7 @@ const RAW_DB = {
     "Aromatic synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Azarbre: [
     null,
@@ -20848,7 +20849,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cascalone®": [
     null,
@@ -20873,7 +20874,7 @@ const RAW_DB = {
     "Marine synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender “Signature” Oil": [
     null,
@@ -20898,7 +20899,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Hydroxyambran: [
     null,
@@ -20923,7 +20924,7 @@ const RAW_DB = {
     "Aromatic synth by Miltitz",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Sulfide 1% DPG": [
     null,
@@ -20948,7 +20949,7 @@ const RAW_DB = {
     "Aromatic synth by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clary Sage Absolute": [
     null,
@@ -20973,7 +20974,7 @@ const RAW_DB = {
     "Herbal abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Castoreum Hyperessence 50% TEC": [
     null,
@@ -20998,7 +20999,7 @@ const RAW_DB = {
     "Leather synth by Robertet",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Black Opoponax": [
     null,
@@ -21023,7 +21024,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Orientale": [
     null,
@@ -21048,16 +21049,16 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Helional®": [
-    null,
-    0.944,
+    192.2,
+    1.4,
     null,
     0,
     0,
-    null,
-    null,
+    0.000288,
+    0.02,
     null,
     "mid",
     "SYNTH",
@@ -21073,7 +21074,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedarwood “Superior” Oil, Virginia": [
     null,
@@ -21098,7 +21099,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Vetimoss: [
     null,
@@ -21123,7 +21124,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Salicylate": [
     null,
@@ -21148,7 +21149,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Benzoate": [
     null,
@@ -21173,7 +21174,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "White Amber": [
     null,
@@ -21198,7 +21199,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Olibanol: [
     null,
@@ -21223,7 +21224,7 @@ const RAW_DB = {
     "Aromatic synth by Robertet",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Elemol ex Elemi": [
     null,
@@ -21248,7 +21249,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Greencatcher™": [
     null,
@@ -21273,7 +21274,7 @@ const RAW_DB = {
     "Green synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Sambac “Signature” Absolute": [
     null,
@@ -21298,7 +21299,7 @@ const RAW_DB = {
     "Floral abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Luxury Scent Bottle, 15ml": [
     null,
@@ -21323,7 +21324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Five™": [
     null,
@@ -21348,7 +21349,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyl Benzoate": [
     null,
@@ -21373,7 +21374,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Seven™": [
     null,
@@ -21398,7 +21399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Cresol": [
     null,
@@ -21423,7 +21424,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenyl Acetate": [
     null,
@@ -21448,7 +21449,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-3-Hexenol": [
     null,
@@ -21473,7 +21474,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Indolene: [
     null,
@@ -21498,7 +21499,7 @@ const RAW_DB = {
     "Aromatic synth by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Linalool: [
     null,
@@ -21523,7 +21524,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Styrallyl Acetate": [
     null,
@@ -21548,7 +21549,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Floralozone®": [
     null,
@@ -21573,7 +21574,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedryl Acetate, Crystals": [
     null,
@@ -21598,7 +21599,7 @@ const RAW_DB = {
     "Aromatic isolate by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oranger Crystals": [
     null,
@@ -21623,7 +21624,7 @@ const RAW_DB = {
     "Citrus isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amyris Alcohol": [
     null,
@@ -21648,7 +21649,7 @@ const RAW_DB = {
     "Aromatic isolate by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Strawberry Glycidate": [
     null,
@@ -21673,7 +21674,7 @@ const RAW_DB = {
     "Fruity synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Celestafleur™": [
     null,
@@ -21698,7 +21699,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Costus Root Tincture 20%": [
     null,
@@ -21723,7 +21724,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrarome®": [
     null,
@@ -21748,7 +21749,7 @@ const RAW_DB = {
     "Aromatic synth by Synarome",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gamma Undecalactone": [
     null,
@@ -21773,7 +21774,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aurantiol® Ultra": [
     null,
@@ -21798,7 +21799,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalool Oxide": [
     null,
@@ -21823,7 +21824,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambretone®": [
     null,
@@ -21848,7 +21849,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Herbanate®": [
     null,
@@ -21873,7 +21874,7 @@ const RAW_DB = {
     "Herbal synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclamen Aldehyde": [
     null,
@@ -21898,7 +21899,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Red®": [
     null,
@@ -21923,7 +21924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Petals": [
     null,
@@ -21948,7 +21949,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Imperial": [
     null,
@@ -21973,7 +21974,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzaldehyde 50% DPG": [
     null,
@@ -21998,7 +21999,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Phenyl Acetate 40% DPG": [
     null,
@@ -22023,7 +22024,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cumin Seed Oil": [
     null,
@@ -22048,7 +22049,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clove Bud “Signature” Oil": [
     null,
@@ -22073,7 +22074,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Juniper Berry Oil, Rectified": [
     null,
@@ -22098,7 +22099,7 @@ const RAW_DB = {
     "Woody eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamic Alcohol ex Styrax": [
     null,
@@ -22123,7 +22124,7 @@ const RAW_DB = {
     "Amber isolate by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Acetate ex Ylang-Ylang": [
     null,
@@ -22148,7 +22149,7 @@ const RAW_DB = {
     "Floral isolate by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nutmeg Oil, Aceh": [
     null,
@@ -22173,7 +22174,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nympheal™": [
     null,
@@ -22198,7 +22199,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Grojsman Plus": [
     null,
@@ -22223,7 +22224,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vertofix® Coeur": [
     null,
@@ -22248,7 +22249,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Farnesene Alpha": [
     null,
@@ -22273,7 +22274,7 @@ const RAW_DB = {
     "Aromatic synth by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Civettal 1% DPG": [
     null,
@@ -22298,7 +22299,7 @@ const RAW_DB = {
     "Aromatic synth by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender “Signature” Absolute": [
     null,
@@ -22323,7 +22324,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Poplar Bud Absolute 50% TEC": [
     null,
@@ -22348,7 +22349,7 @@ const RAW_DB = {
     "Aromatic abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Nicotinate": [
     null,
@@ -22373,7 +22374,7 @@ const RAW_DB = {
     "Aromatic synth by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Veticoeur™": [
     null,
@@ -22398,7 +22399,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet 16": [
     null,
@@ -22423,7 +22424,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Absolute": [
     null,
@@ -22448,7 +22449,7 @@ const RAW_DB = {
     "Floral abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Animusk™ Extra": [
     null,
@@ -22473,7 +22474,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Queen Marie": [
     null,
@@ -22498,7 +22499,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Palisandrol 17979F": [
     null,
@@ -22523,7 +22524,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fauxmoss®": [
     null,
@@ -22548,7 +22549,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Artemal™": [
     null,
@@ -22573,7 +22574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Wild Civet Tincture 2% (13 Yrs Aged)": [
     null,
@@ -22598,7 +22599,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Amazonia™": [
     null,
@@ -22623,7 +22624,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orcanox™": [
     null,
@@ -22648,7 +22649,7 @@ const RAW_DB = {
     "Aromatic synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aetoxylon “White Oud” Oil": [
     null,
@@ -22673,7 +22674,7 @@ const RAW_DB = {
     "Woody eo by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Butyrate": [
     null,
@@ -22698,7 +22699,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Citronellol 98": [
     null,
@@ -22723,7 +22724,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hindinol®": [
     null,
@@ -22748,7 +22749,7 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ginger Oil Fresh, Côte d'Ivoire": [
     null,
@@ -22773,7 +22774,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Dark PA30": [
     null,
@@ -22798,7 +22799,7 @@ const RAW_DB = {
     "Woody synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Hydroxycitronellal: [
     null,
@@ -22823,7 +22824,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Para Cresyl Caprylate": [
     null,
@@ -22848,7 +22849,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Civet “Supreme” Absolute": [
     null,
@@ -22873,7 +22874,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalool ex Bois de Rose": [
     null,
@@ -22898,7 +22899,7 @@ const RAW_DB = {
     "Woody synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hercolyn® DW": [
     null,
@@ -22923,7 +22924,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geraniol Extra": [
     null,
@@ -22948,7 +22949,7 @@ const RAW_DB = {
     "Aromatic synth by BASF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carbitol™": [
     null,
@@ -22973,7 +22974,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Daphne Supreme": [
     null,
@@ -22998,7 +22999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Calone® 1951": [
     null,
@@ -23023,7 +23024,7 @@ const RAW_DB = {
     "Marine synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Compound Black®": [
     null,
@@ -23048,7 +23049,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrette Seed Tincture 20%": [
     null,
@@ -23073,7 +23074,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cedrat Oil, Italy": [
     null,
@@ -23098,7 +23099,7 @@ const RAW_DB = {
     "Aromatic eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Bigarade Oil": [
     null,
@@ -23123,7 +23124,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot Oil Melito": [
     null,
@@ -23148,7 +23149,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mandarin Oil, Green": [
     null,
@@ -23173,7 +23174,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Flower Water": [
     null,
@@ -23198,7 +23199,7 @@ const RAW_DB = {
     "Floral synth by La Vecchia Distilleria",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Styrax Oil, Honduras": [
     null,
@@ -23223,7 +23224,7 @@ const RAW_DB = {
     "Amber eo by Berje",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Boxtree Absolute 50% TEC": [
     null,
@@ -23248,7 +23249,7 @@ const RAW_DB = {
     "Aromatic abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thyme Oil ct Linalool": [
     null,
@@ -23273,7 +23274,7 @@ const RAW_DB = {
     "Herbal eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Celery Seed Oil": [
     null,
@@ -23298,7 +23299,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Basil Oil ct Methyl Chavicol": [
     null,
@@ -23323,7 +23324,7 @@ const RAW_DB = {
     "Herbal eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Crystals": [
     null,
@@ -23348,7 +23349,7 @@ const RAW_DB = {
     "Floral isolate by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoeugenyl Acetate": [
     null,
@@ -23373,7 +23374,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Red Seaweed CO2": [
     null,
@@ -23398,7 +23399,7 @@ const RAW_DB = {
     "Marine co2 by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Blossom Supreme": [
     null,
@@ -23423,7 +23424,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oxide Laevo": [
     null,
@@ -23448,7 +23449,7 @@ const RAW_DB = {
     "Floral synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Anthranilate": [
     null,
@@ -23473,7 +23474,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis Jasmone": [
     null,
@@ -23498,7 +23499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Birch Tar Oil, Rectified": [
     null,
@@ -23523,7 +23524,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Permawood™": [
     null,
@@ -23548,7 +23549,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydro Gamma Ionone": [
     null,
@@ -23573,7 +23574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Heart N.3 PA60": [
     null,
@@ -23598,7 +23599,7 @@ const RAW_DB = {
     "Woody synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Boisiris®": [
     null,
@@ -23623,7 +23624,7 @@ const RAW_DB = {
     "Floral synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Irisone® Alpha": [
     null,
@@ -23648,7 +23649,7 @@ const RAW_DB = {
     "Floral synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fenchone Alpha": [
     null,
@@ -23673,7 +23674,7 @@ const RAW_DB = {
     "Aromatic synth by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cashmeran®": [
     null,
@@ -23698,7 +23699,7 @@ const RAW_DB = {
     "Musk synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Litsea Cubeba Oil": [
     null,
@@ -23723,7 +23724,7 @@ const RAW_DB = {
     "Citrus eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Habanolide®": [
     null,
@@ -23748,7 +23749,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aerolide®": [
     null,
@@ -23773,7 +23774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Canthoxal: [
     null,
@@ -23798,7 +23799,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Veramoss: [
     null,
@@ -23807,7 +23808,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.01,
     null,
     "mid",
     "SYNTH",
@@ -23823,7 +23824,7 @@ const RAW_DB = {
     "Green synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Florol®": [
     null,
@@ -23848,7 +23849,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Isovalerate": [
     null,
@@ -23873,7 +23874,7 @@ const RAW_DB = {
     "Aromatic synth by Vigon",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lyfral®": [
     null,
@@ -23898,7 +23899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Intense, Esprit d'Odeur": [
     null,
@@ -23923,7 +23924,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Espicene Gamma": [
     null,
@@ -23948,7 +23949,7 @@ const RAW_DB = {
     "Spicy synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tropathiane 1% DPG": [
     null,
@@ -23973,7 +23974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Armoise Oil, Morocco": [
     null,
@@ -23998,7 +23999,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Heptine Carbonate": [
     null,
@@ -24023,7 +24024,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Caraway Seed “Superior” Oil": [
     null,
@@ -24048,7 +24049,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Very Violet™": [
     null,
@@ -24073,7 +24074,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Beyond Blue™": [
     null,
@@ -24098,7 +24099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Yellow Dawn™": [
     null,
@@ -24123,7 +24124,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Riotous Red™": [
     null,
@@ -24148,7 +24149,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydro Alpha Ionone": [
     null,
@@ -24173,7 +24174,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Myrrh Absolute 50% TEC": [
     null,
@@ -24198,7 +24199,7 @@ const RAW_DB = {
     "Amber abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Katafray “Signature” Oil": [
     null,
@@ -24223,7 +24224,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lorysia®": [
     null,
@@ -24248,16 +24249,16 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hedione® High Cis": [
-    null,
-    4.72,
+    226.316,
+    2.653,
     null,
     0,
     0,
-    null,
-    null,
+    0.000005325,
+    0.1,
     null,
     "mid",
     "SYNTH",
@@ -24273,7 +24274,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambre Aegyptus": [
     null,
@@ -24298,7 +24299,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Scent Strips, 100 Pack": [
     null,
@@ -24323,7 +24324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tonka Torréfiée, Esprit d'Odeur": [
     null,
@@ -24348,7 +24349,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Linalool Dextro ex Coriander": [
     null,
@@ -24373,7 +24374,7 @@ const RAW_DB = {
     "Spicy synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neroli Supreme": [
     null,
@@ -24398,7 +24399,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Oil Terpeneless": [
     null,
@@ -24423,7 +24424,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Labdamate: [
     null,
@@ -24448,16 +24449,16 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Exaltolide®": [
-    null,
-    7.08,
+    240.387,
+    5.79,
     null,
     0,
     0,
-    null,
-    null,
+    2.25e-7,
+    0.1,
     null,
     "mid",
     "SYNTH",
@@ -24473,7 +24474,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oakmoss DEC Abs MD 55% TEC": [
     null,
@@ -24498,7 +24499,7 @@ const RAW_DB = {
     "Green synth by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Z11™ 10 MIP": [
     null,
@@ -24523,7 +24524,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Special Order Items": [
     null,
@@ -24548,7 +24549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bois de Violette": [
     null,
@@ -24573,7 +24574,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tonkin Intense": [
     null,
@@ -24598,7 +24599,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iraldeine® Delta": [
     null,
@@ -24623,7 +24624,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Weriguine": [
     null,
@@ -24648,7 +24649,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bouleau Pyrogene 1840": [
     null,
@@ -24673,7 +24674,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Aldehone Extra": [
     null,
@@ -24698,7 +24699,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambergris Intense™": [
     null,
@@ -24723,7 +24724,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzoin Siam Resinoid 50% TEC": [
     null,
@@ -24748,7 +24749,7 @@ const RAW_DB = {
     "Amber abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dreamwood™ 184270B": [
     null,
@@ -24773,7 +24774,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin 1109": [
     null,
@@ -24798,7 +24799,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cassis Base 345B": [
     null,
@@ -24823,7 +24824,7 @@ const RAW_DB = {
     "Aromatic base by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet de Grasse": [
     null,
@@ -24848,7 +24849,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambre Doux": [
     null,
@@ -24873,7 +24874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Heliotropin Natural 20% TEC": [
     null,
@@ -24898,7 +24899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orange Flower Water Absolute": [
     null,
@@ -24923,7 +24924,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleurs Deluxe № 3": [
     null,
@@ -24948,7 +24949,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Heliotrope Flowers, Natural": [
     null,
@@ -24973,7 +24974,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pink Carnation, Natural": [
     null,
@@ -24998,7 +24999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Paradise Molecule®": [
     null,
@@ -25023,7 +25024,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Safranate": [
     null,
@@ -25048,7 +25049,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Eugenol ex Clove": [
     null,
@@ -25073,7 +25074,7 @@ const RAW_DB = {
     "Spicy synth by Indesso",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenoxy Ethyl Isobutyrate": [
     null,
@@ -25098,7 +25099,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cis-Jasmone Lactone": [
     null,
@@ -25123,7 +25124,7 @@ const RAW_DB = {
     "Aromatic isolate by Vidara",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tuberose “Signature” Absolute": [
     null,
@@ -25148,7 +25149,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Boronia Supreme TruAbs®": [
     null,
@@ -25173,7 +25174,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Acetate, Natural": [
     null,
@@ -25198,7 +25199,7 @@ const RAW_DB = {
     "Aromatic isolate by Bestally",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Bergamotier Oil": [
     null,
@@ -25223,7 +25224,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lindenol™": [
     null,
@@ -25248,7 +25249,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Operanide: [
     null,
@@ -25273,7 +25274,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Carrot Seed Oil, Vaucluse": [
     null,
@@ -25298,7 +25299,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Kephalis: [
     null,
@@ -25323,7 +25324,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleurs Deluxe № 1": [
     null,
@@ -25348,7 +25349,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pimento Berry Oil": [
     null,
@@ -25373,7 +25374,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Immortelle Absolute": [
     null,
@@ -25398,7 +25399,7 @@ const RAW_DB = {
     "Aromatic abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lys De La Reine": [
     null,
@@ -25423,7 +25424,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mimosal™": [
     null,
@@ -25448,7 +25449,7 @@ const RAW_DB = {
     "Floral synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rhodinyl Acetate": [
     null,
@@ -25473,7 +25474,7 @@ const RAW_DB = {
     "Aromatic isolate by Penta",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Castoreum Tincture 10%": [
     null,
@@ -25498,7 +25499,7 @@ const RAW_DB = {
     "Leather abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dihydro Beta Ionone": [
     null,
@@ -25523,7 +25524,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Triethyl Citrate, Natural (TEC)": [
     null,
@@ -25548,7 +25549,7 @@ const RAW_DB = {
     "Aromatic synth by Bestally",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Isoeugenol: [
     null,
@@ -25573,7 +25574,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Undecavertol: [
     null,
@@ -25598,7 +25599,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Acetic Acid 40% DPG": [
     null,
@@ -25623,7 +25624,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isobutyl Benzoate": [
     null,
@@ -25648,7 +25649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Manuka Oil βTK25+": [
     null,
@@ -25673,7 +25674,7 @@ const RAW_DB = {
     "Aromatic eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrocenide Crystals": [
     null,
@@ -25698,7 +25699,7 @@ const RAW_DB = {
     "Aromatic isolate by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Geosmin: [
     null,
@@ -25707,7 +25708,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    0.00001,
     null,
     "mid",
     "SYNTH",
@@ -25723,7 +25724,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clearwood®": [
     null,
@@ -25748,7 +25749,7 @@ const RAW_DB = {
     "Woody synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydroeugenol: [
     null,
@@ -25773,7 +25774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoraldeine™ Cetone Alpha": [
     null,
@@ -25798,7 +25799,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tarragon “Signature” Oil": [
     null,
@@ -25823,7 +25824,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Coumarone: [
     null,
@@ -25848,7 +25849,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Benzoyl Acetate": [
     null,
@@ -25873,7 +25874,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Acetal CD": [
     null,
@@ -25898,7 +25899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dimethyl Anthranilate Natural 50% TEC": [
     null,
@@ -25923,7 +25924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Suralette™ Extra": [
     null,
@@ -25948,7 +25949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Coumarin ex Cassia, Natural": [
     null,
@@ -25973,7 +25974,7 @@ const RAW_DB = {
     "Amber synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geraniol ex Palmarosa": [
     null,
@@ -25998,7 +25999,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchoulol Crystals PA99": [
     null,
@@ -26023,7 +26024,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olibanum Coeur MD": [
     null,
@@ -26048,7 +26049,7 @@ const RAW_DB = {
     "Amber synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmolactone® Delta": [
     null,
@@ -26073,7 +26074,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "2-Isobutyl Quinoline": [
     null,
@@ -26098,7 +26099,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzyl Acetone": [
     null,
@@ -26123,7 +26124,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Alcohol": [
     null,
@@ -26148,7 +26149,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ionone Alpha": [
     null,
@@ -26173,7 +26174,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ionone Beta": [
     null,
@@ -26198,7 +26199,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galbanum “Signature” Oil": [
     null,
@@ -26223,7 +26224,7 @@ const RAW_DB = {
     "Green eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose de Mai Supreme TruAbs®": [
     null,
@@ -26248,7 +26249,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mastic (Lentisque) Oil, Rectified": [
     null,
@@ -26273,7 +26274,7 @@ const RAW_DB = {
     "Aromatic eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Oil “Indian”, Australia": [
     null,
@@ -26298,7 +26299,7 @@ const RAW_DB = {
     "Woody eo by Quintis",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Trans-2,Cis-6-Nonadienal": [
     null,
@@ -26323,7 +26324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Helvetolide®": [
     null,
@@ -26348,7 +26349,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalore®": [
     null,
@@ -26373,7 +26374,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Maltol: [
     null,
@@ -26398,7 +26399,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ethyl Maltol": [
     null,
@@ -26423,7 +26424,7 @@ const RAW_DB = {
     "Aromatic synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanillin ex Clove, Natural": [
     null,
@@ -26448,7 +26449,7 @@ const RAW_DB = {
     "Spicy synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Orange Oil, Decolourised": [
     null,
@@ -26473,7 +26474,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Germanica Resinoid": [
     null,
@@ -26498,7 +26499,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nerolin, Yara Yara": [
     null,
@@ -26523,7 +26524,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Florex®": [
     null,
@@ -26548,7 +26549,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iso E Super™": [
     null,
@@ -26557,7 +26558,7 @@ const RAW_DB = {
     0,
     0,
     null,
-    null,
+    5,
     null,
     "base",
     "SYNTH",
@@ -26573,7 +26574,7 @@ const RAW_DB = {
     "Musk synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neroli Oil, Tunisia": [
     null,
@@ -26598,7 +26599,7 @@ const RAW_DB = {
     "Floral eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Oil “Superior” Bulgaria": [
     null,
@@ -26623,7 +26624,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Acetate 53281": [
     null,
@@ -26648,7 +26649,7 @@ const RAW_DB = {
     "Woody synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Maréchal Niel": [
     null,
@@ -26673,7 +26674,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Rouge": [
     null,
@@ -26698,7 +26699,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Dianthine Extra": [
     null,
@@ -26723,7 +26724,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine “Gold” Absolute, India": [
     null,
@@ -26748,7 +26749,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lilac A07": [
     null,
@@ -26773,7 +26774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Castoreum “Signature” Absolute 50% TEC": [
     null,
@@ -26798,7 +26799,7 @@ const RAW_DB = {
     "Leather abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cassie Absolute, Egypt": [
     null,
@@ -26823,7 +26824,7 @@ const RAW_DB = {
     "Floral abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Buddhawood “Mulacro” Oil": [
     null,
@@ -26848,7 +26849,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamon Leaf Oil, Low BAP": [
     null,
@@ -26873,7 +26874,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Heart MD PA50": [
     null,
@@ -26898,7 +26899,7 @@ const RAW_DB = {
     "Woody synth by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mimosa “Supreme” Absolute": [
     null,
@@ -26923,7 +26924,7 @@ const RAW_DB = {
     "Floral abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Root Tincture 10%": [
     null,
@@ -26948,7 +26949,7 @@ const RAW_DB = {
     "Floral abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Siberian Castoreum Tincture 3%": [
     null,
@@ -26973,7 +26974,7 @@ const RAW_DB = {
     "Leather abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hyraceum Tincture 10%": [
     null,
@@ -26998,7 +26999,7 @@ const RAW_DB = {
     "Aromatic abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cistus Creticus Resin Absolute, 50% ETH": [
     null,
@@ -27023,7 +27024,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Patchouli Light Aceh PA38": [
     null,
@@ -27048,7 +27049,7 @@ const RAW_DB = {
     "Woody synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Epice FW": [
     null,
@@ -27073,7 +27074,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Extra Oil, Org": [
     null,
@@ -27098,7 +27099,7 @@ const RAW_DB = {
     "Floral eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Styrax Resinoid EAL, Wild": [
     null,
@@ -27123,7 +27124,7 @@ const RAW_DB = {
     "Amber abs by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiver Bourbon “Signature” Oil": [
     null,
@@ -27148,7 +27149,7 @@ const RAW_DB = {
     "Woody eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Galaxolide®": [
     null,
@@ -27173,7 +27174,7 @@ const RAW_DB = {
     "Musk synth by IFF",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclamen des Alpes": [
     null,
@@ -27198,7 +27199,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jacée Extra": [
     null,
@@ -27223,7 +27224,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Foin Rigaud": [
     null,
@@ -27248,11 +27249,11 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Methyl Ionone Alpha Extra": [
     null,
-    0.944,
+    4.535,
     null,
     0,
     0,
@@ -27273,15 +27274,15 @@ const RAW_DB = {
     "Aromatic synth by Takasago",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hedione®": [
-    null,
-    0.8,
+    226.316,
+    2.653,
     null,
     0,
     0,
-    null,
+    0.000005325,
     null,
     null,
     "mid",
@@ -27298,7 +27299,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cetonal®": [
     null,
@@ -27323,7 +27324,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Miraclewood™": [
     null,
@@ -27348,7 +27349,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Frankincense Oil, Somalia": [
     null,
@@ -27373,7 +27374,7 @@ const RAW_DB = {
     "Amber eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Orange Oil 10 Fold": [
     null,
@@ -27398,7 +27399,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang III Oil, Org": [
     null,
@@ -27423,7 +27424,7 @@ const RAW_DB = {
     "Floral eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tonka Bean Tincture 20%": [
     null,
@@ -27448,7 +27449,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanilla Pod Tincture 20%": [
     null,
@@ -27473,7 +27474,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Heliotropin 20% DPG": [
     null,
@@ -27498,7 +27499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Skatole 1% DPG": [
     null,
@@ -27523,7 +27524,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Persicol: [
     null,
@@ -27548,7 +27549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hawthorn Extra": [
     null,
@@ -27573,7 +27574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Peony Storm": [
     null,
@@ -27598,7 +27599,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Iralia®": [
     null,
@@ -27623,7 +27624,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cyclosia®": [
     null,
@@ -27648,7 +27649,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Musk Ambrette": [
     null,
@@ -27673,7 +27674,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Olibanum CNC": [
     null,
@@ -27698,7 +27699,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamon Ceylon Tincture 25%": [
     null,
@@ -27723,7 +27724,7 @@ const RAW_DB = {
     "Spicy abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Musk Ketone": [
     null,
@@ -27748,7 +27749,7 @@ const RAW_DB = {
     "Musk isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Poivre Fort": [
     null,
@@ -27773,7 +27774,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Geranium Bourbon “Supreme” Oil": [
     null,
@@ -27798,7 +27799,7 @@ const RAW_DB = {
     "Floral eo by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cresylex™": [
     null,
@@ -27823,7 +27824,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clovebud Zanzibar Tincture 25%": [
     null,
@@ -27848,7 +27849,7 @@ const RAW_DB = {
     "Spicy abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Prunol SP": [
     null,
@@ -27873,7 +27874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Benzoin Siam “Signature” Tincture 20%": [
     null,
@@ -27898,7 +27899,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Oil Messina, Pelatrice": [
     null,
@@ -27923,7 +27924,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Petitgrain Citronnier Oil": [
     null,
@@ -27948,7 +27949,7 @@ const RAW_DB = {
     "Citrus eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Poudre à la Maréchale Tincture 20%": [
     null,
@@ -27973,7 +27974,7 @@ const RAW_DB = {
     "Woody abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lysmerex™": [
     null,
@@ -27998,7 +27999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Deluxe Perfumer's Alcohol": [
     null,
@@ -28023,7 +28024,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur de Cuir": [
     null,
@@ -28048,7 +28049,7 @@ const RAW_DB = {
     "Floral synth by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Thujopsene Ex Cedar Wood": [
     null,
@@ -28073,7 +28074,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orchidée № 2": [
     null,
@@ -28098,7 +28099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lemon Verbena": [
     null,
@@ -28123,7 +28124,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanillin “Signature”": [
     null,
@@ -28148,7 +28149,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   'Tonka Bean “Signature" Absolute': [
     null,
@@ -28173,7 +28174,7 @@ const RAW_DB = {
     "Amber abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cardamom “Signature” Oil": [
     null,
@@ -28198,7 +28199,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Roman Chamomile Oil": [
     null,
@@ -28223,7 +28224,7 @@ const RAW_DB = {
     "Herbal eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot “Superior” Oil, FCF": [
     null,
@@ -28248,7 +28249,7 @@ const RAW_DB = {
     "Citrus eo by Capua 1880",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Peru Balsam “Signature” Resinoid": [
     null,
@@ -28273,7 +28274,7 @@ const RAW_DB = {
     "Amber abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Spearmint “Signature” Oil": [
     null,
@@ -28298,7 +28299,7 @@ const RAW_DB = {
     "Herbal eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oakmoss “IFRA 43” Absolute": [
     null,
@@ -28323,7 +28324,7 @@ const RAW_DB = {
     "Green abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Sotolone: [
     null,
@@ -28348,7 +28349,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Germanica Butter": [
     null,
@@ -28373,7 +28374,7 @@ const RAW_DB = {
     "Floral synth by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "German Chamomile “Signature” Oil": [
     null,
@@ -28398,7 +28399,7 @@ const RAW_DB = {
     "Herbal eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cascarilla Bark Oil": [
     null,
@@ -28423,7 +28424,7 @@ const RAW_DB = {
     "Aromatic eo by Nelixia",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Violette Bleue": [
     null,
@@ -28448,7 +28449,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cologne Imperiale 1853": [
     null,
@@ -28473,7 +28474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dihydroactinidiolide: [
     null,
@@ -28498,7 +28499,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Globanone®": [
     null,
@@ -28523,7 +28524,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Corps Racine": [
     null,
@@ -28548,7 +28549,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Filbertone: [
     null,
@@ -28573,7 +28574,7 @@ const RAW_DB = {
     "Aromatic synth by Symrise",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Norlimbanol® Dextro": [
     null,
@@ -28598,7 +28599,7 @@ const RAW_DB = {
     "Musk synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Neobutenone® Alpha": [
     null,
@@ -28623,7 +28624,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Opoponax Resinoid 50% TEC": [
     null,
@@ -28648,7 +28649,7 @@ const RAW_DB = {
     "Amber abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rosemary Oil, Tunisia": [
     null,
@@ -28673,7 +28674,7 @@ const RAW_DB = {
     "Herbal eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oakmoss Green Absolute": [
     null,
@@ -28698,7 +28699,7 @@ const RAW_DB = {
     "Green abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Hay “Signature” Absolute": [
     null,
@@ -28723,7 +28724,7 @@ const RAW_DB = {
     "Green abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Peppermint Oil “Black Mitcham”": [
     null,
@@ -28748,7 +28749,7 @@ const RAW_DB = {
     "Spicy eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrofix™ (Ambroxan)": [
     null,
@@ -28773,7 +28774,7 @@ const RAW_DB = {
     "Musk synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Calamus Oil": [
     null,
@@ -28798,7 +28799,7 @@ const RAW_DB = {
     "Aromatic eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Labdanum Absolute “Super Premium”": [
     null,
@@ -28823,7 +28824,7 @@ const RAW_DB = {
     "Amber abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Violet Leaf ”Signature“ Absolute": [
     null,
@@ -28848,7 +28849,7 @@ const RAW_DB = {
     "Floral abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Labdanum Light Absolute": [
     null,
@@ -28873,7 +28874,7 @@ const RAW_DB = {
     "Amber abs by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Red Ginger Oil": [
     null,
@@ -28898,7 +28899,7 @@ const RAW_DB = {
     "Spicy eo by Indesso",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Solgard®": [
     null,
@@ -28923,7 +28924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orris Pallida “Signature” Resinoid": [
     null,
@@ -28948,7 +28949,7 @@ const RAW_DB = {
     "Floral abs by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Absolute “Signature” Bulgaria": [
     null,
@@ -28973,7 +28974,7 @@ const RAW_DB = {
     "Floral abs by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rhodinol Ex Geranium Bourbon": [
     null,
@@ -28998,7 +28999,7 @@ const RAW_DB = {
     "Floral synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tolu Balsam Resinoid 50% TEC": [
     null,
@@ -29023,7 +29024,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Genet “Signature” Absolute": [
     null,
@@ -29048,7 +29049,7 @@ const RAW_DB = {
     "Aromatic abs by Mane",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vetiverol ex Vetiver Haiti": [
     null,
@@ -29073,7 +29074,7 @@ const RAW_DB = {
     "Woody synth by Ventos",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cinnamon Bark Ceylon “Supreme” Oil": [
     null,
@@ -29098,7 +29099,7 @@ const RAW_DB = {
     "Spicy eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Clary Sage Oil": [
     null,
@@ -29123,7 +29124,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandalwood Mysore “Signature” Oil": [
     null,
@@ -29148,7 +29149,7 @@ const RAW_DB = {
     "Woody eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavandin Grosso Oil": [
     null,
@@ -29173,7 +29174,7 @@ const RAW_DB = {
     "Herbal eo by Payan Bertrand",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Magnolia Flower Oil": [
     null,
@@ -29198,7 +29199,7 @@ const RAW_DB = {
     "Floral eo by LMR",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Invar": [
     null,
@@ -29223,7 +29224,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Complete Oil": [
     null,
@@ -29248,7 +29249,7 @@ const RAW_DB = {
     "Floral eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cistus Oil “Rock Rose”": [
     null,
@@ -29273,7 +29274,7 @@ const RAW_DB = {
     "Amber eo by Floral Concept",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmine Enfleurage Tincture 2%": [
     null,
@@ -29298,7 +29299,7 @@ const RAW_DB = {
     "Floral abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Clematis: [
     null,
@@ -29323,7 +29324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur De Tabac": [
     null,
@@ -29348,7 +29349,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Extra Superior Oil, Org": [
     null,
@@ -29373,7 +29374,7 @@ const RAW_DB = {
     "Floral eo by Biolandes",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Douglas Fir Needle Oil": [
     null,
@@ -29398,7 +29399,7 @@ const RAW_DB = {
     "Woody eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Honey Supreme": [
     null,
@@ -29423,7 +29424,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Mellitis: [
     null,
@@ -29448,7 +29449,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Amarante: [
     null,
@@ -29473,7 +29474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oud Intense™": [
     null,
@@ -29498,7 +29499,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lavender Oil “Avice Hill”": [
     null,
@@ -29523,7 +29524,7 @@ const RAW_DB = {
     "Floral eo by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Verdantol™": [
     null,
@@ -29548,7 +29549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambrexol™": [
     null,
@@ -29573,7 +29574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fixomusk™": [
     null,
@@ -29598,7 +29599,7 @@ const RAW_DB = {
     "Musk synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Blanche": [
     null,
@@ -29623,7 +29624,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sandexol®": [
     null,
@@ -29648,7 +29649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tilleul (Linden Blossom)": [
     null,
@@ -29673,7 +29674,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Mimosa De Provence": [
     null,
@@ -29698,7 +29699,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Magnolia Plumier": [
     null,
@@ -29723,7 +29724,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Isoeugenol Replacer": [
     null,
@@ -29748,7 +29749,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Royal Leather": [
     null,
@@ -29773,7 +29774,7 @@ const RAW_DB = {
     "Leather synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Honeysuckle: [
     null,
@@ -29798,7 +29799,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur D'Heliotrope": [
     null,
@@ -29823,7 +29824,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin Fleurs": [
     null,
@@ -29848,7 +29849,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Oeillet 208": [
     null,
@@ -29873,7 +29874,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Miel Blanc": [
     null,
@@ -29898,7 +29899,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambreine Rustica": [
     null,
@@ -29923,7 +29924,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Sophira: [
     null,
@@ -29948,7 +29949,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Opoponax 216": [
     null,
@@ -29973,7 +29974,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Ambreol: [
     null,
@@ -29998,7 +29999,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambre Solide (Ambre 83)": [
     null,
@@ -30023,7 +30024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rosewood Cayenne": [
     null,
@@ -30048,7 +30049,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ylang Impériale": [
     null,
@@ -30073,7 +30074,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Cuir de Russie": [
     null,
@@ -30098,7 +30099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Fleurs": [
     null,
@@ -30123,7 +30124,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Mayciane: [
     null,
@@ -30148,7 +30149,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Cedarome: [
     null,
@@ -30173,7 +30174,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Foin Coupé": [
     null,
@@ -30198,7 +30199,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur D'Oranger": [
     null,
@@ -30223,7 +30224,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Osmanthus Flowers": [
     null,
@@ -30248,7 +30249,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Tuberose Supreme": [
     null,
@@ -30273,7 +30274,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Mielarome: [
     null,
@@ -30298,7 +30299,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lilas Pourpre": [
     null,
@@ -30323,7 +30324,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jacinthia Extra": [
     null,
@@ -30348,7 +30349,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Opoponax Doux": [
     null,
@@ -30373,7 +30374,7 @@ const RAW_DB = {
     "Amber synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Wild Cherry": [
     null,
@@ -30398,7 +30399,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jonquil Extra": [
     null,
@@ -30423,7 +30424,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Animalia™ CMP": [
     null,
@@ -30448,7 +30449,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Vanellia™": [
     null,
@@ -30473,7 +30474,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Orrisodore™": [
     null,
@@ -30498,7 +30499,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambre Royal": [
     null,
@@ -30523,7 +30524,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pink Acacia": [
     null,
@@ -30548,7 +30549,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambreine Natural": [
     null,
@@ -30573,7 +30574,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Gardenia J. Ellis": [
     null,
@@ -30598,7 +30599,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Des Bois": [
     null,
@@ -30623,7 +30624,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Coroliane: [
     null,
@@ -30648,7 +30649,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Essence": [
     null,
@@ -30673,7 +30674,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Aldalia: [
     null,
@@ -30698,7 +30699,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pear Belle": [
     null,
@@ -30723,7 +30724,7 @@ const RAW_DB = {
     "Fruity synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Magnificent Mandarin": [
     null,
@@ -30748,7 +30749,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bergamot Reggio": [
     null,
@@ -30773,7 +30774,7 @@ const RAW_DB = {
     "Citrus synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Pineapple Supreme": [
     null,
@@ -30798,7 +30799,7 @@ const RAW_DB = {
     "Woody synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Lilas Blanc": [
     null,
@@ -30823,7 +30824,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin Épicé": [
     null,
@@ -30848,7 +30849,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose St. Columba": [
     null,
@@ -30873,7 +30874,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose D'Orient": [
     null,
@@ -30898,7 +30899,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin Blanc": [
     null,
@@ -30923,7 +30924,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin Russe": [
     null,
@@ -30948,7 +30949,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Floranol: [
     null,
@@ -30973,7 +30974,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Muguet Royale": [
     null,
@@ -30998,7 +30999,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Ambreine Samuelson": [
     null,
@@ -31023,7 +31024,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Dianthus: [
     null,
@@ -31048,7 +31049,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Saxon Moss (Mousse de Saxe)": [
     null,
@@ -31073,7 +31074,7 @@ const RAW_DB = {
     "Green synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   Irrozol: [
     null,
@@ -31098,7 +31099,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur De Cassie": [
     null,
@@ -31123,7 +31124,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Sweet Pea": [
     null,
@@ -31148,7 +31149,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Fleur De Reseda": [
     null,
@@ -31173,7 +31174,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Bouvardia DL": [
     null,
@@ -31198,7 +31199,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Absolute Ambergris™": [
     null,
@@ -31223,7 +31224,7 @@ const RAW_DB = {
     "Amber abs by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Nearly Deer™ CMP": [
     null,
@@ -31248,7 +31249,7 @@ const RAW_DB = {
     "Aromatic synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Jasmin Imperial": [
     null,
@@ -31273,7 +31274,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
   "Rose Imperiale": [
     null,
@@ -31298,7 +31299,7 @@ const RAW_DB = {
     "Floral synth by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null
+    null, null, null, null, null, null, null
   ],
 };
 
@@ -31331,6 +31332,7 @@ const FIELDS = [
   "odorThreshold_ngL",
   "vpConfidence",
   "isIsomerMix",
+  "ifraLimits",
 ];
 const DB = Object.fromEntries(
   Object.entries(RAW_DB).map(([k, v]) => [
@@ -53454,7 +53456,7 @@ function computeChemistry(ingredients) {
     const { d } = ing;
     if (!d) return { ...ing, xfrac: 0, headspace_ppbv: 0, OV: 0 };
     // d) isUVCB: complex mixture — headspace model doesn't apply
-    if (d.isUVCB) return { ...ing, xfrac: ing.molN / totalMol, headspace_ppbv: 0, OV: 0 };
+    if (d.isUVCB) return { ...ing, xfrac: 0, headspace_ppbv: 0, OV: 0, intensity: 0, isUVCB: true };
     const xfrac = ing.molN / totalMol;
     // a) dilFactor accounts for pre-diluted products
     const dilFactor = d.dilutionFactor || 1.0;
@@ -53627,17 +53629,25 @@ function genDescriptorTags(name, scentClass, char) {
   return tags.length >= 4 ? tags : [...new Set([...tags, ...base])].slice(0, 4);
 }
 const _dilOverrides = {
-  "Calone 1951":         0.20,
-  "Oakmoss Absolute":    0.10,
-  "Isobutyl Quinoline":  0.0019,
-  "Frangipani Absolute": 0.10,
-  "Floralozone®":   0.50,
-  "Undecavertol":        0.25,
+  "Calone 1951":              0.20,
+  "Oakmoss Absolute":         0.10,
+  "Isobutyl Quinoline":       0.0019,
+  "Frangipani Absolute":      0.10,
+  "Floralozone\u00ae":        0.50,
+  "Floralozone (50%)":        0.50,
+  "Undecavertol":             0.25,
+  "Undecavertol (25%)":       0.25,
+  "Galaxolide 50% IPM":       0.50,
+  "Galaxolide 50% DPG":       0.50,
+  "Oakmoss Absolute (10%)":   0.10,
+  "Frangipani Absolute (10%)":0.10,
+  "Osmanthus Absolute (10%)": 0.10,
 };
 const _uvNames = new Set([
   "Bergamot EO FCF","Lemon EO Italy","Jasmine Sambac Absolute",
   "Ylang Ylang Extra Absolute","Ylang Ylang Complete",
-  "Himalayan Cedarwood EO","Clearwood® PRISMA","Clearwood",
+  "Himalayan Cedarwood EO","Clearwood\u00ae PRISMA","Clearwood",
+  "Oakmoss Absolute (10%)","Frangipani Absolute (10%)","Osmanthus Absolute (10%)",
 ]);
 Object.entries(DB).forEach(([name, d]) => {
   if (_dilOverrides[name] != null) {
@@ -53646,14 +53656,37 @@ Object.entries(DB).forEach(([name, d]) => {
     if (name.includes("Osmanthus") || name.includes("Frangipani")) d.dilutionFactor = 0.10;
     else if (/10%/.test(name)) d.dilutionFactor = 0.10;
     else if (/20%/.test(name)) d.dilutionFactor = 0.20;
+    else if (/50%/.test(name)) d.dilutionFactor = 0.50;
+    else if (/25%/.test(name)) d.dilutionFactor = 0.25;
     else d.dilutionFactor = 1.0;
   }
   if (d.isUVCB == null)
     d.isUVCB = d.type === "ABS" || d.type === "EO" || _uvNames.has(name);
   if (d.isIsomerMix == null)
-    d.isIsomerMix = name === "Iso E Super";
+    d.isIsomerMix = name === "Iso E Super" || name === "Iso E Super\u2122";
   if (d.descriptorTags == null)
     d.descriptorTags = genDescriptorTags(name, d.scentClass, d.char);
+});
+const _ifraLimits = {
+  "Benzyl Salicylate":          { cat4: 7.3,  cat5b: 1.5,  cat9: 7.3,  cat1: 1.3  },
+  "Hexyl Cinnamic Aldehyde":    { cat4: 9.9,  cat5b: 2.1,  cat9: 9.9              },
+  "Coumarin":                   { cat4: 1.5,  cat5b: 0.23, cat9: 0.57, cat1: 0.089},
+  "Benzyl Benzoate":            { cat4: 4.8,  cat5b: 0.7,  cat9: 4.8,  cat1: 1.7  },
+  "Benzyl Cinnamate":           { cat4: 2.0,  cat5b: 0.4,  cat9: 2.0              },
+  "Cyclamen Aldehyde":          { cat4: 0.95, cat5b: 0.19                         },
+  "Cyclamen aldehyde":          { cat4: 0.95, cat5b: 0.19                         },
+  "Veramoss":                   { cat4: 0.1,  cat5b: 0.02                         },
+  "Oakmoss Absolute":           { cat4: 0.1,  cat5b: 0.02                         },
+  "Jasmine Sambac Absolute":    { cat4: 3.8,  cat5b: 0.76                         },
+  "Jasmine Grandiflorum Abs":   { cat4: 0.6,  cat5b: 0.12                         },
+  "Methyl Ionone Alpha Extra":  { cat4: 30.0                                       },
+  "Bergamot EO FCF":            { cat4: 0.4                                        },
+  "Lemon EO Italy":             { cat4: 2.0                                        },
+  "Ylang Ylang Complete":       { cat4: 0.73                                       },
+  "Ylang Ylang Extra Absolute": { cat4: 0.73                                       },
+};
+Object.entries(DB).forEach(([name, d]) => {
+  if (d.ifraLimits == null && _ifraLimits[name]) d.ifraLimits = _ifraLimits[name];
 });
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -54222,6 +54255,7 @@ export default function App() {
   const [mainTab, setMainTab] = useState("formulas");
   const [selFrag, setSelFrag] = useState(0);
   const [subTab, setSubTab] = useState("formula");
+  const [ifraCategory, setIfraCategory] = useState("cat4");
   const [formulas, setFormulas] = useState(FORMULAS_INIT);
   const [buildItems, setBuildItems] = useState([]);
   const [buildSearch, setBuildSearch] = useState("");
@@ -56500,64 +56534,84 @@ Be specific, reference ingredient names, keep it under 300 words.`;
 
                 {/* ── TIMELINE SUB-TAB ── */}
                 {subTab === "timeline" && (() => {
+                  const VP_FALLBACK = { top: 0.050, mid: 0.005, base: 0.0005, carrier: 0.004 };
                   const TIME_STEPS = [0, 0.25, 0.5, 1, 2, 3, 4, 6, 8];
-                  const total = formula.ingredients.reduce((s, i) => s + i.g, 0) || 1;
-                  // Compute evap rate k for each ingredient
+                  // Include ALL ingredients — use VP fallback if no real VP
                   const ingData = formula.ingredients.map((ing) => {
                     const d = DB[ing.name];
-                    if (!d || !d.VP || !d.MW || !d.ODT) return null;
-                    const k = (d.VP * (d.dilutionFactor || 1)) / Math.sqrt(d.MW || 200) * 25;
-                    return { name: ing.name, g0: ing.g, k, d };
-                  }).filter(Boolean);
-                  // Compute OV at each time step for each ingredient
+                    const hasRealVP = d && d.VP > 0 && d.MW;
+                    const vpForDecay = hasRealVP ? d.VP : (VP_FALLBACK[ing.note] ?? 0.005);
+                    const mwForDecay = (d && d.MW) ? d.MW : 200;
+                    const dilFactor = (d && d.dilutionFactor) ? d.dilutionFactor : 1.0;
+                    const k = vpForDecay * dilFactor / Math.sqrt(mwForDecay) * 25;
+                    return { name: ing.name, g0: ing.g, k, d, note: ing.note, hasRealVP };
+                  });
+                  // Compute intensity at each time step for each ingredient
                   const peakOV = {};
                   const timeData = TIME_STEPS.map((t) => {
                     const masses = ingData.map((i) => ({ ...i, gT: i.g0 * Math.exp(-i.k * t) }));
                     const totalT = masses.reduce((s, i) => s + i.gT, 0) || 1;
-                    const molT = masses.map((i) => ({ ...i, molN: (i.gT / totalT) / (i.d.MW || 180) }));
-                    const totalMol = molT.reduce((s, i) => s + i.molN, 0) || 1;
                     const row = { t };
-                    molT.forEach((i) => {
-                      const xfrac = i.molN / totalMol;
-                      const dilFactor = i.d.dilutionFactor || 1.0;
-                      const headspace = ((xfrac * i.d.VP * dilFactor) / 760) * 1e9;
-                      const OV = headspace / i.d.ODT;
-                      const intensity = OV > 1 ? Math.pow(OV - 1, i.d.n || 0.5) : 0;
-                      row[i.name] = parseFloat(intensity.toFixed(4));
-                      if ((peakOV[i.name] || 0) < OV) peakOV[i.name] = OV;
+                    masses.forEach((i) => {
+                      if (i.d && i.d.VP > 0 && i.d.ODT > 0 && i.d.MW) {
+                        const wfrac = i.gT / totalT;
+                        const molN = wfrac / (i.d.MW || 180);
+                        const totalMolApprox = masses.filter(x => x.d && x.d.MW).reduce((s, x) => s + (x.gT / totalT) / (x.d.MW || 180), 0) || 1;
+                        const xfrac = molN / totalMolApprox;
+                        const headspace = ((xfrac * i.d.VP * (i.d.dilutionFactor || 1)) / 760) * 1e9;
+                        const OV = headspace / i.d.ODT;
+                        const intensity = OV > 1 ? Math.pow(OV - 1, i.d.n || 0.5) : 0;
+                        row[i.name] = parseFloat(intensity.toFixed(4));
+                        if ((peakOV[i.name] || 0) < OV) peakOV[i.name] = OV;
+                      } else {
+                        // No real chemistry data — show mass remaining fraction * 0.5 as proxy
+                        const massRem = i.gT / (i.g0 || 1);
+                        row[i.name] = parseFloat((massRem * 0.5).toFixed(4));
+                      }
                     });
                     return row;
                   });
-                  const activeIngs = ingData.filter((i) => (peakOV[i.name] || 0) > 0.5);
                   const noteColor = (note) => note === "top" ? "#F59E0B" : note === "mid" ? "#10B981" : "#818CF8";
+                  const activeIngs = ingData.filter((i) => {
+                    const peak = peakOV[i.name] || 0;
+                    return i.hasRealVP ? peak > 0.05 : true;
+                  });
+                  // Stage summary
+                  const topNames = formula.ingredients.filter(i => i.note === "top").map(i => i.name);
+                  const midNames = formula.ingredients.filter(i => i.note === "mid").map(i => i.name);
+                  const baseNames = formula.ingredients.filter(i => i.note === "base").map(i => i.name);
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
                         Evaporation Timeline — OV Intensity Over Time
                       </p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                         {activeIngs.map((i) => (
                           <span key={i.name} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 8.5, color: "#94A3B8" }}>
-                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: noteColor(i.d.note), display: "inline-block" }} />
-                            {i.name}
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: noteColor(i.note), display: "inline-block" }} />
+                            {i.name}{!i.hasRealVP && <span style={{ color: "#475569" }}> *</span>}
                           </span>
                         ))}
                       </div>
-                      <ResponsiveContainer width="100%" height={280}>
+                      <ResponsiveContainer width="100%" height={290}>
                         <LineChart data={timeData} margin={{ top: 4, right: 12, left: 0, bottom: 4 }}>
                           <XAxis dataKey="t" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "Hours", position: "insideBottomRight", offset: -4, fill: "#64748B", fontSize: 9 }} />
                           <YAxis tick={{ fill: "#94A3B8", fontSize: 8 }} tickFormatter={(v) => v > 0 ? v.toFixed(1) : "0"} />
-                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }} formatter={(v, n) => [v.toFixed(3), n]} labelFormatter={(v) => `${v}h`} />
-                          <Legend wrapperStyle={{ fontSize: 8, color: "#475569" }} />
+                          <Tooltip contentStyle={{ background: "#0A1628", border: `1px solid ${BORDER}`, borderRadius: 8, fontSize: 10, color: "#CBD5E1" }} itemStyle={{ color: "#CBD5E1" }} labelStyle={{ color: "#94A3B8" }} formatter={(v, n) => [v.toFixed(3), n]} labelFormatter={(v) => `${v}h`} />
+                          <Legend wrapperStyle={{ fontSize: 8, color: "#94A3B8" }} />
+                          <ReferenceArea x1={0} x2={0.5} fill="#F59E0B" fillOpacity={0.05} label={{ value: "Opening", position: "insideTop", fontSize: 7, fill: "#F59E0B" }} />
+                          <ReferenceArea x1={0.5} x2={3} fill="#10B981" fillOpacity={0.04} label={{ value: "Heart", position: "insideTop", fontSize: 7, fill: "#10B981" }} />
+                          <ReferenceArea x1={3} x2={8} fill="#818CF8" fillOpacity={0.04} label={{ value: "Drydown", position: "insideTop", fontSize: 7, fill: "#818CF8" }} />
                           {activeIngs.map((i) => (
-                            <Line key={i.name} type="monotone" dataKey={i.name} stroke={noteColor(i.d.note)} strokeWidth={1.5} dot={false} />
+                            <Line key={i.name} type="monotone" dataKey={i.name} stroke={noteColor(i.note)} strokeWidth={1.5} dot={false} strokeDasharray={i.hasRealVP ? undefined : "4 2"} />
                           ))}
                         </LineChart>
                       </ResponsiveContainer>
-                      <div style={{ display: "flex", gap: 16, marginTop: 10, fontSize: 8.5, color: "#475569" }}>
-                        <span><span style={{ color: "#F59E0B" }}>●</span> Top notes (fast evap)</span>
-                        <span><span style={{ color: "#10B981" }}>●</span> Heart notes</span>
-                        <span><span style={{ color: "#818CF8" }}>●</span> Base notes (slow evap)</span>
+                      <div style={{ marginTop: 10, padding: "8px 12px", background: "#0A1628", borderRadius: 8, border: `1px solid ${BORDER}`, fontSize: 9, color: "#64748B", lineHeight: 1.8 }}>
+                        <div><span style={{ color: "#F59E0B" }}>Opening (0–30 min):</span> {topNames.length ? topNames.join(", ") : "—"}</div>
+                        <div><span style={{ color: "#10B981" }}>Heart (30 min–3 hr):</span> {midNames.length ? midNames.join(", ") : "—"}</div>
+                        <div><span style={{ color: "#818CF8" }}>Drydown (3 hr+):</span> {baseNames.length ? baseNames.join(", ") : "—"}</div>
+                        {activeIngs.some(i => !i.hasRealVP) && <div style={{ marginTop: 4, color: "#475569" }}>* Dashed lines = estimated decay (no VP data)</div>}
                       </div>
                     </div>
                   );
@@ -57965,6 +58019,44 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       </div>
                     </div>
                   </div>
+                  {(() => {
+                    const ifraItems = buildItems.filter(item => DB[item.name]?.ifraLimits);
+                    if (ifraItems.length === 0) return null;
+                    const totalG = buildItems.reduce((s, i) => s + i.g, 0) || 1;
+                    const catLabels = { cat4: "Cat 4 — Fine Fragrance", cat5b: "Cat 5b — Face Moisturizer", cat9: "Cat 9 — Body Lotion", cat1: "Cat 1 — Lip Product", cat11a: "Cat 11a — Rinse-off Body" };
+                    const rows = ifraItems.map(item => {
+                      const pct = (item.g / totalG) * 100;
+                      const limit = DB[item.name].ifraLimits[ifraCategory];
+                      let status = "ok";
+                      if (limit == null) status = "unknown";
+                      else if (pct > limit) status = "fail";
+                      else if (pct > limit * 0.8) status = "warn";
+                      return { name: item.name, pct, limit, status };
+                    });
+                    const allOk = rows.every(r => r.status === "ok" || r.status === "unknown");
+                    const anyFail = rows.some(r => r.status === "fail");
+                    return (
+                      <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 14, marginBottom: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", margin: 0 }}>IFRA Compliance</p>
+                          <select value={ifraCategory} onChange={e => setIfraCategory(e.target.value)} style={{ fontSize: 10, background: "#0F172A", color: "#94A3B8", border: "1px solid #334155", borderRadius: 6, padding: "2px 6px" }}>
+                            {Object.entries(catLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                          </select>
+                        </div>
+                        {rows.map(({ name, pct, limit, status }) => (
+                          <div key={name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5, fontSize: 10 }}>
+                            <span style={{ flex: 1, color: "#CBD5E1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+                            <span style={{ color: "#64748B", minWidth: 48, textAlign: "right" }}>{pct.toFixed(2)}%</span>
+                            <span style={{ color: "#475569", minWidth: 48, textAlign: "right" }}>{limit != null ? `≤${limit}%` : "—"}</span>
+                            <span style={{ minWidth: 18 }}>{status === "ok" ? "✅" : status === "warn" ? "⚠️" : status === "fail" ? "🚫" : "❓"}</span>
+                          </div>
+                        ))}
+                        <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: anyFail ? "#450A0A" : allOk ? "#052E16" : "#431407", border: `1px solid ${anyFail ? "#991B1B" : allOk ? "#166534" : "#92400E"}`, fontSize: 10, color: anyFail ? "#FCA5A5" : allOk ? "#86EFAC" : "#FCD34D", fontWeight: 600 }}>
+                          {anyFail ? "🚫 IFRA Violations Detected — Reduce highlighted ingredients" : allOk ? `✅ IFRA Compliant — ${catLabels[ifraCategory]}` : "⚠️ Some ingredients approaching limit — review before production"}
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {buildChem.filter((i) => i.OV > 0).length > 0 && (
                     <div
                       style={{
@@ -59015,6 +59107,92 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         Combined OV = <span style={{ color: "#F87171" }}>{combinedOV}</span>,
                         estimated effective OV ≈ <span style={{ color: "#34D399" }}>{effectiveOV}</span>.
                         <span style={{ color: "#64748B" }}> Recommendation: reduce to 2–3 {family} ingredients for maximum impact.</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* ── Accord Recognition ── */}
+              {(() => {
+                const classes = new Set(formula.ingredients.map(i => DB[i.name]?.scentClass).filter(Boolean));
+                const has = (...names) => names.some(n => [...classes].some(c => c.toLowerCase().includes(n.toLowerCase())));
+                const accords = [];
+                if (has("citrus") && (has("oakmoss","labdanum","chypre","woody"))) accords.push({ name: "Chypre", desc: "Citrus + oakmoss/labdanum structure", color: "#22C55E" });
+                if (has("lavender","herbal","fougere") && formula.ingredients.some(i => i.name.toLowerCase().includes("coumarin"))) accords.push({ name: "Fougère", desc: "Lavender + coumarin foundation", color: "#818CF8" });
+                if ((has("marine","aquatic","ozonic")) && has("floral","rose","jasmine")) accords.push({ name: "Aquatic Floral", desc: "Marine freshness + floral heart", color: "#22D3EE" });
+                if (has("musk") && has("woody","sandalwood","cedar")) accords.push({ name: "Woody Musk", desc: "Musky base + woody drydown", color: "#F59E0B" });
+                if (has("vanilla","gourmand","sweet") && has("floral")) accords.push({ name: "Floral Gourmand", desc: "Sweet/gourmand + floral character", color: "#F472B6" });
+                if (accords.length === 0) return null;
+                return (
+                  <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
+                      🎨 Accord Recognition
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {accords.map(acc => (
+                        <div key={acc.name} style={{ background: acc.color + "18", border: `1px solid ${acc.color}44`, borderRadius: 10, padding: "8px 14px" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: acc.color }}>{acc.name}</div>
+                          <div style={{ fontSize: 9, color: "#94A3B8", marginTop: 2 }}>{acc.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Formula Report Card ── */}
+              {(() => {
+                const ings = formula.ingredients;
+                const totalG = ings.reduce((s, i) => s + i.g, 0) || 1;
+                const topG = ings.filter(i => i.note === "top").reduce((s, i) => s + i.g, 0);
+                const midG = ings.filter(i => i.note === "mid").reduce((s, i) => s + i.g, 0);
+                const baseG = ings.filter(i => i.note === "base").reduce((s, i) => s + i.g, 0);
+                const topPct = topG / totalG, midPct = midG / totalG, basePct = baseG / totalG;
+                const structureScore = (() => {
+                  const dTop = Math.abs(topPct - 0.20), dMid = Math.abs(midPct - 0.40), dBase = Math.abs(basePct - 0.40);
+                  return Math.max(0, 10 - (dTop + dMid + dBase) * 20);
+                })();
+                const withData = ings.filter(i => DB[i.name]?.VP > 0 && DB[i.name]?.ODT > 0);
+                const dataCompleteness = (withData.reduce((s, i) => s + i.g, 0) / totalG) * 10;
+                const ifraScore = (() => {
+                  const ifraIngs = ings.filter(i => DB[i.name]?.ifraLimits);
+                  if (ifraIngs.length === 0) return 10;
+                  const violations = ifraIngs.filter(i => {
+                    const pct = (i.g / totalG) * 100;
+                    const lim = DB[i.name].ifraLimits["cat4"];
+                    return lim != null && pct > lim;
+                  });
+                  return Math.max(0, 10 - violations.length * 3);
+                })();
+                const accordScore = (() => {
+                  const classes = [...new Set(ings.map(i => DB[i.name]?.scentClass).filter(Boolean))];
+                  if (classes.length === 0) return 5;
+                  return Math.max(1, Math.min(10, 10 - (classes.length - 3) * 0.8));
+                })();
+                const perfScore2 = (formulaScore.longevity + formulaScore.sillage + formulaScore.projection) / 3;
+                const bars = [
+                  { label: "Structure", score: structureScore, color: "#22C55E", tip: "Top 20% / Mid 40% / Base 40% ideal" },
+                  { label: "Data Completeness", score: dataCompleteness, color: "#22D3EE", tip: "% of formula weight with VP+ODT data" },
+                  { label: "IFRA Safety (Cat 4)", score: ifraScore, color: "#F59E0B", tip: "Compliance with IFRA Cat 4 fine fragrance limits" },
+                  { label: "Accord Coherence", score: accordScore, color: "#818CF8", tip: "Fewer distinct scent families = higher coherence" },
+                  { label: "Performance", score: perfScore2, color: "#F472B6", tip: "Average of longevity, sillage, projection" },
+                ];
+                return (
+                  <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
+                      📋 Formula Report Card
+                    </p>
+                    {bars.map(({ label, score, color, tip }) => (
+                      <div key={label} style={{ marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                          <span style={{ fontSize: 9.5, color: "#94A3B8" }}>{label}</span>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color }}>{score.toFixed(1)}</span>
+                        </div>
+                        <div style={{ height: 6, background: "#1E293B", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${Math.min(100, score * 10)}%`, background: color, borderRadius: 3, transition: "width 0.4s" }} />
+                        </div>
+                        <div style={{ fontSize: 8, color: "#475569", marginTop: 2 }}>{tip}</div>
                       </div>
                     ))}
                   </div>
