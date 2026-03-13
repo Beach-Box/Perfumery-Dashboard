@@ -1479,17 +1479,17 @@ export function getIfraUiState(name) {
   const resolved = resolveIngredientIdentity(name);
   if (!resolved) return "unresolved_identity";
 
+  const material = getIfraMaterialRecord(name);
+  if (material && material.status === "active") return "listed";
+  if (material && material.status === "not_found_in_uploaded_pdf")
+    return "not_found_in_uploaded_pdf";
+
   if (
     resolved.materialClass === "functional_solvent" ||
     resolved.materialClass === "carrier"
   ) {
     return "functional_solvent";
   }
-
-  const material = getIfraMaterialRecord(name);
-  if (material && material.status === "active") return "listed";
-  if (material && material.status === "not_found_in_uploaded_pdf")
-    return "not_found_in_uploaded_pdf";
 
   return "unresolved_identity";
 }
