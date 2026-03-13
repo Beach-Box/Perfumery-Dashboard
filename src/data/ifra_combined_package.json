@@ -1,0 +1,1578 @@
+{
+    "meta": {
+      "packageName": "Beach Box IFRA Combined Package",
+      "version": "0.1.0-starter",
+      "sourceDocuments": [
+        "IFRA - 51st Amendment.pdf",
+        "App (2).js"
+      ],
+      "purpose": "Starter full-library IFRA architecture package for app integration. Use as source-of-truth layer instead of boolean IFRA flags in the UI.",
+      "importantNotes": [
+        "This is an app package starter, not a full verified IFRA library for all 1,251 ingredients yet.",
+        "Functional solvents/carriers may legitimately have no specific IFRA standard and should not be displayed as unrestricted by default.",
+        "Use CAS first, then canonical/synonym name, then INCI, then alias map for identity resolution.",
+        "For diluted stocks, evaluate IFRA contribution using active material percentage, not the full stock percentage."
+      ]
+    },
+    "schema": {
+      "ifraMasterMaterials": {
+        "description": "Verified IFRA materials from source documents.",
+        "key": "canonical IFRA material name"
+      },
+      "ingredientIdentityMap": {
+        "description": "Maps app ingredient names to canonical IFRA materials or non-IFRA classes like functional solvents.",
+        "key": "app ingredient name"
+      },
+      "complianceConfig": {
+        "defaultCategory": "cat4",
+        "formulaStateHandling": [
+          "pass",
+          "warn",
+          "fail",
+          "not_found_in_source_dataset",
+          "functional_material_no_standard",
+          "unresolved_identity"
+        ]
+      }
+    },
+    "ifraMasterMaterials": {
+      "benzyl benzoate": {
+        "canonicalName": "Benzyl benzoate",
+        "cas": [
+          "120-51-4"
+        ],
+        "synonyms": [
+          "bb",
+          "benylate",
+          "benzoic acid, benzyl ester",
+          "benzoic acid, phenylmethyl ester",
+          "benzyl phenylformate",
+          "phenylmethyl benzoate"
+        ],
+        "recommendationType": "restriction",
+        "status": "active",
+        "publicationYear": 2020,
+        "amendment": 49,
+        "implementationDates": {
+          "newCreation": "2021-02-10",
+          "existingCreation": "2022-02-10"
+        },
+        "limits": {
+          "cat4": 4.8
+        },
+        "limitUnit": "%",
+        "source": {
+          "document": "IFRA - 51st Amendment.pdf",
+          "pages": [
+            25,
+            26,
+            27
+          ]
+        },
+        "notes": [
+          "Appears in index and has a full IFRA standard in the uploaded PDF.",
+          "Treat as carrier/solvent for dashboard note-role logic, not as a fragrance note."
+        ]
+      },
+      "triethyl citrate": {
+        "canonicalName": "Triethyl Citrate",
+        "cas": [],
+        "synonyms": [
+          "tec"
+        ],
+        "recommendationType": null,
+        "status": "not_found_in_uploaded_pdf",
+        "publicationYear": null,
+        "amendment": null,
+        "implementationDates": {
+          "newCreation": null,
+          "existingCreation": null
+        },
+        "limits": {
+          "cat4": null
+        },
+        "limitUnit": "%",
+        "source": {
+          "document": "IFRA - 51st Amendment.pdf",
+          "pages": []
+        },
+        "notes": [
+          "No matching IFRA standard was located in the uploaded PDF during this pass.",
+          "Do not render as unrestricted; render as 'no specific IFRA standard found in uploaded PDF'.",
+          "Treat as carrier/solvent for dashboard note-role logic."
+        ]
+      },
+      "isopropyl myristate": {
+        "canonicalName": "Isopropyl Myristate",
+        "cas": [],
+        "synonyms": [
+          "ipm"
+        ],
+        "recommendationType": null,
+        "status": "not_found_in_uploaded_pdf",
+        "publicationYear": null,
+        "amendment": null,
+        "implementationDates": {
+          "newCreation": null,
+          "existingCreation": null
+        },
+        "limits": {
+          "cat4": null
+        },
+        "limitUnit": "%",
+        "source": {
+          "document": "IFRA - 51st Amendment.pdf",
+          "pages": []
+        },
+        "notes": [
+          "No matching IFRA standard was located in the uploaded PDF during this pass.",
+          "Do not render as unrestricted; render as 'no specific IFRA standard found in uploaded PDF'.",
+          "Treat as carrier/solvent for dashboard note-role logic."
+        ]
+      }
+    },
+    "ingredientIdentityMap": {
+      "Benzyl Salicylate": {
+        "canonicalAppName": "Benzyl Salicylate",
+        "normalizedName": "Benzyl salicylate",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Benzyl salicylate",
+          "Benzyl Salicylate"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Multi-functional: a fixative, UV-absorber, and pleasant green-balsamic-floral note. Sweet, slightly green with a soft balsamic character. One of the most important bases in perfumery \u2014 adds lasting power and a classic fine-fragrance character.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Benzyl salicylate",
+        "pdfMatchedPage": 3.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "DPG": {
+        "canonicalAppName": "DPG",
+        "normalizedName": "Dipropylene Glycol",
+        "matchStrategy": "manual_classification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "functional_solvent",
+        "aliases": [
+          "Dipropylene Glycol",
+          "DPG"
+        ],
+        "stock": null,
+        "dbNoteRole": "carrier",
+        "dbMaterialType": "CARRIER",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "DPG is the industry-standard odorless carrier for perfume concentrates. Water-miscible, low irritation, excellent solvency for both polar and non-polar odorants. The backbone of any serious formula.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Vetiver Bourbon EO": {
+        "canonicalAppName": "Vetiver Bourbon EO",
+        "normalizedName": "Vetiver Bourbon EO",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Vetiver Bourbon EO",
+          "Vetiver Bourbon",
+          "Vetiver oil",
+          "Vetiver"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Bourbon (R\u00e9union) vetiver \u2014 the benchmark. Khusimol-rich, deep, earthy, smoky-rootsy with mineral nuances. The perfect base note for grounding any formula. Extraordinary longevity on skin and fabric. Essential in masculine bases and chypres.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Vetiver oil",
+        "pdfMatchedPage": 20.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Bergamot EO FCF": {
+        "canonicalAppName": "Bergamot EO FCF",
+        "normalizedName": "Bergamot expressed",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Bergamot expressed",
+          "Bergamot EO FCF",
+          "Bergamot FCF",
+          "Bergamot oil",
+          "Bergamot"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Bergamot FCF (furocoumarin-free) \u2014 the benchmark citrus opening note. Green, floral-citrus sparkle driven by linalool and linalyl acetate with a characteristic bergamot bitterness. Versatile, bright, essential in foug\u00e8res and chypres.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Bergamot oil",
+        "pdfMatchedPage": 3.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Coumarin": {
+        "canonicalAppName": "Coumarin",
+        "normalizedName": "Coumarin",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Coumarin"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The founding molecule of foug\u00e8re perfumery (Foug\u00e8re Royale, 1882). Sweet, hay-like, tonka-warm character. Essential in foug\u00e8res, orientals, and modern gourmands. Powerful fixative that anchors and extends floral and woody accords.",
+        "pdfMatchStatus": "index_match",
+        "pdfMatchedAlias": "Coumarin",
+        "pdfMatchedPage": 5.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Oakmoss Absolute": {
+        "canonicalAppName": "Oakmoss Absolute",
+        "normalizedName": "Oakmoss Absolute",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Oakmoss Absolute",
+          "Oakmoss absolute",
+          "Oakmoss"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": true,
+        "currentAppIfraText": "The quintessential chypre ingredient \u2014 damp, earthy, forest floor mossy depth. Severely IFRA restricted due to atranol and chloroatranol sensitizers. Maximum 0.1% in leave-on products effectively means it can only be used as a trace note today. A ghost of its former perfumery self.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Oakmoss Absolute",
+        "pdfMatchedPage": 216.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Violet Leaf Absolute": {
+        "canonicalAppName": "Violet Leaf Absolute",
+        "normalizedName": "Violet leaf absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Violet leaf absolute",
+          "Violet Leaf Absolute",
+          "Violet leaf",
+          "Violet Leaf"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": true,
+        "currentAppIfraText": "Exceptional potency \u2014 traces create a watery, green, cucumber-like freshness with an almost ozonic quality. 2,6-Nonadienal is the key odorant. IFRA restricted due to sensitization potential. Used in tiny amounts in chypres, green accords, and aquatics.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Methyl Ionone Gamma Coeur": {
+        "canonicalAppName": "Methyl Ionone Gamma Coeur",
+        "normalizedName": "Methyl ionone, mixed isomers",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Methyl ionone, mixed isomers",
+          "Methyl Ionone Gamma Coeur",
+          "Methyl ionone gamma",
+          "Methyl ionone"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Gamma methyl ionone \u2014 the softest, most powdery of the ionones. Iris-violet character without the orris-root earthiness. Adds elegance, feminine powder, and depth as a heart note bridge. Essential in violet, iris, and powdery florals.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Methyl ionone, mixed isomers",
+        "pdfMatchedPage": 203.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Petitgrain Bigarade EO": {
+        "canonicalAppName": "Petitgrain Bigarade EO",
+        "normalizedName": "Petitgrain Bigarade EO",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Petitgrain Bigarade EO",
+          "Petitgrain bigarade",
+          "Petitgrain Bigarade",
+          "Petitgrain oil",
+          "Petitgrain"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "From the leaves and twigs of bitter orange \u2014 a woody-green, slightly floral citrus bridge note. Linalyl acetate dominant. Bridges the gap between citrus tops and floral/woody hearts beautifully. Essential in classic foug\u00e8res and modern masculines.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Petitgrain",
+        "pdfMatchedPage": 286.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Sweet Orange Absolute": {
+        "canonicalAppName": "Sweet Orange Absolute",
+        "normalizedName": "Sweet Orange Absolute",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Sweet Orange Absolute",
+          "Sweet orange oil",
+          "Sweet Orange",
+          "Sweet orange",
+          "Orange oil"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Unlike the EO, the absolute carries the full ripe orange juice and peel character \u2014 honeyed, warm, slightly waxy. Adds weight and longevity to citrus openings that the EO cannot. Excellent with coconut and vanilla.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Orange oil",
+        "pdfMatchedPage": 282.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Lemon EO Italy": {
+        "canonicalAppName": "Lemon EO Italy",
+        "normalizedName": "Lemon expressed",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Lemon expressed",
+          "Lemon EO Italy",
+          "Lemon Italy",
+          "Lemon oil",
+          "Lemon"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Cold-pressed Italian lemon \u2014 the brightest citrus opening. Citral and limonene dominant. Clean, transparent lemon sparkle with slight green-waxy facets. Short-lived but irreplaceable for authentic citrus openings. Use with fixatives like Iso E Super or benzyl salicylate to extend longevity.",
+        "pdfMatchStatus": "index_match",
+        "pdfMatchedAlias": "Lemon oil",
+        "pdfMatchedPage": 10.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Balsam Peru EO": {
+        "canonicalAppName": "Balsam Peru EO",
+        "normalizedName": "Peru balsam oil",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Peru balsam oil",
+          "Balsam Peru EO",
+          "Balsam Peru",
+          "Peru balsam"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Peru balsam oil",
+        "pdfMatchedPage": 229.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Cinnamon Bark EO": {
+        "canonicalAppName": "Cinnamon Bark EO",
+        "normalizedName": "Cinnamon bark oil",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cinnamon bark oil",
+          "Cinnamon Bark EO",
+          "Cinnamon Bark",
+          "Cinnamon oil",
+          "Cassia oil"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": true,
+        "currentAppIfraText": "Intensely fiery-sweet cinnamaldehyde-dominant spice. The most powerful natural spice in perfumery but severely IFRA restricted due to sensitization risk. Cinnamaldehyde is a Category B restricted material. Use with extreme caution \u2014 maximum 0.05% in leave-on skin products.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Clove Bud Absolute": {
+        "canonicalAppName": "Clove Bud Absolute",
+        "normalizedName": "Clove Bud Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Clove Bud Absolute",
+          "Clove bud oil",
+          "Clove Bud",
+          "Clove bud",
+          "Clove oil"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": true,
+        "currentAppIfraText": "Eugenol-dominant absolute from clove buds. Warming, medicinal-spice character with a slightly anesthetic quality. IFRA restricted due to eugenol sensitization potential. Essential in oriental and leather accords at compliant levels.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Hexyl Cinnamic Aldehyde": {
+        "canonicalAppName": "Hexyl Cinnamic Aldehyde",
+        "normalizedName": "Hexyl Cinnamic Aldehyde",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Hexyl Cinnamic Aldehyde"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Sweet, warm floral with magnolia and lily facets. One of the most widely-used synthetic materials in perfumery. Also a UV-absorber like benzyl salicylate. Adds warmth, sweetness, and lasting power to any floral or oriental accord.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Hexyl Cinnamic Aldehyde",
+        "pdfMatchedPage": 134.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Linalool Natural": {
+        "canonicalAppName": "Linalool Natural",
+        "normalizedName": "Linalool Natural",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Linalool Natural",
+          "Linalool"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The most important terpene in perfumery \u2014 soft, floral-citrus character that bridges top and heart notes. Present in over 200 natural materials. Adds smoothness, lift, and a characteristic 'floral clean' quality. Essential for blending.",
+        "pdfMatchStatus": "index_match",
+        "pdfMatchedAlias": "Linalool",
+        "pdfMatchedPage": 10.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Oud CO2 10%": {
+        "canonicalAppName": "Oud CO2 10%",
+        "normalizedName": "Agarwood oil",
+        "matchStrategy": "stock_name_parse",
+        "resolvedIfraMaterial": null,
+        "materialClass": "diluted_stock",
+        "aliases": [
+          "Agarwood oil",
+          "Oud CO2 10%",
+          "Agarwood",
+          "Oud CO2",
+          "Oud"
+        ],
+        "stock": {
+          "activeMaterialName": "Oud CO2",
+          "activePercent": 10,
+          "carrierName": null
+        },
+        "dbNoteRole": "base",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "10% CO2 oud dilution \u2014 preserves the full spectrum of agarwood's complexity: dark woody resin, rose-animalic facets, deep balsamic character. More affordable way to work with oud's complexity while maintaining the signature depth.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Oud",
+        "pdfMatchedPage": 352.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Rum Absolute": {
+        "canonicalAppName": "Rum Absolute",
+        "normalizedName": "Rum Absolute",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Rum Absolute",
+          "Rum"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Ethyl butyrate-rich rum character \u2014 tropical, sweet, slightly estery and boozy. Pairs perfectly with vanilla, coconut, and citrus in tropical gourmand accords. More tenacious than it seems due to the heavy molasses components.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Rum Absolute",
+        "pdfMatchedPage": 161.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Ylang Ylang Extra Absolute": {
+        "canonicalAppName": "Ylang Ylang Extra Absolute",
+        "normalizedName": "Ylang Ylang Extra Absolute",
+        "matchStrategy": "pdf_text_match_needs_verification",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ylang Ylang Extra Absolute",
+          "Ylang Ylang Extra",
+          "Ylang ylang oil",
+          "Ylang ylang"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The 'Extra' grade absolute (first distillation) is the most complex and expensive. Rich benzyl acetate-driven banana-creamy floral with spicy eugenol facets. Extraordinarily powerful \u2014 use at low percentages for tropical florals.",
+        "pdfMatchStatus": "index_match",
+        "pdfMatchedAlias": "Ylang Ylang Extra",
+        "pdfMatchedPage": 16.0,
+        "reviewNote": "Has likely PDF match \u2014 verify exact standard and Cat 4"
+      },
+      "Benzyl Benzoate": {
+        "canonicalAppName": "Benzyl Benzoate",
+        "normalizedName": "Benzyl Benzoate",
+        "matchStrategy": "alias_map",
+        "resolvedIfraMaterial": "benzyl benzoate",
+        "materialClass": "functional_solvent",
+        "aliases": [
+          "Benzyl Benzoate",
+          "Benzyl benzoate",
+          "BB"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "One of the oldest and most important materials in perfumery. Sweet, balsamic, slightly floral base note. Primarily functions as a fixative and solvent, greatly enhancing the longevity and blending of other materials. Found in virtually every oriental, amber, and floral base.",
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "Benzyl Benzoate",
+        "pdfMatchedPage": 3.0,
+        "reviewNote": "Use starter IFRA record"
+      },
+      "IPM": {
+        "canonicalAppName": "IPM",
+        "normalizedName": "Isopropyl Myristate",
+        "matchStrategy": "alias_map",
+        "resolvedIfraMaterial": "isopropyl myristate",
+        "materialClass": "functional_solvent",
+        "aliases": [
+          "Isopropyl Myristate",
+          "IPM"
+        ],
+        "stock": null,
+        "dbNoteRole": null,
+        "dbMaterialType": null,
+        "currentAppIfraFlag": null,
+        "currentAppIfraText": null,
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "Use starter IFRA record"
+      },
+      "TEC": {
+        "canonicalAppName": "TEC",
+        "normalizedName": "Triethyl Citrate",
+        "matchStrategy": "alias_map",
+        "resolvedIfraMaterial": "triethyl citrate",
+        "materialClass": "functional_solvent",
+        "aliases": [
+          "Triethyl Citrate",
+          "TEC"
+        ],
+        "stock": null,
+        "dbNoteRole": null,
+        "dbMaterialType": null,
+        "currentAppIfraFlag": null,
+        "currentAppIfraText": null,
+        "pdfMatchStatus": "full_text_match",
+        "pdfMatchedAlias": "TEC",
+        "pdfMatchedPage": 119.0,
+        "reviewNote": "Use starter IFRA record"
+      },
+      "Ambroxan Crystals": {
+        "canonicalAppName": "Ambroxan Crystals",
+        "normalizedName": "Ambroxan Crystals",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ambroxan Crystals",
+          "Ambroxan"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Ambroxan (Ambroxide) is the synthetic equivalent of the key ambergris odorant. Extremely diffusive, radiant, warm-mineral character. Amplifies all surrounding notes and adds skin-warming depth. The modern perfumer's essential 'radiance' molecule.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Ethylene Brassylate": {
+        "canonicalAppName": "Ethylene Brassylate",
+        "normalizedName": "Ethylene Brassylate",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ethylene Brassylate"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Macrocyclic diester prized for its sweet, clean white-musk character. More floral and soft than other musks. Blends beautifully with white florals, gourmands, and clean bases. Outstanding longevity.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Habanolide": {
+        "canonicalAppName": "Habanolide",
+        "normalizedName": "Habanolide",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Habanolide"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Exaltolide-type macrolide lactone with a skin-warm, powdery-clean diffusion. One of the most laundry-fresh musks in perfumery \u2014 bright, sheer, and radiating. Blends seamlessly with floral and woody bases.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Helvetolide": {
+        "canonicalAppName": "Helvetolide",
+        "normalizedName": "Helvetolide",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Helvetolide"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Polycyclic macrolide with extraordinary tenacity on skin. Soft, velvety clean character with subtle sweetness. Excellent for creating the 'second-skin' effect in skin musks and transparent bases.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Iso E Super": {
+        "canonicalAppName": "Iso E Super",
+        "normalizedName": "Iso E Super",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Iso E Super"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The quintessential 'radiance molecule' \u2014 diffusive, cedar-velvet warmth that becomes almost imperceptible at high concentrations (superoleic effect). Amplifies surrounding notes, adds texture and depth. Essential in modern masculines and skin musks.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Calone 1951": {
+        "canonicalAppName": "Calone 1951",
+        "normalizedName": "Calone 1951",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Calone 1951"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The original marine odorant \u2014 extraordinarily powerful at ppb levels. Cold, metallic, melon-marine character that instantly evokes the sea. At correct dosage (0.1-0.5% of formula) it's transformative. At too high it becomes overpowering and synthetic.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Methyl Pamplemousse": {
+        "canonicalAppName": "Methyl Pamplemousse",
+        "normalizedName": "Methyl Pamplemousse",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Methyl Pamplemousse"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Synthetic grapefruit with more tenacity than natural citrus oils. Bright, tart, juicy quality. A key molecule for extending grapefruit character well beyond the natural EO's lifespan. Excellent in freshness accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Benzoin Siam Absolute": {
+        "canonicalAppName": "Benzoin Siam Absolute",
+        "normalizedName": "Benzoin Siam Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Benzoin Siam Absolute",
+          "Benzoin resinoid",
+          "Benzoin Siam",
+          "Benzoin"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "From Styrax tonkinensis resin \u2014 sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Dihydromyrcenol": {
+        "canonicalAppName": "Dihydromyrcenol",
+        "normalizedName": "Dihydromyrcenol",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Dihydromyrcenol"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The backbone of modern marine-fresh masculines. Lime-metallic-clean character that reads as 'aquatic laundry' freshness. Essential in Cool Water-type accords. Extremely diffusive opening note \u2014 pairs beautifully with juniper, bergamot, and Calone.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Gamma Nonalactone": {
+        "canonicalAppName": "Gamma Nonalactone",
+        "normalizedName": "Gamma Nonalactone",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Gamma Nonalactone"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The definitive lactone for creamy-fruity accords. Peach-coconut character that adds soft creaminess and tropical warmth. Essential in 'beach' accords \u2014 pairs with heliotropin for maximum coconut effect.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Heliotropin": {
+        "canonicalAppName": "Heliotropin",
+        "normalizedName": "Heliotropin",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Heliotropin"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Piperonal (heliotropin) \u2014 sweet, almond-like, with a distinctive heliotrope floral facet. A remarkable coconut enhancer when combined with gamma-nonalactone. Also adds powdery softness to any formula. Bridges floral and gourmand.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Labdanum Absolute 10%": {
+        "canonicalAppName": "Labdanum Absolute 10%",
+        "normalizedName": "Labdanum Absolute 10%",
+        "matchStrategy": "stock_name_parse",
+        "resolvedIfraMaterial": null,
+        "materialClass": "diluted_stock",
+        "aliases": [
+          "Labdanum Absolute 10%",
+          "Labdanum Absolute",
+          "Labdanum absolute",
+          "Labdanum"
+        ],
+        "stock": {
+          "activeMaterialName": "Labdanum Absolute",
+          "activePercent": 10,
+          "carrierName": null
+        },
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The 10% dilution of the dense resin absolute. Labdanum creates the classical amber base \u2014 warm, slightly animalic, leathery-resinous and balsamic. The key ingredient in amber accords and chypres. Extraordinary fixative properties.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Cedarwood Virginia EO": {
+        "canonicalAppName": "Cedarwood Virginia EO",
+        "normalizedName": "Cedarwood Virginia EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cedarwood Virginia EO",
+          "Cedarwood virginia",
+          "Cedarwood Virginia",
+          "Virginia cedarwood",
+          "Cedarwood oil"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Cedrol-rich Virginia cedarwood \u2014 the smell of freshly sharpened pencils. Dry, slightly sweet pencil-cedar character. Excellent fixative and woody backbone. More affordable than Atlas or Himalayan cedarwood with a distinctive American character.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Ethyl Vanillin": {
+        "canonicalAppName": "Ethyl Vanillin",
+        "normalizedName": "Ethyl Vanillin",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ethyl Vanillin"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "3-4x stronger than vanillin with a richer, creamier-sweeter character. Adds 'weight' to vanilla accords and gourmand bases. Pairs beautifully with coumarin, heliotropin, and musks for a full dessert foundation.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Ambrette Seed Absolute": {
+        "canonicalAppName": "Ambrette Seed Absolute",
+        "normalizedName": "Ambrette Seed Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ambrette Seed Absolute",
+          "Ambrette Seed"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The complete absolute from ambrette seed, richer and more complex than the synthetic ambrettolide. Nutty, winey, slightly earthy musk character. Rare and prized in natural perfumery. Excellent skin retention.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Coconut CO2": {
+        "canonicalAppName": "Coconut CO2",
+        "normalizedName": "Coconut CO2",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Coconut CO2",
+          "Coconut"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "CO2 coconut captures the full creamy lactonic quality of fresh coconut. gamma-Nonalactone dominant. The definitive tropical-beach note \u2014 pairs with vanilla, pineapple, orange, and musks. A Beach Box essential.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Eucalyptus Blue Gum EO": {
+        "canonicalAppName": "Eucalyptus Blue Gum EO",
+        "normalizedName": "Eucalyptus Blue Gum EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Eucalyptus Blue Gum EO",
+          "Blue gum eucalyptus",
+          "Eucalyptus Blue Gum",
+          "Eucalyptus oil",
+          "Eucalyptus"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "1,8-Cineole (eucalyptol) dominant \u2014 sharp, piercing, clean and medicinal. Creates instant openness and freshness. Pairs beautifully with marine notes (Calone), mint, and rosemary in coastal and herbal accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Juniper Berry CO2": {
+        "canonicalAppName": "Juniper Berry CO2",
+        "normalizedName": "Juniperus communis",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Juniperus communis",
+          "Juniper Berry CO2",
+          "Juniper berry oil",
+          "Juniper Berry",
+          "Juniper berry"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "CO2 juniper captures the authentic gin character \u2014 fresh, piney, with a slight dark-resinous undercurrent. More complex than the steam-distilled EO. Essential in maritime and foug\u00e8re accords. Brings a refined herbal structure.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Neroli Absolute": {
+        "canonicalAppName": "Neroli Absolute",
+        "normalizedName": "Neroli Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Neroli Absolute",
+          "Neroli oil",
+          "Neroli"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The absolute version of neroli \u2014 richer, more animalic, and honeyed than the EO. Captures the waxy-green indolic facets of fresh orange blossom. Pricey but transformative in floral and chypre accords. Extraordinary tenacity.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Pink Peppercorn CO2": {
+        "canonicalAppName": "Pink Peppercorn CO2",
+        "normalizedName": "Pink Peppercorn CO2",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Pink Peppercorn CO2",
+          "Pink pepper oil",
+          "Pink Peppercorn",
+          "Pink pepper"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "CO2 pink peppercorn captures both the spicy terpene character and the distinctive rosy-woody facets. More complex and nuanced than black pepper. Brings warmth without harshness. Brilliant with amber, rose, and citrus.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Seaweed Absolute": {
+        "canonicalAppName": "Seaweed Absolute",
+        "normalizedName": "Seaweed Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Seaweed Absolute",
+          "Seaweed"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The raw, feral smell of seaweed on a beach at low tide \u2014 iodine, brine, dark green marine algae character. More animalic and complex than synthetic marine materials. Adds authentic coastal roughness to marine accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Benzyl Acetate": {
+        "canonicalAppName": "Benzyl Acetate",
+        "normalizedName": "Benzyl Acetate",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Benzyl Acetate"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The dominant odorant in jasmine and ylang ylang. Sweet, fruity-floral with a distinctive jasmine character. Essential for building jasmine accords and adding sweet floral body to any heart note construction.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Cognac Absolute": {
+        "canonicalAppName": "Cognac Absolute",
+        "normalizedName": "Cognac Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cognac Absolute",
+          "Cognac"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The distillate absolute captures the complex character of aged brandy \u2014 grape, spirit, warm oak nuances. Ethyl octanoate dominant. Adds sophisticated boozy warmth to oriental, tobacco, and amber accords. A secret weapon for gourmand complexity.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Galbanum Absolute": {
+        "canonicalAppName": "Galbanum Absolute",
+        "normalizedName": "Galbanum Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Galbanum Absolute",
+          "Galbanum"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "One of the most potent and challenging naturals in perfumery. 2-Methoxypyrazine gives a vegetable-green, almost pepper-green intensity at trace levels. Extraordinary ODT \u2014 a single drop can define the entire formula. Used in traces in Chanel No.19, Alliage. Handle with great care.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Litsea Cubeba EO": {
+        "canonicalAppName": "Litsea Cubeba EO",
+        "normalizedName": "Litsea Cubeba EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Litsea Cubeba EO",
+          "Litsea Cubeba"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "High citral content gives an intense, clean lemon-lime character. More tenacious than citrus peel oils. Pairs beautifully with marine, green, and floral notes. A secret weapon for longevity in citrus accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Patchouli Dark EO": {
+        "canonicalAppName": "Patchouli Dark EO",
+        "normalizedName": "Patchouli Dark EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Patchouli Dark EO",
+          "Patchouli Dark",
+          "Patchouli oil",
+          "Patchouli"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Dark, aged patchouli \u2014 camphoraceous, earthly, animalic with the rich complexity that develops over time. Patchoulol dominant. Lower camphor content than fresh patchouli, deeper and more resinous. The backbone of oriental, leather, and chypre accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Tobacco Absolute": {
+        "canonicalAppName": "Tobacco Absolute",
+        "normalizedName": "Tobacco leaf absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Tobacco leaf absolute",
+          "Tobacco absolute",
+          "Tobacco Absolute",
+          "Tobacco"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Solanone-rich absolute from cured tobacco leaf. Sweet-hay-dry tobacco character \u2014 warm, complex, slightly sweet. Extraordinary tenacity. Essential in oriental, leather, and gourmand masculines. Pairs beautifully with vanilla, amber, and leather.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Vanilla CO2 10%": {
+        "canonicalAppName": "Vanilla CO2 10%",
+        "normalizedName": "Vanilla CO2 10%",
+        "matchStrategy": "stock_name_parse",
+        "resolvedIfraMaterial": null,
+        "materialClass": "diluted_stock",
+        "aliases": [
+          "Vanilla CO2 10%",
+          "Vanilla CO2",
+          "Vanilla"
+        ],
+        "stock": {
+          "activeMaterialName": "Vanilla CO2",
+          "activePercent": 10,
+          "carrierName": null
+        },
+        "dbNoteRole": "mid",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "CO2 extraction preserves the full vanilla bean complexity \u2014 vanillin, coumarin, and numerous aromatic aldehydes. More natural and rounded than synthetics, less 'flat'. 10% dilution in DPG makes it easy to work with at formula percentages.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Aldehyde C-11 Undecylenic": {
+        "canonicalAppName": "Aldehyde C-11 Undecylenic",
+        "normalizedName": "Aldehyde C-11 Undecylenic",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Aldehyde C-11 Undecylenic"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "C-11 undecylenic aldehyde \u2014 soapy, waxy, slightly fatty and abstract. A classic Chanel No.5-lineage aldehyde. Adds lift, luminosity, and a distinctive 'classic perfumery' character to any formula. Use at 0.5-3% for effect.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Ambrettolide": {
+        "canonicalAppName": "Ambrettolide",
+        "normalizedName": "Ambrettolide",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Ambrettolide"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Natural macrolide from ambrette seed. Warm, musky, slightly winey and fatty. A biodegradable nature-identical musk with more complexity than the purely synthetic variants. Pairs beautifully with woody and amber bases.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Black Cardamom CO2": {
+        "canonicalAppName": "Black Cardamom CO2",
+        "normalizedName": "Black Cardamom CO2",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Black Cardamom CO2",
+          "Black Cardamom"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Unlike green cardamom, black cardamom has an assertive smokiness alongside the spice. CO2 extraction preserves this distinctive character. Adds depth, mystery, and a camphoraceous-smoky dimension to oriental and aromatic accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Black Pepper CO2": {
+        "canonicalAppName": "Black Pepper CO2",
+        "normalizedName": "Black Pepper CO2",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Black Pepper CO2",
+          "Black pepper oil",
+          "Black Pepper",
+          "Black pepper"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "CO2",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "CO2 black pepper preserves the full spectrum including green woody terpenes and beta-caryophyllene. Sharper and more complex than steam-distilled versions. Essential in masculine foug\u00e8res, woody orientals, and modern aromatic accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Cardamom EO": {
+        "canonicalAppName": "Cardamom EO",
+        "normalizedName": "Cardamom oil",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cardamom oil",
+          "Cardamom EO",
+          "Cardamom"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "1,8-Cineole dominant with sweet-spicy aromatic facets. Cardamom is uniquely versatile \u2014 adds warmth without heaviness, brightness to darker accords, and an oriental complexity to anything it touches. Crucial in masculine and unisex accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Cedarwood Atlantic EO": {
+        "canonicalAppName": "Cedarwood Atlantic EO",
+        "normalizedName": "Cedarwood Atlantic EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cedarwood Atlantic EO",
+          "Cedarwood Atlantic",
+          "Atlas cedarwood",
+          "Cedarwood atlas",
+          "Cedarwood oil"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Moroccan Atlas cedarwood \u2014 atlantone-rich with a distinctive dry, mineral, pencil-shavings character. More austere and elegant than Virginia cedarwood. Excellent for adding woody structure and longevity to any accord.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Cocoa Absolute": {
+        "canonicalAppName": "Cocoa Absolute",
+        "normalizedName": "Cocoa Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Cocoa Absolute",
+          "Cocoa"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Pyrazine-rich chocolate absolute \u2014 deep, roasted, slightly bitter dark chocolate character. More complex and realistic than any synthetic substitute. Extraordinarily tenacious despite high apparent VP (pyrazines have low ODTs). Essential for gourmand oriental accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Gamma Decalactone": {
+        "canonicalAppName": "Gamma Decalactone",
+        "normalizedName": "Gamma Decalactone",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Gamma Decalactone"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "SYNTH",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The definitive ripe peach lactone \u2014 richer and more tenacious than gamma-nonalactone. Warm, sweet, almost buttery peach character. Essential for peach accords, gourmand compositions, and adding creaminess to fruity florals. Pairs beautifully with rose, jasmine, and vanilla.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Himalayan Cedarwood EO": {
+        "canonicalAppName": "Himalayan Cedarwood EO",
+        "normalizedName": "Himalayan Cedarwood EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Himalayan Cedarwood EO",
+          "Himalayan Cedarwood"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Cedrus deodara \u2014 the softest and cleanest of the cedars. Subtle spice from sesquiterpenes. Dry, fresh-woody character that adds refinement without the earthiness of Atlas or the sharpness of Virginia. An elegant base option.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Jasmine Sambac Absolute": {
+        "canonicalAppName": "Jasmine Sambac Absolute",
+        "normalizedName": "Jasmine Sambac Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Jasmine Sambac Absolute",
+          "Jasmine sambac absolute",
+          "Jasmine sambac",
+          "Jasmine Sambac"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Sambac jasmine \u2014 more tropical, indolic, and honeyed than grandiflorum. The scent of leis, tropical evenings, and Indian temples. Heady, rich, with benzyl acetate sweetness and an animalic depth. Pairs with coconut, citrus, and musks.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Menthol Natural Crystals": {
+        "canonicalAppName": "Menthol Natural Crystals",
+        "normalizedName": "Menthol Natural Crystals",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Menthol Natural Crystals",
+          "Menthol"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "L-Menthol from natural sources \u2014 the definitive cooling agent in perfumery. Activates TRPM8 cold receptors for a physiological cooling sensation. Extraordinary odor intensity at very low concentrations. Use sparingly; pairs with marine, citrus, and aquatic notes.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Orange Blossom Water Abs": {
+        "canonicalAppName": "Orange Blossom Water Abs",
+        "normalizedName": "Orange blossom water absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Orange blossom water absolute",
+          "Orange Blossom Water Abs",
+          "Orange blossom absolute",
+          "Orange flower absolute",
+          "Orange Blossom Water"
+        ],
+        "stock": null,
+        "dbNoteRole": "mid",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Methyl anthranilate gives this absolute a distinctive grapey-citrus quality alongside the orange blossom. More delicate and aqueous than the full absolute. Adds a unique freshness to white floral accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Rosemary EO": {
+        "canonicalAppName": "Rosemary EO",
+        "normalizedName": "Rosemary oil",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Rosemary oil",
+          "Rosemary EO",
+          "Rosemary"
+        ],
+        "stock": null,
+        "dbNoteRole": "top",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Mediterranean herbal freshness driven by alpha-pinene, camphor, and 1,8-cineole. Brings an authentic coastal herb character \u2014 the smell of wild rosemary on a sun-baked hillside above the sea. Essential in foug\u00e8res and marine accords.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Sandalwood Mysore EO": {
+        "canonicalAppName": "Sandalwood Mysore EO",
+        "normalizedName": "Sandalwood Mysore EO",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Sandalwood Mysore EO",
+          "Mysore sandalwood",
+          "Sandalwood Mysore",
+          "Sandalwood oil",
+          "Sandalwood"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "EO",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "The world's finest sandalwood \u2014 alpha-santalol dominant, creamy, milky, soft woody character. Extraordinary tenacity and skin-affinity. Endangered and expensive. Works beautifully as a primary base note or as an accord enhancer.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Vanilla Absolute": {
+        "canonicalAppName": "Vanilla Absolute",
+        "normalizedName": "Vanilla Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Vanilla Absolute",
+          "Vanilla"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Full vanilla bean absolute \u2014 rich, complex, warm. Goes beyond vanillin to include coumarin, para-hydroxybenzaldehyde, and numerous trace aromatic compounds. The most natural-smelling vanilla option. Extraordinary fixative properties.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      },
+      "Vanilla Bourbon Absolute": {
+        "canonicalAppName": "Vanilla Bourbon Absolute",
+        "normalizedName": "Vanilla Bourbon Absolute",
+        "matchStrategy": "unresolved",
+        "resolvedIfraMaterial": null,
+        "materialClass": "not_yet_resolved",
+        "aliases": [
+          "Vanilla Bourbon Absolute",
+          "Vanilla Bourbon"
+        ],
+        "stock": null,
+        "dbNoteRole": "base",
+        "dbMaterialType": "ABS",
+        "currentAppIfraFlag": false,
+        "currentAppIfraText": "Bourbon vanilla from R\u00e9union/Madagascar \u2014 richer, creamier, and slightly darker than Tahitian vanilla. High vanillin content with additional coumarin warmth. The definitive vanilla for oriental and gourmand bases.",
+        "pdfMatchStatus": "not_found",
+        "pdfMatchedAlias": null,
+        "pdfMatchedPage": null,
+        "reviewNote": "No PDF match found automatically \u2014 manual review needed"
+      }
+    },
+    "complianceConfig": {
+      "defaultCategory": "cat4",
+      "preferredIdentityResolutionOrder": [
+        "cas",
+        "canonicalName",
+        "synonym",
+        "inci",
+        "aliasMap",
+        "manualReview"
+      ],
+      "nonOdorMaterialClasses": [
+        "functional_solvent",
+        "carrier"
+      ],
+      "stockHandling": {
+        "enabled": true,
+        "rule": "For diluted stocks, active restricted material contribution = formula usage percent \u00d7 activePercent/100."
+      },
+      "uiStates": {
+        "listed": "Show recommendation type and Cat 4 limit if present.",
+        "functional_solvent": "Show neutral 'Functional material / no specific IFRA standard expected' state.",
+        "not_found_in_uploaded_pdf": "Show neutral 'No specific IFRA standard found in uploaded source dataset' state.",
+        "unresolved_identity": "Show warning 'Identity unresolved \u2014 review alias/CAS/INCI mapping'."
+      }
+    },
+    "stats": {
+      "ingredientIdentityMapCount": 66,
+      "ifraMasterMaterialCount": 3,
+      "unresolvedIdentityCount": 59,
+      "unresolvedExamples": [
+        "Benzyl Salicylate",
+        "Vetiver Bourbon EO",
+        "Bergamot EO FCF",
+        "Coumarin",
+        "Oakmoss Absolute",
+        "Violet Leaf Absolute",
+        "Methyl Ionone Gamma Coeur",
+        "Petitgrain Bigarade EO",
+        "Sweet Orange Absolute",
+        "Lemon EO Italy",
+        "Balsam Peru EO",
+        "Cinnamon Bark EO",
+        "Clove Bud Absolute",
+        "Hexyl Cinnamic Aldehyde",
+        "Linalool Natural",
+        "Rum Absolute",
+        "Ylang Ylang Extra Absolute",
+        "Ambroxan Crystals",
+        "Ethylene Brassylate",
+        "Habanolide",
+        "Helvetolide",
+        "Iso E Super",
+        "Calone 1951",
+        "Methyl Pamplemousse",
+        "Benzoin Siam Absolute"
+      ]
+    }
+  }
