@@ -59,8 +59,8 @@ const RAW_DB = {
     2.25e-7,
     0.012,
     0.4,
-    "base",
-    "SYNTH",
+    "carrier",
+    "SOLVENT",
     false,
     "Fraterworks",
     "Clean diffusive musk; macrolide lactone",
@@ -1659,8 +1659,8 @@ const RAW_DB = {
     0.000143,
     0.5,
     0.4,
-    "base",
-    "SYNTH",
+    "carrier",
+    "SOLVENT",
     false,
     "Perfumers Apprentice",
     "Concentrated polycyclic musk; woody clean",
@@ -1809,8 +1809,8 @@ const RAW_DB = {
     0.0003,
     500,
     0.5,
-    "base",
-    "SYNTH",
+    "carrier",
+    "SOLVENT",
     false,
     "Perfumers Apprentice",
     "Balsamic fixative anti-sensitizer; classic base",
@@ -1818,8 +1818,8 @@ const RAW_DB = {
     0,
     "120-51-4",
     "Benzyl Benzoate",
-    "Balsamic",
-    "Balsamic fixative classic fine fragrance base",
+    "Carrier",
+    "Aromatic fixative solvent and carrier",
     "One of the oldest and most important materials in perfumery. Sweet, balsamic, slightly floral base note. Primarily functions as a fixative and solvent, greatly enhancing the longevity and blending of other materials. Found in virtually every oriental, amber, and floral base.",
     null,
     1.12,
@@ -9577,26 +9577,26 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Isopropyl Myristate (IPM)": [
-    null,
-    0.944,
-    null,
+    270.45,
+    8.1,
+    26.3,
     0,
-    0,
-    null,
-    null,
-    null,
-    "mid",
-    "SYNTH",
+    2,
+    0.00002,
+    5000,
+    0.45,
+    "carrier",
+    "SOLVENT",
     false,
     "Fraterworks",
-    "Aromatic synth by Fraterworks",
-    null,
-    0,
-    null,
-    "Isopropyl Myristate (IPM)",
-    "Aromatic",
-    "Isopropyl Myristate (IPM)",
-    "Aromatic synth by Fraterworks",
+    "Silky low-odor ester solvent for perfume and body oils",
+    "Isopropyl Myristate",
+    0.85,
+    "110-27-0",
+    "Isopropyl Myristate",
+    "Carrier",
+    "Silky emollient ester solvent",
+    "Low-odor, fast-spreading ester solvent used as a DPG alternative for body oils and skin feel. Helps dissolve musks and resins while improving glide and reducing tack.",
     null,
     null,
     null, null, null, null, null, null, null
@@ -25527,26 +25527,26 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Triethyl Citrate, Natural (TEC)": [
-    null,
-    0.944,
-    null,
+    276.28,
+    0.32,
+    52.6,
     0,
-    0,
-    null,
-    null,
-    null,
-    "mid",
-    "SYNTH",
+    6,
+    0.0006,
+    9000,
+    0.45,
+    "carrier",
+    "SOLVENT",
     false,
     "Fraterworks",
-    "Aromatic synth by Bestally",
-    null,
-    0,
-    null,
-    "Triethyl Citrate, Natural (TEC)",
-    "Aromatic",
-    "Triethyl Citrate, Natural (TEC)",
-    "Aromatic synth by Bestally",
+    "Neutral citrate solvent and fixative for naturals",
+    "Triethyl Citrate",
+    1.14,
+    "77-93-0",
+    "Triethyl Citrate",
+    "Carrier",
+    "Neutral citrate co-solvent",
+    "Low-odor citrate ester with excellent compatibility for naturals and resinoids. Used to improve solubility and add mild fixation while keeping blends clean.",
     null,
     null,
     null, null, null, null, null, null, null
@@ -53541,6 +53541,41 @@ function totalCost(buildItems) {
   return cost;
 }
 
+const IFRA_CATEGORY_LABELS = {
+  cat4: "Cat 4 — Fine Fragrance",
+  cat5b: "Cat 5b — Face Moisturizer",
+  cat9: "Cat 9 — Body Lotion",
+  cat1: "Cat 1 — Lip Product",
+  cat11a: "Cat 11a — Rinse-off Body",
+};
+
+function getIfraSummary(d) {
+  if (!d?.ifraLimits) return "No IFRA limit listed";
+  const entries = Object.entries(d.ifraLimits)
+    .filter(([, limit]) => limit != null)
+    .map(([cat, limit]) => `${cat.toUpperCase()}: ${limit}%`);
+  return entries.length ? entries.join(" · ") : "IFRA limits pending";
+}
+
+function getTimelineDecayConstant(ing, d) {
+  const baseHalfLifeH = {
+    top: 1.5,
+    mid: 4.5,
+    base: 12,
+    carrier: 24,
+  };
+  const halfLifeBase = baseHalfLifeH[ing.note] ?? 4;
+  const vp = Math.max(1e-7, d?.VP || 0.0008);
+  const mw = Math.max(90, d?.MW || 200);
+  const dilutionFactor = d?.dilutionFactor || 1;
+  const logVp = Math.log10(vp + 1e-9);
+  const vpScale = Math.min(2.5, Math.max(0.35, 10 ** (logVp + 3)));
+  const mwScale = Math.min(1.45, Math.max(0.75, Math.sqrt(mw / 180)));
+  const dilScale = Math.min(1.35, Math.max(0.75, 0.9 + (1 - dilutionFactor) * 0.4));
+  const halfLife = halfLifeBase * mwScale * dilScale / vpScale;
+  return Math.log(2) / Math.max(0.25, halfLife);
+}
+
 // ─────────────────────────────────────────────────────────────
 // LONGEVITY / SILLAGE / PROJECTION SCORING
 // ─────────────────────────────────────────────────────────────
@@ -53589,13 +53624,14 @@ function perfScore(ingredients) {
   const diffusionScore = chem.reduce((s, i) => {
     if (!i.d || i.OV < 0.1 || !i.d.VP || !i.d.MW) return s;
     const cappedInt = Math.min(i.intensity, 500);
-    return s + cappedInt * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac;
+    const tierWeight = i.note === "mid" ? 1.1 : i.note === "base" ? 1.2 : i.note === "top" ? 0.9 : 0.65;
+    return s + cappedInt * Math.sqrt(i.d.VP + 1e-8) / Math.sqrt(i.d.MW) * i.wfrac * tierWeight;
   }, 0);
-  const sillage = Math.min(10, Math.log10(diffusionScore * 1e4 + 1) * 3.5);
+  const sillage = Math.min(10, Math.log10(diffusionScore * 7e3 + 1) * 3.6);
   // Projection: top intensity, high OV tops
-  const topInt = tops.reduce((s, i) => s + i.intensity, 0);
+  const topInt = tops.reduce((s, i) => s + i.intensity * Math.sqrt((i.d?.VP || 0.001) + 1e-8), 0);
   const topPct = tops.reduce((s, i) => s + i.g, 0) / total;
-  const projection = Math.min(10, Math.log10(topInt + 1) * 2 + topPct * 8);
+  const projection = Math.min(10, Math.log10(topInt * 8 + 1) * 2.2 + topPct * 7);
   return {
     longevity: Math.max(0, longevity),
     sillage: Math.max(0, sillage),
@@ -53967,7 +54003,7 @@ function IngredientDetailPanel({ name, onClose }) {
                     fontWeight: 700,
                   }}
                 >
-                  ⚠ IFRA {d.ifraLimit || "Restricted"}
+                  ⚠ IFRA {getIfraSummary(d)}
                 </span>
               )}
             </div>
@@ -53979,7 +54015,7 @@ function IngredientDetailPanel({ name, onClose }) {
                 margin: 0,
               }}
             >
-              {name}
+              {name}{title.includes("IFRA") ? ` (${getIfraSummary(DB[name])})` : ""}
             </h2>
             <p
               style={{
@@ -54052,7 +54088,7 @@ function IngredientDetailPanel({ name, onClose }) {
               ["CAS", d.cas],
               ["INCI", d.inci],
               ["Rep. Odorant", d.rep],
-              ["IFRA Limit", d.ifraLimit || "No restriction"],
+              ["IFRA Limits", getIfraSummary(d)],
             ].map(([l, v]) => (
               <div
                 key={l}
@@ -56534,16 +56570,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
 
                 {/* ── TIMELINE SUB-TAB ── */}
                 {subTab === "timeline" && (() => {
-                  const VP_FALLBACK = { top: 0.050, mid: 0.005, base: 0.0005, carrier: 0.004 };
-                  const TIME_STEPS = [0, 0.25, 0.5, 1, 2, 3, 4, 6, 8];
-                  // Include ALL ingredients — use VP fallback if no real VP
+                  const TIME_STEPS = [0, 0.25, 0.5, 1, 2, 3, 4, 6, 8, 12, 24];
                   const ingData = formula.ingredients.map((ing) => {
                     const d = DB[ing.name];
-                    const hasRealVP = d && d.VP > 0 && d.MW;
-                    const vpForDecay = hasRealVP ? d.VP : (VP_FALLBACK[ing.note] ?? 0.005);
-                    const mwForDecay = (d && d.MW) ? d.MW : 200;
-                    const dilFactor = (d && d.dilutionFactor) ? d.dilutionFactor : 1.0;
-                    const k = vpForDecay * dilFactor / Math.sqrt(mwForDecay) * 25;
+                    const hasRealVP = Boolean(d && d.VP > 0 && d.MW);
+                    const k = getTimelineDecayConstant(ing, d);
                     return { name: ing.name, g0: ing.g, k, d, note: ing.note, hasRealVP };
                   });
                   // Compute intensity at each time step for each ingredient
@@ -56583,7 +56614,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
-                        Evaporation Timeline — OV Intensity Over Time
+                        Evaporation Timeline — Calibrated OV Intensity Over Time
                       </p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                         {activeIngs.map((i) => (
@@ -58023,7 +58054,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     const ifraItems = buildItems.filter(item => DB[item.name]?.ifraLimits);
                     if (ifraItems.length === 0) return null;
                     const totalG = buildItems.reduce((s, i) => s + i.g, 0) || 1;
-                    const catLabels = { cat4: "Cat 4 — Fine Fragrance", cat5b: "Cat 5b — Face Moisturizer", cat9: "Cat 9 — Body Lotion", cat1: "Cat 1 — Lip Product", cat11a: "Cat 11a — Rinse-off Body" };
+                    const catLabels = IFRA_CATEGORY_LABELS;
                     const rows = ifraItems.map(item => {
                       const pct = (item.g / totalG) * 100;
                       const limit = DB[item.name].ifraLimits[ifraCategory];
@@ -58795,6 +58826,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 >
                   📊 Formula Performance Comparison
                 </p>
+                <div style={{ marginBottom: 10, fontSize: 10, color: "#94A3B8" }}>
+                  Active analysis target: <strong style={{ color: ACC }}>{formula.emoji} {formula.name}</strong>
+                </div>
                 <div style={{ overflowX: "auto" }}>
                   <table
                     style={{
@@ -58842,8 +58876,6 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             }}
                             onClick={() => {
                               setSelFrag(i);
-                              setMainTab("formulas");
-                              setSubTab("formula");
                             }}
                           >
                             <td
@@ -58918,6 +58950,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 >
                   💡 Ingredient Impact Guide
                 </p>
+                <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 10 }}>
+                  Generated for: <strong style={{ color: ACC }}>{formula.emoji} {formula.name}</strong>
+                </div>
                 {[
                   {
                     title: "🕰️ Boost Longevity",
@@ -58962,7 +58997,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   {
                     title: "⚖️ IFRA Compliance Watch",
                     color: "#F87171",
-                    ingredients: Object.keys(DB).filter((k) => DB[k].ifra),
+                    ingredients: Object.keys(DB).filter((k) => DB[k].ifraLimits),
                     tip: "These ingredients carry IFRA restrictions. Verify concentration limits before finalizing any formula intended for skin application.",
                   },
                 ].map(({ title, color, ingredients, tip }) => (
@@ -59054,6 +59089,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
                       🎶 Harmony Report
                     </p>
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 10 }}>
+                      Generated for: <strong style={{ color: ACC }}>{formula.emoji} {formula.name}</strong>
+                    </div>
                     {harmonious.map((p) => (
                       <div key={p.a + p.b} style={{ background: "#0A1E0A", border: "1px solid #166534", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 9.5 }}>
                         <span style={{ color: "#34D399", fontWeight: 700 }}>✅ {p.a} + {p.b}</span>
@@ -59129,6 +59167,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>
                       🎨 Accord Recognition
                     </p>
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 10 }}>
+                      Generated for: <strong style={{ color: ACC }}>{formula.emoji} {formula.name}</strong>
+                    </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {accords.map(acc => (
                         <div key={acc.name} style={{ background: acc.color + "18", border: `1px solid ${acc.color}44`, borderRadius: 10, padding: "8px 14px" }}>
@@ -59183,6 +59224,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
                       📋 Formula Report Card
                     </p>
+                    <div style={{ fontSize: 10, color: "#94A3B8", marginBottom: 10 }}>
+                      Generated for: <strong style={{ color: ACC }}>{formula.emoji} {formula.name}</strong>
+                    </div>
                     {bars.map(({ label, score, color, tip }) => (
                       <div key={label} style={{ marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
@@ -59226,11 +59270,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   ],
                   [
                     "Sillage",
-                    "Driven by diffusive musk content (habanolide, helvetolide, ambrettolide) and radiance amplifiers (Ambroxan, Iso E Super). These molecules project from the skin into the surrounding air even at low concentrations.",
+                    "Uses OV-intensity weighted diffusion (√VP/√MW) with mid/base persistence weighting so trail performance reflects both radiance and hang-time, not just volatile spikes.",
                   ],
                   [
                     "Projection",
-                    "Initial odor impact scored via top note OV and headspace concentration (Raoult's Law + Ideal Gas Law). Marine materials (Calone) punch dramatically above their weight. Stevens' Power Law n=0.6 for fresh/marine.",
+                    "Initial impact uses top-note OV intensity multiplied by volatility weighting, then normalized by top-note mass share so opening blast aligns with what evaluators smell in first sprays.",
                   ],
                   [
                     "Headspace ppbv",
