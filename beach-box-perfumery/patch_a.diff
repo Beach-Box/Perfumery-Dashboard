@@ -1,0 +1,170 @@
+diff --git a/src/App.jsx b/src/App.jsx
+index 7dd8287..0270f35 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -20,6 +20,13 @@ import {
+ReferenceLine,
+ReferenceArea,
+} from "recharts";
++import {
+
+IFRA_COMPLIANCE_CONFIG,
+
+computeActiveRestrictedPercent,
+
+getIfraMaterialRecord,
+
+getIfraUiState,
+
+resolveIngredientIdentity,
++} from "./lib/ifra_combined_package";
+
+// ─────────────────────────────────────────────────────────────
+// CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
+@@ -31345,6 +31352,66 @@ Object.keys(DB).forEach((k) => {
+DB[k].densityGmL = RAW_DB[k][14] || 1.0;
+});
+
++function getIngredientIfraContext(name) {
+
+const identity = resolveIngredientIdentity(name);
+
+const material = getIfraMaterialRecord(name);
+
+const uiState = getIfraUiState(name);
+
+const cat4Limit = material?.limits?.cat4 ?? null;
+
+const uiMessageMap = {
+
+listed: "Listed IFRA material",
+
+functional_solvent: "Functional material / no specific IFRA standard expected",
+
+not_found_in_uploaded_pdf: "No specific IFRA standard found in uploaded source dataset",
+
+unresolved_identity: "Unresolved identity",
+
+};
+
+return {
+
+identity,
+
+material,
+
+uiState,
+
+cat4Limit,
+
+uiMessage: uiMessageMap[uiState] || "Unresolved identity",
+
+};
++}
+
++function getDisplayNoteRole(name, fallbackNote) {
+
+const identity = resolveIngredientIdentity(name);
+
+if (!identity) return fallbackNote;
+
+if (IFRA_COMPLIANCE_CONFIG.nonOdorMaterialClasses.includes(identity.materialClass)) {
+
+return "carrier";
+
+}
+
+return identity.dbNoteRole || fallbackNote;
++}
+
++function getFormulaIfraRows(items, category) {
+
+const totalG = items.reduce((s, i) => s + i.g, 0) || 1;
+
+return items.map((item) => {
+
+const formulaPercent = (item.g / totalG) * 100;
+
+const ifra = getIngredientIfraContext(item.name);
+
+const activePercent = computeActiveRestrictedPercent({
+
+ formulaPercent,
+ ingredientName: item.name,
+});
+
+const evaluatedPercent = activePercent ?? formulaPercent;
+
+const limit = ifra.cat4Limit;
+
+let status = "state";
+
+if (ifra.uiState === "listed") {
+
+ if (limit == null) status = "unknown";
+ else if (evaluatedPercent > limit) status = "fail";
+ else if (evaluatedPercent > limit * 0.8) status = "warn";
+ else status = "ok";
+}
+
+return {
+
+ name: item.name,
+ formulaPercent,
+ evaluatedPercent,
+ limit,
+ status,
+ ifra,
+ stock: ifra.identity?.stock || null,
+};
+
+});
++}
+// ─────────────────────────────────────────────────────────────
+// SUPPLIER PRICING [qty, unit, priceUSD]
+// qty is grams-equivalent when unit="g"; for mL multiply by density
+@@ -53667,27 +53734,6 @@ Object.entries(DB).forEach(([name, d]) => {
+if (d.descriptorTags == null)
+d.descriptorTags = genDescriptorTags(name, d.scentClass, d.char);
+});
+-const _ifraLimits = {
+
+"Benzyl Salicylate": { cat4: 7.3, cat5b: 1.5, cat9: 7.3, cat1: 1.3 },
+
+"Hexyl Cinnamic Aldehyde": { cat4: 9.9, cat5b: 2.1, cat9: 9.9 },
+
+"Coumarin": { cat4: 1.5, cat5b: 0.23, cat9: 0.57, cat1: 0.089},
+
+"Benzyl Benzoate": { cat4: 4.8, cat5b: 0.7, cat9: 4.8, cat1: 1.7 },
+
+"Benzyl Cinnamate": { cat4: 2.0, cat5b: 0.4, cat9: 2.0 },
+
+"Cyclamen Aldehyde": { cat4: 0.95, cat5b: 0.19 },
+
+"Cyclamen aldehyde": { cat4: 0.95, cat5b: 0.19 },
+
+"Veramoss": { cat4: 0.1, cat5b: 0.02 },
+
+"Oakmoss Absolute": { cat4: 0.1, cat5b: 0.02 },
+
+"Jasmine Sambac Absolute": { cat4: 3.8, cat5b: 0.76 },
+
+"Jasmine Grandiflorum Abs": { cat4: 0.6, cat5b: 0.12 },
+
+"Methyl Ionone Alpha Extra": { cat4: 30.0 },
+
+"Bergamot EO FCF": { cat4: 0.4 },
+
+"Lemon EO Italy": { cat4: 2.0 },
+
+"Ylang Ylang Complete": { cat4: 0.73 },
+
+"Ylang Ylang Extra Absolute": { cat4: 0.73 },
+-};
+-Object.entries(DB).forEach(([name, d]) => {
+
+if (d.ifraLimits == null && _ifraLimits[name]) d.ifraLimits = _ifraLimits[name];
+-});
+// ──────────────────────────────────────────────────────────────────────────────
+
+// ─────────────────────────────────────────────────────────────

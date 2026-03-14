@@ -20,11 +20,6 @@ import {
   ReferenceLine,
   ReferenceArea,
 } from "recharts";
-import {
-  getIfraMaterialRecord,
-  getIfraUiState,
-  resolveIngredientIdentity,
-} from "./lib/ifra_combined_package";
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -31350,44 +31345,6 @@ Object.keys(DB).forEach((k) => {
   DB[k].densityGmL = RAW_DB[k][14] || 1.0;
 });
 
-const IFRA_STATE_LABELS = {
-  listed: "Listed IFRA material",
-  functional_solvent: "Functional material / no specific IFRA standard expected",
-  not_found_in_uploaded_pdf:
-    "No specific IFRA standard found in uploaded source dataset",
-  unresolved_identity: "Identity unresolved - review alias/CAS/INCI mapping",
-};
-
-function getIngredientIfraData(name) {
-  const material = getIfraMaterialRecord(name);
-  const state = getIfraUiState(name);
-  const cat4Limit = material?.limits?.cat4 ?? null;
-
-  return {
-    state,
-    stateLabel: IFRA_STATE_LABELS[state] || IFRA_STATE_LABELS.unresolved_identity,
-    cat4Limit,
-  };
-}
-
-Object.entries(DB).forEach(([name, d]) => {
-  const resolvedIdentity = resolveIngredientIdentity(name);
-  if (
-    resolvedIdentity &&
-    (resolvedIdentity.materialClass === "functional_solvent" ||
-      resolvedIdentity.materialClass === "carrier")
-  ) {
-    if (resolvedIdentity.dbNoteRole) d.note = resolvedIdentity.dbNoteRole;
-    if (resolvedIdentity.dbMaterialType) d.type = resolvedIdentity.dbMaterialType;
-  }
-
-  const ifraData = getIngredientIfraData(name);
-  if (d.ifraLimits == null && ifraData.cat4Limit != null) {
-    d.ifraLimits = { cat4: ifraData.cat4Limit };
-  }
-  ifraData.state === "listed" && (d.ifra = true);
-});
-
 // ─────────────────────────────────────────────────────────────
 // SUPPLIER PRICING   [qty, unit, priceUSD]
 // qty is grams-equivalent when unit="g"; for mL multiply by density
@@ -53710,6 +53667,27 @@ Object.entries(DB).forEach(([name, d]) => {
   if (d.descriptorTags == null)
     d.descriptorTags = genDescriptorTags(name, d.scentClass, d.char);
 });
+const _ifraLimits = {
+  "Benzyl Salicylate":          { cat4: 7.3,  cat5b: 1.5,  cat9: 7.3,  cat1: 1.3  },
+  "Hexyl Cinnamic Aldehyde":    { cat4: 9.9,  cat5b: 2.1,  cat9: 9.9              },
+  "Coumarin":                   { cat4: 1.5,  cat5b: 0.23, cat9: 0.57, cat1: 0.089},
+  "Benzyl Benzoate":            { cat4: 4.8,  cat5b: 0.7,  cat9: 4.8,  cat1: 1.7  },
+  "Benzyl Cinnamate":           { cat4: 2.0,  cat5b: 0.4,  cat9: 2.0              },
+  "Cyclamen Aldehyde":          { cat4: 0.95, cat5b: 0.19                         },
+  "Cyclamen aldehyde":          { cat4: 0.95, cat5b: 0.19                         },
+  "Veramoss":                   { cat4: 0.1,  cat5b: 0.02                         },
+  "Oakmoss Absolute":           { cat4: 0.1,  cat5b: 0.02                         },
+  "Jasmine Sambac Absolute":    { cat4: 3.8,  cat5b: 0.76                         },
+  "Jasmine Grandiflorum Abs":   { cat4: 0.6,  cat5b: 0.12                         },
+  "Methyl Ionone Alpha Extra":  { cat4: 30.0                                       },
+  "Bergamot EO FCF":            { cat4: 0.4                                        },
+  "Lemon EO Italy":             { cat4: 2.0                                        },
+  "Ylang Ylang Complete":       { cat4: 0.73                                       },
+  "Ylang Ylang Extra Absolute": { cat4: 0.73                                       },
+};
+Object.entries(DB).forEach(([name, d]) => {
+  if (d.ifraLimits == null && _ifraLimits[name]) d.ifraLimits = _ifraLimits[name];
+});
 // ──────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────
@@ -53920,11 +53898,6 @@ function IngredientDetailPanel({ name, onClose }) {
   const p = PRICING[name];
   if (!d) return null;
   const nc = NC[d.note] || NC.carrier;
-  const ifraData = getIngredientIfraData(name);
-  const ifraBadgeText =
-    ifraData.state === "listed" ? "Listed IFRA material" : null;
-  const cat4LimitText =
-    ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
   return (
     <div
       style={{
@@ -53982,7 +53955,7 @@ function IngredientDetailPanel({ name, onClose }) {
               >
                 {d.note?.toUpperCase()} · {d.type}
               </span>
-              {ifraBadgeText && (
+              {d.ifra && (
                 <span
                   style={{
                     background: "rgba(248,113,113,0.15)",
@@ -53994,7 +53967,7 @@ function IngredientDetailPanel({ name, onClose }) {
                     fontWeight: 700,
                   }}
                 >
-                  ⚠ {ifraBadgeText}
+                  ⚠ IFRA {d.ifraLimit || "Restricted"}
                 </span>
               )}
             </div>
@@ -54079,8 +54052,7 @@ function IngredientDetailPanel({ name, onClose }) {
               ["CAS", d.cas],
               ["INCI", d.inci],
               ["Rep. Odorant", d.rep],
-              ["IFRA State", ifraData.stateLabel],
-              ["Cat 4 Limit", cat4LimitText],
+              ["IFRA Limit", d.ifraLimit || "No restriction"],
             ].map(([l, v]) => (
               <div
                 key={l}
