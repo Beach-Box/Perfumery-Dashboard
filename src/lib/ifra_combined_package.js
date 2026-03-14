@@ -84,6 +84,210 @@ export const IFRA_MASTER_MATERIALS = {
       "Treat as carrier/solvent for dashboard note-role logic.",
     ],
   },
+  "benzyl salicylate": {
+    canonicalName: "Benzyl Salicylate",
+    cas: ["118-58-1"],
+    synonyms: [
+      "benzyl salicylate",
+      "benzyl 2-hydroxybenzoate",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 7.3,
+      cat5b: 1.5,
+      cat9: 7.3,
+      cat1: 1.3,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [3],
+    },
+    notes: [
+      "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "coumarin": {
+    canonicalName: "Coumarin",
+    cas: ["91-64-5"],
+    synonyms: ["coumarin"],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 1.5,
+      cat5b: 0.23,
+      cat9: 0.57,
+      cat1: 0.089,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [5],
+    },
+    notes: [
+      "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "hexyl cinnamic aldehyde": {
+    canonicalName: "Hexyl Cinnamic Aldehyde",
+    cas: ["101-86-0"],
+    synonyms: [
+      "hexyl cinnamic aldehyde",
+      "alpha-hexyl cinnamaldehyde",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 9.9,
+      cat5b: 2.1,
+      cat9: 9.9,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [134],
+    },
+    notes: [
+      "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "oakmoss absolute": {
+    canonicalName: "Oakmoss Absolute",
+    cas: ["9000-50-4"],
+    synonyms: [
+      "oakmoss absolute",
+      "oakmoss",
+      "evernia prunastri extract",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 0.1,
+      cat5b: 0.02,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [216],
+    },
+    notes: [
+      "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "bergamot eo fcf": {
+    canonicalName: "Bergamot EO FCF",
+    cas: ["68648-33-9"],
+    synonyms: [
+      "bergamot expressed",
+      "bergamot eo fcf",
+      "bergamot fcf",
+      "bergamot oil",
+      "bergamot",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 0.4,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [3],
+    },
+    notes: [
+      "Cat 4 limit was promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "lemon eo italy": {
+    canonicalName: "Lemon EO Italy",
+    cas: ["84929-31-7"],
+    synonyms: [
+      "lemon expressed",
+      "lemon eo italy",
+      "lemon italy",
+      "lemon oil",
+      "lemon",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 2.0,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [10],
+    },
+    notes: [
+      "Cat 4 limit was promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "jasmine sambac absolute": {
+    canonicalName: "Jasmine Sambac Absolute",
+    cas: ["91771-65-6"],
+    synonyms: [
+      "jasmine sambac absolute",
+      "jasmine sambac",
+      "jasminum sambacum flower extract",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 3.8,
+      cat5b: 0.76,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [],
+    },
+    notes: [
+      "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -91,7 +295,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Benzyl Salicylate",
     normalizedName: "Benzyl salicylate",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "benzyl salicylate",
     materialClass: "not_yet_resolved",
     aliases: ["Benzyl salicylate", "Benzyl Salicylate"],
     stock: null,
@@ -150,7 +354,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Bergamot EO FCF",
     normalizedName: "Bergamot expressed",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "bergamot eo fcf",
     materialClass: "not_yet_resolved",
     aliases: [
       "Bergamot expressed",
@@ -174,7 +378,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Coumarin",
     normalizedName: "Coumarin",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "coumarin",
     materialClass: "not_yet_resolved",
     aliases: ["Coumarin"],
     stock: null,
@@ -192,7 +396,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Oakmoss Absolute",
     normalizedName: "Oakmoss Absolute",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "oakmoss absolute",
     materialClass: "not_yet_resolved",
     aliases: ["Oakmoss Absolute", "Oakmoss absolute", "Oakmoss"],
     stock: null,
@@ -304,7 +508,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Lemon EO Italy",
     normalizedName: "Lemon expressed",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "lemon eo italy",
     materialClass: "not_yet_resolved",
     aliases: [
       "Lemon expressed",
@@ -399,7 +603,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Hexyl Cinnamic Aldehyde",
     normalizedName: "Hexyl Cinnamic Aldehyde",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "hexyl cinnamic aldehyde",
     materialClass: "not_yet_resolved",
     aliases: ["Hexyl Cinnamic Aldehyde"],
     stock: null,
@@ -502,7 +706,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     materialClass: "functional_solvent",
     aliases: ["Benzyl Benzoate", "Benzyl benzoate", "BB"],
     stock: null,
-    dbNoteRole: "base",
+    dbNoteRole: "carrier",
     dbMaterialType: "SYNTH",
     currentAppIfraFlag: false,
     currentAppIfraText:
@@ -518,12 +722,17 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "alias_map",
     resolvedIfraMaterial: "isopropyl myristate",
     materialClass: "functional_solvent",
-    aliases: ["Isopropyl Myristate", "IPM"],
+    aliases: [
+      "Isopropyl Myristate",
+      "Isopropyl Myristate (IPM)",
+      "IPM",
+    ],
     stock: null,
-    dbNoteRole: null,
-    dbMaterialType: null,
-    currentAppIfraFlag: null,
-    currentAppIfraText: null,
+    dbNoteRole: "carrier",
+    dbMaterialType: "CARRIER",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Functional carrier solvent used to dilute and handle perfume materials without adding a meaningful odor profile.",
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
@@ -535,12 +744,17 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "alias_map",
     resolvedIfraMaterial: "triethyl citrate",
     materialClass: "functional_solvent",
-    aliases: ["Triethyl Citrate", "TEC"],
+    aliases: [
+      "Triethyl Citrate",
+      "Triethyl Citrate, Natural (TEC)",
+      "TEC",
+    ],
     stock: null,
-    dbNoteRole: null,
-    dbMaterialType: null,
-    currentAppIfraFlag: null,
-    currentAppIfraText: null,
+    dbNoteRole: "carrier",
+    dbMaterialType: "CARRIER",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Functional carrier solvent used to dilute and handle perfume materials without adding a meaningful odor profile.",
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "TEC",
     pdfMatchedPage: 119.0,
@@ -1278,7 +1492,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Jasmine Sambac Absolute",
     normalizedName: "Jasmine Sambac Absolute",
     matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "jasmine sambac absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Jasmine Sambac Absolute",
@@ -1481,8 +1695,6 @@ export function getIfraUiState(name) {
 
   const material = getIfraMaterialRecord(name);
   if (material && material.status === "active") return "listed";
-  if (material && material.status === "not_found_in_uploaded_pdf")
-    return "not_found_in_uploaded_pdf";
 
   if (
     resolved.materialClass === "functional_solvent" ||
@@ -1490,6 +1702,9 @@ export function getIfraUiState(name) {
   ) {
     return "functional_solvent";
   }
+
+  if (material && material.status === "not_found_in_uploaded_pdf")
+    return "not_found_in_uploaded_pdf";
 
   return "unresolved_identity";
 }
