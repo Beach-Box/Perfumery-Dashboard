@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Review-only extracted evidence candidates from trusted source documents. Candidate facts remain separate from live helper, IFRA, and catalog data until manually promoted.",
+    "candidateFieldKeys": [
+      "cas",
+      "inci",
+      "note",
+      "scentDesc",
+      "rep",
+      "isUVCB",
+      "ifraMaterialHint"
+    ],
+    "reviewStatuses": [
+      "awaiting_source_document",
+      "candidate_pending_review",
+      "candidate_reviewed",
+      "ready_for_manual_promotion",
+      "rejected"
+    ]
+  },
+  "candidates": {},
+  "candidateTargets": {
+    "benzoin_siam_resinoid": {
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "targetFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "No trusted document-backed evidence candidates have been captured yet.",
+        "Promote only after a linked document is reviewed."
+      ]
+    },
+    "peru_balsam_resinoid": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "targetFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Treat this as a separate resinoid identity, not a synonym for Peru balsam oil.",
+        "Keep unresolved fields blank until a trusted document exists."
+      ]
+    },
+    "poplar_bud_absolute": {
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "targetFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Current helper coverage comes from the diluted stock row only.",
+        "Do not infer canonical chemistry from the carrier stock representation."
+      ]
+    },
+    "tolu_balsam_resinoid": {
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "targetFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Keep the current structural seed honest until a document-backed candidate exists."
+      ]
+    },
+    "ylang_ylang_fine_oil": {
+      "canonicalMaterialKey": "ylang_ylang_fine_oil",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Ylang-Ylang Fine Oil, Org"
+      ],
+      "targetFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Shared family CAS and INCI coverage already exists; this target is about deeper grade-specific identity evidence."
+      ]
+    },
+    "ylang_ylang_i_oil": {
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Ylang-Ylang I Oil, Org"
+      ],
+      "targetFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Do not backfill note-role or IFRA hints from family assumptions alone."
+      ]
+    },
+    "ylang_ylang_ii_oil": {
+      "canonicalMaterialKey": "ylang_ylang_ii_oil",
+      "reviewStatus": "awaiting_source_document",
+      "relatedCatalogNames": [
+        "Ylang-Ylang II Oil, Org"
+      ],
+      "targetFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Treat grade-specific evidence as separate from Extra, Complete, and III."
+      ]
+    }
+  }
+}

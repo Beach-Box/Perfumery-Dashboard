@@ -1,0 +1,218 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Registry for trusted source documents used in chemistry and identity enrichment review. Documents are review-only until evidence candidates are manually promoted.",
+    "acceptedSourceTypes": [
+      "sds",
+      "tds",
+      "coa",
+      "spec_sheet",
+      "supplier_pdf",
+      "other"
+    ],
+    "reviewStatuses": [
+      "awaiting_source_document",
+      "ingested_pending_extraction",
+      "extracted_pending_review",
+      "reviewed_ready_for_manual_promotion",
+      "rejected"
+    ]
+  },
+  "documents": {},
+  "intakeTargets": {
+    "benzoin_siam_resinoid": {
+      "priority": "high",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Current helper coverage is structural only for the canonical resinoid identity.",
+        "Prefer a supplier SDS, TDS, or manufacturer spec before promoting CAS or INCI."
+      ]
+    },
+    "peru_balsam_resinoid": {
+      "priority": "high",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Keep the vendor-style resinoid distinct from Peru balsam oil.",
+        "Leave chemistry blank unless a trusted document clearly supports the canonical resinoid identity."
+      ]
+    },
+    "poplar_bud_absolute": {
+      "priority": "high",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Current canonical seed is derived from the live diluted-stock row only.",
+        "Do not promote IFRA linkage without a trusted standard source."
+      ]
+    },
+    "tolu_balsam_resinoid": {
+      "priority": "high",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Current canonical seed is structural/source-seeded only.",
+        "Prefer a trusted supplier or manufacturer document before promoting chemistry."
+      ]
+    },
+    "ylang_ylang_fine_oil": {
+      "priority": "medium",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "ylang_ylang_fine_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang Fine Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "CAS and INCI are already covered conservatively through the shared Ylang oil family treatment.",
+        "The next safe evidence gap is note-role and stronger identity description for the Fine grade."
+      ]
+    },
+    "ylang_ylang_i_oil": {
+      "priority": "medium",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang I Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "Keep fractional grade identity distinct from Extra, Complete, and III.",
+        "Do not guess note-role or IFRA material linkage from family similarity alone."
+      ]
+    },
+    "ylang_ylang_ii_oil": {
+      "priority": "medium",
+      "reviewStatus": "awaiting_source_document",
+      "canonicalMaterialKey": "ylang_ylang_ii_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang II Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "notes": [
+        "CAS and INCI already inherit from the shared Ylang oil family coverage.",
+        "A trusted supplier spec or PDF is still needed before promoting deeper chemistry or IFRA hints."
+      ]
+    }
+  }
+}
