@@ -55478,6 +55478,12 @@ function normalizeCoverageAuditText(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+const ACTIONABLE_SUPPLIER_LINK_STATUSES = new Set([
+  "cross_wired_listing",
+  "dead_url",
+  "linked_duplicate",
+]);
+
 function classifySupplierCoverageFamily(...values) {
   const haystack = values
     .flat()
@@ -55663,7 +55669,12 @@ function buildSupplierCoverageGapReport() {
       Object.entries(normalizationEntry?.supplierLinks || {}).forEach(
         ([supplierName, supplierLink]) => {
           const linkStatus = supplierLink?.status || "primary_listing";
-          if (linkStatus === "primary_listing") return;
+          if (
+            linkStatus === "primary_listing" ||
+            !ACTIONABLE_SUPPLIER_LINK_STATUSES.has(linkStatus)
+          ) {
+            return;
+          }
 
           pushGap("supplier_link_integrity_issue", {
             catalogDisplayName,

@@ -1320,6 +1320,20 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     isUVCB: true,
     descriptorTags: ["Citrus", "Green", "Petitgrain"],
   },
+  benzyl_acetate: {
+    canonicalMaterialKey: "benzyl_acetate",
+    canonicalName: "Benzyl Acetate",
+    note: "mid",
+    type: "SYNTH",
+    cas: "140-11-4",
+    inci: "Benzyl Acetate",
+    scentClass: "Floral",
+    scentSummary: "Jasmine-sweet fruity floral",
+    scentDesc:
+      "Canonical helper source seed for benzyl acetate. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but IFRA promotion remains conservative until structured standards coverage is promoted.",
+    rep: "Benzyl Acetate",
+    descriptorTags: ["Floral", "Fruity", "Jasmine"],
+  },
   peru_balsam_oil: {
     canonicalMaterialKey: "peru_balsam_oil",
     canonicalName: "Peru Balsam Oil",
