@@ -1488,6 +1488,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     canonicalName: "Peru Balsam Resinoid",
     note: "base",
     type: "ABS",
+    inci: "Myroxylon Pereirae Oil/Extract",
     scentClass: "Amber",
     scentSummary: "Peru balsam resinoid",
     scentDesc:

@@ -15,6 +15,12 @@ const HELPER_SOURCE_PATH = path.join(
   "lib",
   "ifra_combined_package.js"
 );
+const EVIDENCE_REGISTRY_PATH = path.join(
+  ROOT,
+  "src",
+  "data",
+  "evidence_candidate_registry.json"
+);
 const CANONICAL_SOURCE_ANCHOR = "const CANONICAL_MATERIAL_SOURCE_DATA = {";
 const ALLOWED_PROMOTION_FIELDS = new Set(["scentDesc", "isUVCB", "inci", "cas"]);
 const FIELD_ORDER = [
@@ -42,6 +48,7 @@ function parseArgs(argv) {
     dryRun: false,
     payloadPath: null,
     helperSourcePath: HELPER_SOURCE_PATH,
+    evidenceRegistryPath: EVIDENCE_REGISTRY_PATH,
   };
 
   for (let i = 0; i < args.length; i += 1) {
@@ -52,6 +59,11 @@ function parseArgs(argv) {
     }
     if (arg === "--helper-source") {
       options.helperSourcePath = path.resolve(process.cwd(), args[i + 1]);
+      i += 1;
+      continue;
+    }
+    if (arg === "--evidence-registry") {
+      options.evidenceRegistryPath = path.resolve(process.cwd(), args[i + 1]);
       i += 1;
       continue;
     }
@@ -67,7 +79,7 @@ function printUsage() {
   console.error(
     [
       "Usage:",
-      "  node scripts/promote_evidence_candidates.mjs <approved-evidence-candidates.json> [--dry-run] [--helper-source path]",
+      "  node scripts/promote_evidence_candidates.mjs <approved-evidence-candidates.json> [--dry-run] [--helper-source path] [--evidence-registry path]",
       "",
       "Promotes only approved low-risk evidence candidate fields into canonical helper seeds.",
     ].join("\n")
@@ -242,9 +254,10 @@ function upsertFieldInMaterialBlock(blockText, fieldName, candidateValue) {
   return `${lines.join("\n")}\n`;
 }
 
-function buildPreflight(payload, helperSourceText) {
+function buildPreflight(payload, helperSourceText, evidenceRegistry) {
   const canonicalSourceObject = extractCanonicalSourceObject(helperSourceText);
   const helperCanonicalSeeds = canonicalSourceObject.parsedValue || {};
+  const evidenceCandidates = evidenceRegistry?.candidates || {};
   const approvedRecords = normalizeApprovedEvidenceCandidates(payload);
 
   const reviewedCandidates = approvedRecords.length;
@@ -262,6 +275,9 @@ function buildPreflight(payload, helperSourceText) {
       candidate?.evidenceCandidateKey ||
       record?.evidenceCandidateKey ||
       null;
+    const evidenceRegistryRecord = evidenceCandidateKey
+      ? evidenceCandidates[evidenceCandidateKey] || null
+      : null;
     const candidateFieldName = String(candidate?.candidateFieldName || "").trim();
     const canonicalMaterialKey = String(
       candidate?.canonicalMaterialKey || ""
@@ -275,6 +291,29 @@ function buildPreflight(payload, helperSourceText) {
       skippedItems.push({
         evidenceCandidateKey,
         reason: "not_approved_for_promotion",
+      });
+      return;
+    }
+
+    if (!evidenceCandidateKey) {
+      blockingConflicts.push({
+        reason: "missing_evidence_candidate_key_for_repo_state_sync",
+      });
+      return;
+    }
+
+    if (!evidenceRegistryRecord) {
+      blockingConflicts.push({
+        evidenceCandidateKey,
+        reason: "evidence_candidate_not_found_in_registry",
+      });
+      return;
+    }
+
+    if (evidenceRegistryRecord.reviewStatus === "rejected") {
+      blockingConflicts.push({
+        evidenceCandidateKey,
+        reason: "candidate_is_rejected_in_registry",
       });
       return;
     }
@@ -329,6 +368,7 @@ function buildPreflight(payload, helperSourceText) {
       supplier: candidate?.supplier || null,
       sourceType: candidate?.sourceType || null,
       notes: Array.isArray(candidate?.notes) ? [...candidate.notes] : [],
+      evidenceRegistryRecord,
     };
 
     if (existingTarget) {
@@ -359,12 +399,25 @@ function buildPreflight(payload, helperSourceText) {
     const existingSeed = helperCanonicalSeeds[item.canonicalMaterialKey];
     const currentFieldValue = existingSeed?.[item.candidateFieldName];
     if (valuesMatch(item.candidateFieldName, currentFieldValue, item.candidateValue)) {
-      skippedItems.push({
-        evidenceCandidateKey: item.evidenceCandidateKey,
-        canonicalMaterialKey: item.canonicalMaterialKey,
-        candidateFieldName: item.candidateFieldName,
-        reason: "helper_seed_already_matches_candidate_value",
-      });
+      const registryRecord = item.evidenceRegistryRecord || {};
+      const alreadyPromoted =
+        registryRecord.reviewStatus === "promoted" &&
+        registryRecord.promotedCanonicalMaterialKey === item.canonicalMaterialKey &&
+        registryRecord.promotedFieldName === item.candidateFieldName;
+      if (alreadyPromoted) {
+        skippedItems.push({
+          evidenceCandidateKey: item.evidenceCandidateKey,
+          canonicalMaterialKey: item.canonicalMaterialKey,
+          candidateFieldName: item.candidateFieldName,
+          reason: "already_promoted_in_registry",
+        });
+      } else {
+        plannedItems.push({
+          ...item,
+          syncOnly: true,
+          syncReason: "registry_sync_needed_for_existing_helper_value",
+        });
+      }
       continue;
     }
 
@@ -398,14 +451,16 @@ function buildPreflight(payload, helperSourceText) {
 }
 
 function applyPlannedItems(helperSourceText, plannedItems) {
-  const groupedByCanonicalKey = plannedItems.reduce((acc, item) => {
+  const syncOnlyItems = plannedItems.filter((item) => item.syncOnly);
+  const helperWriteItems = plannedItems.filter((item) => !item.syncOnly);
+  const groupedByCanonicalKey = helperWriteItems.reduce((acc, item) => {
     if (!acc[item.canonicalMaterialKey]) acc[item.canonicalMaterialKey] = [];
     acc[item.canonicalMaterialKey].push(item);
     return acc;
   }, {});
 
   let nextHelperSourceText = helperSourceText;
-  const appliedItems = [];
+  const appliedItems = [...syncOnlyItems];
 
   const blockOrder = Object.keys(groupedByCanonicalKey)
     .map((canonicalMaterialKey) => {
@@ -455,8 +510,46 @@ function applyPlannedItems(helperSourceText, plannedItems) {
   };
 }
 
+function ensureMetadataReviewStatuses(registryData) {
+  if (!Array.isArray(registryData?.metadata?.reviewStatuses)) {
+    return;
+  }
+  if (!registryData.metadata.reviewStatuses.includes("promoted")) {
+    registryData.metadata.reviewStatuses.push("promoted");
+  }
+}
+
+function syncEvidenceRegistryPromotionState(registryData, appliedItems, promotedAt) {
+  const nextRegistryData = structuredClone(registryData);
+  ensureMetadataReviewStatuses(nextRegistryData);
+  const candidates = nextRegistryData.candidates || {};
+
+  appliedItems.forEach((item) => {
+    const record = candidates[item.evidenceCandidateKey];
+    if (!record) {
+      return;
+    }
+    record.reviewStatus = "promoted";
+    record.promotedAt = promotedAt;
+    record.promotedFieldName = item.candidateFieldName;
+    record.promotedCanonicalMaterialKey = item.canonicalMaterialKey;
+    record.promotionNotes = [
+      item.syncOnly
+        ? "Promotion state synced from an already-matching helper canonical seed value via scripts/promote_evidence_candidates.mjs."
+        : "Promoted into the helper canonical seed layer via scripts/promote_evidence_candidates.mjs.",
+    ];
+  });
+
+  return nextRegistryData;
+}
+
 function main() {
-  const { payloadPath, dryRun, helperSourcePath } = parseArgs(process.argv);
+  const {
+    payloadPath,
+    dryRun,
+    helperSourcePath,
+    evidenceRegistryPath,
+  } = parseArgs(process.argv);
   if (!payloadPath) {
     printUsage();
     process.exitCode = 1;
@@ -465,12 +558,14 @@ function main() {
 
   const payload = readJson(payloadPath);
   const helperSourceText = fs.readFileSync(helperSourcePath, "utf8");
-  const preflight = buildPreflight(payload, helperSourceText);
+  const evidenceRegistry = readJson(evidenceRegistryPath);
+  const preflight = buildPreflight(payload, helperSourceText, evidenceRegistry);
 
   const summary = {
     mode: dryRun ? "dry_run" : "apply",
     payloadPath,
     helperSourcePath,
+    evidenceRegistryPath,
     reviewedCandidates: preflight.reviewedCandidates,
     promotableCandidates: preflight.promotableCandidates,
     preflight: {
@@ -497,7 +592,17 @@ function main() {
   }
 
   const applied = applyPlannedItems(helperSourceText, preflight.plannedItems);
+  const promotedAt = new Date().toISOString();
+  const syncedEvidenceRegistry = syncEvidenceRegistryPromotionState(
+    evidenceRegistry,
+    applied.appliedItems,
+    promotedAt
+  );
   fs.writeFileSync(helperSourcePath, applied.helperSourceText);
+  fs.writeFileSync(
+    evidenceRegistryPath,
+    `${JSON.stringify(syncedEvidenceRegistry, null, 2)}\n`
+  );
   summary.appliedItems = applied.appliedItems;
   console.log(JSON.stringify(summary, null, 2));
 }

@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "version": 1,
+    "source": "repo_proof_setup_peru_balsam_resinoid_replacement",
+    "exportedAt": "2026-03-17T00:00:00.000Z",
+    "approvedCandidateCount": 1,
+    "note": "Tiny proof-run payload for a product-specific Peru balsam resinoid replacement evidence candidate. Promotion remains limited to low-risk helper seed fields."
+  },
+  "approvedEvidenceCandidates": [
+    {
+      "evidenceCandidateKey": "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+      "approvalStatus": "approved_for_promotion",
+      "reviewedAt": "2026-03-17T00:00:00.000Z",
+      "sourceSnapshot": {
+        "evidenceCandidateKey": "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "canonicalMaterialKey": "peru_balsam_resinoid",
+        "relatedCatalogNames": [
+          "Peru Balsam “Signature” Resinoid"
+        ],
+        "candidateFieldName": "inci",
+        "candidateValue": "Myroxylon Pereirae Oil/Extract",
+        "confidence": "medium",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "notes": [
+          "Document-backed from the downloaded 82ALL_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf file in the source-document registry.",
+          "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'PERU BALSAM RESINOID EXTRA'.",
+          "Prepared from the ingredient identity cue 'MYROXYLON PEREIRAE OIL/EXTRACT' in the product-specific Fraterworks allergen document."
+        ]
+      },
+      "promotionCandidate": {
+        "evidenceCandidateKey": "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "canonicalMaterialKey": "peru_balsam_resinoid",
+        "relatedCatalogNames": [
+          "Peru Balsam “Signature” Resinoid"
+        ],
+        "candidateFieldName": "inci",
+        "candidateValue": "Myroxylon Pereirae Oil/Extract",
+        "confidence": "medium",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "reviewStatus": "approved_for_promotion",
+        "notes": [
+          "Document-backed from the downloaded 82ALL_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf file in the source-document registry.",
+          "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'PERU BALSAM RESINOID EXTRA'.",
+          "Prepared from the ingredient identity cue 'MYROXYLON PEREIRAE OIL/EXTRACT' in the product-specific Fraterworks allergen document."
+        ]
+      }
+    }
+  ]
+}

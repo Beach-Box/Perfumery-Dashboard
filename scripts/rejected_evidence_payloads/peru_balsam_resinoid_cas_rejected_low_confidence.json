@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "version": 1,
+    "source": "repo_doc_backed_peru_balsam_resinoid_proof",
+    "exportedAt": "2026-03-17T00:00:00.000Z",
+    "approvedCandidateCount": 1,
+    "note": "Dry-run-only proof payload for a document-backed Peru balsam resinoid candidate. Do not real-apply unless a product-specific SDS or another trusted source confirms the canonical target fit."
+  },
+  "approvedEvidenceCandidates": [
+    {
+      "evidenceCandidateKey": "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+      "approvalStatus": "approved_for_promotion",
+      "reviewedAt": "2026-03-17T00:00:00.000Z",
+      "sourceSnapshot": {
+        "evidenceCandidateKey": "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "canonicalMaterialKey": "peru_balsam_resinoid",
+        "relatedCatalogNames": [
+          "Peru Balsam “Signature” Resinoid"
+        ],
+        "candidateFieldName": "cas",
+        "candidateValue": "8007-00-9",
+        "confidence": "low",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "notes": [
+          "Document-backed from the downloaded Peru_Balsam_Signature_Resinoid.pdf file in the source-document registry.",
+          "Local extraction shows the PDF content is actually an EPA/CCID page titled 'Balsams, peru' with CAS 8007-00-9 and Peru balsam oil-style synonyms.",
+          "Use this payload for dry-run inspection only unless a product-specific SDS or another trusted source confirms the CAS belongs to the resinoid canonical target."
+        ]
+      },
+      "promotionCandidate": {
+        "evidenceCandidateKey": "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "canonicalMaterialKey": "peru_balsam_resinoid",
+        "relatedCatalogNames": [
+          "Peru Balsam “Signature” Resinoid"
+        ],
+        "candidateFieldName": "cas",
+        "candidateValue": "8007-00-9",
+        "confidence": "low",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "reviewStatus": "approved_for_promotion",
+        "notes": [
+          "Document-backed from the downloaded Peru_Balsam_Signature_Resinoid.pdf file in the source-document registry.",
+          "Local extraction shows the PDF content is actually an EPA/CCID page titled 'Balsams, peru' with CAS 8007-00-9 and Peru balsam oil-style synonyms.",
+          "Use this payload for dry-run inspection only unless a product-specific SDS or another trusted source confirms the CAS belongs to the resinoid canonical target."
+        ]
+      }
+    }
+  ]
+}

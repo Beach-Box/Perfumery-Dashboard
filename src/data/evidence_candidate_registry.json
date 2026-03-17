@@ -16,6 +16,7 @@
       "candidate_pending_review",
       "candidate_reviewed",
       "ready_for_manual_promotion",
+      "promoted",
       "rejected"
     ]
   },
@@ -35,6 +36,48 @@
       "notes": [
         "Source-backed from the current live catalog row text in src/App.jsx.",
         "Prepared as a low-risk scentDesc-only evidence candidate."
+      ]
+    },
+    "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf": {
+      "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "supplier": "Fraterworks",
+      "sourceType": "unknown_pdf",
+      "candidateFieldName": "cas",
+      "candidateValue": "8007-00-9",
+      "confidence": "low",
+      "reviewStatus": "rejected",
+      "notes": [
+        "Document-backed from the downloaded Peru_Balsam_Signature_Resinoid.pdf file in the source-document registry.",
+        "Local extraction shows the PDF content is actually an EPA/CCID page titled 'Balsams, peru' with CAS 8007-00-9 and Peru balsam oil-style synonyms.",
+        "Rejected as a promotion candidate because the document looks like Peru balsam oil / oleoresin evidence rather than a clean Peru balsam resinoid identity source."
+      ]
+    },
+    "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf": {
+      "sourceDocumentKey": "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "supplier": "Fraterworks",
+      "sourceType": "unknown_pdf",
+      "candidateFieldName": "inci",
+      "candidateValue": "Myroxylon Pereirae Oil/Extract",
+      "confidence": "medium",
+      "reviewStatus": "promoted",
+      "notes": [
+        "Document-backed from the downloaded 82ALL_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf file in the source-document registry.",
+        "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'PERU BALSAM RESINOID EXTRA'.",
+        "Prepared from the ingredient identity cue 'MYROXYLON PEREIRAE OIL/EXTRACT' in the product-specific Fraterworks allergen document."
+      ],
+      "promotedAt": "2026-03-17T23:46:27.532Z",
+      "promotedFieldName": "inci",
+      "promotedCanonicalMaterialKey": "peru_balsam_resinoid",
+      "promotionNotes": [
+        "Promotion state synced from an already-matching helper canonical seed value via scripts/promote_evidence_candidates.mjs."
       ]
     },
     "peru_balsam_oil:scentdesc:peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo": {
@@ -77,7 +120,15 @@
     },
     "peru_balsam_resinoid": {
       "canonicalMaterialKey": "peru_balsam_resinoid",
-      "reviewStatus": "awaiting_source_document",
+      "reviewStatus": "candidate_pending_review",
+      "linkedEvidenceCandidateKeys": [
+        "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf"
+      ],
+      "linkedSourceDocumentKeys": [
+        "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf"
+      ],
       "relatedCatalogNames": [
         "Peru Balsam “Signature” Resinoid"
       ],
@@ -91,7 +142,9 @@
       ],
       "notes": [
         "Treat this as a separate resinoid identity, not a synonym for Peru balsam oil.",
-        "Keep unresolved fields blank until a trusted document exists."
+        "Keep unresolved fields blank until a trusted document exists.",
+        "The earlier CCID-style CAS candidate has been rejected because it looked more like Peru balsam oil evidence than resinoid-specific evidence.",
+        "One replacement document-backed INCI candidate is staged from the product-specific 82ALL supplier document."
       ]
     },
     "poplar_bud_absolute": {
