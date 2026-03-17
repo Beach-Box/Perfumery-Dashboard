@@ -31486,6 +31486,139 @@ const IFRA_STATE_BADGE_META = {
   },
 };
 
+const NORMALIZATION_ENTRY_KIND_LABELS = {
+  canonical_material: "Canonical Material",
+  supplier_product: "Supplier Product",
+  diluted_stock: "Diluted Stock",
+  accord: "Accord",
+};
+
+const NORMALIZATION_BADGE_META = {
+  diluted_stock: {
+    compactLabel: "Diluted",
+    label: "Diluted Stock",
+    background: "rgba(96,165,250,0.12)",
+    color: "#93C5FD",
+    borderColor: "#60A5FA50",
+  },
+  linked_duplicate: {
+    compactLabel: "Linked Dup",
+    label: "Linked Duplicate",
+    background: "rgba(250,204,21,0.12)",
+    color: "#FDE047",
+    borderColor: "#FACC1550",
+  },
+  supplier_product: {
+    compactLabel: "Supplier Var",
+    label: "Supplier Product",
+    background: "rgba(148,163,184,0.12)",
+    color: "#CBD5E1",
+    borderColor: "#64748B50",
+  },
+  accord: {
+    compactLabel: "Accord",
+    label: "Accord",
+    background: "rgba(45,212,191,0.12)",
+    color: "#5EEAD4",
+    borderColor: "#2DD4BF50",
+  },
+};
+
+const SUPPLIER_LINK_BADGE_META = {
+  linked_duplicate: {
+    compactLabel: "Linked Dup",
+    label: "Linked Duplicate",
+    background: "rgba(250,204,21,0.12)",
+    color: "#FDE047",
+    borderColor: "#FACC1550",
+  },
+  supplier_grade_variant: {
+    compactLabel: "Grade Var",
+    label: "Supplier Grade Variant",
+    background: "rgba(125,211,252,0.12)",
+    color: "#7DD3FC",
+    borderColor: "#38BDF850",
+  },
+  cross_wired_listing: {
+    compactLabel: "Link Mismatch",
+    label: "Cross-Wired Listing",
+    background: "rgba(251,191,36,0.12)",
+    color: "#FBBF24",
+    borderColor: "#F59E0B50",
+  },
+  dead_url: {
+    compactLabel: "Dead URL",
+    label: "Dead URL",
+    background: "rgba(248,113,113,0.14)",
+    color: "#FCA5A5",
+    borderColor: "#EF444450",
+  },
+  accord_listing: {
+    compactLabel: "Accord",
+    label: "Accord Listing",
+    background: "rgba(45,212,191,0.12)",
+    color: "#5EEAD4",
+    borderColor: "#2DD4BF50",
+  },
+};
+
+function getIngredientCatalogMetadata(name) {
+  const d = DB[name];
+  if (!d) {
+    return {
+      entryKindLabel: null,
+      canonicalMaterialKey: null,
+      linkedDuplicateOfCatalogName: null,
+      rowBadges: [],
+    };
+  }
+
+  const rowBadges = [];
+
+  if (d.entryKind === "diluted_stock") {
+    rowBadges.push({
+      key: "diluted_stock",
+      title: d.canonicalMaterialKey
+        ? `Diluted stock mapped to canonical material key "${d.canonicalMaterialKey}".`
+        : "Diluted stock row.",
+      ...NORMALIZATION_BADGE_META.diluted_stock,
+    });
+  }
+
+  if (d.linkedDuplicateOfCatalogName) {
+    rowBadges.push({
+      key: "linked_duplicate",
+      title: `Linked duplicate of catalog row "${d.linkedDuplicateOfCatalogName}".`,
+      ...NORMALIZATION_BADGE_META.linked_duplicate,
+    });
+  }
+
+  if (d.entryKind === "supplier_product" && !d.linkedDuplicateOfCatalogName) {
+    rowBadges.push({
+      key: "supplier_product",
+      title: d.canonicalMaterialKey
+        ? `Supplier-product row mapped to canonical material key "${d.canonicalMaterialKey}".`
+        : "Supplier-product row.",
+      ...NORMALIZATION_BADGE_META.supplier_product,
+    });
+  }
+
+  if (d.entryKind === "accord") {
+    rowBadges.push({
+      key: "accord",
+      title: "Accord or branded composition row.",
+      ...NORMALIZATION_BADGE_META.accord,
+    });
+  }
+
+  return {
+    entryKindLabel: d.entryKind ? NORMALIZATION_ENTRY_KIND_LABELS[d.entryKind] || d.entryKind : null,
+    canonicalMaterialKey: d.canonicalMaterialKey || null,
+    linkedDuplicateOfCatalogName: d.linkedDuplicateOfCatalogName || null,
+    rowBadges,
+  };
+}
+
 function getIngredientIfraData(name) {
   const resolvedIdentity = resolveIngredientIdentity(name);
   const material = getIfraMaterialRecord(name);
@@ -31522,6 +31655,30 @@ function getIngredientIfraData(name) {
   };
 }
 
+function MetadataBadge({ badge, compact = false, style = {} }) {
+  if (!badge) return null;
+  const label = compact ? badge.compactLabel || badge.label : badge.label;
+  if (!label) return null;
+
+  return (
+    <span
+      title={badge.title || undefined}
+      style={{
+        background: badge.background,
+        color: badge.color,
+        border: `1px solid ${badge.borderColor}`,
+        borderRadius: compact ? 10 : 20,
+        padding: compact ? "1px 7px" : "3px 10px",
+        fontSize: compact ? 8.5 : 10,
+        fontWeight: 700,
+        ...style,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 function IfraStateBadge({ ifraData, compact = false, style = {} }) {
   if (!ifraData?.badgeStyle) return null;
   const label = compact ? ifraData.badgeLabel : ifraData.stateLabel;
@@ -31543,6 +31700,56 @@ function IfraStateBadge({ ifraData, compact = false, style = {} }) {
     >
       {label}
     </span>
+  );
+}
+
+function CatalogMetadataBadges({ name, compact = false, style = {} }) {
+  const metadata = getIngredientCatalogMetadata(name);
+  if (!metadata.rowBadges.length) return null;
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        gap: 4,
+        flexWrap: "wrap",
+        alignItems: "center",
+        ...style,
+      }}
+    >
+      {metadata.rowBadges.map((badge) => (
+        <MetadataBadge key={badge.key} badge={badge} compact={compact} />
+      ))}
+    </span>
+  );
+}
+
+function SupplierLinkStatusBadge({
+  linkStatus,
+  linkNote,
+  linkedDuplicateOfCatalogName,
+  compact = true,
+  style = {},
+}) {
+  if (!linkStatus || linkStatus === "primary_listing") return null;
+  const meta = SUPPLIER_LINK_BADGE_META[linkStatus];
+  if (!meta) return null;
+
+  const titleParts = [];
+  if (linkedDuplicateOfCatalogName) {
+    titleParts.push(`Linked duplicate of "${linkedDuplicateOfCatalogName}".`);
+  }
+  if (linkNote) titleParts.push(linkNote);
+
+  return (
+    <MetadataBadge
+      badge={{
+        ...meta,
+        title: titleParts.join(" "),
+      }}
+      compact={compact}
+      style={style}
+    />
   );
 }
 
@@ -54164,8 +54371,28 @@ function IngredientDetailPanel({ name, onClose }) {
   if (!d) return null;
   const nc = NC[d.note] || NC.carrier;
   const ifraData = getIngredientIfraData(name);
+  const catalogMetadata = getIngredientCatalogMetadata(name);
   const cat4LimitText =
     ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
+  const identityRows = [
+    ["CAS", d.cas],
+    ["INCI", d.inci],
+    ["Rep. Odorant", d.rep],
+    ["IFRA State", ifraData.stateLabel],
+    ["Cat 4 Limit", cat4LimitText],
+  ];
+  if (catalogMetadata.entryKindLabel) {
+    identityRows.push(["Catalog Entry", catalogMetadata.entryKindLabel]);
+  }
+  if (catalogMetadata.canonicalMaterialKey) {
+    identityRows.push(["Canonical Key", catalogMetadata.canonicalMaterialKey]);
+  }
+  if (catalogMetadata.linkedDuplicateOfCatalogName) {
+    identityRows.push([
+      "Linked Duplicate Of",
+      catalogMetadata.linkedDuplicateOfCatalogName,
+    ]);
+  }
   return (
     <div
       style={{
@@ -54224,6 +54451,7 @@ function IngredientDetailPanel({ name, onClose }) {
                 {d.note?.toUpperCase()} · {d.type}
               </span>
               <IfraStateBadge ifraData={ifraData} />
+              <CatalogMetadataBadges name={name} compact />
             </div>
             <h2
               style={{
@@ -54245,6 +54473,18 @@ function IngredientDetailPanel({ name, onClose }) {
             >
               {d.scentClass} · {d.scentSummary}
             </p>
+            {catalogMetadata.canonicalMaterialKey && (
+              <p
+                style={{
+                  fontSize: 10,
+                  color: "#64748B",
+                  margin: "5px 0 0",
+                  fontFamily: "monospace",
+                }}
+              >
+                canonicalMaterialKey: {catalogMetadata.canonicalMaterialKey}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -54302,13 +54542,7 @@ function IngredientDetailPanel({ name, onClose }) {
             >
               Identity
             </p>
-            {[
-              ["CAS", d.cas],
-              ["INCI", d.inci],
-              ["Rep. Odorant", d.rep],
-              ["IFRA State", ifraData.stateLabel],
-              ["Cat 4 Limit", cat4LimitText],
-            ].map(([l, v]) => (
+            {identityRows.map(([l, v]) => (
               <div
                 key={l}
                 style={{
@@ -54391,71 +54625,113 @@ function IngredientDetailPanel({ name, onClose }) {
               Supplier Pricing
             </p>
             <div style={{ display: "grid", gap: 8 }}>
-              {Object.entries(p).map(([sup, { url, S }]) => (
-                <div
-                  key={sup}
-                  style={{
-                    background: "#060E1E",
-                    borderRadius: 8,
-                    padding: "10px 14px",
-                    border: `1px solid ${BORDER}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexWrap: "wrap",
-                    gap: 8,
-                  }}
-                >
-                  <div>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: SUPPLIER_COLORS[sup] || "#fff",
-                      }}
-                    >
-                      {sup}
-                    </span>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: 9,
-                        color: "#475569",
-                        marginLeft: 8,
-                        textDecoration: "none",
-                      }}
-                    >
-                      ↗ Visit
-                    </a>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {S.map(([qty, unit, price], i) => (
-                      <span
-                        key={i}
+              {Object.entries(p).map(([sup, supplierData]) => {
+                const {
+                  url,
+                  S,
+                  linkStatus,
+                  linkNote,
+                  linkedDuplicateOfCatalogName,
+                } = supplierData;
+                const supplierLinkSummary =
+                  linkStatus && linkStatus !== "primary_listing"
+                    ? linkNote ||
+                      (linkedDuplicateOfCatalogName
+                        ? `Linked duplicate of ${linkedDuplicateOfCatalogName}.`
+                        : null)
+                    : null;
+                return (
+                  <div
+                    key={sup}
+                    style={{
+                      background: "#060E1E",
+                      borderRadius: 8,
+                      padding: "10px 14px",
+                      border: `1px solid ${BORDER}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+                      <div
                         style={{
-                          background: CARD,
-                          border: `1px solid ${BORDER}`,
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          fontSize: 11,
-                          color: "#E2E8F0",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          flexWrap: "wrap",
                         }}
                       >
-                        <span style={{ color: ACC, fontWeight: 700 }}>
-                          {qty}
-                          {unit}
-                        </span>{" "}
-                        ·{" "}
-                        <span style={{ color: "#34D399" }}>
-                          ${price.toFixed(2)}
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: SUPPLIER_COLORS[sup] || "#fff",
+                          }}
+                        >
+                          {sup}
                         </span>
-                      </span>
-                    ))}
+                        <SupplierLinkStatusBadge
+                          linkStatus={linkStatus}
+                          linkNote={linkNote}
+                          linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
+                        />
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: 9,
+                            color: "#475569",
+                            textDecoration: "none",
+                          }}
+                        >
+                          ↗ Visit
+                        </a>
+                      </div>
+                      {supplierLinkSummary && (
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "#64748B",
+                            marginTop: 4,
+                            lineHeight: 1.4,
+                            maxWidth: 360,
+                          }}
+                        >
+                          {supplierLinkSummary}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {S.map(([qty, unit, price], i) => (
+                        <span
+                          key={i}
+                          style={{
+                            background: CARD,
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            fontSize: 11,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          <span style={{ color: ACC, fontWeight: 700 }}>
+                            {qty}
+                            {unit}
+                          </span>{" "}
+                          ·{" "}
+                          <span style={{ color: "#34D399" }}>
+                            ${price.toFixed(2)}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -56192,20 +56468,22 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                     padding: "4px 6px",
                                     fontWeight: 600,
                                     color: "#E2E8F0",
-                                    whiteSpace: "nowrap",
                                     cursor: "pointer",
                                   }}
                                   onClick={() => setDetailName(ing.name)}
                                 >
-                                  {ing.name}
-                                  <IfraStateBadge
-                                    ifraData={ifraData}
-                                    compact
+                                  <div
                                     style={{
-                                      marginLeft: 6,
-                                      verticalAlign: "middle",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                      flexWrap: "wrap",
                                     }}
-                                  />
+                                  >
+                                    <span>{ing.name}</span>
+                                    <IfraStateBadge ifraData={ifraData} compact />
+                                    <CatalogMetadataBadges name={ing.name} compact />
+                                  </div>
                                 </td>
                                 <td
                                   style={{
@@ -58804,6 +59082,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             {TB[d.type]} {d.type}
                           </span>
                           <IfraStateBadge ifraData={ifraData} compact />
+                          <CatalogMetadataBadges name={name} compact />
                         </div>
                         <div
                           style={{
