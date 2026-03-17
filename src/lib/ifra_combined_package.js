@@ -288,6 +288,123 @@ export const IFRA_MASTER_MATERIALS = {
       "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
     ],
   },
+  "ylang ylang extra absolute": {
+    canonicalName: "Ylang Ylang Extra Absolute",
+    cas: [],
+    synonyms: [
+      "ylang ylang extra absolute",
+      "ylang ylang extra",
+      "ylang ylang oil",
+      "ylang ylang",
+    ],
+    recommendationType: "restriction",
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: 0.73,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [],
+    },
+    notes: [
+      "Cat 4 limit was promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+    ],
+  },
+  "labdanum absolute": {
+    canonicalName: "Labdanum Absolute",
+    cas: ["8016-26-0"],
+    synonyms: [
+      "labdanum absolute",
+      "labdanum",
+      "cistus ladaniferus resin extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "No matching IFRA standard was located in the uploaded PDF during this pass.",
+      "Maps diluted labdanum stock names to a canonical helper identity so stock active-percent handling can apply when IFRA limits are added later.",
+    ],
+  },
+  "vanilla co2": {
+    canonicalName: "Vanilla CO2",
+    cas: ["8024-06-4"],
+    synonyms: [
+      "vanilla co2",
+      "vanilla planifolia fruit co2 extract",
+      "vanilla",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "No matching IFRA standard was located in the uploaded PDF during this pass.",
+      "Maps diluted vanilla CO2 stock names to a canonical helper identity so stock active-percent handling can apply when IFRA limits are added later.",
+    ],
+  },
+  "agarwood oil": {
+    canonicalName: "Agarwood Oil",
+    cas: [],
+    synonyms: [
+      "agarwood oil",
+      "oud co2",
+      "oud",
+      "aquilaria malaccensis wood co2 extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [352],
+    },
+    notes: [
+      "Helper maps oud/agarwood diluted stock names to a canonical identity from the uploaded source dataset.",
+      "Exact IFRA category limits have not yet been promoted into the structured helper dataset, so do not treat this as unrestricted.",
+    ],
+  },
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -639,7 +756,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Oud CO2 10%",
     normalizedName: "Agarwood oil",
     matchStrategy: "stock_name_parse",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "agarwood oil",
     materialClass: "diluted_stock",
     aliases: ["Agarwood oil", "Oud CO2 10%", "Agarwood", "Oud CO2", "Oud"],
     stock: {
@@ -679,7 +796,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Ylang Ylang Extra Absolute",
     normalizedName: "Ylang Ylang Extra Absolute",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "ylang ylang extra absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Ylang Ylang Extra Absolute",
@@ -967,7 +1084,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Labdanum Absolute 10%",
     normalizedName: "Labdanum Absolute 10%",
     matchStrategy: "stock_name_parse",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "labdanum absolute",
     materialClass: "diluted_stock",
     aliases: [
       "Labdanum Absolute 10%",
@@ -1297,7 +1414,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Vanilla CO2 10%",
     normalizedName: "Vanilla CO2 10%",
     matchStrategy: "stock_name_parse",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "vanilla co2",
     materialClass: "diluted_stock",
     aliases: ["Vanilla CO2 10%", "Vanilla CO2", "Vanilla"],
     stock: {
