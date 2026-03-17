@@ -1,5 +1,7 @@
 import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
 import materialNormalization from "../data/material_normalization.json" with { type: "json" };
+import supplierImportReviewQueue from "../data/supplier_import_review_queue.json" with { type: "json" };
+import supplierProductRegistry from "../data/supplier_product_registry.json" with { type: "json" };
 
 // Starter IFRA combined package for Beach Box app integration
 const IFRA_SUPPLEMENTAL_MATERIALS = {
@@ -1025,6 +1027,133 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
 export const MATERIAL_NORMALIZATION = materialNormalization;
+export const SUPPLIER_PRODUCT_REGISTRY_METADATA =
+  supplierProductRegistry.metadata;
+export const SUPPLIER_PRODUCT_REGISTRY =
+  supplierProductRegistry.products || {};
+export const SUPPLIER_IMPORT_REVIEW_QUEUE_METADATA =
+  supplierImportReviewQueue.metadata;
+export const SUPPLIER_IMPORT_REVIEW_QUEUE =
+  supplierImportReviewQueue.items || {};
+
+function cloneJsonValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneJsonValue(item));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, cloneJsonValue(item)])
+    );
+  }
+  return value;
+}
+
+function normalizeRegistryText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getUrlSlugFromValue(url) {
+  try {
+    const pathname = new URL(String(url || "")).pathname
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\.html?$/i, "")
+      .trim();
+    return pathname || null;
+  } catch {
+    return null;
+  }
+}
+
+const SUPPLIER_KEY_BY_DISPLAY_NAME = Object.fromEntries(
+  Object.entries(SUPPLIER_PRODUCT_REGISTRY_METADATA?.suppliers || {}).map(
+    ([supplierKey, supplier]) => [supplier?.displayName, supplierKey]
+  )
+);
+
+const SUPPLIER_PRODUCT_KEYS_BY_CATALOG_NAME = Object.entries(
+  SUPPLIER_PRODUCT_REGISTRY
+).reduce((acc, [supplierProductKey, record]) => {
+  const catalogName = record?.mappedCatalogName;
+  if (!catalogName) return acc;
+  if (!acc[catalogName]) acc[catalogName] = [];
+  acc[catalogName].push(supplierProductKey);
+  return acc;
+}, {});
+
+const SUPPLIER_PRODUCT_KEYS_BY_CANONICAL_KEY = Object.entries(
+  SUPPLIER_PRODUCT_REGISTRY
+).reduce((acc, [supplierProductKey, record]) => {
+  const canonicalMaterialKey = record?.mappedCanonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(supplierProductKey);
+  return acc;
+}, {});
+
+export function getSupplierRegistrySupplierKey(supplierNameOrKey) {
+  if (!supplierNameOrKey) return null;
+  if (
+    SUPPLIER_PRODUCT_REGISTRY_METADATA?.suppliers?.[supplierNameOrKey]
+  ) {
+    return supplierNameOrKey;
+  }
+
+  return (
+    SUPPLIER_KEY_BY_DISPLAY_NAME[supplierNameOrKey] ||
+    normalizeRegistryText(supplierNameOrKey) ||
+    null
+  );
+}
+
+export function buildSupplierProductKey({
+  supplierKey,
+  supplierName,
+  url,
+  sku,
+}) {
+  const resolvedSupplierKey = getSupplierRegistrySupplierKey(
+    supplierKey || supplierName
+  );
+  if (!resolvedSupplierKey) return null;
+
+  const stableIdentifier = normalizeRegistryText(sku) || getUrlSlugFromValue(url);
+  if (!stableIdentifier) return null;
+
+  return `${resolvedSupplierKey}:${stableIdentifier}`;
+}
+
+export function getSupplierProductRecord(supplierProductKey) {
+  const record = SUPPLIER_PRODUCT_REGISTRY[supplierProductKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getSupplierProductsForCatalogName(catalogName) {
+  const keys = SUPPLIER_PRODUCT_KEYS_BY_CATALOG_NAME[catalogName] || [];
+  return keys
+    .map((key) => getSupplierProductRecord(key))
+    .filter(Boolean);
+}
+
+export function getSupplierProductsForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys =
+    SUPPLIER_PRODUCT_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => getSupplierProductRecord(key))
+    .filter(Boolean);
+}
+
+export function getPendingSupplierImportItems() {
+  return Object.values(SUPPLIER_IMPORT_REVIEW_QUEUE).map((item) =>
+    cloneJsonValue(item)
+  );
+}
+
 const CANONICAL_ENTRY_NAME_BY_KEY = Object.fromEntries(
   Object.entries(MATERIAL_NORMALIZATION)
     .filter(

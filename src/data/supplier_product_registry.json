@@ -1,0 +1,251 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Starter supplier product registry for safe supplier-first ingestion. New supplier products should land here before they are mapped into catalog rows or canonical material normalization.",
+    "keyStrategy": "supplier_key:url_slug unless a stable supplier SKU is promoted later",
+    "suppliers": {
+      "eden_botanicals": {
+        "displayName": "Eden Botanicals",
+        "urlHost": "www.edenbotanicals.com",
+        "keySource": "url_slug"
+      },
+      "fraterworks": {
+        "displayName": "Fraterworks",
+        "urlHost": "fraterworks.com",
+        "keySource": "url_slug"
+      }
+    }
+  },
+  "products": {
+    "eden_botanicals:ylang-ylang-absolute": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang Absolute",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-absolute.html",
+      "urlSlug": "ylang-ylang-absolute",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Absolute",
+      "mappedCanonicalMaterialKey": "ylang_ylang_absolute",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Supplier identity cleanly matches the existing absolute row.",
+        "Canonical chemistry and IFRA remain sourced from the existing catalog/helper layers."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-extra-organic": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang Extra - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-extra-organic.html",
+      "urlSlug": "ylang-ylang-extra-organic",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Extra Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_extra_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Supplier identity cleanly matches the extra-organic oil row.",
+        "Registry keeps this supplier product separate from canonical chemistry."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-iii-organic": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang III - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-iii-organic.html",
+      "urlSlug": "ylang-ylang-iii-organic",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang III Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_iii_oil",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Supplier identity cleanly matches the grade III oil row."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-complete-organic-2080": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang Complete - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
+      "urlSlug": "ylang-ylang-complete-organic-2080",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Complete Oil",
+      "mappedCanonicalMaterialKey": "ylang_ylang_complete_oil",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Supplier identity cleanly matches the complete oil row.",
+        "Registry uses the corrected Eden product URL."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-i-organic": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang I - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      "urlSlug": "ylang-ylang-i-organic",
+      "sku": null,
+      "registryStatus": "pending_review",
+      "mappedCatalogName": null,
+      "mappedCanonicalMaterialKey": null,
+      "mappedEntryKind": null,
+      "normalizationStatus": "unmapped",
+      "notes": [
+        "Distinct Eden fractional grade with no current catalog row.",
+        "Keep in the registry and review queue until a supplier-product row is explicitly added."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-ii-organic": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang II - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      "urlSlug": "ylang-ylang-ii-organic",
+      "sku": null,
+      "registryStatus": "pending_review",
+      "mappedCatalogName": null,
+      "mappedCanonicalMaterialKey": null,
+      "mappedEntryKind": null,
+      "normalizationStatus": "unmapped",
+      "notes": [
+        "Distinct Eden fractional grade with no current catalog row.",
+        "Keep in the registry and review queue until a supplier-product row is explicitly added."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-complete-fine-organic": {
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang, Fine - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      "urlSlug": "ylang-ylang-complete-fine-organic",
+      "sku": null,
+      "registryStatus": "pending_review",
+      "mappedCatalogName": null,
+      "mappedCanonicalMaterialKey": null,
+      "mappedEntryKind": null,
+      "normalizationStatus": "unmapped",
+      "notes": [
+        "Distinct Eden fine grade listing with no current catalog row.",
+        "Do not merge into Extra Superior or Complete without an explicit review."
+      ]
+    },
+    "fraterworks:ylang-ylang-absolute": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang Absolute",
+      "url": "https://fraterworks.com/products/ylang-ylang-absolute",
+      "urlSlug": "ylang-ylang-absolute",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Absolute",
+      "mappedCanonicalMaterialKey": "ylang_ylang_absolute",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Distinct Fraterworks absolute listing."
+      ]
+    },
+    "fraterworks:ylang-ylang-extra-oil-comoros": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang Extra Oil, Comoros",
+      "url": "https://fraterworks.com/products/ylang-ylang-extra-oil-comoros",
+      "urlSlug": "ylang-ylang-extra-oil-comoros",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Extra Oil, Comoros",
+      "mappedCanonicalMaterialKey": "ylang_ylang_extra_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Primary Fraterworks extra-oil Comoros listing."
+      ]
+    },
+    "fraterworks:ylang-ylang-extra-comoros": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang Extra Oil, Org",
+      "url": "https://fraterworks.com/products/ylang-ylang-extra-comoros",
+      "urlSlug": "ylang-ylang-extra-comoros",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Extra Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_extra_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Fraterworks product title maps to the Org row, though the URL slug still deserves review."
+      ]
+    },
+    "fraterworks:ylang-ylang-iii-oil": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang III Oil, Org",
+      "url": "https://fraterworks.com/products/ylang-ylang-iii-oil",
+      "urlSlug": "ylang-ylang-iii-oil",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang III Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_iii_oil",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Distinct Fraterworks grade III listing."
+      ]
+    },
+    "fraterworks:ylang-ylang-complete": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang Complete Oil",
+      "url": "https://fraterworks.com/products/ylang-ylang-complete",
+      "urlSlug": "ylang-ylang-complete",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Complete Oil",
+      "mappedCanonicalMaterialKey": "ylang_ylang_complete_oil",
+      "mappedEntryKind": "canonical_material",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Distinct Fraterworks complete oil listing."
+      ]
+    },
+    "fraterworks:ylang-ylang-superior": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang-Ylang Extra Superior Oil, Org",
+      "url": "https://fraterworks.com/products/ylang-ylang-superior",
+      "urlSlug": "ylang-ylang-superior",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang-Ylang Extra Superior Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_extra_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Vendor-specific superior grade variant preserved separately from the generic extra-oil family."
+      ]
+    },
+    "fraterworks:ylang-imperial": {
+      "supplierKey": "fraterworks",
+      "supplierDisplayName": "Fraterworks",
+      "productTitle": "Ylang Imperiale",
+      "url": "https://fraterworks.com/products/ylang-imperial",
+      "urlSlug": "ylang-imperial",
+      "sku": null,
+      "registryStatus": "mapped_to_catalog",
+      "mappedCatalogName": "Ylang Impériale",
+      "mappedCanonicalMaterialKey": "ylang_imperiale",
+      "mappedEntryKind": "accord",
+      "normalizationStatus": "mapped",
+      "notes": [
+        "Vendor-style accord/product kept separate from canonical Ylang material rows."
+      ]
+    }
+  }
+}
