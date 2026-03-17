@@ -26,6 +26,8 @@ import {
   getMaterialNormalizationEntry,
   getIfraMaterialRecord,
   getIfraUiState,
+  getPendingSupplierImportItems,
+  getSupplierProductRecord,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
 
@@ -60109,6 +60111,38 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   .includes(supplierSearch.toLowerCase());
               return matchSup && matchSearch;
             });
+            const pendingSupplierImports = getPendingSupplierImportItems()
+              .map((item) => {
+                const registryRecord = getSupplierProductRecord(
+                  item.supplierProductKey
+                );
+                const supplierFromKey = String(
+                  item.supplierProductKey || ""
+                )
+                  .split(":")[0]
+                  .replace(/_/g, " ");
+                return {
+                  supplierProductKey: item.supplierProductKey || "unknown",
+                  supplier:
+                    registryRecord?.supplierDisplayName || supplierFromKey,
+                  productTitle: registryRecord?.productTitle || "Unknown product",
+                  url: registryRecord?.url || "",
+                  proposedCatalogName: item.proposedCatalogName || "—",
+                  proposedEntryKind: item.proposedEntryKind || "—",
+                  proposedCanonicalMaterialKey:
+                    item.proposedCanonicalMaterialKey || "—",
+                  reviewStatus: item.reviewStatus || "unknown",
+                  normalizationStatus:
+                    registryRecord?.normalizationStatus ||
+                    registryRecord?.registryStatus ||
+                    "unknown",
+                };
+              })
+              .sort((a, b) =>
+                a.supplierProductKey.localeCompare(b.supplierProductKey)
+              );
+            const hasPendingSupplierImports =
+              pendingSupplierImports.length > 0;
 
             const saveUrl = (ing, sup, newUrl) => {
               setPricesState((prev) => {
@@ -60230,6 +60264,17 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     >
                       Edit URLs when suppliers change links · Data saved to your
                       browser · Export/import as JSON for backup
+                    </p>
+                    <p
+                      style={{
+                        fontSize: 8.5,
+                        color: "#334155",
+                        margin: "3px 0 0",
+                      }}
+                    >
+                      Import/export and scraper buttons here only manage live
+                      supplier URL/price overrides. New supplier discoveries
+                      stay in the review queue until approved.
                     </p>
                   </div>
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -60386,6 +60431,272 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   </span>
                 </div>
 
+                {/* Pending supplier-first review items */}
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #7C3AED30",
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#C4B5FD",
+                        }}
+                      >
+                        🧾 Pending Supplier Discoveries
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#64748B",
+                          marginTop: 3,
+                        }}
+                      >
+                        Supplier-first imports wait here for review before any
+                        catalog-row creation or normalization change.
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: hasPendingSupplierImports
+                          ? "#2A1A00"
+                          : "#0A2E1A",
+                        border: `1px solid ${
+                          hasPendingSupplierImports ? "#78350F" : "#166534"
+                        }`,
+                        borderRadius: 999,
+                        color: hasPendingSupplierImports
+                          ? "#F59E0B"
+                          : "#86EFAC",
+                        padding: "4px 10px",
+                        fontSize: 8.5,
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {hasPendingSupplierImports
+                        ? `${pendingSupplierImports.length} pending`
+                        : "queue clear"}
+                    </div>
+                  </div>
+                  {hasPendingSupplierImports ? (
+                    <div style={{ overflowX: "auto" }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          fontSize: 9,
+                          borderCollapse: "collapse",
+                        }}
+                      >
+                        <thead>
+                          <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                            {[
+                              "Supplier Product Key",
+                              "Supplier",
+                              "Product Title",
+                              "URL",
+                              "Proposed Catalog",
+                              "Entry Kind",
+                              "Canonical Key",
+                              "Review Status",
+                              "Normalization",
+                            ].map((label) => (
+                              <th
+                                key={label}
+                                style={{
+                                  textAlign: "left",
+                                  padding: "7px 8px",
+                                  color: "#64748B",
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {label}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pendingSupplierImports.map((item, idx) => (
+                            <tr
+                              key={item.supplierProductKey}
+                              style={{
+                                borderBottom:
+                                  idx === pendingSupplierImports.length - 1
+                                    ? "none"
+                                    : "1px solid #0F172A",
+                              }}
+                            >
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  color: "#CBD5E1",
+                                  fontFamily:
+                                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.supplierProductKey}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  color: "#CBD5E1",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.supplier}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  color: "#E2E8F0",
+                                  minWidth: 170,
+                                }}
+                              >
+                                {item.productTitle}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  minWidth: 220,
+                                }}
+                              >
+                                {item.url ? (
+                                  <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                      color: "#38BDF8",
+                                      textDecoration: "none",
+                                      wordBreak: "break-word",
+                                    }}
+                                  >
+                                    {item.url.replace(
+                                      /^https?:\/\/(www\.)?/,
+                                      ""
+                                    )}
+                                  </a>
+                                ) : (
+                                  <span style={{ color: "#475569" }}>—</span>
+                                )}
+                              </td>
+                              <td style={{ padding: "8px", color: "#CBD5E1" }}>
+                                {item.proposedCatalogName}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  color: "#94A3B8",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.proposedEntryKind}
+                              </td>
+                              <td
+                                style={{
+                                  padding: "8px",
+                                  color: "#94A3B8",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.proposedCanonicalMaterialKey}
+                              </td>
+                              <td style={{ padding: "8px" }}>
+                                <span
+                                  style={{
+                                    background:
+                                      item.reviewStatus ===
+                                      "pending_catalog_import"
+                                        ? "#2A1A00"
+                                        : "#0A1628",
+                                    border: `1px solid ${
+                                      item.reviewStatus ===
+                                      "pending_catalog_import"
+                                        ? "#78350F"
+                                        : BORDER
+                                    }`,
+                                    borderRadius: 999,
+                                    color:
+                                      item.reviewStatus ===
+                                      "pending_catalog_import"
+                                        ? "#F59E0B"
+                                        : "#94A3B8",
+                                    padding: "2px 8px",
+                                    fontSize: 8,
+                                    fontWeight: 700,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {item.reviewStatus}
+                                </span>
+                              </td>
+                              <td style={{ padding: "8px" }}>
+                                <span
+                                  style={{
+                                    background:
+                                      item.normalizationStatus === "mapped"
+                                        ? "#0A2E1A"
+                                        : "#0A1628",
+                                    border: `1px solid ${
+                                      item.normalizationStatus === "mapped"
+                                        ? "#166534"
+                                        : BORDER
+                                    }`,
+                                    borderRadius: 999,
+                                    color:
+                                      item.normalizationStatus === "mapped"
+                                        ? "#86EFAC"
+                                        : "#94A3B8",
+                                    padding: "2px 8px",
+                                    fontSize: 8,
+                                    fontWeight: 700,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {item.normalizationStatus}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: 9.5,
+                        color: "#475569",
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      No supplier-first discoveries are currently waiting in the
+                      review queue.
+                    </div>
+                  )}
+                </div>
+
                 {/* Info box */}
                 <div
                   style={{
@@ -60445,6 +60756,14 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       <button
                         disabled={paScraperStatus === "running"}
                         onClick={async () => {
+                          if (!apiKeyRef.current) {
+                            setPaScraperStatus("error");
+                            setPaScraperLog([
+                              "❌ Missing AI refresh key.",
+                              "Price refresh updates supplier URL/price overrides only. It does not create supplier registry or review-queue items.",
+                            ]);
+                            return;
+                          }
                           setPaScraperStatus("running");
                           setPaScraperLog(["Searching Fraterworks catalog..."]);
                           try {
@@ -60573,7 +60892,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     </div>
                   )}
                   <div style={{ marginTop: 8, fontSize: 8.5, color: "#334155" }}>
-                    ⚠️ Requires API key above · Results merge into Supplier Hub under "Fraterworks"
+                    ⚠️ Requires API key above · Results merge into Supplier Hub
+                    price overrides only · Does not create supplier registry or
+                    review-queue entries
                   </div>
                 </div>
 
@@ -60643,6 +60964,14 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       <button
                         disabled={paScraperStatus === "running"}
                         onClick={async () => {
+                          if (!apiKeyRef.current) {
+                            setPaScraperStatus("error");
+                            setPaScraperLog([
+                              "❌ Missing AI refresh key.",
+                              "Catalog scraping updates supplier URL/price overrides only. It does not create supplier registry or review-queue items.",
+                            ]);
+                            return;
+                          }
                           setPaScraperStatus("running");
                           setPaScraperLog([
                             "Fetching Perfumers Apprentice catalog...",
@@ -60824,7 +61153,8 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     style={{ marginTop: 8, fontSize: 8.5, color: "#334155" }}
                   >
                     ⚠️ Requires API key above · Results merge into Supplier Hub
-                    · Network access must be enabled
+                    price overrides only · Does not create supplier registry or
+                    review-queue entries
                   </div>
                 </div>
 
