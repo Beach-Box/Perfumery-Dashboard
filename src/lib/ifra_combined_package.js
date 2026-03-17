@@ -405,6 +405,569 @@ export const IFRA_MASTER_MATERIALS = {
       "Exact IFRA category limits have not yet been promoted into the structured helper dataset, so do not treat this as unrestricted.",
     ],
   },
+  linalool: {
+    canonicalName: "Linalool",
+    cas: ["78-70-6"],
+    synonyms: [
+      "linalool",
+      "linalool natural",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [10],
+    },
+    notes: [
+      "Helper maps Linalool Natural to a canonical linalool identity using app CAS/INCI data.",
+      "A PDF index match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "clove bud absolute": {
+    canonicalName: "Clove Bud Absolute",
+    cas: ["8015-97-2"],
+    synonyms: [
+      "clove bud absolute",
+      "clove bud",
+      "eugenia caryophyllata bud extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Clove Bud Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "violet leaf absolute": {
+    canonicalName: "Violet Leaf Absolute",
+    cas: ["8024-08-6"],
+    synonyms: [
+      "violet leaf absolute",
+      "violet leaf",
+      "viola odorata leaf extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Violet Leaf Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "neroli absolute": {
+    canonicalName: "Neroli Absolute",
+    cas: ["8016-38-4"],
+    synonyms: [
+      "neroli absolute",
+      "neroli oil",
+      "neroli",
+      "citrus aurantium flower extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Neroli Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "benzyl acetate": {
+    canonicalName: "Benzyl Acetate",
+    cas: ["140-11-4"],
+    synonyms: [
+      "benzyl acetate",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Benzyl Acetate to a canonical identity using app CAS data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "cognac absolute": {
+    canonicalName: "Cognac Absolute",
+    cas: ["8016-44-2"],
+    synonyms: [
+      "cognac absolute",
+      "cognac",
+      "vitis vinifera distillate extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Cognac Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "tobacco absolute": {
+    canonicalName: "Tobacco Absolute",
+    cas: ["8016-68-0"],
+    synonyms: [
+      "tobacco absolute",
+      "tobacco",
+      "nicotiana tabacum leaf extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Tobacco Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "sweet orange absolute": {
+    canonicalName: "Sweet Orange Absolute",
+    cas: ["8028-48-6"],
+    synonyms: [
+      "sweet orange absolute",
+      "sweet orange",
+      "sweet orange oil",
+      "orange oil",
+      "citrus sinensis peel extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [282],
+    },
+    notes: [
+      "Helper maps Sweet Orange Absolute to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "peru balsam oil": {
+    canonicalName: "Peru Balsam Oil",
+    cas: ["8007-00-9"],
+    synonyms: [
+      "peru balsam oil",
+      "balsam peru eo",
+      "balsam peru",
+      "peru balsam",
+      "myroxylon pereirae resin oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [229],
+    },
+    notes: [
+      "Helper maps Balsam Peru EO to a canonical Peru Balsam Oil identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "benzoin siam absolute": {
+    canonicalName: "Benzoin Siam Absolute",
+    cas: ["9000-72-0"],
+    synonyms: [
+      "benzoin siam absolute",
+      "benzoin siam",
+      "benzoin resinoid",
+      "benzoin",
+      "styrax tonkinensis resin extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "coconut co2": {
+    canonicalName: "Coconut CO2",
+    cas: ["8001-31-8"],
+    synonyms: [
+      "coconut co2",
+      "coconut",
+      "cocos nucifera oil co2 extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Coconut CO2 to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vanilla absolute": {
+    canonicalName: "Vanilla Absolute",
+    cas: ["8006-39-1"],
+    synonyms: [
+      "vanilla absolute",
+      "vanilla",
+      "vanilla planifolia fruit extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Vanilla Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vanilla bourbon absolute": {
+    canonicalName: "Vanilla Bourbon Absolute",
+    cas: ["84650-60-2"],
+    synonyms: [
+      "vanilla bourbon absolute",
+      "vanilla bourbon",
+      "vanilla planifolia bourbon fruit extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Vanilla Bourbon Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "petitgrain bigarade eo": {
+    canonicalName: "Petitgrain Bigarade EO",
+    cas: ["8014-17-3"],
+    synonyms: [
+      "petitgrain bigarade eo",
+      "petitgrain bigarade",
+      "petitgrain oil",
+      "petitgrain",
+      "citrus aurantium leaf/twig oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [286],
+    },
+    notes: [
+      "Helper maps Petitgrain Bigarade EO to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "cedarwood virginia eo": {
+    canonicalName: "Cedarwood Virginia EO",
+    cas: ["8000-27-9"],
+    synonyms: [
+      "cedarwood virginia eo",
+      "cedarwood virginia",
+      "virginia cedarwood",
+      "cedarwood oil",
+      "juniperus virginiana wood oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Cedarwood Virginia EO to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vetiver bourbon eo": {
+    canonicalName: "Vetiver Bourbon EO",
+    cas: ["8016-96-4"],
+    synonyms: [
+      "vetiver bourbon eo",
+      "vetiver bourbon",
+      "vetiver oil",
+      "vetiver",
+      "vetiveria zizanoides root oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [20],
+    },
+    notes: [
+      "Helper maps Vetiver Bourbon EO to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "juniper berry co2": {
+    canonicalName: "Juniper Berry CO2",
+    cas: ["8012-91-7"],
+    synonyms: [
+      "juniper berry co2",
+      "juniper berry",
+      "juniper berry oil",
+      "juniperus communis",
+      "juniperus communis fruit co2 extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Juniper Berry CO2 to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "galbanum absolute": {
+    canonicalName: "Galbanum Absolute",
+    cas: ["8023-91-4"],
+    synonyms: [
+      "galbanum absolute",
+      "galbanum",
+      "ferula galbaniflua resin extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Galbanum Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "himalayan cedarwood eo": {
+    canonicalName: "Himalayan Cedarwood EO",
+    cas: ["8023-85-6"],
+    synonyms: [
+      "himalayan cedarwood eo",
+      "himalayan cedarwood",
+      "cedrus deodara wood oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Himalayan Cedarwood EO to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -448,13 +1011,15 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Vetiver Bourbon EO",
     normalizedName: "Vetiver Bourbon EO",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "vetiver bourbon eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Vetiver Bourbon EO",
       "Vetiver Bourbon",
       "Vetiver oil",
       "Vetiver",
+      "8016-96-4",
+      "Vetiveria Zizanoides Root Oil",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -465,7 +1030,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Vetiver oil",
     pdfMatchedPage: 20.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Vetiver Bourbon EO to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Bergamot EO FCF": {
     canonicalAppName: "Bergamot EO FCF",
@@ -530,14 +1096,16 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Violet Leaf Absolute": {
     canonicalAppName: "Violet Leaf Absolute",
     normalizedName: "Violet leaf absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "violet leaf absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Violet leaf absolute",
       "Violet Leaf Absolute",
       "Violet leaf",
       "Violet Leaf",
+      "8024-08-6",
+      "Viola Odorata Leaf Extract",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -548,7 +1116,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS/INCI data; IFRA standard not yet promoted",
   },
   "Methyl Ionone Gamma Coeur": {
     canonicalAppName: "Methyl Ionone Gamma Coeur",
@@ -577,7 +1146,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Petitgrain Bigarade EO",
     normalizedName: "Petitgrain Bigarade EO",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "petitgrain bigarade eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Petitgrain Bigarade EO",
@@ -585,6 +1154,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Petitgrain Bigarade",
       "Petitgrain oil",
       "Petitgrain",
+      "8014-17-3",
+      "Citrus Aurantium Leaf/Twig Oil",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -595,13 +1166,14 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Petitgrain",
     pdfMatchedPage: 286.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Petitgrain Bigarade EO to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Sweet Orange Absolute": {
     canonicalAppName: "Sweet Orange Absolute",
     normalizedName: "Sweet Orange Absolute",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "sweet orange absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Sweet Orange Absolute",
@@ -609,6 +1181,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Sweet Orange",
       "Sweet orange",
       "Orange oil",
+      "8028-48-6",
+      "Citrus Sinensis Peel Extract",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -619,7 +1193,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Orange oil",
     pdfMatchedPage: 282.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Sweet Orange Absolute to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Lemon EO Italy": {
     canonicalAppName: "Lemon EO Italy",
@@ -649,13 +1224,15 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Balsam Peru EO",
     normalizedName: "Peru balsam oil",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "peru balsam oil",
     materialClass: "not_yet_resolved",
     aliases: [
       "Peru balsam oil",
       "Balsam Peru EO",
       "Balsam Peru",
       "Peru balsam",
+      "8007-00-9",
+      "Myroxylon Pereirae Resin Oil",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -666,7 +1243,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Peru balsam oil",
     pdfMatchedPage: 229.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Balsam Peru EO to a canonical Peru Balsam Oil identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Cinnamon Bark EO": {
     canonicalAppName: "Cinnamon Bark EO",
@@ -695,8 +1273,8 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Clove Bud Absolute": {
     canonicalAppName: "Clove Bud Absolute",
     normalizedName: "Clove Bud Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "clove bud absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Clove Bud Absolute",
@@ -704,6 +1282,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Clove Bud",
       "Clove bud",
       "Clove oil",
+      "8015-97-2",
+      "Eugenia Caryophyllata Bud Extract",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -714,7 +1294,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS/INCI data; IFRA standard not yet promoted",
   },
   "Hexyl Cinnamic Aldehyde": {
     canonicalAppName: "Hexyl Cinnamic Aldehyde",
@@ -738,9 +1319,9 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Linalool Natural",
     normalizedName: "Linalool Natural",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "linalool",
     materialClass: "not_yet_resolved",
-    aliases: ["Linalool Natural", "Linalool"],
+    aliases: ["Linalool Natural", "Linalool", "78-70-6"],
     stock: null,
     dbNoteRole: "top",
     dbMaterialType: "EO",
@@ -750,7 +1331,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "index_match",
     pdfMatchedAlias: "Linalool",
     pdfMatchedPage: 10.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Mapped to canonical helper linalool identity; verify exact standard and Cat 4",
   },
   "Oud CO2 10%": {
     canonicalAppName: "Oud CO2 10%",
@@ -1006,14 +1588,16 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Benzoin Siam Absolute": {
     canonicalAppName: "Benzoin Siam Absolute",
     normalizedName: "Benzoin Siam Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "benzoin siam absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Benzoin Siam Absolute",
       "Benzoin resinoid",
       "Benzoin Siam",
       "Benzoin",
+      "9000-72-0",
+      "Styrax Tonkinensis Resin Extract",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -1024,7 +1608,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   Dihydromyrcenol: {
     canonicalAppName: "Dihydromyrcenol",
@@ -1110,8 +1695,8 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Cedarwood Virginia EO": {
     canonicalAppName: "Cedarwood Virginia EO",
     normalizedName: "Cedarwood Virginia EO",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "cedarwood virginia eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Cedarwood Virginia EO",
@@ -1119,6 +1704,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Cedarwood Virginia",
       "Virginia cedarwood",
       "Cedarwood oil",
+      "8000-27-9",
+      "Juniperus Virginiana Wood Oil",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -1129,7 +1716,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Cedarwood Virginia EO to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Ethyl Vanillin": {
     canonicalAppName: "Ethyl Vanillin",
@@ -1170,10 +1758,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Coconut CO2": {
     canonicalAppName: "Coconut CO2",
     normalizedName: "Coconut CO2",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "coconut co2",
     materialClass: "not_yet_resolved",
-    aliases: ["Coconut CO2", "Coconut"],
+    aliases: [
+      "Coconut CO2",
+      "Coconut",
+      "8001-31-8",
+      "Cocos Nucifera Oil CO2 Extract",
+    ],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "CO2",
@@ -1183,7 +1776,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Coconut CO2 to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Eucalyptus Blue Gum EO": {
     canonicalAppName: "Eucalyptus Blue Gum EO",
@@ -1212,8 +1806,8 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Juniper Berry CO2": {
     canonicalAppName: "Juniper Berry CO2",
     normalizedName: "Juniperus communis",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "juniper berry co2",
     materialClass: "not_yet_resolved",
     aliases: [
       "Juniperus communis",
@@ -1221,6 +1815,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Juniper berry oil",
       "Juniper Berry",
       "Juniper berry",
+      "8012-91-7",
+      "Juniperus Communis Fruit CO2 Extract",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -1231,15 +1827,22 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Juniper Berry CO2 to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Neroli Absolute": {
     canonicalAppName: "Neroli Absolute",
     normalizedName: "Neroli Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "neroli absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Neroli Absolute", "Neroli oil", "Neroli"],
+    aliases: [
+      "Neroli Absolute",
+      "Neroli oil",
+      "Neroli",
+      "8016-38-4",
+      "Citrus Aurantium Flower Extract",
+    ],
     stock: null,
     dbNoteRole: "top",
     dbMaterialType: "ABS",
@@ -1249,7 +1852,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS/INCI data; IFRA standard not yet promoted",
   },
   "Pink Peppercorn CO2": {
     canonicalAppName: "Pink Peppercorn CO2",
@@ -1295,10 +1899,10 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Benzyl Acetate": {
     canonicalAppName: "Benzyl Acetate",
     normalizedName: "Benzyl Acetate",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "benzyl acetate",
     materialClass: "not_yet_resolved",
-    aliases: ["Benzyl Acetate"],
+    aliases: ["Benzyl Acetate", "140-11-4"],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "SYNTH",
@@ -1308,15 +1912,21 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS data; IFRA standard not yet promoted",
   },
   "Cognac Absolute": {
     canonicalAppName: "Cognac Absolute",
     normalizedName: "Cognac Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "cognac absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Cognac Absolute", "Cognac"],
+    aliases: [
+      "Cognac Absolute",
+      "Cognac",
+      "8016-44-2",
+      "Vitis Vinifera Distillate Extract",
+    ],
     stock: null,
     dbNoteRole: "top",
     dbMaterialType: "ABS",
@@ -1326,15 +1936,21 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS/INCI data; IFRA standard not yet promoted",
   },
   "Galbanum Absolute": {
     canonicalAppName: "Galbanum Absolute",
     normalizedName: "Galbanum Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "galbanum absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Galbanum Absolute", "Galbanum"],
+    aliases: [
+      "Galbanum Absolute",
+      "Galbanum",
+      "8023-91-4",
+      "Ferula Galbaniflua Resin Extract",
+    ],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "ABS",
@@ -1344,7 +1960,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Galbanum Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Litsea Cubeba EO": {
     canonicalAppName: "Litsea Cubeba EO",
@@ -1390,14 +2007,16 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Tobacco Absolute": {
     canonicalAppName: "Tobacco Absolute",
     normalizedName: "Tobacco leaf absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "tobacco absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Tobacco leaf absolute",
       "Tobacco absolute",
       "Tobacco Absolute",
       "Tobacco",
+      "8016-68-0",
+      "Nicotiana Tabacum Leaf Extract",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -1408,7 +2027,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Mapped to canonical helper identity from app CAS/INCI data; IFRA standard not yet promoted",
   },
   "Vanilla CO2 10%": {
     canonicalAppName: "Vanilla CO2 10%",
@@ -1590,10 +2210,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Himalayan Cedarwood EO": {
     canonicalAppName: "Himalayan Cedarwood EO",
     normalizedName: "Himalayan Cedarwood EO",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "himalayan cedarwood eo",
     materialClass: "not_yet_resolved",
-    aliases: ["Himalayan Cedarwood EO", "Himalayan Cedarwood"],
+    aliases: [
+      "Himalayan Cedarwood EO",
+      "Himalayan Cedarwood",
+      "8023-85-6",
+      "Cedrus Deodara Wood Oil",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "EO",
@@ -1603,7 +2228,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Himalayan Cedarwood EO to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Jasmine Sambac Absolute": {
     canonicalAppName: "Jasmine Sambac Absolute",
@@ -1715,10 +2341,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Vanilla Absolute": {
     canonicalAppName: "Vanilla Absolute",
     normalizedName: "Vanilla Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "vanilla absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Vanilla Absolute", "Vanilla"],
+    aliases: [
+      "Vanilla Absolute",
+      "Vanilla",
+      "8006-39-1",
+      "Vanilla Planifolia Fruit Extract",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "ABS",
@@ -1728,15 +2359,21 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Vanilla Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Vanilla Bourbon Absolute": {
     canonicalAppName: "Vanilla Bourbon Absolute",
     normalizedName: "Vanilla Bourbon Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "vanilla bourbon absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Vanilla Bourbon Absolute", "Vanilla Bourbon"],
+    aliases: [
+      "Vanilla Bourbon Absolute",
+      "Vanilla Bourbon",
+      "84650-60-2",
+      "Vanilla Planifolia Bourbon Fruit Extract",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "ABS",
@@ -1746,7 +2383,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Vanilla Bourbon Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
 };
 
