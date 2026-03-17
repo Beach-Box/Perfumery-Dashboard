@@ -17,12 +17,12 @@
 - Do not introduce `react-scripts`.
 - Do not commit `dist/`.
 - Prefer small, targeted changes over broad refactors.
-- Preserve existing branch-specific work; do not overwrite unrelated user changes.
+- Preserve unrelated user work and existing behavior.
 - When changing IFRA/compliance logic, use the structured lookup files in the repo instead of hardcoded limits.
 
 ## Branch rules
 - Codex work belongs on `chatgpt-feature-work`.
-- Do not work directly on `main` unless explicitly told to do so.
+- Do not work directly on `main` unless explicitly told.
 
 ## Output expectations
 - After making changes, report:
