@@ -111,16 +111,7 @@
   "Ylang Ylang Extra Absolute": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "ylang_ylang_extra_oil",
-    "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier page title and SKU identify Ylang Ylang Extra - Organic EO, not an absolute."
-      },
-      "Fraterworks": {
-        "status": "cross_wired_listing",
-        "note": "Supplier page is the Fraterworks Ylang-Ylang Extra Oil, Comoros product already represented separately; preserved here without treating the whole row as an exact duplicate."
-      }
-    }
+    "linkedDuplicateOfCatalogName": "Ylang-Ylang Extra Oil, Comoros"
   },
   "Ylang-Ylang Extra Oil, Comoros": {
     "entryKind": "supplier_product",
@@ -136,6 +127,10 @@
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "ylang_ylang_extra_oil",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Extra - Organic EO listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct Fraterworks Ylang-Ylang Extra Oil, Org listing; product title differs from the Comoros extra-oil listing even though the URL slug is similar."
@@ -146,6 +141,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_absolute",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Absolute listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang absolute supplier listing."
@@ -156,6 +155,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_iii_oil",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang III - Organic EO listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang grade III supplier listing."
@@ -166,6 +169,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_complete_oil",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Complete - Organic EO listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang complete supplier listing."
