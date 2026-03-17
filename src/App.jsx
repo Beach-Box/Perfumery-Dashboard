@@ -37036,6 +37036,24 @@ const PRICING = {
       ],
     },
   },
+  "Ylang-Ylang Fine Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      S: [],
+    },
+  },
+  "Ylang-Ylang I Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      S: [],
+    },
+  },
+  "Ylang-Ylang II Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      S: [],
+    },
+  },
   Zenolide: {
     Fraterworks: {
       url: "https://fraterworks.com/products/zenolide",
@@ -55297,6 +55315,191 @@ function buildAppliedSupplierCatalogRowDraftExportPayload(records) {
   };
 }
 
+function normalizeSupplierDraftUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    url.hash = "";
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return raw.toLowerCase();
+  }
+}
+
+function normalizeSupplierDraftPricePoint(point) {
+  if (!Array.isArray(point) || point.length !== 3) return null;
+
+  const qty = Number(point[0]);
+  const unit = String(point[1] || "").trim();
+  const price = Number(point[2]);
+  if (!Number.isFinite(qty) || qty <= 0) return null;
+  if (!unit) return null;
+  if (!Number.isFinite(price) || price < 0) return null;
+
+  return [qty, unit, price];
+}
+
+function findRegistrySupplierProductKeyForCatalogOwnership(
+  catalogName,
+  supplierName,
+  ownedUrl,
+  preferredKey = null
+) {
+  const normalizedOwnedUrl = normalizeSupplierDraftUrl(ownedUrl);
+
+  if (preferredKey) {
+    const preferredRecord = SUPPLIER_PRODUCT_REGISTRY[preferredKey];
+    if (
+      preferredRecord &&
+      preferredRecord.mappedCatalogName === catalogName &&
+      preferredRecord.supplierDisplayName === supplierName &&
+      normalizeSupplierDraftUrl(preferredRecord.url) === normalizedOwnedUrl
+    ) {
+      return preferredKey;
+    }
+  }
+
+  const match = Object.entries(SUPPLIER_PRODUCT_REGISTRY).find(
+    ([, record]) =>
+      record?.mappedCatalogName === catalogName &&
+      record?.supplierDisplayName === supplierName &&
+      normalizeSupplierDraftUrl(record?.url) === normalizedOwnedUrl
+  );
+
+  return match?.[0] || null;
+}
+
+function buildSupplierPriceDraftReviewNotes({
+  catalogName,
+  supplierName,
+  supplierProductKey,
+  normalizationEntry,
+  registryRecord,
+  ownedPricePoints,
+}) {
+  const notes = [
+    "Review-only supplier price draft. No live supplier pricing is written automatically.",
+  ];
+
+  if (!supplierProductKey) {
+    notes.push(
+      `No supplierProductKey could be confirmed for "${supplierName}" on "${catalogName}".`
+    );
+  }
+
+  if (!normalizationEntry?.canonicalMaterialKey) {
+    notes.push(
+      "No canonicalMaterialKey is mapped yet, so chemistry and IFRA remain outside this price draft."
+    );
+  }
+
+  if (!ownedPricePoints.length) {
+    notes.push(
+      "No trusted supplier size/price points are currently stored for this owned row. Capture sizes and prices from the supplier page before applying."
+    );
+  } else {
+    notes.push(
+      "Existing live supplier price points are already present. Leave `pricePoints` empty unless you are preparing reviewed additions or reconciliations."
+    );
+  }
+
+  if (registryRecord?.notes?.length) {
+    notes.push(registryRecord.notes[0]);
+  }
+
+  return notes;
+}
+
+function getGeneratedSupplierPriceDraftRecords() {
+  return Object.entries(MATERIAL_NORMALIZATION)
+    .flatMap(([catalogName, normalizationEntry]) => {
+      if (normalizationEntry?.entryKind !== "supplier_product") return [];
+      if (!DB[catalogName]) return [];
+      if (!normalizationEntry?.importedFromSupplierProductKey) return [];
+
+      const importedSupplierProductKey =
+        normalizationEntry.importedFromSupplierProductKey;
+      const importedRegistryRecord =
+        SUPPLIER_PRODUCT_REGISTRY[importedSupplierProductKey] || null;
+      const supplierName = importedRegistryRecord?.supplierDisplayName || null;
+      const ownedSupplierEntry = supplierName
+        ? PRICING?.[catalogName]?.[supplierName] || null
+        : null;
+      const ownedUrl = normalizeSupplierDraftUrl(ownedSupplierEntry?.url);
+
+      if (!supplierName || !ownedSupplierEntry || !ownedUrl) return [];
+
+      const supplierProductKey = findRegistrySupplierProductKeyForCatalogOwnership(
+        catalogName,
+        supplierName,
+        ownedSupplierEntry.url,
+        importedSupplierProductKey
+      );
+      if (!supplierProductKey) return [];
+
+      const registryRecord =
+        SUPPLIER_PRODUCT_REGISTRY[supplierProductKey] || importedRegistryRecord;
+      if (!registryRecord) return [];
+      if (registryRecord?.mappedEntryKind !== "supplier_product") return [];
+
+      const registryUrl = normalizeSupplierDraftUrl(registryRecord.url);
+      if (!registryUrl || registryUrl !== ownedUrl) return [];
+
+      const ownedPricePoints = Array.isArray(ownedSupplierEntry?.S)
+        ? ownedSupplierEntry.S.map(normalizeSupplierDraftPricePoint).filter(Boolean)
+        : [];
+
+      return [
+        {
+          catalogDisplayName: catalogName,
+          supplierName,
+          supplierProductKey,
+          url: ownedSupplierEntry.url,
+          pricePoints: [],
+          priceDraftStatus: ownedPricePoints.length
+            ? "live_prices_present_review_only"
+            : "missing_trusted_price_data",
+          entryKind: normalizationEntry?.entryKind || null,
+          canonicalMaterialKey: normalizationEntry?.canonicalMaterialKey || null,
+          currentOwnedPricePoints: ownedPricePoints,
+          sourceSupplierProduct: buildCatalogRowDraftSupplierSnapshot(
+            supplierProductKey,
+            registryRecord
+          ),
+          normalizationEntry: { ...normalizationEntry },
+          notes: buildSupplierPriceDraftReviewNotes({
+            catalogName,
+            supplierName,
+            supplierProductKey,
+            normalizationEntry,
+            registryRecord,
+            ownedPricePoints,
+          }),
+        },
+      ];
+    })
+    .sort((a, b) =>
+      a.catalogDisplayName.localeCompare(b.catalogDisplayName) ||
+      a.supplierName.localeCompare(b.supplierName)
+    );
+}
+
+function buildGeneratedSupplierPriceDraftExportPayload(records) {
+  return {
+    metadata: {
+      version: 1,
+      source: "repo_live_supplier_ownership",
+      generatedAt: new Date().toISOString(),
+      draftCount: records.length,
+      note:
+        "Review-only supplier price drafts generated from existing live supplier ownership. No live pricing, canonical chemistry, or IFRA data are applied automatically.",
+    },
+    supplierPriceDrafts: records,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -55372,6 +55575,8 @@ export default function App() {
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
     useState("");
   const [supplierCatalogDraftExportStatus, setSupplierCatalogDraftExportStatus] =
+    useState("");
+  const [supplierPriceDraftExportStatus, setSupplierPriceDraftExportStatus] =
     useState("");
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
@@ -55465,6 +55670,21 @@ export default function App() {
       JSON.stringify(generatedSupplierCatalogRowDraftExportPayload, null, 2),
     [generatedSupplierCatalogRowDraftExportPayload]
   );
+  const generatedSupplierPriceDraftRecords = useMemo(
+    () => getGeneratedSupplierPriceDraftRecords(),
+    []
+  );
+  const generatedSupplierPriceDraftExportPayload = useMemo(
+    () =>
+      buildGeneratedSupplierPriceDraftExportPayload(
+        generatedSupplierPriceDraftRecords
+      ),
+    [generatedSupplierPriceDraftRecords]
+  );
+  const generatedSupplierPriceDraftExportJson = useMemo(
+    () => JSON.stringify(generatedSupplierPriceDraftExportPayload, null, 2),
+    [generatedSupplierPriceDraftExportPayload]
+  );
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
       type: "application/json",
@@ -55538,6 +55758,44 @@ export default function App() {
   }, [
     generatedSupplierCatalogRowDraftExportJson,
     generatedSupplierCatalogRowDraftRecords.length,
+  ]);
+  const exportGeneratedSupplierPriceDrafts = useCallback(() => {
+    const blob = new Blob([generatedSupplierPriceDraftExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_supplier_price_drafts.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSupplierPriceDraftExportStatus(
+      `Exported ${generatedSupplierPriceDraftRecords.length} supplier price draft${
+        generatedSupplierPriceDraftRecords.length === 1 ? "" : "s"
+      }.`
+    );
+  }, [
+    generatedSupplierPriceDraftExportJson,
+    generatedSupplierPriceDraftRecords.length,
+  ]);
+  const copyGeneratedSupplierPriceDrafts = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSupplierPriceDraftExportStatus("Copy unavailable in this browser.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(generatedSupplierPriceDraftExportJson);
+      setSupplierPriceDraftExportStatus(
+        `Copied ${generatedSupplierPriceDraftRecords.length} supplier price draft${
+          generatedSupplierPriceDraftRecords.length === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSupplierPriceDraftExportStatus("Copy failed.");
+    }
+  }, [
+    generatedSupplierPriceDraftExportJson,
+    generatedSupplierPriceDraftRecords.length,
   ]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
@@ -62200,6 +62458,367 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       >
                         No applied supplier-product rows currently qualify for
                         generated catalog-row drafts.
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#FDE68A",
+                          }}
+                        >
+                          💵 Generated Supplier Price Drafts
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                          }}
+                        >
+                          Review-only bridge from validated supplier ownership
+                          into portable `supplierPriceDrafts` payloads. No live
+                          pricing is written here.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background:
+                            generatedSupplierPriceDraftRecords.length > 0
+                              ? "#2A1A00"
+                              : "#0A1628",
+                          border: `1px solid ${
+                            generatedSupplierPriceDraftRecords.length > 0
+                              ? "#78350F"
+                              : BORDER
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            generatedSupplierPriceDraftRecords.length > 0
+                              ? "#FDE68A"
+                              : "#94A3B8",
+                          padding: "4px 10px",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {generatedSupplierPriceDraftRecords.length > 0
+                          ? `${generatedSupplierPriceDraftRecords.length} review rows`
+                          : "no price drafts"}
+                      </div>
+                    </div>
+                    {generatedSupplierPriceDraftRecords.length > 0 ? (
+                      <>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            marginBottom: 8,
+                          }}
+                        >
+                          <button
+                            onClick={exportGeneratedSupplierPriceDrafts}
+                            style={{
+                              background: "#2A1A00",
+                              border: "1px solid #78350F",
+                              borderRadius: 8,
+                              color: "#FDE68A",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📤 Export Price Drafts
+                          </button>
+                          <button
+                            onClick={copyGeneratedSupplierPriceDrafts}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1D4ED8",
+                              borderRadius: 8,
+                              color: "#93C5FD",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📋 Copy JSON
+                          </button>
+                          {supplierPriceDraftExportStatus && (
+                            <span
+                              style={{
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                              }}
+                            >
+                              {supplierPriceDraftExportStatus}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.5,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr
+                                style={{
+                                  borderBottom: "1px solid #1E293B",
+                                }}
+                              >
+                                {[
+                                  "Catalog Row",
+                                  "Supplier Ownership",
+                                  "Draft Status",
+                                  "Proposed Prices",
+                                  "Current Owned Prices",
+                                  "Notes",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "7px 8px",
+                                      color: "#64748B",
+                                      fontSize: 8,
+                                      fontWeight: 700,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {generatedSupplierPriceDraftRecords.map(
+                                (draft, idx) => (
+                                  <tr
+                                    key={`${draft.catalogDisplayName}|${draft.supplierName}`}
+                                    style={{
+                                      borderBottom:
+                                        idx ===
+                                        generatedSupplierPriceDraftRecords.length -
+                                          1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#E2E8F0",
+                                        minWidth: 180,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {draft.catalogDisplayName}
+                                      </div>
+                                      <div
+                                        style={{
+                                          color: "#64748B",
+                                          fontSize: 7.5,
+                                          marginTop: 3,
+                                        }}
+                                      >
+                                        {draft.entryKind} ·{" "}
+                                        {draft.canonicalMaterialKey || "no canonical key"}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 240,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      <div>
+                                        {draft.supplierName} ·{" "}
+                                        {draft.sourceSupplierProduct?.productTitle ||
+                                          draft.sourceSupplierProduct
+                                            ?.supplierProductKey ||
+                                          "Owned supplier row"}
+                                      </div>
+                                      <div
+                                        style={{
+                                          color: "#64748B",
+                                          fontSize: 7.5,
+                                          marginTop: 3,
+                                          fontFamily:
+                                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                        }}
+                                      >
+                                        {draft.supplierProductKey || "No supplierProductKey"}
+                                      </div>
+                                      {draft.url ? (
+                                        <a
+                                          href={draft.url}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            color: ACC,
+                                            fontSize: 7.5,
+                                            textDecoration: "none",
+                                            wordBreak: "break-all",
+                                          }}
+                                        >
+                                          {draft.url}
+                                        </a>
+                                      ) : null}
+                                    </td>
+                                    <td style={{ padding: "8px", minWidth: 130 }}>
+                                      <span
+                                        style={{
+                                          background:
+                                            draft.priceDraftStatus ===
+                                            "missing_trusted_price_data"
+                                              ? "#2A1A00"
+                                              : "#0A1628",
+                                          border: `1px solid ${
+                                            draft.priceDraftStatus ===
+                                            "missing_trusted_price_data"
+                                              ? "#78350F"
+                                              : "#1D4ED8"
+                                          }`,
+                                          borderRadius: 999,
+                                          color:
+                                            draft.priceDraftStatus ===
+                                            "missing_trusted_price_data"
+                                              ? "#FDE68A"
+                                              : "#93C5FD",
+                                          padding: "2px 8px",
+                                          fontSize: 8,
+                                          fontWeight: 700,
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {draft.priceDraftStatus}
+                                      </span>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 140,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {draft.pricePoints.length > 0 ? (
+                                        draft.pricePoints.map((point, pointIdx) => (
+                                          <div key={pointIdx}>
+                                            {point[0]}
+                                            {point[1]} · ${Number(point[2]).toFixed(2)}
+                                          </div>
+                                        ))
+                                      ) : (
+                                        <span style={{ color: "#FCD34D" }}>
+                                          None yet
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 160,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {draft.currentOwnedPricePoints.length > 0 ? (
+                                        draft.currentOwnedPricePoints.map(
+                                          (point, pointIdx) => (
+                                            <div key={pointIdx}>
+                                              {point[0]}
+                                              {point[1]} · $
+                                              {Number(point[2]).toFixed(2)}
+                                            </div>
+                                          )
+                                        )
+                                      ) : (
+                                        <span style={{ color: "#64748B" }}>
+                                          No trusted live prices
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#94A3B8",
+                                        minWidth: 280,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {draft.notes.slice(0, 3).join(" ")}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        <textarea
+                          readOnly
+                          value={generatedSupplierPriceDraftExportJson}
+                          spellCheck={false}
+                          style={{
+                            width: "100%",
+                            minHeight: 160,
+                            background: "#020810",
+                            border: "1px solid #1E293B",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "10px 12px",
+                            fontSize: 8.5,
+                            lineHeight: 1.6,
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                            resize: "vertical",
+                            boxSizing: "border-box",
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: 9,
+                          color: "#475569",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        No live supplier-owned rows currently qualify for
+                        generated supplier price drafts.
                       </div>
                     )}
                   </div>

@@ -303,7 +303,13 @@
     "canonicalMaterialKey": "ylang_ylang_fine_oil",
     "importedFromSupplierProductKey": "eden_botanicals:ylang-ylang-complete-fine-organic",
     "approvalState": "approved_draft_applied",
-    "approvalAppliedAt": "2026-03-17T17:09:26.334Z"
+    "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Applied from supplier registry ownership for the live catalog row: https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html"
+      }
+    }
   },
   "Ylang-Ylang I Oil": {
     "entryKind": "canonical_material",
@@ -314,7 +320,13 @@
     "canonicalMaterialKey": "ylang_ylang_i_oil",
     "importedFromSupplierProductKey": "eden_botanicals:ylang-ylang-i-organic",
     "approvalState": "approved_draft_applied",
-    "approvalAppliedAt": "2026-03-17T17:09:26.334Z"
+    "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Applied from supplier registry ownership for the live catalog row: https://www.edenbotanicals.com/ylang-ylang-i-organic.html"
+      }
+    }
   },
   "Ylang-Ylang II Oil": {
     "entryKind": "canonical_material",
@@ -325,7 +337,13 @@
     "canonicalMaterialKey": "ylang_ylang_ii_oil",
     "importedFromSupplierProductKey": "eden_botanicals:ylang-ylang-ii-organic",
     "approvalState": "approved_draft_applied",
-    "approvalAppliedAt": "2026-03-17T17:09:26.334Z"
+    "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Applied from supplier registry ownership for the live catalog row: https://www.edenbotanicals.com/ylang-ylang-ii-organic.html"
+      }
+    }
   },
   "Ylang-Ylang III Oil, Org": {
     "entryKind": "canonical_material",
