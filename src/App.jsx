@@ -32,7 +32,7 @@ import {
   getSupplierProductRecord,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
-import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight";
+import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
