@@ -19,7 +19,42 @@
       "rejected"
     ]
   },
-  "candidates": {},
+  "candidates": {
+    "benzoin_siam_absolute:scentdesc:benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute": {
+      "sourceDocumentKey": "benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+      "canonicalMaterialKey": "benzoin_siam_absolute",
+      "relatedCatalogNames": [
+        "Benzoin Siam Absolute"
+      ],
+      "supplier": "Local Repo",
+      "sourceType": "other",
+      "candidateFieldName": "scentDesc",
+      "candidateValue": "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
+      "confidence": "high",
+      "reviewStatus": "candidate_reviewed",
+      "notes": [
+        "Source-backed from the current live catalog row text in src/App.jsx.",
+        "Prepared as a low-risk scentDesc-only evidence candidate."
+      ]
+    },
+    "peru_balsam_oil:scentdesc:peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo": {
+      "sourceDocumentKey": "peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+      "canonicalMaterialKey": "peru_balsam_oil",
+      "relatedCatalogNames": [
+        "Balsam Peru EO"
+      ],
+      "supplier": "Local Repo",
+      "sourceType": "other",
+      "candidateFieldName": "scentDesc",
+      "candidateValue": "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
+      "confidence": "high",
+      "reviewStatus": "candidate_reviewed",
+      "notes": [
+        "Source-backed from the current live catalog row text in src/App.jsx.",
+        "Prepared as a low-risk scentDesc-only evidence candidate."
+      ]
+    }
+  },
   "candidateTargets": {
     "benzoin_siam_resinoid": {
       "canonicalMaterialKey": "benzoin_siam_resinoid",

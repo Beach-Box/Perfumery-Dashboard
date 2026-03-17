@@ -18,7 +18,40 @@
       "rejected"
     ]
   },
-  "documents": {},
+  "documents": {
+    "benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute": {
+      "sourceType": "other",
+      "supplier": "Local Repo",
+      "sourceIdentifier": "repo_live_catalog_row_benzoin_siam_absolute",
+      "sourcePath": "src/App.jsx",
+      "canonicalMaterialKey": "benzoin_siam_absolute",
+      "relatedCatalogNames": [
+        "Benzoin Siam Absolute"
+      ],
+      "documentStatus": "local_registry_snapshot",
+      "reviewStatus": "reviewed_ready_for_manual_promotion",
+      "notes": [
+        "Trusted local repo source based on the current live catalog row text.",
+        "Safe first-pass use is limited to scentDesc review; broader chemistry and IFRA remain manual."
+      ]
+    },
+    "peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo": {
+      "sourceType": "other",
+      "supplier": "Local Repo",
+      "sourceIdentifier": "repo_live_catalog_row_balsam_peru_eo",
+      "sourcePath": "src/App.jsx",
+      "canonicalMaterialKey": "peru_balsam_oil",
+      "relatedCatalogNames": [
+        "Balsam Peru EO"
+      ],
+      "documentStatus": "local_registry_snapshot",
+      "reviewStatus": "reviewed_ready_for_manual_promotion",
+      "notes": [
+        "Trusted local repo source based on the current live catalog row text.",
+        "Safe first-pass use is limited to scentDesc review; broader chemistry and IFRA remain manual."
+      ]
+    }
+  },
   "intakeTargets": {
     "benzoin_siam_resinoid": {
       "priority": "high",

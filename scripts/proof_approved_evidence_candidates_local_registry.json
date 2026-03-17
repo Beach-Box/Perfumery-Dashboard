@@ -1,0 +1,95 @@
+{
+  "metadata": {
+    "version": 1,
+    "source": "repo_proof_setup_local_registry",
+    "exportedAt": "2026-03-17T00:00:00.000Z",
+    "approvedCandidateCount": 2,
+    "note": "Tiny proof-run payload built from trusted local repo registry rows only. First-pass promotion remains limited to low-risk helper seed fields."
+  },
+  "approvedEvidenceCandidates": [
+    {
+      "evidenceCandidateKey": "benzoin_siam_absolute:scentdesc:benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+      "approvalStatus": "approved_for_promotion",
+      "reviewedAt": "2026-03-17T00:00:00.000Z",
+      "sourceSnapshot": {
+        "evidenceCandidateKey": "benzoin_siam_absolute:scentdesc:benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+        "sourceDocumentKey": "benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+        "canonicalMaterialKey": "benzoin_siam_absolute",
+        "relatedCatalogNames": [
+          "Benzoin Siam Absolute"
+        ],
+        "candidateFieldName": "scentDesc",
+        "candidateValue": "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
+        "confidence": "high",
+        "supplier": "Local Repo",
+        "sourceType": "other",
+        "sourceReviewStatus": "candidate_reviewed",
+        "notes": [
+          "Source-backed from the current live catalog row text in src/App.jsx.",
+          "Prepared as a low-risk scentDesc-only evidence candidate."
+        ]
+      },
+      "promotionCandidate": {
+        "evidenceCandidateKey": "benzoin_siam_absolute:scentdesc:benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+        "sourceDocumentKey": "benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute",
+        "canonicalMaterialKey": "benzoin_siam_absolute",
+        "relatedCatalogNames": [
+          "Benzoin Siam Absolute"
+        ],
+        "candidateFieldName": "scentDesc",
+        "candidateValue": "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
+        "confidence": "high",
+        "supplier": "Local Repo",
+        "sourceType": "other",
+        "sourceReviewStatus": "candidate_reviewed",
+        "reviewStatus": "approved_for_promotion",
+        "notes": [
+          "Source-backed from the current live catalog row text in src/App.jsx.",
+          "Prepared as a low-risk scentDesc-only evidence candidate."
+        ]
+      }
+    },
+    {
+      "evidenceCandidateKey": "peru_balsam_oil:scentdesc:peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+      "approvalStatus": "approved_for_promotion",
+      "reviewedAt": "2026-03-17T00:00:00.000Z",
+      "sourceSnapshot": {
+        "evidenceCandidateKey": "peru_balsam_oil:scentdesc:peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+        "sourceDocumentKey": "peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+        "canonicalMaterialKey": "peru_balsam_oil",
+        "relatedCatalogNames": [
+          "Balsam Peru EO"
+        ],
+        "candidateFieldName": "scentDesc",
+        "candidateValue": "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
+        "confidence": "high",
+        "supplier": "Local Repo",
+        "sourceType": "other",
+        "sourceReviewStatus": "candidate_reviewed",
+        "notes": [
+          "Source-backed from the current live catalog row text in src/App.jsx.",
+          "Prepared as a low-risk scentDesc-only evidence candidate."
+        ]
+      },
+      "promotionCandidate": {
+        "evidenceCandidateKey": "peru_balsam_oil:scentdesc:peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+        "sourceDocumentKey": "peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo",
+        "canonicalMaterialKey": "peru_balsam_oil",
+        "relatedCatalogNames": [
+          "Balsam Peru EO"
+        ],
+        "candidateFieldName": "scentDesc",
+        "candidateValue": "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
+        "confidence": "high",
+        "supplier": "Local Repo",
+        "sourceType": "other",
+        "sourceReviewStatus": "candidate_reviewed",
+        "reviewStatus": "approved_for_promotion",
+        "notes": [
+          "Source-backed from the current live catalog row text in src/App.jsx.",
+          "Prepared as a low-risk scentDesc-only evidence candidate."
+        ]
+      }
+    }
+  ]
+}
