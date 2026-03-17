@@ -606,6 +606,186 @@ export const IFRA_MASTER_MATERIALS = {
       "No structured IFRA standard has been promoted into the helper dataset yet.",
     ],
   },
+  "sweet orange absolute": {
+    canonicalName: "Sweet Orange Absolute",
+    cas: ["8028-48-6"],
+    synonyms: [
+      "sweet orange absolute",
+      "sweet orange",
+      "sweet orange oil",
+      "orange oil",
+      "citrus sinensis peel extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [282],
+    },
+    notes: [
+      "Helper maps Sweet Orange Absolute to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "peru balsam oil": {
+    canonicalName: "Peru Balsam Oil",
+    cas: ["8007-00-9"],
+    synonyms: [
+      "peru balsam oil",
+      "balsam peru eo",
+      "balsam peru",
+      "peru balsam",
+      "myroxylon pereirae resin oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [229],
+    },
+    notes: [
+      "Helper maps Balsam Peru EO to a canonical Peru Balsam Oil identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "benzoin siam absolute": {
+    canonicalName: "Benzoin Siam Absolute",
+    cas: ["9000-72-0"],
+    synonyms: [
+      "benzoin siam absolute",
+      "benzoin siam",
+      "benzoin resinoid",
+      "benzoin",
+      "styrax tonkinensis resin extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "coconut co2": {
+    canonicalName: "Coconut CO2",
+    cas: ["8001-31-8"],
+    synonyms: [
+      "coconut co2",
+      "coconut",
+      "cocos nucifera oil co2 extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Coconut CO2 to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vanilla absolute": {
+    canonicalName: "Vanilla Absolute",
+    cas: ["8006-39-1"],
+    synonyms: [
+      "vanilla absolute",
+      "vanilla",
+      "vanilla planifolia fruit extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Vanilla Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vanilla bourbon absolute": {
+    canonicalName: "Vanilla Bourbon Absolute",
+    cas: ["84650-60-2"],
+    synonyms: [
+      "vanilla bourbon absolute",
+      "vanilla bourbon",
+      "vanilla planifolia bourbon fruit extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Vanilla Bourbon Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -805,7 +985,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Sweet Orange Absolute",
     normalizedName: "Sweet Orange Absolute",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "sweet orange absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Sweet Orange Absolute",
@@ -813,6 +993,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Sweet Orange",
       "Sweet orange",
       "Orange oil",
+      "8028-48-6",
+      "Citrus Sinensis Peel Extract",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -823,7 +1005,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Orange oil",
     pdfMatchedPage: 282.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Sweet Orange Absolute to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Lemon EO Italy": {
     canonicalAppName: "Lemon EO Italy",
@@ -853,13 +1036,15 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Balsam Peru EO",
     normalizedName: "Peru balsam oil",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "peru balsam oil",
     materialClass: "not_yet_resolved",
     aliases: [
       "Peru balsam oil",
       "Balsam Peru EO",
       "Balsam Peru",
       "Peru balsam",
+      "8007-00-9",
+      "Myroxylon Pereirae Resin Oil",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -870,7 +1055,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Peru balsam oil",
     pdfMatchedPage: 229.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Balsam Peru EO to a canonical Peru Balsam Oil identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Cinnamon Bark EO": {
     canonicalAppName: "Cinnamon Bark EO",
@@ -1214,14 +1400,16 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Benzoin Siam Absolute": {
     canonicalAppName: "Benzoin Siam Absolute",
     normalizedName: "Benzoin Siam Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "benzoin siam absolute",
     materialClass: "not_yet_resolved",
     aliases: [
       "Benzoin Siam Absolute",
       "Benzoin resinoid",
       "Benzoin Siam",
       "Benzoin",
+      "9000-72-0",
+      "Styrax Tonkinensis Resin Extract",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -1232,7 +1420,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   Dihydromyrcenol: {
     canonicalAppName: "Dihydromyrcenol",
@@ -1378,10 +1567,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Coconut CO2": {
     canonicalAppName: "Coconut CO2",
     normalizedName: "Coconut CO2",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "coconut co2",
     materialClass: "not_yet_resolved",
-    aliases: ["Coconut CO2", "Coconut"],
+    aliases: [
+      "Coconut CO2",
+      "Coconut",
+      "8001-31-8",
+      "Cocos Nucifera Oil CO2 Extract",
+    ],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "CO2",
@@ -1391,7 +1585,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Coconut CO2 to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Eucalyptus Blue Gum EO": {
     canonicalAppName: "Eucalyptus Blue Gum EO",
@@ -1940,10 +2135,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Vanilla Absolute": {
     canonicalAppName: "Vanilla Absolute",
     normalizedName: "Vanilla Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "vanilla absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Vanilla Absolute", "Vanilla"],
+    aliases: [
+      "Vanilla Absolute",
+      "Vanilla",
+      "8006-39-1",
+      "Vanilla Planifolia Fruit Extract",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "ABS",
@@ -1953,15 +2153,21 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Vanilla Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Vanilla Bourbon Absolute": {
     canonicalAppName: "Vanilla Bourbon Absolute",
     normalizedName: "Vanilla Bourbon Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "vanilla bourbon absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Vanilla Bourbon Absolute", "Vanilla Bourbon"],
+    aliases: [
+      "Vanilla Bourbon Absolute",
+      "Vanilla Bourbon",
+      "84650-60-2",
+      "Vanilla Planifolia Bourbon Fruit Extract",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "ABS",
@@ -1971,7 +2177,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Vanilla Bourbon Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
 };
 
