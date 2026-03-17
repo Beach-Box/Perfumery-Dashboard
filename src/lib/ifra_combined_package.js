@@ -1048,6 +1048,21 @@ export function getCanonicalCatalogName(name) {
 }
 
 const CANONICAL_MATERIAL_SOURCE_DATA = {
+  ylang_ylang_extra_oil: {
+    canonicalMaterialKey: "ylang_ylang_extra_oil",
+    canonicalName: "Ylang-Ylang Extra Oil",
+    note: "mid",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Diffusive creamy ylang extra oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang extra-oil family. Supplier product pages indicate this family is an essential oil, not an absolute.",
+    rep: "Benzyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Creamy", "Ylang"],
+  },
   labdanum_absolute: {
     canonicalMaterialKey: "labdanum_absolute",
     canonicalName: "Labdanum Absolute",
@@ -1629,8 +1644,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     aliases: [
       "Ylang Ylang Extra Absolute",
       "Ylang Ylang Extra",
-      "Ylang ylang oil",
-      "Ylang ylang",
+      "Ylang-Ylang Extra Absolute",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -1641,7 +1655,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "index_match",
     pdfMatchedAlias: "Ylang Ylang Extra",
     pdfMatchedPage: 16.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Catalog row name says absolute, but linked supplier pages currently point to extra-oil products. Kept on the existing Ylang Extra IFRA seed pending a source-backed oil-vs-absolute split.",
   },
   "Benzyl Benzoate": {
     canonicalAppName: "Benzyl Benzoate",
