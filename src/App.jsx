@@ -31358,16 +31358,86 @@ const IFRA_STATE_LABELS = {
   unresolved_identity: "Identity unresolved - review alias/CAS/INCI mapping",
 };
 
+const IFRA_STATE_BADGE_META = {
+  listed: {
+    compactLabel: "IFRA Listed",
+    background: "rgba(248,113,113,0.15)",
+    color: "#F87171",
+    borderColor: "#F8717150",
+  },
+  functional_solvent: {
+    compactLabel: "Functional",
+    background: "rgba(34,211,238,0.12)",
+    color: "#67E8F9",
+    borderColor: "#22D3EE50",
+  },
+  not_found_in_uploaded_pdf: {
+    compactLabel: "No IFRA Std",
+    background: "rgba(148,163,184,0.12)",
+    color: "#CBD5E1",
+    borderColor: "#64748B50",
+  },
+  unresolved_identity: {
+    compactLabel: "Review ID",
+    background: "rgba(245,158,11,0.12)",
+    color: "#FBBF24",
+    borderColor: "#F59E0B50",
+  },
+};
+
 function getIngredientIfraData(name) {
+  const resolvedIdentity = resolveIngredientIdentity(name);
   const material = getIfraMaterialRecord(name);
   const state = getIfraUiState(name);
+  const displayState = resolvedIdentity || material ? state : null;
+  const badgeMeta =
+    displayState != null
+      ? IFRA_STATE_BADGE_META[displayState] ||
+        IFRA_STATE_BADGE_META.unresolved_identity
+      : null;
   const cat4Limit = material?.limits?.cat4 ?? null;
 
   return {
-    state,
-    stateLabel: IFRA_STATE_LABELS[state] || IFRA_STATE_LABELS.unresolved_identity,
+    state: displayState,
+    stateLabel:
+      displayState != null
+        ? IFRA_STATE_LABELS[displayState] ||
+          IFRA_STATE_LABELS.unresolved_identity
+        : null,
     cat4Limit,
+    badgeLabel: badgeMeta?.compactLabel || null,
+    badgeStyle: badgeMeta
+      ? {
+          background: badgeMeta.background,
+          color: badgeMeta.color,
+          borderColor: badgeMeta.borderColor,
+        }
+      : null,
   };
+}
+
+function IfraStateBadge({ ifraData, compact = false, style = {} }) {
+  if (!ifraData?.badgeStyle) return null;
+  const label = compact ? ifraData.badgeLabel : ifraData.stateLabel;
+  if (!label) return null;
+
+  return (
+    <span
+      title={compact ? ifraData.stateLabel : undefined}
+      style={{
+        background: ifraData.badgeStyle.background,
+        color: ifraData.badgeStyle.color,
+        border: `1px solid ${ifraData.badgeStyle.borderColor}`,
+        borderRadius: compact ? 10 : 20,
+        padding: compact ? "1px 7px" : "3px 10px",
+        fontSize: compact ? 8.5 : 10,
+        fontWeight: 700,
+        ...style,
+      }}
+    >
+      {label}
+    </span>
+  );
 }
 
 Object.entries(DB).forEach(([name, d]) => {
@@ -31385,7 +31455,6 @@ Object.entries(DB).forEach(([name, d]) => {
   if (d.ifraLimits == null && ifraData.cat4Limit != null) {
     d.ifraLimits = { cat4: ifraData.cat4Limit };
   }
-  ifraData.state === "listed" && (d.ifra = true);
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -53887,27 +53956,38 @@ function PyramidSVG({ ingredients }) {
             {NC[k].label}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-            {byNote[k].map((ing) => (
-              <span
-                key={ing.name}
-                style={{
-                  background: NC[k].light,
-                  color: NC[k].text,
-                  border: `1px solid ${NC[k].bg}50`,
-                  borderRadius: 20,
-                  padding: "1px 6px",
-                  fontSize: 8.5,
-                  fontWeight: 600,
-                }}
-              >
-                {TB[DB[ing.name]?.type] || ""}
-                {ing.name.length > 20 ? ing.name.slice(0, 18) + "…" : ing.name}
-                <span style={{ opacity: 0.6, fontSize: 7.5 }}> {ing.g}g</span>
-                {DB[ing.name]?.ifra && (
-                  <span style={{ color: "#F87171" }}> ⚠</span>
-                )}
-              </span>
-            ))}
+            {byNote[k].map((ing) => {
+              const ifraData = getIngredientIfraData(ing.name);
+              return (
+                <span
+                  key={ing.name}
+                  style={{
+                    background: NC[k].light,
+                    color: NC[k].text,
+                    border: `1px solid ${NC[k].bg}50`,
+                    borderRadius: 20,
+                    padding: "1px 6px",
+                    fontSize: 8.5,
+                    fontWeight: 600,
+                  }}
+                  title={ifraData.stateLabel || undefined}
+                >
+                  {TB[DB[ing.name]?.type] || ""}
+                  {ing.name.length > 20 ? ing.name.slice(0, 18) + "…" : ing.name}
+                  <span style={{ opacity: 0.6, fontSize: 7.5 }}> {ing.g}g</span>
+                  {ifraData.state === "listed" && (
+                    <span
+                      style={{
+                        color: ifraData.badgeStyle?.color || "#F87171",
+                      }}
+                    >
+                      {" "}
+                      ⚠
+                    </span>
+                  )}
+                </span>
+              );
+            })}
           </div>
         </div>
       ))}
@@ -53921,8 +54001,6 @@ function IngredientDetailPanel({ name, onClose }) {
   if (!d) return null;
   const nc = NC[d.note] || NC.carrier;
   const ifraData = getIngredientIfraData(name);
-  const ifraBadgeText =
-    ifraData.state === "listed" ? "Listed IFRA material" : null;
   const cat4LimitText =
     ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
   return (
@@ -53982,21 +54060,7 @@ function IngredientDetailPanel({ name, onClose }) {
               >
                 {d.note?.toUpperCase()} · {d.type}
               </span>
-              {ifraBadgeText && (
-                <span
-                  style={{
-                    background: "rgba(248,113,113,0.15)",
-                    color: "#F87171",
-                    border: "1px solid #F8717150",
-                    borderRadius: 20,
-                    padding: "3px 10px",
-                    fontSize: 10,
-                    fontWeight: 700,
-                  }}
-                >
-                  ⚠ {ifraBadgeText}
-                </span>
-              )}
+              <IfraStateBadge ifraData={ifraData} />
             </div>
             <h2
               style={{
@@ -55882,8 +55946,8 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           Ingredient Breakdown
                         </span>
                         <span style={{ fontSize: 9, color: "#334155" }}>
-                          Click grams to edit · ⚠ IFRA restricted · 🔍 click
-                          name for detail
+                          Click grams to edit · helper IFRA state shown · 🔍
+                          click name for detail
                         </span>
                       </div>
                       <table
@@ -55927,6 +55991,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           {formula.ingredients.map((ing, ii) => {
                             const d = DB[ing.name];
                             const nc = NC[ing.note] || NC.carrier;
+                            const ifraData = getIngredientIfraData(ing.name);
                             const key = `${selFrag}-${ii}`;
                             const total = formula.ingredients.reduce(
                               (s, i) => s + i.g,
@@ -55969,17 +56034,15 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                   }}
                                   onClick={() => setDetailName(ing.name)}
                                 >
-                                  {d?.ifra && (
-                                    <span
-                                      style={{
-                                        color: "#F87171",
-                                        marginRight: 3,
-                                      }}
-                                    >
-                                      ⚠
-                                    </span>
-                                  )}
                                   {ing.name}
+                                  <IfraStateBadge
+                                    ifraData={ifraData}
+                                    compact
+                                    style={{
+                                      marginLeft: 6,
+                                      verticalAlign: "middle",
+                                    }}
+                                  />
                                 </td>
                                 <td
                                   style={{
@@ -58508,6 +58571,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 const d = DB[name];
                 const p = pricesState[name];
                 const nc = NC[d.note] || NC.carrier;
+                const ifraData = getIngredientIfraData(name);
                 return (
                   <div
                     key={name}
@@ -58571,19 +58635,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           >
                             {TB[d.type]} {d.type}
                           </span>
-                          {d.ifra && (
-                            <span
-                              style={{
-                                background: "rgba(248,113,113,0.12)",
-                                color: "#F87171",
-                                borderRadius: 10,
-                                padding: "1px 7px",
-                                fontSize: 8.5,
-                              }}
-                            >
-                              ⚠ IFRA
-                            </span>
-                          )}
+                          <IfraStateBadge ifraData={ifraData} compact />
                         </div>
                         <div
                           style={{
@@ -58990,7 +59042,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   {
                     title: "⚖️ IFRA Compliance Watch",
                     color: "#F87171",
-                    ingredients: Object.keys(DB).filter((k) => DB[k].ifra),
+                    ingredients: Object.keys(DB).filter(
+                      (k) => getIngredientIfraData(k).state === "listed"
+                    ),
                     tip: "These ingredients carry IFRA restrictions. Verify concentration limits before finalizing any formula intended for skin application.",
                   },
                 ].map(({ title, color, ingredients, tip }) => (
