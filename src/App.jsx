@@ -31562,6 +31562,35 @@ const SUPPLIER_LINK_BADGE_META = {
   },
 };
 
+const CATALOG_NORMALIZATION_FILTER_OPTIONS = [
+  ["all", "All Rows"],
+  ["canonical_material", "Canonical"],
+  ["diluted_stock", "Diluted"],
+  ["accord", "Accords"],
+  ["linked_duplicate", "Linked Dups"],
+];
+
+function recordHasSupplierLinkStatus(record, status) {
+  return Object.values(record?.supplierLinkMetadata || {}).some(
+    (metadata) => metadata?.status === status
+  );
+}
+
+function isLinkedDuplicateCatalogRecord(record) {
+  return (
+    Boolean(record?.linkedDuplicateOfCatalogName) ||
+    recordHasSupplierLinkStatus(record, "linked_duplicate")
+  );
+}
+
+function matchesCatalogNormalizationFilter(record, filterValue) {
+  if (filterValue === "all") return true;
+  if (filterValue === "linked_duplicate") {
+    return isLinkedDuplicateCatalogRecord(record);
+  }
+  return record?.entryKind === filterValue;
+}
+
 function getIngredientCatalogMetadata(name) {
   const d = DB[name];
   if (!d) {
@@ -54794,6 +54823,8 @@ export default function App() {
   const [catSupplier, setCatSupplier] = useState("All");
   const [catType, setCatType] = useState("All");
   const [catNote, setCatNote] = useState("All");
+  const [catNormalization, setCatNormalization] = useState("all");
+  const [hideLinkedDuplicates, setHideLinkedDuplicates] = useState(false);
   const [detailName, setDetailName] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState({});
   const [refreshLoading, setRefreshLoading] = useState({});
@@ -54896,7 +54927,7 @@ export default function App() {
   const allIngredients = Object.keys(DB);
 
   // Filtered catalog
-  const filteredCat = useMemo(
+  const baseFilteredCat = useMemo(
     () =>
       allIngredients.filter((n) => {
         const d = DB[n];
@@ -54915,9 +54946,27 @@ export default function App() {
           return false;
         if (catType !== "All" && d.type !== catType) return false;
         if (catNote !== "All" && d.note !== catNote) return false;
+        if (!matchesCatalogNormalizationFilter(d, catNormalization)) return false;
         return true;
       }),
-    [catSearch, catSupplier, catType, catNote, allIngredients]
+    [catSearch, catSupplier, catType, catNote, catNormalization, allIngredients]
+  );
+  const hiddenLinkedDuplicateCount = useMemo(() => {
+    if (!hideLinkedDuplicates || catNormalization === "linked_duplicate") {
+      return 0;
+    }
+    return baseFilteredCat.filter((name) =>
+      isLinkedDuplicateCatalogRecord(DB[name])
+    ).length;
+  }, [baseFilteredCat, catNormalization, hideLinkedDuplicates]);
+  const filteredCat = useMemo(
+    () =>
+      !hideLinkedDuplicates || catNormalization === "linked_duplicate"
+        ? baseFilteredCat
+        : baseFilteredCat.filter(
+            (name) => !isLinkedDuplicateCatalogRecord(DB[name])
+          ),
+    [baseFilteredCat, catNormalization, hideLinkedDuplicates]
   );
 
   // Build search results
@@ -58978,6 +59027,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   setCatNote,
                   "Note",
                 ],
+                [
+                  "catNormalization",
+                  CATALOG_NORMALIZATION_FILTER_OPTIONS,
+                  catNormalization,
+                  setCatNormalization,
+                  "Catalog Meta",
+                ],
               ].map(([id, opts, val, setter, label]) => (
                 <select
                   key={id}
@@ -58994,14 +59050,55 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   }}
                 >
                   {opts.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
+                    <option
+                      key={Array.isArray(o) ? o[0] : o}
+                      value={Array.isArray(o) ? o[0] : o}
+                    >
+                      {Array.isArray(o) ? o[1] : o}
                     </option>
                   ))}
                 </select>
               ))}
+              <label
+                title={
+                  catNormalization === "linked_duplicate"
+                    ? "Hide linked duplicates is disabled while filtering linked-duplicate rows."
+                    : "Hide rows marked as linked duplicates from the catalog grid."
+                }
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 10,
+                  color:
+                    catNormalization === "linked_duplicate"
+                      ? "#475569"
+                      : "#94A3B8",
+                  whiteSpace: "nowrap",
+                  cursor:
+                    catNormalization === "linked_duplicate"
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    catNormalization === "linked_duplicate"
+                      ? false
+                      : hideLinkedDuplicates
+                  }
+                  disabled={catNormalization === "linked_duplicate"}
+                  onChange={(e) => setHideLinkedDuplicates(e.target.checked)}
+                  style={{ accentColor: "#22D3EE" }}
+                />
+                Hide linked dupes
+              </label>
               <span style={{ fontSize: 10, color: "#475569" }}>
                 {filteredCat.length} ingredients
+                {hiddenLinkedDuplicateCount > 0
+                  ? ` · ${hiddenLinkedDuplicateCount} linked dupes hidden`
+                  : ""}
               </span>
             </div>
 
