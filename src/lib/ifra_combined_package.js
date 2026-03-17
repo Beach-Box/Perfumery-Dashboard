@@ -383,7 +383,11 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
   "tolu balsam resinoid": {
     canonicalName: "Tolu Balsam Resinoid",
     cas: [],
-    synonyms: ["tolu balsam resinoid", "tolu balsam"],
+    synonyms: [
+      "tolu balsam resinoid",
+      "tolu balsam",
+      "tolu balsam resinoid 50% tec",
+    ],
     recommendationType: null,
     status: "not_found_in_uploaded_pdf",
     publicationYear: null,
@@ -402,13 +406,19 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
     },
     notes: [
       "Canonical helper seed for normalization inheritance coverage.",
-      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+      "The current repo represents this material through the live diluted-stock row Tolu Balsam Resinoid 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
     ],
   },
   "poplar bud absolute": {
     canonicalName: "Poplar Bud Absolute",
     cas: [],
-    synonyms: ["poplar bud absolute", "poplar buds absolute", "poplar bud"],
+    synonyms: [
+      "poplar bud absolute",
+      "poplar buds absolute",
+      "poplar bud",
+      "poplar bud absolute 50% tec",
+    ],
     recommendationType: null,
     status: "not_found_in_uploaded_pdf",
     publicationYear: null,
@@ -427,7 +437,38 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
     },
     notes: [
       "Canonical helper seed for normalization inheritance coverage.",
-      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+      "The current repo represents this material through the live diluted-stock row Poplar Bud Absolute 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
+    ],
+  },
+  "benzoin siam resinoid": {
+    canonicalName: "Benzoin Siam Resinoid",
+    cas: [],
+    synonyms: [
+      "benzoin siam resinoid",
+      "benzoin siam resinoid 50% tec",
+      "benzoin siam resinoid 50",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "The current repo represents this material through the live diluted-stock row Benzoin Siam Resinoid 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
     ],
   },
   "agarwood oil": {
@@ -1393,7 +1434,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     scentClass: "Amber",
     scentSummary: "Benzoin Siam resinoid",
     scentDesc:
-      "Canonical helper source seed for benzoin Siam resinoid. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+      "Canonical helper source seed for benzoin Siam resinoid. The current repo represents this material through the live diluted-stock row Benzoin Siam Resinoid 50% TEC by Fraterworks/Mane, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
     isUVCB: true,
     descriptorTags: ["Amber", "Resinoid", "Balsamic"],
   },
@@ -1465,7 +1506,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     scentClass: "Amber",
     scentSummary: "Tolu balsam resinoid",
     scentDesc:
-      "Canonical helper source seed for tolu balsam resinoid. Detailed source-backed chemistry has not been promoted yet.",
+      "Canonical helper source seed for tolu balsam resinoid. The current repo represents this material through the live diluted-stock row Tolu Balsam Resinoid 50% TEC, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
     isUVCB: true,
     descriptorTags: ["Amber", "Resinoid"],
   },
@@ -1477,7 +1518,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     scentClass: "Aromatic",
     scentSummary: "Poplar bud absolute",
     scentDesc:
-      "Canonical helper source seed for poplar bud absolute. Detailed source-backed chemistry has not been promoted yet.",
+      "Canonical helper source seed for poplar bud absolute. The current repo represents this material through the live diluted-stock row Poplar Bud Absolute 50% TEC by Fraterworks/Biolandes, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
     isUVCB: true,
     descriptorTags: ["Aromatic", "Balsamic"],
   },
@@ -2236,6 +2277,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     reviewNote:
       "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
+  "Benzoin Siam Resinoid 50% TEC": {
+    canonicalAppName: "Benzoin Siam Resinoid 50% TEC",
+    normalizedName: "Benzoin Siam Resinoid",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "benzoin siam resinoid",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Benzoin Siam Resinoid 50% TEC",
+      "Benzoin Siam Resinoid",
+      "Benzoin Siam Resinoid 50",
+    ],
+    stock: {
+      activeMaterialName: "Benzoin Siam Resinoid",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "base",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted benzoin Siam resinoid supplier product by Mane. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Benzoin Siam Resinoid helper identity without promoting new IFRA limits.",
+  },
   Dihydromyrcenol: {
     canonicalAppName: "Dihydromyrcenol",
     normalizedName: "Dihydromyrcenol",
@@ -2629,6 +2697,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedPage: null,
     reviewNote: "No PDF match found automatically \u2014 manual review needed",
   },
+  "Poplar Bud Absolute 50% TEC": {
+    canonicalAppName: "Poplar Bud Absolute 50% TEC",
+    normalizedName: "Poplar Bud Absolute",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "poplar bud absolute",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Poplar Bud Absolute 50% TEC",
+      "Poplar Bud Absolute",
+      "Poplar Bud",
+    ],
+    stock: {
+      activeMaterialName: "Poplar Bud Absolute",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "mid",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted poplar bud absolute supplier product by Biolandes. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Poplar Bud Absolute helper identity without promoting new IFRA limits.",
+  },
   "Tobacco Absolute": {
     canonicalAppName: "Tobacco Absolute",
     normalizedName: "Tobacco leaf absolute",
@@ -2676,6 +2771,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
     reviewNote: "No PDF match found automatically \u2014 manual review needed",
+  },
+  "Tolu Balsam Resinoid 50% TEC": {
+    canonicalAppName: "Tolu Balsam Resinoid 50% TEC",
+    normalizedName: "Tolu Balsam Resinoid",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "tolu balsam resinoid",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Tolu Balsam Resinoid 50% TEC",
+      "Tolu Balsam Resinoid",
+      "Tolu Balsam",
+    ],
+    stock: {
+      activeMaterialName: "Tolu Balsam Resinoid",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "base",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted tolu balsam resinoid supplier product. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Tolu Balsam Resinoid helper identity without promoting new IFRA limits.",
   },
   "Aldehyde C-11 Undecylenic": {
     canonicalAppName: "Aldehyde C-11 Undecylenic",
