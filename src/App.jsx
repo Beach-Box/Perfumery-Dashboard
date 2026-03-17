@@ -54998,6 +54998,212 @@ function buildApprovedSupplierImportExportPayload(localReviewState) {
   };
 }
 
+const CANONICAL_NORMALIZATION_NAME_BY_KEY = Object.fromEntries(
+  Object.entries(MATERIAL_NORMALIZATION)
+    .filter(
+      ([, entry]) =>
+        entry?.entryKind === "canonical_material" && entry?.canonicalMaterialKey
+    )
+    .map(([name, entry]) => [entry.canonicalMaterialKey, name])
+);
+
+function buildCatalogRowDraftSupplierSnapshot(supplierProductKey, record) {
+  return {
+    supplierProductKey,
+    supplierDisplayName: record?.supplierDisplayName || null,
+    supplierKey: record?.supplierKey || null,
+    productTitle: record?.productTitle || null,
+    url: record?.url || null,
+    urlSlug: record?.urlSlug || null,
+    sku: record?.sku || null,
+    registryStatus: record?.registryStatus || null,
+    normalizationStatus: record?.normalizationStatus || null,
+    approvalState: record?.approvalState || null,
+    approvalAppliedAt: record?.approvalAppliedAt || null,
+    notes: Array.isArray(record?.notes) ? [...record.notes] : [],
+  };
+}
+
+function buildCatalogRowDraftReviewNotes({
+  catalogName,
+  canonicalMaterialKey,
+  canonicalHelperSource,
+  supplierProducts,
+}) {
+  const notes = [
+    "Review-only catalog-row draft. No live App.jsx ingredient row is created automatically.",
+  ];
+
+  if (!canonicalMaterialKey) {
+    notes.push(
+      "No canonicalMaterialKey is mapped yet, so chemistry and IFRA inheritance remain unresolved."
+    );
+  }
+
+  if (!canonicalHelperSource) {
+    notes.push(
+      `No canonical helper source seed exists yet for "${canonicalMaterialKey}".`
+    );
+  } else {
+    if (!canonicalHelperSource.cas) {
+      notes.push(
+        "No source-backed CAS is currently seeded for the canonical material."
+      );
+    }
+    if (!canonicalHelperSource.inci) {
+      notes.push(
+        "No source-backed INCI is currently seeded for the canonical material."
+      );
+    }
+    if (!canonicalHelperSource.note || !canonicalHelperSource.scentSummary) {
+      notes.push(
+        "Canonical helper coverage is still structural; note-role and scent metadata need manual review before a live catalog row is added."
+      );
+    }
+  }
+
+  const ifraMaterial = getIfraMaterialRecord(catalogName);
+  if (!ifraMaterial) {
+    notes.push(
+      "No IFRA material record currently resolves for this draft; IFRA remains a manual review step."
+    );
+  } else if (ifraMaterial.status !== "active") {
+    notes.push(
+      `Resolved IFRA record status is "${ifraMaterial.status}", so listed IFRA data has not been promoted for this draft.`
+    );
+  }
+
+  if (supplierProducts.length > 1) {
+    notes.push(
+      "Multiple supplier products map to this draft; confirm shared catalog ownership before adding a live row."
+    );
+  }
+
+  return notes;
+}
+
+function getAppliedSupplierCatalogRowDraftRecords() {
+  const groupedByCatalogName = {};
+
+  Object.entries(SUPPLIER_PRODUCT_REGISTRY).forEach(
+    ([supplierProductKey, record]) => {
+      if (record?.mappedEntryKind !== "supplier_product") return;
+      if (record?.normalizationStatus !== "draft_applied_pending_catalog_row")
+        return;
+      if (
+        record?.approvalState !== "approved_draft_applied" &&
+        record?.registryStatus !== "approved_draft_applied"
+      )
+        return;
+
+      const catalogName = record?.mappedCatalogName;
+      if (!catalogName || DB[catalogName]) return;
+
+      const normalizationEntry = MATERIAL_NORMALIZATION[catalogName];
+      if (!normalizationEntry || normalizationEntry?.entryKind !== "supplier_product")
+        return;
+
+      if (!groupedByCatalogName[catalogName]) {
+        groupedByCatalogName[catalogName] = [];
+      }
+
+      groupedByCatalogName[catalogName].push(
+        buildCatalogRowDraftSupplierSnapshot(supplierProductKey, record)
+      );
+    }
+  );
+
+  return Object.entries(groupedByCatalogName)
+    .map(([catalogName, supplierProducts]) => {
+      const normalizationEntry = MATERIAL_NORMALIZATION[catalogName] || null;
+      const canonicalMaterialKey = normalizationEntry?.canonicalMaterialKey || null;
+      const canonicalHelperSource = canonicalMaterialKey
+        ? getCanonicalMaterialSource(canonicalMaterialKey)
+        : null;
+      const canonicalOwnerCatalogName = canonicalMaterialKey
+        ? CANONICAL_NORMALIZATION_NAME_BY_KEY[canonicalMaterialKey] || null
+        : null;
+      const primarySupplier = supplierProducts[0] || null;
+      const missingChemistryFields = [
+        !canonicalHelperSource?.cas ? "cas" : null,
+        !canonicalHelperSource?.inci ? "inci" : null,
+        !canonicalHelperSource?.note ? "note" : null,
+        !canonicalHelperSource?.scentSummary ? "scentSummary" : null,
+      ].filter(Boolean);
+      const missingIfraFields = getIfraMaterialRecord(catalogName)
+        ? []
+        : ["ifra_material_record"];
+
+      return {
+        catalogDisplayName: catalogName,
+        readinessStatus: "ready_for_manual_catalog_row_review",
+        liveCatalogRowPresent: false,
+        entryKind: normalizationEntry?.entryKind || null,
+        canonicalMaterialKey,
+        primarySupplierDisplayName: primarySupplier?.supplierDisplayName || null,
+        sourceSupplierProducts: supplierProducts,
+        normalizationEntry: normalizationEntry ? { ...normalizationEntry } : null,
+        canonicalMaterial: {
+          canonicalMaterialKey,
+          canonicalOwnerCatalogName,
+          helperSource: canonicalHelperSource
+            ? {
+                canonicalName: canonicalHelperSource.canonicalName || null,
+                type: canonicalHelperSource.type || null,
+                note: canonicalHelperSource.note || null,
+                scentClass: canonicalHelperSource.scentClass || null,
+                scentSummary: canonicalHelperSource.scentSummary || null,
+                cas: canonicalHelperSource.cas || null,
+                inci: canonicalHelperSource.inci || null,
+                descriptorTags: Array.isArray(canonicalHelperSource.descriptorTags)
+                  ? [...canonicalHelperSource.descriptorTags]
+                  : [],
+              }
+            : null,
+        },
+        catalogRowDraft: {
+          displayName: catalogName,
+          entryKind: normalizationEntry?.entryKind || "supplier_product",
+          canonicalMaterialKey,
+          primarySupplierDisplayName: primarySupplier?.supplierDisplayName || null,
+          supplierProductOwnership: supplierProducts.map((product) => ({
+            supplierProductKey: product.supplierProductKey,
+            supplierDisplayName: product.supplierDisplayName,
+            productTitle: product.productTitle,
+            url: product.url,
+            urlSlug: product.urlSlug,
+          })),
+          normalizationMetadata: normalizationEntry ? { ...normalizationEntry } : null,
+        },
+        missingData: {
+          chemistry: missingChemistryFields,
+          ifra: missingIfraFields,
+        },
+        manualReviewNotes: buildCatalogRowDraftReviewNotes({
+          catalogName,
+          canonicalMaterialKey,
+          canonicalHelperSource,
+          supplierProducts,
+        }),
+      };
+    })
+    .sort((a, b) => a.catalogDisplayName.localeCompare(b.catalogDisplayName));
+}
+
+function buildAppliedSupplierCatalogRowDraftExportPayload(records) {
+  return {
+    metadata: {
+      version: 1,
+      source: "repo_applied_supplier_product_registry",
+      generatedAt: new Date().toISOString(),
+      draftCount: records.length,
+      note:
+        "Review-only catalog-row drafts generated from applied supplier-product registry and normalization data. No live RAW_DB/App.jsx rows, canonical chemistry, or IFRA data are created automatically.",
+    },
+    catalogRowDrafts: records,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -55071,6 +55277,8 @@ export default function App() {
       }
     });
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
+    useState("");
+  const [supplierCatalogDraftExportStatus, setSupplierCatalogDraftExportStatus] =
     useState("");
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
@@ -55148,6 +55356,22 @@ export default function App() {
       }),
     [approvedSupplierDraftExportPayload]
   );
+  const generatedSupplierCatalogRowDraftRecords = useMemo(
+    () => getAppliedSupplierCatalogRowDraftRecords(),
+    []
+  );
+  const generatedSupplierCatalogRowDraftExportPayload = useMemo(
+    () =>
+      buildAppliedSupplierCatalogRowDraftExportPayload(
+        generatedSupplierCatalogRowDraftRecords
+      ),
+    [generatedSupplierCatalogRowDraftRecords]
+  );
+  const generatedSupplierCatalogRowDraftExportJson = useMemo(
+    () =>
+      JSON.stringify(generatedSupplierCatalogRowDraftExportPayload, null, 2),
+    [generatedSupplierCatalogRowDraftExportPayload]
+  );
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
       type: "application/json",
@@ -55180,6 +55404,48 @@ export default function App() {
       setSupplierDraftExportStatus("Copy failed.");
     }
   }, [approvedSupplierDraftExportJson, approvedSupplierDraftRecords.length]);
+  const exportGeneratedSupplierCatalogRowDrafts = useCallback(() => {
+    const blob = new Blob([generatedSupplierCatalogRowDraftExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_supplier_catalog_row_drafts.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSupplierCatalogDraftExportStatus(
+      `Exported ${generatedSupplierCatalogRowDraftRecords.length} catalog-row draft${
+        generatedSupplierCatalogRowDraftRecords.length === 1 ? "" : "s"
+      }.`
+    );
+  }, [
+    generatedSupplierCatalogRowDraftExportJson,
+    generatedSupplierCatalogRowDraftRecords.length,
+  ]);
+  const copyGeneratedSupplierCatalogRowDrafts = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSupplierCatalogDraftExportStatus(
+        "Copy unavailable in this browser."
+      );
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(
+        generatedSupplierCatalogRowDraftExportJson
+      );
+      setSupplierCatalogDraftExportStatus(
+        `Copied ${generatedSupplierCatalogRowDraftRecords.length} catalog-row draft${
+          generatedSupplierCatalogRowDraftRecords.length === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSupplierCatalogDraftExportStatus("Copy failed.");
+    }
+  }, [
+    generatedSupplierCatalogRowDraftExportJson,
+    generatedSupplierCatalogRowDraftRecords.length,
+  ]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -61507,6 +61773,342 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#A7F3D0",
+                          }}
+                        >
+                          🧱 Generated Catalog-Row Drafts
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                          }}
+                        >
+                          Review-only bridge from applied supplier-product
+                          mappings into proposed live catalog rows. No
+                          `RAW_DB`/`App.jsx` row is written here.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background:
+                            generatedSupplierCatalogRowDraftRecords.length > 0
+                              ? "#0A2E1A"
+                              : "#0A1628",
+                          border: `1px solid ${
+                            generatedSupplierCatalogRowDraftRecords.length > 0
+                              ? "#166534"
+                              : BORDER
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            generatedSupplierCatalogRowDraftRecords.length > 0
+                              ? "#86EFAC"
+                              : "#94A3B8",
+                          padding: "4px 10px",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {generatedSupplierCatalogRowDraftRecords.length > 0
+                          ? `${generatedSupplierCatalogRowDraftRecords.length} ready`
+                          : "no draftable rows"}
+                      </div>
+                    </div>
+                    {generatedSupplierCatalogRowDraftRecords.length > 0 ? (
+                      <>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            marginBottom: 8,
+                          }}
+                        >
+                          <button
+                            onClick={exportGeneratedSupplierCatalogRowDrafts}
+                            style={{
+                              background: "#0A2E1A",
+                              border: "1px solid #166534",
+                              borderRadius: 8,
+                              color: "#86EFAC",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📤 Export Catalog Drafts
+                          </button>
+                          <button
+                            onClick={copyGeneratedSupplierCatalogRowDrafts}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1D4ED8",
+                              borderRadius: 8,
+                              color: "#93C5FD",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📋 Copy JSON
+                          </button>
+                          {supplierCatalogDraftExportStatus && (
+                            <span
+                              style={{
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                              }}
+                            >
+                              {supplierCatalogDraftExportStatus}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.5,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr
+                                style={{
+                                  borderBottom: "1px solid #1E293B",
+                                }}
+                              >
+                                {[
+                                  "Catalog Draft",
+                                  "Canonical Key",
+                                  "Supplier Ownership",
+                                  "Missing Data",
+                                  "Manual Notes",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "7px 8px",
+                                      color: "#64748B",
+                                      fontSize: 8,
+                                      fontWeight: 700,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {generatedSupplierCatalogRowDraftRecords.map(
+                                (draft, idx) => (
+                                  <tr
+                                    key={draft.catalogDisplayName}
+                                    style={{
+                                      borderBottom:
+                                        idx ===
+                                        generatedSupplierCatalogRowDraftRecords.length -
+                                          1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#E2E8F0",
+                                        minWidth: 180,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {draft.catalogDisplayName}
+                                      </div>
+                                      <div
+                                        style={{
+                                          color: "#64748B",
+                                          fontSize: 7.5,
+                                          marginTop: 3,
+                                        }}
+                                      >
+                                        {draft.entryKind} ·{" "}
+                                        {draft.readinessStatus}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 150,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      <div>{draft.canonicalMaterialKey || "—"}</div>
+                                      {draft.canonicalMaterial
+                                        ?.canonicalOwnerCatalogName && (
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                          }}
+                                        >
+                                          Canonical owner:{" "}
+                                          {
+                                            draft.canonicalMaterial
+                                              .canonicalOwnerCatalogName
+                                          }
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 240,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {draft.sourceSupplierProducts.map(
+                                        (product) => (
+                                          <div
+                                            key={product.supplierProductKey}
+                                            style={{ marginBottom: 6 }}
+                                          >
+                                            <div>
+                                              {product.supplierDisplayName} ·{" "}
+                                              {product.productTitle}
+                                            </div>
+                                            {product.url ? (
+                                              <a
+                                                href={product.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                style={{
+                                                  color: ACC,
+                                                  fontSize: 7.5,
+                                                  textDecoration: "none",
+                                                  wordBreak: "break-all",
+                                                }}
+                                              >
+                                                {product.url}
+                                              </a>
+                                            ) : (
+                                              <div
+                                                style={{
+                                                  color: "#64748B",
+                                                  fontSize: 7.5,
+                                                }}
+                                              >
+                                                No supplier URL
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      )}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#FCD34D",
+                                        minWidth: 140,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {[
+                                        ...draft.missingData.chemistry,
+                                        ...draft.missingData.ifra,
+                                      ].length > 0
+                                        ? [
+                                            ...draft.missingData.chemistry,
+                                            ...draft.missingData.ifra,
+                                          ].join(", ")
+                                        : "None flagged"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#94A3B8",
+                                        minWidth: 280,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {draft.manualReviewNotes
+                                        .slice(0, 3)
+                                        .join(" ")}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        <textarea
+                          readOnly
+                          value={generatedSupplierCatalogRowDraftExportJson}
+                          spellCheck={false}
+                          style={{
+                            width: "100%",
+                            minHeight: 160,
+                            background: "#020810",
+                            border: "1px solid #1E293B",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "10px 12px",
+                            fontSize: 8.5,
+                            lineHeight: 1.6,
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                            resize: "vertical",
+                            boxSizing: "border-box",
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <div
+                        style={{
+                          fontSize: 9,
+                          color: "#475569",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        No applied supplier-product rows currently qualify for
+                        generated catalog-row drafts.
+                      </div>
+                    )}
                   </div>
                 </div>
 
