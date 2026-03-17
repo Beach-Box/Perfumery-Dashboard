@@ -62,6 +62,36 @@
       }
     }
   },
+  "Benzoin Siam “Signature” Tincture 20%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "benzoin_siam_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for the vendor-branded 20% benzoin Siam tincture stock."
+      }
+    }
+  },
+  "Tolu Balsam Resinoid 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "tolu_balsam_resinoid",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Diluted vendor-grade tolu balsam resinoid row preserved under a generic resinoid supplier page that does not explicitly call out the 50% TEC stock form."
+      }
+    }
+  },
+  "Poplar Bud Absolute 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "poplar_bud_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Diluted vendor-grade poplar bud absolute row preserved under a generic poplar-bud-absolute supplier page that does not explicitly call out the 50% TEC stock form."
+      }
+    }
+  },
   "Ylang Ylang Extra Absolute": {
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_extra_absolute",
