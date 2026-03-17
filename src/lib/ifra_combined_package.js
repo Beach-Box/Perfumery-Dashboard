@@ -1,4 +1,5 @@
 import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
+import materialNormalization from "../data/material_normalization.json" with { type: "json" };
 
 // Starter IFRA combined package for Beach Box app integration
 const IFRA_SUPPLEMENTAL_MATERIALS = {
@@ -973,6 +974,11 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 };
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
+export const MATERIAL_NORMALIZATION = materialNormalization;
+
+export function getMaterialNormalizationEntry(name) {
+  return MATERIAL_NORMALIZATION[name] || null;
+}
 
 function buildStandardPageList(pageReference) {
   const start = pageReference?.standard_page_start;

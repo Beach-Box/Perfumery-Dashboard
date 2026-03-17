@@ -1,0 +1,62 @@
+{
+  "Balsam Peru EO": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "peru_balsam_oil"
+  },
+  "Peru Balsam Essential Oil": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "peru_balsam_oil"
+  },
+  "Peru Balsam “Signature” Resinoid": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "peru_balsam_resinoid"
+  },
+  "Ylang Ylang Extra Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute"
+  },
+  "Ylang-Ylang Extra Oil, Comoros": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute"
+  },
+  "Ylang-Ylang Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_absolute"
+  },
+  "Ylang-Ylang III Oil, Org": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_iii_oil"
+  },
+  "Ylang-Ylang Complete Oil": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_complete_oil"
+  },
+  "Ylang-Ylang Extra Superior Oil, Org": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_oil"
+  },
+  "Ylang Impériale": {
+    "entryKind": "accord",
+    "canonicalMaterialKey": "ylang_imperiale"
+  },
+  "Benzyl Acetate ex Ylang-Ylang": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "benzyl_acetate"
+  },
+  "Vanilla Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_absolute"
+  },
+  "Vanilla Bourbon Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_bourbon_absolute"
+  },
+  "Vanilla CO2": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_co2"
+  },
+  "Vanilla CO2 10%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "vanilla_co2"
+  }
+}
