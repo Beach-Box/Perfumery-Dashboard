@@ -31591,6 +31591,82 @@ function matchesCatalogNormalizationFilter(record, filterValue) {
   return record?.entryKind === filterValue;
 }
 
+function getNormalizationGroupKey(name, record = DB[name]) {
+  return (
+    record?.canonicalMaterialKey || record?.linkedDuplicateOfCatalogName || name
+  );
+}
+
+function buildIngredientPickerSearchText(name, record = DB[name]) {
+  const parts = [
+    name,
+    record?.scentClass,
+    record?.scentSummary,
+    record?.entryKind,
+    record?.entryKind
+      ? NORMALIZATION_ENTRY_KIND_LABELS[record.entryKind] || record.entryKind
+      : null,
+    record?.canonicalMaterialKey,
+    record?.linkedDuplicateOfCatalogName,
+  ];
+
+  if (isLinkedDuplicateCatalogRecord(record)) {
+    parts.push("linked duplicate", "duplicate");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "supplier_grade_variant")) {
+    parts.push("supplier grade variant");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "cross_wired_listing")) {
+    parts.push("cross wired listing", "link mismatch");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "dead_url")) {
+    parts.push("dead url");
+  }
+
+  return parts.filter(Boolean).join(" ").toLowerCase();
+}
+
+function getNormalizationAwarePickerResult(
+  candidateNames,
+  { query = "", excludeNames = [] } = {}
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const excludedNames = new Set(excludeNames);
+  const candidates = candidateNames.filter((name) => {
+    if (excludedNames.has(name)) return false;
+    if (!normalizedQuery) return true;
+    return buildIngredientPickerSearchText(name).includes(normalizedQuery);
+  });
+
+  const primaryGroupKeys = new Set(
+    candidates
+      .filter((name) => !isLinkedDuplicateCatalogRecord(DB[name]))
+      .map((name) => getNormalizationGroupKey(name))
+  );
+
+  const names = candidates.filter((name) => {
+    const record = DB[name];
+    if (!isLinkedDuplicateCatalogRecord(record)) return true;
+
+    const exactNameMatch =
+      normalizedQuery && name.toLowerCase() === normalizedQuery;
+    if (exactNameMatch) return true;
+
+    return !primaryGroupKeys.has(getNormalizationGroupKey(name, record));
+  });
+
+  const visibleNames = new Set(names);
+  const hiddenLinkedDuplicateCount = candidates.filter(
+    (name) =>
+      !visibleNames.has(name) && isLinkedDuplicateCatalogRecord(DB[name])
+  ).length;
+
+  return { names, hiddenLinkedDuplicateCount };
+}
+
 function getIngredientCatalogMetadata(name) {
   const d = DB[name];
   if (!d) {
@@ -54970,20 +55046,53 @@ export default function App() {
   );
 
   // Build search results
-  const buildResults = useMemo(
+  const buildSearchResultState = useMemo(
     () =>
       buildSearch.length < 2
-        ? []
-        : allIngredients
-            .filter(
-              (n) =>
-                n.toLowerCase().includes(buildSearch.toLowerCase()) ||
-                DB[n].scentSummary
-                  ?.toLowerCase()
-                  .includes(buildSearch.toLowerCase())
-            )
-            .slice(0, 8),
+        ? { names: [], hiddenLinkedDuplicateCount: 0 }
+        : (() => {
+            const result = getNormalizationAwarePickerResult(allIngredients, {
+              query: buildSearch,
+            });
+            return {
+              names: result.names.slice(0, 8),
+              hiddenLinkedDuplicateCount: result.hiddenLinkedDuplicateCount,
+            };
+          })(),
     [buildSearch, allIngredients]
+  );
+  const buildResults = buildSearchResultState.names;
+  const buildSearchHiddenLinkedDuplicateCount =
+    buildSearchResultState.hiddenLinkedDuplicateCount;
+
+  const formulaEditSearchState = useMemo(
+    () =>
+      ingSearchQuery.length < 1
+        ? { names: [], hiddenLinkedDuplicateCount: 0 }
+        : (() => {
+            const result = getNormalizationAwarePickerResult(allIngredients, {
+              query: ingSearchQuery,
+              excludeNames: formula.ingredients.map((x) => x.name),
+            });
+            return {
+              names: result.names.slice(0, 12),
+              hiddenLinkedDuplicateCount: result.hiddenLinkedDuplicateCount,
+            };
+          })(),
+    [allIngredients, formula.ingredients, ingSearchQuery]
+  );
+
+  const buildPaletteGroups = useMemo(
+    () =>
+      Object.fromEntries(
+        ["top", "mid", "base", "carrier"].map((noteKey) => [
+          noteKey,
+          getNormalizationAwarePickerResult(
+            allIngredients.filter((n) => DB[n].note === noteKey)
+          ),
+        ])
+      ),
+    [allIngredients]
   );
 
   const addToBuild = (name) => {
@@ -57341,16 +57450,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           {ingSearchOpen &&
                             ingSearchQuery.length >= 1 &&
                             (() => {
-                              const q = ingSearchQuery.toLowerCase();
-                              const matches = Object.keys(DB)
-                                .filter(
-                                  (n) =>
-                                    n.toLowerCase().includes(q) &&
-                                    !formula.ingredients.some(
-                                      (x) => x.name === n
-                                    )
-                                )
-                                .slice(0, 12);
+                              const matches = formulaEditSearchState.names;
                               return matches.length > 0 ? (
                                 <div
                                   style={{
@@ -57442,9 +57542,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                             style={{
                                               fontSize: 8,
                                               color: "#475569",
+                                              display: "flex",
+                                              gap: 4,
+                                              flexWrap: "wrap",
+                                              alignItems: "center",
                                             }}
                                           >
-                                            {d?.scentClass} · {d?.type || ""}
+                                            <span>
+                                              {d?.scentClass} · {d?.type || ""}
+                                            </span>
+                                            <CatalogMetadataBadges
+                                              name={nm}
+                                              compact
+                                            />
                                           </div>
                                         </div>
                                         <span
@@ -57463,6 +57573,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       </div>
                                     );
                                   })}
+                                  {formulaEditSearchState.hiddenLinkedDuplicateCount >
+                                    0 && (
+                                    <div
+                                      style={{
+                                        padding: "6px 12px",
+                                        fontSize: 8,
+                                        color: "#475569",
+                                      }}
+                                    >
+                                      Linked duplicates merged into primary rows
+                                      where available.
+                                    </div>
+                                  )}
                                 </div>
                               ) : null;
                             })()}
@@ -57998,6 +58121,18 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       gap: 4,
                     }}
                   >
+                    {buildSearchHiddenLinkedDuplicateCount > 0 && (
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#475569",
+                          padding: "0 2px 2px",
+                        }}
+                      >
+                        Linked duplicates merged into primary rows where
+                        available.
+                      </div>
+                    )}
                     {buildResults.map((name) => {
                       const d = DB[name];
                       const nc = NC[d?.note] || NC.carrier;
@@ -58038,8 +58173,20 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             >
                               {name}
                             </div>
-                            <div style={{ fontSize: 9, color: "#475569" }}>
-                              {d?.scentSummary?.slice(0, 50) || ""}…
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#475569",
+                                display: "flex",
+                                gap: 4,
+                                flexWrap: "wrap",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>
+                                {d?.scentSummary?.slice(0, 50) || ""}…
+                              </span>
+                              <CatalogMetadataBadges name={name} compact />
                             </div>
                           </div>
                           <span
@@ -58067,9 +58214,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       ["base", "🔵 Base Notes"],
                       ["carrier", "⚪ Carriers"],
                     ].map(([noteKey, label]) => {
-                      const ings = allIngredients.filter(
-                        (n) => DB[n].note === noteKey
-                      );
+                      const ings = buildPaletteGroups[noteKey]?.names || [];
                       const isOpen = buildPaletteOpen === noteKey;
                       return (
                         <div key={noteKey} style={{ marginBottom: 4 }}>
@@ -58166,12 +58311,25 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                         style={{
                                           fontSize: 8,
                                           color: "#334155",
-                                          whiteSpace: "nowrap",
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
+                                          display: "flex",
+                                          gap: 4,
+                                          flexWrap: "wrap",
+                                          alignItems: "center",
                                         }}
                                       >
-                                        {d?.scentSummary?.slice(0, 42)}
+                                        <span
+                                          style={{
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {d?.scentSummary?.slice(0, 42)}
+                                        </span>
+                                        <CatalogMetadataBadges
+                                          name={name}
+                                          compact
+                                        />
                                       </div>
                                     </div>
                                     <span
