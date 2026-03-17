@@ -37036,6 +37036,24 @@ const PRICING = {
       ],
     },
   },
+  "Ylang-Ylang Fine Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      S: [],
+    },
+  },
+  "Ylang-Ylang I Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      S: [],
+    },
+  },
+  "Ylang-Ylang II Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      S: [],
+    },
+  },
   Zenolide: {
     Fraterworks: {
       url: "https://fraterworks.com/products/zenolide",
