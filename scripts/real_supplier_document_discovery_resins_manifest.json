@@ -1,0 +1,56 @@
+{
+  "products": [
+    {
+      "productUrl": "https://fraterworks.com/products/benzoin-siam-resinoid-50-tec",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "High-value evidence target because the canonical helper seed is still structurally seeded for chemistry/identity.",
+        "Treat discovered documents as review-only until evidence candidates are manually reviewed."
+      ]
+    },
+    {
+      "productUrl": "https://fraterworks.com/products/tolu-balsam-resinoid",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, so discovered documents should be reviewed before promoting canonical chemistry fields.",
+        "Prefer SDS, TDS, COA, or spec PDFs if present."
+      ]
+    },
+    {
+      "productUrl": "https://fraterworks.com/products/poplar-bud-absolute",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, while the canonical target remains structurally seeded.",
+        "Use discovered PDFs only as review input; do not auto-promote chemistry or IFRA."
+      ]
+    },
+    {
+      "productUrl": "https://fraterworks.com/products/peru-balsam-resinoid",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "Vendor-style resinoid row is intentionally kept distinct from Peru balsam oil.",
+        "Best near-term target for trusted document discovery because the canonical resinoid identity still lacks deeper source-backed chemistry."
+      ]
+    }
+  ]
+}
