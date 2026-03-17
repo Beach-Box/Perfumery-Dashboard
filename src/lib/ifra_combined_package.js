@@ -1,5 +1,7 @@
+import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
+
 // Starter IFRA combined package for Beach Box app integration
-export const IFRA_MASTER_MATERIALS = {
+const IFRA_SUPPLEMENTAL_MATERIALS = {
   "benzyl benzoate": {
     canonicalName: "Benzyl benzoate",
     cas: ["120-51-4"],
@@ -968,6 +970,112 @@ export const IFRA_MASTER_MATERIALS = {
       "No structured IFRA standard has been promoted into the helper dataset yet.",
     ],
   },
+};
+
+export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
+
+function buildStandardPageList(pageReference) {
+  const start = pageReference?.standard_page_start;
+  const end = pageReference?.standard_page_end;
+  if (!Number.isInteger(start) || !Number.isInteger(end) || end < start) {
+    return [];
+  }
+
+  const pages = [];
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+  return pages;
+}
+
+function buildRuntimeLimits(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits).map(([category, limit]) => [
+      category,
+      limit?.kind === "limit" ? limit.value : null,
+    ])
+  );
+}
+
+function buildRuntimeLimitKinds(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits).map(([category, limit]) => [
+      category,
+      limit?.kind || null,
+    ])
+  );
+}
+
+function buildRuntimeMaterialRecord(standard) {
+  return {
+    canonicalName: standard.canonical_name,
+    cas: standard.cas_numbers || [],
+    synonyms: (standard.synonyms || []).filter(
+      (synonym) => synonym && synonym !== "Not applicable."
+    ),
+    recommendationType: standard.standard_type
+      ? standard.standard_type.toLowerCase()
+      : null,
+    recommendationTypes: standard.standard_types || [],
+    status: standard.status || "active",
+    publicationYear: standard.publication_year ?? null,
+    amendment: standard.amendment ?? null,
+    implementationDates: {
+      newCreation: standard.implementation_dates?.new_creation ?? null,
+      existingCreation: standard.implementation_dates?.existing_creation ?? null,
+    },
+    limits: buildRuntimeLimits(standard.category_limits),
+    limitKinds: buildRuntimeLimitKinds(standard.category_limits),
+    limitUnit: "%",
+    source: {
+      document:
+        standard.source_document ||
+        ifraMasterDataset.metadata?.source_document ||
+        "IFRA - 51st Amendment.pdf",
+      pages: buildStandardPageList(standard.page_reference),
+    },
+    notes: standard.cas_notes || [],
+  };
+}
+
+const IFRA_MASTER_DATASET_MATERIALS = Object.fromEntries(
+  (ifraMasterDataset.standards || []).map((standard) => [
+    standard.lookup_key,
+    buildRuntimeMaterialRecord(standard),
+  ])
+);
+
+const IFRA_MASTER_DATASET_ALIAS_MAP = {
+  "hexyl cinnamic aldehyde": "alpha-hexyl cinnamic aldehyde",
+  "oakmoss absolute": "oakmoss extracts",
+  "jasmine sambac absolute": "jasmine absolute (sambac)",
+  "ylang ylang extra absolute": "ylang ylang extracts",
+  "peru balsam oil": "peru balsam",
+};
+
+const IFRA_MASTER_DATASET_ALIAS_MATERIALS = Object.fromEntries(
+  Object.entries(IFRA_MASTER_DATASET_ALIAS_MAP)
+    .map(([aliasKey, datasetKey]) => {
+      const material = IFRA_MASTER_DATASET_MATERIALS[datasetKey];
+      if (!material) return null;
+      return [
+        aliasKey,
+        {
+          ...material,
+          notes: [
+            ...(material.notes || []),
+            `Runtime compatibility alias for extracted master key "${datasetKey}".`,
+          ],
+        },
+      ];
+    })
+    .filter(Boolean)
+);
+
+export const IFRA_MASTER_MATERIALS = {
+  ...IFRA_SUPPLEMENTAL_MATERIALS,
+  ...IFRA_MASTER_DATASET_MATERIALS,
+  ...IFRA_MASTER_DATASET_ALIAS_MATERIALS,
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
