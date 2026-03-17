@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import {
   computeActiveRestrictedPercent,
+  getMaterialNormalizationEntry,
   getIfraMaterialRecord,
   getIfraUiState,
   resolveIngredientIdentity,
@@ -31341,10 +31342,19 @@ const FIELDS = [
   "ifraLimits",
 ];
 const DB = Object.fromEntries(
-  Object.entries(RAW_DB).map(([k, v]) => [
-    k,
-    Object.fromEntries(FIELDS.map((f, i) => [f, v[i]])),
-  ])
+  Object.entries(RAW_DB).map(([k, v]) => {
+    const record = Object.fromEntries(FIELDS.map((f, i) => [f, v[i]]));
+    const normalizationEntry = getMaterialNormalizationEntry(k);
+
+    record.entryKind = normalizationEntry?.entryKind ?? null;
+    record.canonicalMaterialKey =
+      normalizationEntry?.canonicalMaterialKey ?? null;
+    record.normalizationEntry = normalizationEntry
+      ? { ...normalizationEntry }
+      : null;
+
+    return [k, record];
+  })
 );
 // Fix density — use index 14 (densityGmL first occurrence)
 Object.keys(DB).forEach((k) => {
