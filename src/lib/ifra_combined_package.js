@@ -786,6 +786,188 @@ export const IFRA_MASTER_MATERIALS = {
       "No structured IFRA standard has been promoted into the helper dataset yet.",
     ],
   },
+  "petitgrain bigarade eo": {
+    canonicalName: "Petitgrain Bigarade EO",
+    cas: ["8014-17-3"],
+    synonyms: [
+      "petitgrain bigarade eo",
+      "petitgrain bigarade",
+      "petitgrain oil",
+      "petitgrain",
+      "citrus aurantium leaf/twig oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [286],
+    },
+    notes: [
+      "Helper maps Petitgrain Bigarade EO to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "cedarwood virginia eo": {
+    canonicalName: "Cedarwood Virginia EO",
+    cas: ["8000-27-9"],
+    synonyms: [
+      "cedarwood virginia eo",
+      "cedarwood virginia",
+      "virginia cedarwood",
+      "cedarwood oil",
+      "juniperus virginiana wood oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Cedarwood Virginia EO to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "vetiver bourbon eo": {
+    canonicalName: "Vetiver Bourbon EO",
+    cas: ["8016-96-4"],
+    synonyms: [
+      "vetiver bourbon eo",
+      "vetiver bourbon",
+      "vetiver oil",
+      "vetiver",
+      "vetiveria zizanoides root oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [20],
+    },
+    notes: [
+      "Helper maps Vetiver Bourbon EO to a canonical identity using app CAS/INCI data.",
+      "A likely PDF text match exists in the uploaded source dataset, but no structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "juniper berry co2": {
+    canonicalName: "Juniper Berry CO2",
+    cas: ["8012-91-7"],
+    synonyms: [
+      "juniper berry co2",
+      "juniper berry",
+      "juniper berry oil",
+      "juniperus communis",
+      "juniperus communis fruit co2 extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Juniper Berry CO2 to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "galbanum absolute": {
+    canonicalName: "Galbanum Absolute",
+    cas: ["8023-91-4"],
+    synonyms: [
+      "galbanum absolute",
+      "galbanum",
+      "ferula galbaniflua resin extract",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Galbanum Absolute to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
+  "himalayan cedarwood eo": {
+    canonicalName: "Himalayan Cedarwood EO",
+    cas: ["8023-85-6"],
+    synonyms: [
+      "himalayan cedarwood eo",
+      "himalayan cedarwood",
+      "cedrus deodara wood oil",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Helper maps Himalayan Cedarwood EO to a canonical identity using app CAS/INCI data.",
+      "No structured IFRA standard has been promoted into the helper dataset yet.",
+    ],
+  },
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -829,13 +1011,15 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Vetiver Bourbon EO",
     normalizedName: "Vetiver Bourbon EO",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "vetiver bourbon eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Vetiver Bourbon EO",
       "Vetiver Bourbon",
       "Vetiver oil",
       "Vetiver",
+      "8016-96-4",
+      "Vetiveria Zizanoides Root Oil",
     ],
     stock: null,
     dbNoteRole: "base",
@@ -846,7 +1030,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Vetiver oil",
     pdfMatchedPage: 20.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Vetiver Bourbon EO to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Bergamot EO FCF": {
     canonicalAppName: "Bergamot EO FCF",
@@ -961,7 +1146,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     canonicalAppName: "Petitgrain Bigarade EO",
     normalizedName: "Petitgrain Bigarade EO",
     matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: null,
+    resolvedIfraMaterial: "petitgrain bigarade eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Petitgrain Bigarade EO",
@@ -969,6 +1154,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Petitgrain Bigarade",
       "Petitgrain oil",
       "Petitgrain",
+      "8014-17-3",
+      "Citrus Aurantium Leaf/Twig Oil",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -979,7 +1166,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Petitgrain",
     pdfMatchedPage: 286.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "Helper maps Petitgrain Bigarade EO to a canonical identity using app CAS/INCI data; likely PDF match exists but no structured IFRA standard has been promoted yet.",
   },
   "Sweet Orange Absolute": {
     canonicalAppName: "Sweet Orange Absolute",
@@ -1507,8 +1695,8 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Cedarwood Virginia EO": {
     canonicalAppName: "Cedarwood Virginia EO",
     normalizedName: "Cedarwood Virginia EO",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "cedarwood virginia eo",
     materialClass: "not_yet_resolved",
     aliases: [
       "Cedarwood Virginia EO",
@@ -1516,6 +1704,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Cedarwood Virginia",
       "Virginia cedarwood",
       "Cedarwood oil",
+      "8000-27-9",
+      "Juniperus Virginiana Wood Oil",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -1526,7 +1716,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Cedarwood Virginia EO to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Ethyl Vanillin": {
     canonicalAppName: "Ethyl Vanillin",
@@ -1615,8 +1806,8 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Juniper Berry CO2": {
     canonicalAppName: "Juniper Berry CO2",
     normalizedName: "Juniperus communis",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "juniper berry co2",
     materialClass: "not_yet_resolved",
     aliases: [
       "Juniperus communis",
@@ -1624,6 +1815,8 @@ export const INGREDIENT_IDENTITY_MAP = {
       "Juniper berry oil",
       "Juniper Berry",
       "Juniper berry",
+      "8012-91-7",
+      "Juniperus Communis Fruit CO2 Extract",
     ],
     stock: null,
     dbNoteRole: "mid",
@@ -1634,7 +1827,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Juniper Berry CO2 to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Neroli Absolute": {
     canonicalAppName: "Neroli Absolute",
@@ -1748,10 +1942,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Galbanum Absolute": {
     canonicalAppName: "Galbanum Absolute",
     normalizedName: "Galbanum Absolute",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "galbanum absolute",
     materialClass: "not_yet_resolved",
-    aliases: ["Galbanum Absolute", "Galbanum"],
+    aliases: [
+      "Galbanum Absolute",
+      "Galbanum",
+      "8023-91-4",
+      "Ferula Galbaniflua Resin Extract",
+    ],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "ABS",
@@ -1761,7 +1960,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Galbanum Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Litsea Cubeba EO": {
     canonicalAppName: "Litsea Cubeba EO",
@@ -2010,10 +2210,15 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Himalayan Cedarwood EO": {
     canonicalAppName: "Himalayan Cedarwood EO",
     normalizedName: "Himalayan Cedarwood EO",
-    matchStrategy: "unresolved",
-    resolvedIfraMaterial: null,
+    matchStrategy: "manual_helper_record",
+    resolvedIfraMaterial: "himalayan cedarwood eo",
     materialClass: "not_yet_resolved",
-    aliases: ["Himalayan Cedarwood EO", "Himalayan Cedarwood"],
+    aliases: [
+      "Himalayan Cedarwood EO",
+      "Himalayan Cedarwood",
+      "8023-85-6",
+      "Cedrus Deodara Wood Oil",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "EO",
@@ -2023,7 +2228,8 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "not_found",
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
-    reviewNote: "No PDF match found automatically \u2014 manual review needed",
+    reviewNote:
+      "Helper maps Himalayan Cedarwood EO to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
   },
   "Jasmine Sambac Absolute": {
     canonicalAppName: "Jasmine Sambac Absolute",
