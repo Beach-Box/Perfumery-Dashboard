@@ -1,0 +1,17 @@
+{
+  "products": [
+    {
+      "productUrl": "https://proof-supplier.example/products/benzoin-siam-resinoid-50-tec",
+      "productHtmlPath": "./fixtures/proof_supplier_document_page.html",
+      "supplier": "Proof Supplier",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "notes": [
+        "Local proof fixture only for discovery logic.",
+        "Uses relative PDF links so discovery can be validated without network access."
+      ]
+    }
+  ]
+}
