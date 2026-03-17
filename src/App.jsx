@@ -32725,17 +32725,6 @@ const PRICING = {
     },
   },
   "Vanilla CO2 10%": {
-    "Eden Botanicals": {
-      url: "https://www.edenbotanicals.com/vanilla-co2-30.html",
-      S: [
-        [1.0, "mL", 7.75],
-        [5.0, "mL", 30.0],
-        [15.0, "mL", 70.25],
-        [30.0, "mL", 123.5],
-        [59.1, "mL", 218.25],
-        [118.3, "mL", 390.0],
-      ],
-    },
     "Nature in Bottle": {
       url: "https://www.natureinbottle.com/vanilla-co2-extract-10",
       S: [
@@ -32756,15 +32745,6 @@ const PRICING = {
         [500, "g", 417.72],
       ],
       inStock: true,
-    },
-    "Perfumers Apprentice": {
-      url: "https://shop.perfumersapprentice.com/p-9271-vanilla-absolute-50-bb.aspx",
-      S: [
-        [4.0, "ml", 28.25],
-        [15.0, "ml", 69.75],
-        [50.0, "g", 198.25],
-        [250.0, "g", 862.5],
-      ],
     },
   },
   "Ethyl Vanillin": {
@@ -33413,18 +33393,6 @@ const PRICING = {
         [59.1, "mL", 625.5],
       ],
     },
-    Fraterworks: {
-      url: "https://fraterworks.com/products/vanilla-bourbon-absolute",
-      S: [
-        [1, "g", 9.44],
-        [4, "g", 23.6],
-        [15, "g", 68.44],
-        [25, "g", 101.48],
-        [50, "g", 181.72],
-        [100, "g", 323.32],
-      ],
-      inStock: true,
-    },
     "Perfumers Apprentice": {
       url: "https://shop.perfumersapprentice.com/p-9271-vanilla-absolute-50-bb.aspx",
       S: [
@@ -33436,16 +33404,6 @@ const PRICING = {
     },
   },
   "Vanilla Bourbon Absolute": {
-    "Eden Botanicals": {
-      url: "https://www.edenbotanicals.com/vanilla-absolute.html",
-      S: [
-        [1.0, "mL", 25.25],
-        [2.0, "mL", 45.0],
-        [5.0, "mL", 96.75],
-        [15.0, "mL", 241.75],
-        [30.0, "mL", 438.5],
-      ],
-    },
     Fraterworks: {
       url: "https://fraterworks.com/products/vanilla-bourbon-absolute",
       S: [

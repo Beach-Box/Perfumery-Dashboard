@@ -168,10 +168,6 @@
         "status": "primary_listing",
         "note": "Primary supplier listing for vanilla absolute."
       },
-      "Fraterworks": {
-        "status": "cross_wired_listing",
-        "note": "This supplier URL is vanilla-bourbon-absolute and appears to fit the Vanilla Bourbon Absolute row more cleanly."
-      },
       "Perfumers Apprentice": {
         "status": "supplier_grade_variant",
         "note": "Diluted vanilla absolute in benzyl benzoate; preserved as a supplier-specific variant rather than a neat absolute listing."
@@ -182,10 +178,6 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "vanilla_bourbon_absolute",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL is a generic vanilla-absolute page rather than a clearly bourbon-specific listing."
-      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Primary Fraterworks listing for vanilla bourbon absolute."
@@ -200,10 +192,6 @@
     "entryKind": "diluted_stock",
     "canonicalMaterialKey": "vanilla_co2",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL appears to point to a 30% vanilla CO2 product rather than a 10% stock."
-      },
       "Nature in Bottle": {
         "status": "primary_listing",
         "note": "Cleanest supplier match for the 10% vanilla CO2 stock row."
@@ -211,11 +199,6 @@
       "Fraterworks": {
         "status": "supplier_grade_variant",
         "note": "Vendor-branded vanilla stock/product kept under the vanilla CO2 stock row pending tighter canonical mapping."
-      },
-      "Perfumers Apprentice": {
-        "status": "linked_duplicate",
-        "duplicateOfCatalogName": "Vanilla Absolute",
-        "note": "This is the same vanilla-absolute-50-bb supplier link already carried on Vanilla Absolute and does not read as a CO2 listing."
       }
     }
   },
