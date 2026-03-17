@@ -37040,19 +37040,34 @@ const PRICING = {
   "Ylang-Ylang Fine Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 11.25],
+        [3, "mL", 27],
+        [5, "mL", 43],
+        [15, "mL", 117],
+      ],
     },
   },
   "Ylang-Ylang I Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 10],
+        [3, "mL", 23.25],
+        [5, "mL", 38],
+        [15, "mL", 104],
+      ],
     },
   },
   "Ylang-Ylang II Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 8.75],
+        [3, "mL", 21],
+        [5, "mL", 33],
+        [15, "mL", 90.75],
+      ],
     },
   },
   Zenolide: {
