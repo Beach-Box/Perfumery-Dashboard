@@ -55545,6 +55545,355 @@ function buildGeneratedSupplierPriceDraftExportPayload(records) {
   };
 }
 
+const SUPPLIER_COVERAGE_GAP_CATEGORY_DEFS = {
+  registry_not_live_catalog: {
+    label: "Registry product mapped but no live catalog row",
+    priorityWeight: 80,
+  },
+  live_catalog_missing_supplier_ownership: {
+    label: "Live catalog row missing supplier ownership",
+    priorityWeight: 75,
+  },
+  supplier_ownership_no_pricing: {
+    label: "Supplier ownership exists but no pricing",
+    priorityWeight: 90,
+  },
+  normalization_missing_canonical_seed: {
+    label: "Normalization mapped but no canonical seed",
+    priorityWeight: 65,
+  },
+  supplier_link_integrity_issue: {
+    label: "Supplier link integrity issue",
+    priorityWeight: 55,
+  },
+  pending_review_item: {
+    label: "Pending supplier review item",
+    priorityWeight: 70,
+  },
+};
+
+function normalizeCoverageAuditText(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function classifySupplierCoverageFamily(...values) {
+  const haystack = values
+    .flat()
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (haystack.includes("ylang")) return "Ylang";
+  if (haystack.includes("vanilla")) return "Vanilla";
+  if (
+    haystack.includes("neroli") ||
+    haystack.includes("orange blossom") ||
+    haystack.includes("petitgrain")
+  ) {
+    return "Orange Blossom";
+  }
+  if (
+    [
+      "balsam",
+      "benzoin",
+      "labdanum",
+      "resinoid",
+      "poplar",
+      "peru",
+      "tolu",
+    ].some((token) => haystack.includes(token))
+  ) {
+    return "Balsams/Resins";
+  }
+  return "Other";
+}
+
+function summarizeSupplierCoverageExample(item) {
+  if (item?.catalogDisplayName && item?.supplierName) {
+    return `${item.catalogDisplayName} · ${item.supplierName}`;
+  }
+  if (item?.mappedCatalogName) return item.mappedCatalogName;
+  if (item?.proposedCatalogName) return item.proposedCatalogName;
+  if (item?.supplierProductKey) return item.supplierProductKey;
+  return item?.canonicalMaterialKey || "Unspecified";
+}
+
+function sortSupplierCoverageItems(items) {
+  return [...items].sort((a, b) => {
+    if (b.priorityWeight !== a.priorityWeight) {
+      return b.priorityWeight - a.priorityWeight;
+    }
+    return summarizeSupplierCoverageExample(a).localeCompare(
+      summarizeSupplierCoverageExample(b)
+    );
+  });
+}
+
+function buildSupplierCoverageGapReport() {
+  const categories = Object.fromEntries(
+    Object.keys(SUPPLIER_COVERAGE_GAP_CATEGORY_DEFS).map((key) => [key, []])
+  );
+  const liveCatalogNames = new Set(Object.keys(DB));
+  const registryEntries = Object.entries(SUPPLIER_PRODUCT_REGISTRY);
+  const pendingQueueItems = getPendingSupplierImportItems();
+
+  const pushGap = (categoryKey, item) => {
+    const categoryDef = SUPPLIER_COVERAGE_GAP_CATEGORY_DEFS[categoryKey];
+    if (!categoryDef) return;
+
+    categories[categoryKey].push({
+      category: categoryKey,
+      categoryLabel: categoryDef.label,
+      priorityWeight: categoryDef.priorityWeight,
+      family: classifySupplierCoverageFamily(
+        item?.catalogDisplayName,
+        item?.mappedCatalogName,
+        item?.proposedCatalogName,
+        item?.canonicalMaterialKey,
+        item?.productTitle,
+        item?.note,
+        item?.reason
+      ),
+      ...item,
+    });
+  };
+
+  registryEntries.forEach(([supplierProductKey, record]) => {
+    if (!record?.mappedCatalogName) return;
+    if (liveCatalogNames.has(record.mappedCatalogName)) return;
+
+    pushGap("registry_not_live_catalog", {
+      supplierProductKey,
+      supplierName: record?.supplierDisplayName || null,
+      productTitle: record?.productTitle || null,
+      mappedCatalogName: record?.mappedCatalogName || null,
+      canonicalMaterialKey: record?.mappedCanonicalMaterialKey || null,
+      url: record?.url || null,
+      registryStatus: record?.registryStatus || null,
+      note:
+        "Registry mapping exists, but the mapped catalog row is not live yet.",
+    });
+  });
+
+  Object.entries(MATERIAL_NORMALIZATION).forEach(
+    ([catalogDisplayName, normalizationEntry]) => {
+      if (!liveCatalogNames.has(catalogDisplayName)) return;
+
+      const expectedSupplierMap = new Map();
+      Object.entries(normalizationEntry?.supplierLinks || {}).forEach(
+        ([supplierName, supplierLink]) => {
+          expectedSupplierMap.set(supplierName, {
+            supplierName,
+            supplierLinkStatus: supplierLink?.status || "primary_listing",
+            supplierProductKey: null,
+            url: null,
+          });
+        }
+      );
+
+      registryEntries.forEach(([supplierProductKey, record]) => {
+        if (record?.mappedCatalogName !== catalogDisplayName) return;
+        if (!record?.supplierDisplayName) return;
+        const current = expectedSupplierMap.get(record.supplierDisplayName) || {};
+        expectedSupplierMap.set(record.supplierDisplayName, {
+          ...current,
+          supplierName: record.supplierDisplayName,
+          supplierProductKey,
+          url: record?.url || current.url || null,
+        });
+      });
+
+      expectedSupplierMap.forEach((expectedSupplier, supplierName) => {
+        const pricingSupplierEntry =
+          PRICING?.[catalogDisplayName]?.[supplierName] || null;
+        if (pricingSupplierEntry) return;
+
+        pushGap("live_catalog_missing_supplier_ownership", {
+          catalogDisplayName,
+          supplierName,
+          entryKind: normalizationEntry?.entryKind || null,
+          canonicalMaterialKey:
+            normalizationEntry?.canonicalMaterialKey || null,
+          supplierProductKey:
+            expectedSupplier?.supplierProductKey || null,
+          url: expectedSupplier?.url || null,
+          supplierLinkStatus:
+            expectedSupplier?.supplierLinkStatus || null,
+          note:
+            "Catalog row has normalization or registry supplier evidence, but no live PRICING ownership entry.",
+        });
+      });
+
+      if (
+        normalizationEntry?.canonicalMaterialKey &&
+        !getCanonicalMaterialSource(normalizationEntry.canonicalMaterialKey)
+      ) {
+        pushGap("normalization_missing_canonical_seed", {
+          catalogDisplayName,
+          entryKind: normalizationEntry?.entryKind || null,
+          canonicalMaterialKey:
+            normalizationEntry?.canonicalMaterialKey || null,
+          note:
+            "Normalization points to a canonicalMaterialKey that has no helper canonical seed yet.",
+        });
+      }
+
+      if (normalizationEntry?.linkedDuplicateOfCatalogName) {
+        pushGap("supplier_link_integrity_issue", {
+          catalogDisplayName,
+          canonicalMaterialKey:
+            normalizationEntry?.canonicalMaterialKey || null,
+          supplierName: null,
+          linkStatus: "linked_duplicate",
+          linkedDuplicateOfCatalogName:
+            normalizationEntry.linkedDuplicateOfCatalogName,
+          note: `Catalog row is marked as a linked duplicate of "${normalizationEntry.linkedDuplicateOfCatalogName}".`,
+        });
+      }
+
+      Object.entries(normalizationEntry?.supplierLinks || {}).forEach(
+        ([supplierName, supplierLink]) => {
+          const linkStatus = supplierLink?.status || "primary_listing";
+          if (linkStatus === "primary_listing") return;
+
+          pushGap("supplier_link_integrity_issue", {
+            catalogDisplayName,
+            supplierName,
+            canonicalMaterialKey:
+              normalizationEntry?.canonicalMaterialKey || null,
+            linkStatus,
+            note: supplierLink?.note || null,
+          });
+        }
+      );
+    }
+  );
+
+  Object.entries(PRICING).forEach(([catalogDisplayName, suppliers]) => {
+    Object.entries(suppliers || {}).forEach(([supplierName, supplierData]) => {
+      if (!supplierData?.url) return;
+      if (Array.isArray(supplierData?.S) && supplierData.S.length > 0) return;
+
+      const supplierProductKey = findRegistrySupplierProductKeyForCatalogOwnership(
+        catalogDisplayName,
+        supplierName,
+        supplierData.url,
+        MATERIAL_NORMALIZATION[catalogDisplayName]
+          ?.importedFromSupplierProductKey || null
+      );
+
+      pushGap("supplier_ownership_no_pricing", {
+        catalogDisplayName,
+        supplierName,
+        canonicalMaterialKey:
+          MATERIAL_NORMALIZATION[catalogDisplayName]?.canonicalMaterialKey ||
+          null,
+        supplierProductKey,
+        url: supplierData.url,
+        note: "Live supplier ownership exists, but the S array is empty.",
+      });
+    });
+  });
+
+  pendingQueueItems.forEach((item) => {
+    const registryRecord = item?.supplierProductKey
+      ? SUPPLIER_PRODUCT_REGISTRY[item.supplierProductKey] || null
+      : null;
+
+    pushGap("pending_review_item", {
+      supplierProductKey: item?.supplierProductKey || null,
+      supplierName: registryRecord?.supplierDisplayName || null,
+      productTitle: registryRecord?.productTitle || null,
+      proposedCatalogName: item?.proposedCatalogName || null,
+      proposedEntryKind: item?.proposedEntryKind || null,
+      canonicalMaterialKey: item?.proposedCanonicalMaterialKey || null,
+      reviewStatus: item?.reviewStatus || null,
+      liveCatalogRowPresent: item?.proposedCatalogName
+        ? liveCatalogNames.has(item.proposedCatalogName)
+        : false,
+      reason: item?.reason || null,
+      note: item?.reason || "Pending supplier-first review item.",
+    });
+  });
+
+  const sortedCategories = Object.fromEntries(
+    Object.entries(categories).map(([categoryKey, items]) => [
+      categoryKey,
+      sortSupplierCoverageItems(items),
+    ])
+  );
+  const allItems = sortSupplierCoverageItems(
+    Object.values(sortedCategories).flat()
+  );
+
+  const countsByCategory = Object.entries(sortedCategories).map(
+    ([categoryKey, items]) => ({
+      category: categoryKey,
+      label: SUPPLIER_COVERAGE_GAP_CATEGORY_DEFS[categoryKey].label,
+      count: items.length,
+      priorityWeight:
+        SUPPLIER_COVERAGE_GAP_CATEGORY_DEFS[categoryKey].priorityWeight,
+    })
+  );
+
+  const familyAggregation = allItems.reduce((acc, item) => {
+    const family = item.family || "Other";
+    if (!acc[family]) {
+      acc[family] = {
+        family,
+        gapCount: 0,
+        priorityScore: 0,
+        categories: {},
+        examples: [],
+      };
+    }
+
+    acc[family].gapCount += 1;
+    acc[family].priorityScore += item.priorityWeight;
+    acc[family].categories[item.categoryLabel] =
+      (acc[family].categories[item.categoryLabel] || 0) + 1;
+    if (acc[family].examples.length < 3) {
+      acc[family].examples.push(summarizeSupplierCoverageExample(item));
+    }
+    return acc;
+  }, {});
+
+  const countsByFamily = Object.values(familyAggregation).sort((a, b) => {
+    if (b.priorityScore !== a.priorityScore) {
+      return b.priorityScore - a.priorityScore;
+    }
+    return a.family.localeCompare(b.family);
+  });
+
+  const prioritizedTargets = countsByFamily.slice(0, 6).map((family) => ({
+    family: family.family,
+    gapCount: family.gapCount,
+    priorityScore: family.priorityScore,
+    topCategories: Object.entries(family.categories)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([label, count]) => `${label} (${count})`),
+    examples: family.examples,
+  }));
+
+  return {
+    metadata: {
+      version: 1,
+      generatedAt: new Date().toISOString(),
+      note:
+        "Read-only supplier coverage-gap audit across registry, queue, normalization, live catalog, and live supplier ownership.",
+    },
+    summary: {
+      totalGapCount: allItems.length,
+      countsByCategory,
+      countsByFamily,
+      prioritizedTargetCount: prioritizedTargets.length,
+    },
+    prioritizedTargets,
+    categories: sortedCategories,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -55622,6 +55971,8 @@ export default function App() {
   const [supplierCatalogDraftExportStatus, setSupplierCatalogDraftExportStatus] =
     useState("");
   const [supplierPriceDraftExportStatus, setSupplierPriceDraftExportStatus] =
+    useState("");
+  const [supplierCoverageAuditExportStatus, setSupplierCoverageAuditExportStatus] =
     useState("");
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
@@ -55729,6 +56080,14 @@ export default function App() {
   const generatedSupplierPriceDraftExportJson = useMemo(
     () => JSON.stringify(generatedSupplierPriceDraftExportPayload, null, 2),
     [generatedSupplierPriceDraftExportPayload]
+  );
+  const supplierCoverageGapReport = useMemo(
+    () => buildSupplierCoverageGapReport(),
+    []
+  );
+  const supplierCoverageGapReportJson = useMemo(
+    () => JSON.stringify(supplierCoverageGapReport, null, 2),
+    [supplierCoverageGapReport]
   );
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
@@ -55842,6 +56201,40 @@ export default function App() {
     generatedSupplierPriceDraftExportJson,
     generatedSupplierPriceDraftRecords.length,
   ]);
+  const exportSupplierCoverageGapReport = useCallback(() => {
+    const blob = new Blob([supplierCoverageGapReportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_supplier_coverage_gap_report.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSupplierCoverageAuditExportStatus(
+      `Exported ${supplierCoverageGapReport.summary.totalGapCount} supplier coverage gap${
+        supplierCoverageGapReport.summary.totalGapCount === 1 ? "" : "s"
+      }.`
+    );
+  }, [supplierCoverageGapReport, supplierCoverageGapReportJson]);
+  const copySupplierCoverageGapReport = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSupplierCoverageAuditExportStatus(
+        "Copy unavailable in this browser."
+      );
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(supplierCoverageGapReportJson);
+      setSupplierCoverageAuditExportStatus(
+        `Copied ${supplierCoverageGapReport.summary.totalGapCount} supplier coverage gap${
+          supplierCoverageGapReport.summary.totalGapCount === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSupplierCoverageAuditExportStatus("Copy failed.");
+    }
+  }, [supplierCoverageGapReport, supplierCoverageGapReportJson]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -61705,6 +62098,308 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       review queue.
                     </div>
                   )}
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#FCA5A5",
+                          }}
+                        >
+                          🧭 Supplier Coverage Audit
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                          }}
+                        >
+                          Read-only onboarding report across registry, review
+                          queue, normalization, live catalog, and live supplier
+                          ownership.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background:
+                            supplierCoverageGapReport.summary.totalGapCount > 0
+                              ? "#2A1A00"
+                              : "#0A2E1A",
+                          border: `1px solid ${
+                            supplierCoverageGapReport.summary.totalGapCount > 0
+                              ? "#78350F"
+                              : "#166534"
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            supplierCoverageGapReport.summary.totalGapCount > 0
+                              ? "#F59E0B"
+                              : "#86EFAC",
+                          padding: "4px 10px",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {supplierCoverageGapReport.summary.totalGapCount > 0
+                          ? `${supplierCoverageGapReport.summary.totalGapCount} gaps flagged`
+                          : "coverage clean"}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <button
+                        onClick={exportSupplierCoverageGapReport}
+                        style={{
+                          background: "#2A1A00",
+                          border: "1px solid #78350F",
+                          borderRadius: 8,
+                          color: "#FDE68A",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📤 Export Audit JSON
+                      </button>
+                      <button
+                        onClick={copySupplierCoverageGapReport}
+                        style={{
+                          background: "#0A1628",
+                          border: "1px solid #1D4ED8",
+                          borderRadius: 8,
+                          color: "#93C5FD",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📋 Copy JSON
+                      </button>
+                      {supplierCoverageAuditExportStatus && (
+                        <span
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          {supplierCoverageAuditExportStatus}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(160px, 1fr))",
+                        gap: 8,
+                        marginBottom: 10,
+                      }}
+                    >
+                      {supplierCoverageGapReport.summary.countsByCategory.map(
+                        (item) => (
+                          <div
+                            key={item.category}
+                            style={{
+                              background: "#020810",
+                              border: "1px solid #1E293B",
+                              borderRadius: 8,
+                              padding: "8px 10px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 7.5,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                marginBottom: 3,
+                              }}
+                            >
+                              {item.label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: item.count > 0 ? "#F59E0B" : "#86EFAC",
+                              }}
+                            >
+                              {item.count}
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                    {supplierCoverageGapReport.prioritizedTargets.length > 0 ? (
+                      <>
+                        <div
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Priority Families
+                        </div>
+                        <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.5,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr
+                                style={{
+                                  borderBottom: "1px solid #1E293B",
+                                }}
+                              >
+                                {[
+                                  "Family",
+                                  "Priority Score",
+                                  "Gap Count",
+                                  "Top Gap Types",
+                                  "Examples",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "7px 8px",
+                                      color: "#64748B",
+                                      fontSize: 8,
+                                      fontWeight: 700,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {supplierCoverageGapReport.prioritizedTargets.map(
+                                (target, idx) => (
+                                  <tr
+                                    key={target.family}
+                                    style={{
+                                      borderBottom:
+                                        idx ===
+                                        supplierCoverageGapReport.prioritizedTargets.length -
+                                          1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#E2E8F0",
+                                        fontWeight: 700,
+                                        minWidth: 120,
+                                      }}
+                                    >
+                                      {target.family}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#F59E0B",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {target.priorityScore}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                      }}
+                                    >
+                                      {target.gapCount}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#CBD5E1",
+                                        minWidth: 220,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {target.topCategories.join(" · ")}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "8px",
+                                        color: "#94A3B8",
+                                        minWidth: 260,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {target.examples.join(" · ")}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : null}
+                    <textarea
+                      readOnly
+                      value={supplierCoverageGapReportJson}
+                      spellCheck={false}
+                      style={{
+                        width: "100%",
+                        minHeight: 160,
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                        color: "#CBD5E1",
+                        padding: "10px 12px",
+                        fontSize: 8.5,
+                        lineHeight: 1.6,
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
                   <div
                     style={{
                       marginTop: 12,
