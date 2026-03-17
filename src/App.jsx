@@ -32335,29 +32335,7 @@ const PRICING = {
     },
   },
   "Pineapple CO2 Extract": {},
-  "Neroli Absolute": {
-    "Eden Botanicals": {
-      url: "https://www.edenbotanicals.com/neroli-morocco-organic-1-ml-20-30-drops.html",
-      S: [
-        [1.0, "mL", 25.0],
-        [2.0, "mL", 43.25],
-        [5.0, "mL", 92.5],
-        [15.0, "mL", 230.45],
-        [30.0, "mL", 419.0],
-        [59.1, "mL", 764.5],
-        [118.3, "mL", 1404.0],
-        [236.6, "mL", 2595.75],
-      ],
-    },
-    "Perfumers Apprentice": {
-      url: "https://shop.perfumersapprentice.com/p-9233-neroli-tunisia-pn.aspx",
-      S: [
-        [4.0, "ml", 61.0],
-        [15.0, "ml", 209.5],
-        [50.0, "g", 620.0],
-      ],
-    },
-  },
+  "Neroli Absolute": {},
   "Cinnamon Bark EO": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/cinnamon-bark-organic.html",

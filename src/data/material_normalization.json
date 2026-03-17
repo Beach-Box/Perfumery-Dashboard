@@ -62,17 +62,7 @@
   },
   "Neroli Absolute": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "neroli_absolute",
-    "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a neroli Morocco listing and does not clearly indicate an absolute extract."
-      },
-      "Perfumers Apprentice": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a neroli Tunisia listing and does not clearly indicate an absolute extract."
-      }
-    }
+    "canonicalMaterialKey": "neroli_absolute"
   },
   "Orange Blossom Water Abs": {
     "entryKind": "canonical_material",
