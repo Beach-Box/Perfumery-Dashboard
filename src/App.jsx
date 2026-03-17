@@ -31349,6 +31349,15 @@ const DB = Object.fromEntries(
     record.entryKind = normalizationEntry?.entryKind ?? null;
     record.canonicalMaterialKey =
       normalizationEntry?.canonicalMaterialKey ?? null;
+    record.linkedDuplicateOfCatalogName =
+      normalizationEntry?.linkedDuplicateOfCatalogName ?? null;
+    record.supplierLinkMetadata = normalizationEntry?.supplierLinks
+      ? Object.fromEntries(
+          Object.entries(normalizationEntry.supplierLinks).map(
+            ([supplierName, metadata]) => [supplierName, { ...metadata }]
+          )
+        )
+      : null;
     record.normalizationEntry = normalizationEntry
       ? { ...normalizationEntry }
       : null;
@@ -53768,6 +53777,24 @@ function totalCost(buildItems) {
   });
   return cost;
 }
+Object.entries(PRICING).forEach(([name, supplierEntries]) => {
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  if (!normalizationEntry?.supplierLinks) return;
+
+  Object.entries(supplierEntries || {}).forEach(([supplierName, supplierData]) => {
+    const supplierLinkMetadata = normalizationEntry.supplierLinks[supplierName];
+    if (!supplierLinkMetadata || !supplierData || typeof supplierData !== "object") {
+      return;
+    }
+
+    supplierData.linkStatus = supplierLinkMetadata.status || null;
+    supplierData.linkNote = supplierLinkMetadata.note || null;
+    supplierData.linkedDuplicateOfCatalogName =
+      supplierLinkMetadata.duplicateOfCatalogName ||
+      normalizationEntry.linkedDuplicateOfCatalogName ||
+      null;
+  });
+});
 
 // ─────────────────────────────────────────────────────────────
 // LONGEVITY / SILLAGE / PROJECTION SCORING

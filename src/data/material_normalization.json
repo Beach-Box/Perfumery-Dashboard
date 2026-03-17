@@ -1,15 +1,37 @@
 {
   "Balsam Peru EO": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "peru_balsam_oil"
+    "canonicalMaterialKey": "peru_balsam_oil",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "dead_url",
+        "note": "Historical pricing metadata retained for reference; the Eden Botanicals Peru Balsam URL appears inactive."
+      },
+      "Fraterworks": {
+        "status": "primary_listing"
+      }
+    }
   },
   "Peru Balsam Essential Oil": {
     "entryKind": "supplier_product",
-    "canonicalMaterialKey": "peru_balsam_oil"
+    "canonicalMaterialKey": "peru_balsam_oil",
+    "linkedDuplicateOfCatalogName": "Balsam Peru EO",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "linked_duplicate",
+        "duplicateOfCatalogName": "Balsam Peru EO",
+        "note": "Duplicates the Fraterworks Peru Balsam product link already carried on Balsam Peru EO."
+      }
+    }
   },
   "Peru Balsam “Signature” Resinoid": {
     "entryKind": "supplier_product",
-    "canonicalMaterialKey": "peru_balsam_resinoid"
+    "canonicalMaterialKey": "peru_balsam_resinoid",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing"
+      }
+    }
   },
   "Ylang Ylang Extra Absolute": {
     "entryKind": "canonical_material",
