@@ -35,31 +35,79 @@
   },
   "Ylang Ylang Extra Absolute": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "ylang_ylang_extra_absolute"
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Primary Eden Botanicals listing for the extra grade ylang row."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Primary Fraterworks extra-oil listing; the same supplier URL is also carried by Ylang-Ylang Extra Oil, Comoros."
+      }
+    }
   },
   "Ylang-Ylang Extra Oil, Comoros": {
     "entryKind": "supplier_product",
-    "canonicalMaterialKey": "ylang_ylang_extra_absolute"
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
+    "linkedDuplicateOfCatalogName": "Ylang Ylang Extra Absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "linked_duplicate",
+        "duplicateOfCatalogName": "Ylang Ylang Extra Absolute",
+        "note": "Duplicates the Fraterworks extra-oil URL and pricing already present on Ylang Ylang Extra Absolute."
+      }
+    }
   },
   "Ylang-Ylang Absolute": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "ylang_ylang_absolute"
+    "canonicalMaterialKey": "ylang_ylang_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang absolute supplier listing."
+      }
+    }
   },
   "Ylang-Ylang III Oil, Org": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "ylang_ylang_iii_oil"
+    "canonicalMaterialKey": "ylang_ylang_iii_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang grade III supplier listing."
+      }
+    }
   },
   "Ylang-Ylang Complete Oil": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "ylang_ylang_complete_oil"
+    "canonicalMaterialKey": "ylang_ylang_complete_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang complete supplier listing."
+      }
+    }
   },
   "Ylang-Ylang Extra Superior Oil, Org": {
     "entryKind": "supplier_product",
-    "canonicalMaterialKey": "ylang_ylang_extra_oil"
+    "canonicalMaterialKey": "ylang_ylang_extra_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Vendor-specific superior/extra grade variant; preserved separately and not treated as an exact duplicate."
+      }
+    }
   },
   "Ylang Impériale": {
     "entryKind": "accord",
-    "canonicalMaterialKey": "ylang_imperiale"
+    "canonicalMaterialKey": "ylang_imperiale",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "accord_listing",
+        "note": "Vendor-named ylang-themed accord/product, not treated as a canonical ylang raw material."
+      }
+    }
   },
   "Benzyl Acetate": {
     "entryKind": "canonical_material",
