@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "description": "Proof-of-flow manifest for review-only evidence candidate generation. Replace with document-extracted facts from real trusted source documents before production use."
+  },
+  "candidates": [
+    {
+      "sourceDocumentKey": "benzoin_siam_resinoid:sds:proof_local_benzoin_siam_resinoid_sds_v1_pdf",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "candidateFieldName": "scentDesc",
+      "candidateValue": "Amber abs by Mane",
+      "confidence": "low",
+      "reviewStatus": "candidate_pending_review",
+      "notes": [
+        "Proof-of-flow candidate using existing repo row text only.",
+        "Replace with document-extracted wording before any real promotion."
+      ]
+    },
+    {
+      "sourceDocumentKey": "tolu_balsam_resinoid:sds:proof_local_tolu_balsam_resinoid_sds_v1_pdf",
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "candidateFieldName": "scentDesc",
+      "candidateValue": "Tolu Balsam Resinoid 50% TEC",
+      "confidence": "low",
+      "reviewStatus": "candidate_pending_review",
+      "notes": [
+        "Proof-of-flow candidate using existing repo row text only.",
+        "No helper chemistry or IFRA is applied from this record."
+      ]
+    },
+    {
+      "sourceDocumentKey": "ylang_ylang_i_oil:supplier_pdf:proof_local_ylang_ylang_i_organic_supplier_pdf_v1_pdf",
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "candidateFieldName": "scentDesc",
+      "candidateValue": "Supplier-product draft seeded from Eden Botanicals mapping. Chemistry and IFRA remain manual review steps.",
+      "confidence": "low",
+      "reviewStatus": "candidate_pending_review",
+      "notes": [
+        "Proof-of-flow candidate using existing repo row text only.",
+        "Use document-extracted facts when generating live review candidates."
+      ]
+    }
+  ]
+}
