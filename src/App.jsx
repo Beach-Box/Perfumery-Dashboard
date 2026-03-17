@@ -22,6 +22,8 @@ import {
 } from "recharts";
 import {
   computeActiveRestrictedPercent,
+  getCanonicalMaterialSource,
+  getMaterialNormalizationEntry,
   getIfraMaterialRecord,
   getIfraUiState,
   resolveIngredientIdentity,
@@ -31341,14 +31343,112 @@ const FIELDS = [
   "ifraLimits",
 ];
 const DB = Object.fromEntries(
-  Object.entries(RAW_DB).map(([k, v]) => [
-    k,
-    Object.fromEntries(FIELDS.map((f, i) => [f, v[i]])),
-  ])
+  Object.entries(RAW_DB).map(([k, v]) => {
+    const record = Object.fromEntries(FIELDS.map((f, i) => [f, v[i]]));
+    const normalizationEntry = getMaterialNormalizationEntry(k);
+
+    record.entryKind = normalizationEntry?.entryKind ?? null;
+    record.canonicalMaterialKey =
+      normalizationEntry?.canonicalMaterialKey ?? null;
+    record.linkedDuplicateOfCatalogName =
+      normalizationEntry?.linkedDuplicateOfCatalogName ?? null;
+    record.supplierLinkMetadata = normalizationEntry?.supplierLinks
+      ? Object.fromEntries(
+          Object.entries(normalizationEntry.supplierLinks).map(
+            ([supplierName, metadata]) => [supplierName, { ...metadata }]
+          )
+        )
+      : null;
+    record.normalizationEntry = normalizationEntry
+      ? { ...normalizationEntry }
+      : null;
+
+    return [k, record];
+  })
 );
+
+const CANONICAL_DB_NAME_BY_KEY = Object.fromEntries(
+  Object.entries(DB)
+    .filter(
+      ([, record]) =>
+        record.entryKind === "canonical_material" && record.canonicalMaterialKey
+    )
+    .map(([name, record]) => [record.canonicalMaterialKey, name])
+);
+
+const CANONICAL_CHEMISTRY_FIELDS = [
+  "mw",
+  "logP",
+  "tpsa",
+  "hbd",
+  "hba",
+  "vp",
+  "odt",
+  "n",
+  "rep",
+  "cas",
+  "inci",
+  "isUVCB",
+  "descriptorTags",
+  "odorThreshold_ngL",
+  "vpConfidence",
+  "isIsomerMix",
+];
+
+const CANONICAL_HELPER_SOURCE_FIELDS = [
+  ...CANONICAL_CHEMISTRY_FIELDS,
+  "note",
+  "type",
+  "scentClass",
+  "scentSummary",
+  "scentDesc",
+  "rep",
+];
+
+function hasDbMetadataValue(value) {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim() !== "";
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
+
+function cloneDbMetadataValue(value) {
+  if (Array.isArray(value)) return [...value];
+  if (value && typeof value === "object") return { ...value };
+  return value;
+}
+
 // Fix density — use index 14 (densityGmL first occurrence)
 Object.keys(DB).forEach((k) => {
   DB[k].densityGmL = RAW_DB[k][14] || 1.0;
+});
+
+Object.entries(DB).forEach(([name, d]) => {
+  if (d.entryKind === "canonical_material" || !d.canonicalMaterialKey) {
+    return;
+  }
+
+  const canonicalName = CANONICAL_DB_NAME_BY_KEY[d.canonicalMaterialKey];
+  if (canonicalName) {
+    const canonicalRecord = DB[canonicalName];
+    if (canonicalRecord && canonicalRecord !== d) {
+      CANONICAL_CHEMISTRY_FIELDS.forEach((field) => {
+        if (hasDbMetadataValue(d[field])) return;
+        if (!hasDbMetadataValue(canonicalRecord[field])) return;
+        d[field] = cloneDbMetadataValue(canonicalRecord[field]);
+      });
+    }
+  }
+
+  const canonicalHelperSource = getCanonicalMaterialSource(d.canonicalMaterialKey);
+  if (!canonicalHelperSource) return;
+
+  CANONICAL_HELPER_SOURCE_FIELDS.forEach((field) => {
+    if (hasDbMetadataValue(d[field])) return;
+    if (!hasDbMetadataValue(canonicalHelperSource[field])) return;
+    d[field] = cloneDbMetadataValue(canonicalHelperSource[field]);
+  });
 });
 
 const IFRA_STATE_LABELS = {
@@ -31386,6 +31486,249 @@ const IFRA_STATE_BADGE_META = {
   },
 };
 
+const NORMALIZATION_ENTRY_KIND_LABELS = {
+  canonical_material: "Canonical Material",
+  supplier_product: "Supplier Product",
+  diluted_stock: "Diluted Stock",
+  accord: "Accord",
+};
+
+const NORMALIZATION_BADGE_META = {
+  diluted_stock: {
+    compactLabel: "Diluted",
+    label: "Diluted Stock",
+    background: "rgba(96,165,250,0.12)",
+    color: "#93C5FD",
+    borderColor: "#60A5FA50",
+  },
+  linked_duplicate: {
+    compactLabel: "Linked Dup",
+    label: "Linked Duplicate",
+    background: "rgba(250,204,21,0.12)",
+    color: "#FDE047",
+    borderColor: "#FACC1550",
+  },
+  supplier_product: {
+    compactLabel: "Supplier Var",
+    label: "Supplier Product",
+    background: "rgba(148,163,184,0.12)",
+    color: "#CBD5E1",
+    borderColor: "#64748B50",
+  },
+  accord: {
+    compactLabel: "Accord",
+    label: "Accord",
+    background: "rgba(45,212,191,0.12)",
+    color: "#5EEAD4",
+    borderColor: "#2DD4BF50",
+  },
+};
+
+const SUPPLIER_LINK_BADGE_META = {
+  linked_duplicate: {
+    compactLabel: "Linked Dup",
+    label: "Linked Duplicate",
+    background: "rgba(250,204,21,0.12)",
+    color: "#FDE047",
+    borderColor: "#FACC1550",
+  },
+  supplier_grade_variant: {
+    compactLabel: "Grade Var",
+    label: "Supplier Grade Variant",
+    background: "rgba(125,211,252,0.12)",
+    color: "#7DD3FC",
+    borderColor: "#38BDF850",
+  },
+  cross_wired_listing: {
+    compactLabel: "Link Mismatch",
+    label: "Cross-Wired Listing",
+    background: "rgba(251,191,36,0.12)",
+    color: "#FBBF24",
+    borderColor: "#F59E0B50",
+  },
+  dead_url: {
+    compactLabel: "Dead URL",
+    label: "Dead URL",
+    background: "rgba(248,113,113,0.14)",
+    color: "#FCA5A5",
+    borderColor: "#EF444450",
+  },
+  accord_listing: {
+    compactLabel: "Accord",
+    label: "Accord Listing",
+    background: "rgba(45,212,191,0.12)",
+    color: "#5EEAD4",
+    borderColor: "#2DD4BF50",
+  },
+};
+
+const CATALOG_NORMALIZATION_FILTER_OPTIONS = [
+  ["all", "All Rows"],
+  ["canonical_material", "Canonical"],
+  ["diluted_stock", "Diluted"],
+  ["accord", "Accords"],
+  ["linked_duplicate", "Linked Dups"],
+];
+
+function recordHasSupplierLinkStatus(record, status) {
+  return Object.values(record?.supplierLinkMetadata || {}).some(
+    (metadata) => metadata?.status === status
+  );
+}
+
+function isLinkedDuplicateCatalogRecord(record) {
+  return (
+    Boolean(record?.linkedDuplicateOfCatalogName) ||
+    recordHasSupplierLinkStatus(record, "linked_duplicate")
+  );
+}
+
+function matchesCatalogNormalizationFilter(record, filterValue) {
+  if (filterValue === "all") return true;
+  if (filterValue === "linked_duplicate") {
+    return isLinkedDuplicateCatalogRecord(record);
+  }
+  return record?.entryKind === filterValue;
+}
+
+function getNormalizationGroupKey(name, record = DB[name]) {
+  return (
+    record?.canonicalMaterialKey || record?.linkedDuplicateOfCatalogName || name
+  );
+}
+
+function buildIngredientSearchText(name, record = DB[name]) {
+  const parts = [
+    name,
+    record?.scentClass,
+    record?.scentSummary,
+    record?.entryKind,
+    record?.entryKind
+      ? NORMALIZATION_ENTRY_KIND_LABELS[record.entryKind] || record.entryKind
+      : null,
+    record?.canonicalMaterialKey,
+    record?.linkedDuplicateOfCatalogName,
+  ];
+
+  if (isLinkedDuplicateCatalogRecord(record)) {
+    parts.push("linked duplicate", "duplicate");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "supplier_grade_variant")) {
+    parts.push("supplier grade variant");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "cross_wired_listing")) {
+    parts.push("cross wired listing", "link mismatch");
+  }
+
+  if (recordHasSupplierLinkStatus(record, "dead_url")) {
+    parts.push("dead url");
+  }
+
+  return parts.filter(Boolean).join(" ").toLowerCase();
+}
+
+function matchesIngredientSearch(name, query, record = DB[name]) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+  return buildIngredientSearchText(name, record).includes(normalizedQuery);
+}
+
+function getNormalizationAwarePickerResult(
+  candidateNames,
+  { query = "", excludeNames = [] } = {}
+) {
+  const normalizedQuery = query.trim().toLowerCase();
+  const excludedNames = new Set(excludeNames);
+  const candidates = candidateNames.filter((name) => {
+    if (excludedNames.has(name)) return false;
+    return matchesIngredientSearch(name, normalizedQuery);
+  });
+
+  const primaryGroupKeys = new Set(
+    candidates
+      .filter((name) => !isLinkedDuplicateCatalogRecord(DB[name]))
+      .map((name) => getNormalizationGroupKey(name))
+  );
+
+  const names = candidates.filter((name) => {
+    const record = DB[name];
+    if (!isLinkedDuplicateCatalogRecord(record)) return true;
+
+    const exactNameMatch =
+      normalizedQuery && name.toLowerCase() === normalizedQuery;
+    if (exactNameMatch) return true;
+
+    return !primaryGroupKeys.has(getNormalizationGroupKey(name, record));
+  });
+
+  const visibleNames = new Set(names);
+  const hiddenLinkedDuplicateCount = candidates.filter(
+    (name) =>
+      !visibleNames.has(name) && isLinkedDuplicateCatalogRecord(DB[name])
+  ).length;
+
+  return { names, hiddenLinkedDuplicateCount };
+}
+
+function getIngredientCatalogMetadata(name) {
+  const d = DB[name];
+  if (!d) {
+    return {
+      entryKindLabel: null,
+      canonicalMaterialKey: null,
+      linkedDuplicateOfCatalogName: null,
+      rowBadges: [],
+    };
+  }
+
+  const rowBadges = [];
+
+  if (d.entryKind === "diluted_stock") {
+    rowBadges.push({
+      key: "diluted_stock",
+      title: d.canonicalMaterialKey
+        ? `Diluted stock mapped to canonical material key "${d.canonicalMaterialKey}".`
+        : "Diluted stock row.",
+      ...NORMALIZATION_BADGE_META.diluted_stock,
+    });
+  }
+
+  if (d.linkedDuplicateOfCatalogName) {
+    rowBadges.push({
+      key: "linked_duplicate",
+      title: `Linked duplicate of catalog row "${d.linkedDuplicateOfCatalogName}".`,
+      ...NORMALIZATION_BADGE_META.linked_duplicate,
+    });
+  }
+
+  if (d.entryKind === "supplier_product" && !d.linkedDuplicateOfCatalogName) {
+    rowBadges.push({
+      key: "supplier_product",
+      title: d.canonicalMaterialKey
+        ? `Supplier-product row mapped to canonical material key "${d.canonicalMaterialKey}".`
+        : "Supplier-product row.",
+      ...NORMALIZATION_BADGE_META.supplier_product,
+    });
+  }
+
+  if (d.entryKind === "accord") {
+    rowBadges.push({
+      key: "accord",
+      title: "Accord or branded composition row.",
+      ...NORMALIZATION_BADGE_META.accord,
+    });
+  }
+
+  return {
+    entryKindLabel: d.entryKind ? NORMALIZATION_ENTRY_KIND_LABELS[d.entryKind] || d.entryKind : null,
+    canonicalMaterialKey: d.canonicalMaterialKey || null,
+    linkedDuplicateOfCatalogName: d.linkedDuplicateOfCatalogName || null,
+    rowBadges,
+  };
+}
+
 function getIngredientIfraData(name) {
   const resolvedIdentity = resolveIngredientIdentity(name);
   const material = getIfraMaterialRecord(name);
@@ -31422,6 +31765,30 @@ function getIngredientIfraData(name) {
   };
 }
 
+function MetadataBadge({ badge, compact = false, style = {} }) {
+  if (!badge) return null;
+  const label = compact ? badge.compactLabel || badge.label : badge.label;
+  if (!label) return null;
+
+  return (
+    <span
+      title={badge.title || undefined}
+      style={{
+        background: badge.background,
+        color: badge.color,
+        border: `1px solid ${badge.borderColor}`,
+        borderRadius: compact ? 10 : 20,
+        padding: compact ? "1px 7px" : "3px 10px",
+        fontSize: compact ? 8.5 : 10,
+        fontWeight: 700,
+        ...style,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 function IfraStateBadge({ ifraData, compact = false, style = {} }) {
   if (!ifraData?.badgeStyle) return null;
   const label = compact ? ifraData.badgeLabel : ifraData.stateLabel;
@@ -31443,6 +31810,56 @@ function IfraStateBadge({ ifraData, compact = false, style = {} }) {
     >
       {label}
     </span>
+  );
+}
+
+function CatalogMetadataBadges({ name, compact = false, style = {} }) {
+  const metadata = getIngredientCatalogMetadata(name);
+  if (!metadata.rowBadges.length) return null;
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        gap: 4,
+        flexWrap: "wrap",
+        alignItems: "center",
+        ...style,
+      }}
+    >
+      {metadata.rowBadges.map((badge) => (
+        <MetadataBadge key={badge.key} badge={badge} compact={compact} />
+      ))}
+    </span>
+  );
+}
+
+function SupplierLinkStatusBadge({
+  linkStatus,
+  linkNote,
+  linkedDuplicateOfCatalogName,
+  compact = true,
+  style = {},
+}) {
+  if (!linkStatus || linkStatus === "primary_listing") return null;
+  const meta = SUPPLIER_LINK_BADGE_META[linkStatus];
+  if (!meta) return null;
+
+  const titleParts = [];
+  if (linkedDuplicateOfCatalogName) {
+    titleParts.push(`Linked duplicate of "${linkedDuplicateOfCatalogName}".`);
+  }
+  if (linkNote) titleParts.push(linkNote);
+
+  return (
+    <MetadataBadge
+      badge={{
+        ...meta,
+        title: titleParts.join(" "),
+      }}
+      compact={compact}
+      style={style}
+    />
   );
 }
 
@@ -53697,6 +54114,24 @@ function totalCost(buildItems) {
   });
   return cost;
 }
+Object.entries(PRICING).forEach(([name, supplierEntries]) => {
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  if (!normalizationEntry?.supplierLinks) return;
+
+  Object.entries(supplierEntries || {}).forEach(([supplierName, supplierData]) => {
+    const supplierLinkMetadata = normalizationEntry.supplierLinks[supplierName];
+    if (!supplierLinkMetadata || !supplierData || typeof supplierData !== "object") {
+      return;
+    }
+
+    supplierData.linkStatus = supplierLinkMetadata.status || null;
+    supplierData.linkNote = supplierLinkMetadata.note || null;
+    supplierData.linkedDuplicateOfCatalogName =
+      supplierLinkMetadata.duplicateOfCatalogName ||
+      normalizationEntry.linkedDuplicateOfCatalogName ||
+      null;
+  });
+});
 
 // ─────────────────────────────────────────────────────────────
 // LONGEVITY / SILLAGE / PROJECTION SCORING
@@ -54046,8 +54481,28 @@ function IngredientDetailPanel({ name, onClose }) {
   if (!d) return null;
   const nc = NC[d.note] || NC.carrier;
   const ifraData = getIngredientIfraData(name);
+  const catalogMetadata = getIngredientCatalogMetadata(name);
   const cat4LimitText =
     ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
+  const identityRows = [
+    ["CAS", d.cas],
+    ["INCI", d.inci],
+    ["Rep. Odorant", d.rep],
+    ["IFRA State", ifraData.stateLabel],
+    ["Cat 4 Limit", cat4LimitText],
+  ];
+  if (catalogMetadata.entryKindLabel) {
+    identityRows.push(["Catalog Entry", catalogMetadata.entryKindLabel]);
+  }
+  if (catalogMetadata.canonicalMaterialKey) {
+    identityRows.push(["Canonical Key", catalogMetadata.canonicalMaterialKey]);
+  }
+  if (catalogMetadata.linkedDuplicateOfCatalogName) {
+    identityRows.push([
+      "Linked Duplicate Of",
+      catalogMetadata.linkedDuplicateOfCatalogName,
+    ]);
+  }
   return (
     <div
       style={{
@@ -54106,6 +54561,7 @@ function IngredientDetailPanel({ name, onClose }) {
                 {d.note?.toUpperCase()} · {d.type}
               </span>
               <IfraStateBadge ifraData={ifraData} />
+              <CatalogMetadataBadges name={name} compact />
             </div>
             <h2
               style={{
@@ -54127,6 +54583,18 @@ function IngredientDetailPanel({ name, onClose }) {
             >
               {d.scentClass} · {d.scentSummary}
             </p>
+            {catalogMetadata.canonicalMaterialKey && (
+              <p
+                style={{
+                  fontSize: 10,
+                  color: "#64748B",
+                  margin: "5px 0 0",
+                  fontFamily: "monospace",
+                }}
+              >
+                canonicalMaterialKey: {catalogMetadata.canonicalMaterialKey}
+              </p>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -54184,13 +54652,7 @@ function IngredientDetailPanel({ name, onClose }) {
             >
               Identity
             </p>
-            {[
-              ["CAS", d.cas],
-              ["INCI", d.inci],
-              ["Rep. Odorant", d.rep],
-              ["IFRA State", ifraData.stateLabel],
-              ["Cat 4 Limit", cat4LimitText],
-            ].map(([l, v]) => (
+            {identityRows.map(([l, v]) => (
               <div
                 key={l}
                 style={{
@@ -54273,71 +54735,113 @@ function IngredientDetailPanel({ name, onClose }) {
               Supplier Pricing
             </p>
             <div style={{ display: "grid", gap: 8 }}>
-              {Object.entries(p).map(([sup, { url, S }]) => (
-                <div
-                  key={sup}
-                  style={{
-                    background: "#060E1E",
-                    borderRadius: 8,
-                    padding: "10px 14px",
-                    border: `1px solid ${BORDER}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    flexWrap: "wrap",
-                    gap: 8,
-                  }}
-                >
-                  <div>
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: SUPPLIER_COLORS[sup] || "#fff",
-                      }}
-                    >
-                      {sup}
-                    </span>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        fontSize: 9,
-                        color: "#475569",
-                        marginLeft: 8,
-                        textDecoration: "none",
-                      }}
-                    >
-                      ↗ Visit
-                    </a>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {S.map(([qty, unit, price], i) => (
-                      <span
-                        key={i}
+              {Object.entries(p).map(([sup, supplierData]) => {
+                const {
+                  url,
+                  S,
+                  linkStatus,
+                  linkNote,
+                  linkedDuplicateOfCatalogName,
+                } = supplierData;
+                const supplierLinkSummary =
+                  linkStatus && linkStatus !== "primary_listing"
+                    ? linkNote ||
+                      (linkedDuplicateOfCatalogName
+                        ? `Linked duplicate of ${linkedDuplicateOfCatalogName}.`
+                        : null)
+                    : null;
+                return (
+                  <div
+                    key={sup}
+                    style={{
+                      background: "#060E1E",
+                      borderRadius: 8,
+                      padding: "10px 14px",
+                      border: `1px solid ${BORDER}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 220px" }}>
+                      <div
                         style={{
-                          background: CARD,
-                          border: `1px solid ${BORDER}`,
-                          borderRadius: 6,
-                          padding: "4px 10px",
-                          fontSize: 11,
-                          color: "#E2E8F0",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          flexWrap: "wrap",
                         }}
                       >
-                        <span style={{ color: ACC, fontWeight: 700 }}>
-                          {qty}
-                          {unit}
-                        </span>{" "}
-                        ·{" "}
-                        <span style={{ color: "#34D399" }}>
-                          ${price.toFixed(2)}
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: SUPPLIER_COLORS[sup] || "#fff",
+                          }}
+                        >
+                          {sup}
                         </span>
-                      </span>
-                    ))}
+                        <SupplierLinkStatusBadge
+                          linkStatus={linkStatus}
+                          linkNote={linkNote}
+                          linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
+                        />
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontSize: 9,
+                            color: "#475569",
+                            textDecoration: "none",
+                          }}
+                        >
+                          ↗ Visit
+                        </a>
+                      </div>
+                      {supplierLinkSummary && (
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "#64748B",
+                            marginTop: 4,
+                            lineHeight: 1.4,
+                            maxWidth: 360,
+                          }}
+                        >
+                          {supplierLinkSummary}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {S.map(([qty, unit, price], i) => (
+                        <span
+                          key={i}
+                          style={{
+                            background: CARD,
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            fontSize: 11,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          <span style={{ color: ACC, fontWeight: 700 }}>
+                            {qty}
+                            {unit}
+                          </span>{" "}
+                          ·{" "}
+                          <span style={{ color: "#34D399" }}>
+                            ${price.toFixed(2)}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -54400,6 +54904,8 @@ export default function App() {
   const [catSupplier, setCatSupplier] = useState("All");
   const [catType, setCatType] = useState("All");
   const [catNote, setCatNote] = useState("All");
+  const [catNormalization, setCatNormalization] = useState("all");
+  const [hideLinkedDuplicates, setHideLinkedDuplicates] = useState(false);
   const [detailName, setDetailName] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState({});
   const [refreshLoading, setRefreshLoading] = useState({});
@@ -54502,17 +55008,11 @@ export default function App() {
   const allIngredients = Object.keys(DB);
 
   // Filtered catalog
-  const filteredCat = useMemo(
+  const baseFilteredCat = useMemo(
     () =>
       allIngredients.filter((n) => {
         const d = DB[n];
-        if (
-          catSearch &&
-          !n.toLowerCase().includes(catSearch.toLowerCase()) &&
-          !d.scentClass?.toLowerCase().includes(catSearch.toLowerCase()) &&
-          !d.scentSummary?.toLowerCase().includes(catSearch.toLowerCase())
-        )
-          return false;
+        if (!matchesIngredientSearch(n, catSearch, d)) return false;
         if (
           catSupplier !== "All" &&
           d.supplier !== catSupplier &&
@@ -54521,26 +55021,77 @@ export default function App() {
           return false;
         if (catType !== "All" && d.type !== catType) return false;
         if (catNote !== "All" && d.note !== catNote) return false;
+        if (!matchesCatalogNormalizationFilter(d, catNormalization)) return false;
         return true;
       }),
-    [catSearch, catSupplier, catType, catNote, allIngredients]
+    [catSearch, catSupplier, catType, catNote, catNormalization, allIngredients]
+  );
+  const hiddenLinkedDuplicateCount = useMemo(() => {
+    if (!hideLinkedDuplicates || catNormalization === "linked_duplicate") {
+      return 0;
+    }
+    return baseFilteredCat.filter((name) =>
+      isLinkedDuplicateCatalogRecord(DB[name])
+    ).length;
+  }, [baseFilteredCat, catNormalization, hideLinkedDuplicates]);
+  const filteredCat = useMemo(
+    () =>
+      !hideLinkedDuplicates || catNormalization === "linked_duplicate"
+        ? baseFilteredCat
+        : baseFilteredCat.filter(
+            (name) => !isLinkedDuplicateCatalogRecord(DB[name])
+          ),
+    [baseFilteredCat, catNormalization, hideLinkedDuplicates]
   );
 
   // Build search results
-  const buildResults = useMemo(
+  const buildSearchResultState = useMemo(
     () =>
       buildSearch.length < 2
-        ? []
-        : allIngredients
-            .filter(
-              (n) =>
-                n.toLowerCase().includes(buildSearch.toLowerCase()) ||
-                DB[n].scentSummary
-                  ?.toLowerCase()
-                  .includes(buildSearch.toLowerCase())
-            )
-            .slice(0, 8),
+        ? { names: [], hiddenLinkedDuplicateCount: 0 }
+        : (() => {
+            const result = getNormalizationAwarePickerResult(allIngredients, {
+              query: buildSearch,
+            });
+            return {
+              names: result.names.slice(0, 8),
+              hiddenLinkedDuplicateCount: result.hiddenLinkedDuplicateCount,
+            };
+          })(),
     [buildSearch, allIngredients]
+  );
+  const buildResults = buildSearchResultState.names;
+  const buildSearchHiddenLinkedDuplicateCount =
+    buildSearchResultState.hiddenLinkedDuplicateCount;
+
+  const formulaEditSearchState = useMemo(
+    () =>
+      ingSearchQuery.length < 1
+        ? { names: [], hiddenLinkedDuplicateCount: 0 }
+        : (() => {
+            const result = getNormalizationAwarePickerResult(allIngredients, {
+              query: ingSearchQuery,
+              excludeNames: formula.ingredients.map((x) => x.name),
+            });
+            return {
+              names: result.names.slice(0, 12),
+              hiddenLinkedDuplicateCount: result.hiddenLinkedDuplicateCount,
+            };
+          })(),
+    [allIngredients, formula.ingredients, ingSearchQuery]
+  );
+
+  const buildPaletteGroups = useMemo(
+    () =>
+      Object.fromEntries(
+        ["top", "mid", "base", "carrier"].map((noteKey) => [
+          noteKey,
+          getNormalizationAwarePickerResult(
+            allIngredients.filter((n) => DB[n].note === noteKey)
+          ),
+        ])
+      ),
+    [allIngredients]
   );
 
   const addToBuild = (name) => {
@@ -56074,20 +56625,22 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                     padding: "4px 6px",
                                     fontWeight: 600,
                                     color: "#E2E8F0",
-                                    whiteSpace: "nowrap",
                                     cursor: "pointer",
                                   }}
                                   onClick={() => setDetailName(ing.name)}
                                 >
-                                  {ing.name}
-                                  <IfraStateBadge
-                                    ifraData={ifraData}
-                                    compact
+                                  <div
                                     style={{
-                                      marginLeft: 6,
-                                      verticalAlign: "middle",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                      flexWrap: "wrap",
                                     }}
-                                  />
+                                  >
+                                    <span>{ing.name}</span>
+                                    <IfraStateBadge ifraData={ifraData} compact />
+                                    <CatalogMetadataBadges name={ing.name} compact />
+                                  </div>
                                 </td>
                                 <td
                                   style={{
@@ -56896,16 +57449,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           {ingSearchOpen &&
                             ingSearchQuery.length >= 1 &&
                             (() => {
-                              const q = ingSearchQuery.toLowerCase();
-                              const matches = Object.keys(DB)
-                                .filter(
-                                  (n) =>
-                                    n.toLowerCase().includes(q) &&
-                                    !formula.ingredients.some(
-                                      (x) => x.name === n
-                                    )
-                                )
-                                .slice(0, 12);
+                              const matches = formulaEditSearchState.names;
                               return matches.length > 0 ? (
                                 <div
                                   style={{
@@ -56997,9 +57541,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                             style={{
                                               fontSize: 8,
                                               color: "#475569",
+                                              display: "flex",
+                                              gap: 4,
+                                              flexWrap: "wrap",
+                                              alignItems: "center",
                                             }}
                                           >
-                                            {d?.scentClass} · {d?.type || ""}
+                                            <span>
+                                              {d?.scentClass} · {d?.type || ""}
+                                            </span>
+                                            <CatalogMetadataBadges
+                                              name={nm}
+                                              compact
+                                            />
                                           </div>
                                         </div>
                                         <span
@@ -57018,6 +57572,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       </div>
                                     );
                                   })}
+                                  {formulaEditSearchState.hiddenLinkedDuplicateCount >
+                                    0 && (
+                                    <div
+                                      style={{
+                                        padding: "6px 12px",
+                                        fontSize: 8,
+                                        color: "#475569",
+                                      }}
+                                    >
+                                      Linked duplicates merged into primary rows
+                                      where available.
+                                    </div>
+                                  )}
                                 </div>
                               ) : null;
                             })()}
@@ -57553,6 +58120,18 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       gap: 4,
                     }}
                   >
+                    {buildSearchHiddenLinkedDuplicateCount > 0 && (
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#475569",
+                          padding: "0 2px 2px",
+                        }}
+                      >
+                        Linked duplicates merged into primary rows where
+                        available.
+                      </div>
+                    )}
                     {buildResults.map((name) => {
                       const d = DB[name];
                       const nc = NC[d?.note] || NC.carrier;
@@ -57593,8 +58172,20 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             >
                               {name}
                             </div>
-                            <div style={{ fontSize: 9, color: "#475569" }}>
-                              {d?.scentSummary?.slice(0, 50) || ""}…
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#475569",
+                                display: "flex",
+                                gap: 4,
+                                flexWrap: "wrap",
+                                alignItems: "center",
+                              }}
+                            >
+                              <span>
+                                {d?.scentSummary?.slice(0, 50) || ""}…
+                              </span>
+                              <CatalogMetadataBadges name={name} compact />
                             </div>
                           </div>
                           <span
@@ -57622,9 +58213,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       ["base", "🔵 Base Notes"],
                       ["carrier", "⚪ Carriers"],
                     ].map(([noteKey, label]) => {
-                      const ings = allIngredients.filter(
-                        (n) => DB[n].note === noteKey
-                      );
+                      const ings = buildPaletteGroups[noteKey]?.names || [];
                       const isOpen = buildPaletteOpen === noteKey;
                       return (
                         <div key={noteKey} style={{ marginBottom: 4 }}>
@@ -57721,12 +58310,25 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                         style={{
                                           fontSize: 8,
                                           color: "#334155",
-                                          whiteSpace: "nowrap",
-                                          overflow: "hidden",
-                                          textOverflow: "ellipsis",
+                                          display: "flex",
+                                          gap: 4,
+                                          flexWrap: "wrap",
+                                          alignItems: "center",
                                         }}
                                       >
-                                        {d?.scentSummary?.slice(0, 42)}
+                                        <span
+                                          style={{
+                                            whiteSpace: "nowrap",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                          }}
+                                        >
+                                          {d?.scentSummary?.slice(0, 42)}
+                                        </span>
+                                        <CatalogMetadataBadges
+                                          name={name}
+                                          compact
+                                        />
                                       </div>
                                     </div>
                                     <span
@@ -58582,6 +59184,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   setCatNote,
                   "Note",
                 ],
+                [
+                  "catNormalization",
+                  CATALOG_NORMALIZATION_FILTER_OPTIONS,
+                  catNormalization,
+                  setCatNormalization,
+                  "Catalog Meta",
+                ],
               ].map(([id, opts, val, setter, label]) => (
                 <select
                   key={id}
@@ -58598,14 +59207,55 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   }}
                 >
                   {opts.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
+                    <option
+                      key={Array.isArray(o) ? o[0] : o}
+                      value={Array.isArray(o) ? o[0] : o}
+                    >
+                      {Array.isArray(o) ? o[1] : o}
                     </option>
                   ))}
                 </select>
               ))}
+              <label
+                title={
+                  catNormalization === "linked_duplicate"
+                    ? "Hide linked duplicates is disabled while filtering linked-duplicate rows."
+                    : "Hide rows marked as linked duplicates from the catalog grid."
+                }
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 10,
+                  color:
+                    catNormalization === "linked_duplicate"
+                      ? "#475569"
+                      : "#94A3B8",
+                  whiteSpace: "nowrap",
+                  cursor:
+                    catNormalization === "linked_duplicate"
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={
+                    catNormalization === "linked_duplicate"
+                      ? false
+                      : hideLinkedDuplicates
+                  }
+                  disabled={catNormalization === "linked_duplicate"}
+                  onChange={(e) => setHideLinkedDuplicates(e.target.checked)}
+                  style={{ accentColor: "#22D3EE" }}
+                />
+                Hide linked dupes
+              </label>
               <span style={{ fontSize: 10, color: "#475569" }}>
                 {filteredCat.length} ingredients
+                {hiddenLinkedDuplicateCount > 0
+                  ? ` · ${hiddenLinkedDuplicateCount} linked dupes hidden`
+                  : ""}
               </span>
             </div>
 
@@ -58686,6 +59336,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             {TB[d.type]} {d.type}
                           </span>
                           <IfraStateBadge ifraData={ifraData} compact />
+                          <CatalogMetadataBadges name={name} compact />
                         </div>
                         <div
                           style={{

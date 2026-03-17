@@ -1,5 +1,8 @@
+import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
+import materialNormalization from "../data/material_normalization.json" with { type: "json" };
+
 // Starter IFRA combined package for Beach Box app integration
-export const IFRA_MASTER_MATERIALS = {
+const IFRA_SUPPLEMENTAL_MATERIALS = {
   "benzyl benzoate": {
     canonicalName: "Benzyl benzoate",
     cas: ["120-51-4"],
@@ -373,6 +376,56 @@ export const IFRA_MASTER_MATERIALS = {
     notes: [
       "No matching IFRA standard was located in the uploaded PDF during this pass.",
       "Maps diluted vanilla CO2 stock names to a canonical helper identity so stock active-percent handling can apply when IFRA limits are added later.",
+    ],
+  },
+  "tolu balsam resinoid": {
+    canonicalName: "Tolu Balsam Resinoid",
+    cas: [],
+    synonyms: ["tolu balsam resinoid", "tolu balsam"],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+    ],
+  },
+  "poplar bud absolute": {
+    canonicalName: "Poplar Bud Absolute",
+    cas: [],
+    synonyms: ["poplar bud absolute", "poplar buds absolute", "poplar bud"],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
     ],
   },
   "agarwood oil": {
@@ -968,6 +1021,199 @@ export const IFRA_MASTER_MATERIALS = {
       "No structured IFRA standard has been promoted into the helper dataset yet.",
     ],
   },
+};
+
+export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
+export const MATERIAL_NORMALIZATION = materialNormalization;
+const CANONICAL_ENTRY_NAME_BY_KEY = Object.fromEntries(
+  Object.entries(MATERIAL_NORMALIZATION)
+    .filter(
+      ([, entry]) =>
+        entry?.entryKind === "canonical_material" && entry?.canonicalMaterialKey
+    )
+    .map(([name, entry]) => [entry.canonicalMaterialKey, name])
+);
+
+export function getMaterialNormalizationEntry(name) {
+  return MATERIAL_NORMALIZATION[name] || null;
+}
+
+export function getCanonicalCatalogName(name) {
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const canonicalMaterialKey = normalizationEntry?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return null;
+
+  const canonicalName = CANONICAL_ENTRY_NAME_BY_KEY[canonicalMaterialKey] || null;
+  return canonicalName && canonicalName !== name ? canonicalName : null;
+}
+
+const CANONICAL_MATERIAL_SOURCE_DATA = {
+  labdanum_absolute: {
+    canonicalMaterialKey: "labdanum_absolute",
+    canonicalName: "Labdanum Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "8016-26-0",
+    inci: "Cistus Ladaniferus Resin Extract",
+    scentClass: "Oriental",
+    scentSummary: "Resinous amber leathery Mediterranean",
+    rep: "Labdanolic Acid",
+    isUVCB: true,
+    descriptorTags: ["Resinous", "Amber", "Leather"],
+  },
+  vanilla_co2: {
+    canonicalMaterialKey: "vanilla_co2",
+    canonicalName: "Vanilla CO2",
+    note: "mid",
+    type: "CO2",
+    cas: "8024-06-4",
+    inci: "Vanilla Planifolia Fruit CO2 Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Smooth, natural warm vanilla CO2",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "CO2"],
+  },
+  tolu_balsam_resinoid: {
+    canonicalMaterialKey: "tolu_balsam_resinoid",
+    canonicalName: "Tolu Balsam Resinoid",
+    note: "base",
+    type: "ABS",
+    scentClass: "Amber",
+    scentSummary: "Tolu balsam resinoid",
+    scentDesc:
+      "Canonical helper source seed for tolu balsam resinoid. Detailed source-backed chemistry has not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid"],
+  },
+  poplar_bud_absolute: {
+    canonicalMaterialKey: "poplar_bud_absolute",
+    canonicalName: "Poplar Bud Absolute",
+    note: "mid",
+    type: "ABS",
+    scentClass: "Aromatic",
+    scentSummary: "Poplar bud absolute",
+    scentDesc:
+      "Canonical helper source seed for poplar bud absolute. Detailed source-backed chemistry has not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Aromatic", "Balsamic"],
+  },
+};
+
+export function getCanonicalMaterialSource(canonicalMaterialKey) {
+  const source = CANONICAL_MATERIAL_SOURCE_DATA[canonicalMaterialKey];
+  if (!source) return null;
+
+  return {
+    ...source,
+    descriptorTags: Array.isArray(source.descriptorTags)
+      ? [...source.descriptorTags]
+      : source.descriptorTags,
+  };
+}
+
+function buildStandardPageList(pageReference) {
+  const start = pageReference?.standard_page_start;
+  const end = pageReference?.standard_page_end;
+  if (!Number.isInteger(start) || !Number.isInteger(end) || end < start) {
+    return [];
+  }
+
+  const pages = [];
+  for (let page = start; page <= end; page += 1) {
+    pages.push(page);
+  }
+  return pages;
+}
+
+function buildRuntimeLimits(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits).map(([category, limit]) => [
+      category,
+      limit?.kind === "limit" ? limit.value : null,
+    ])
+  );
+}
+
+function buildRuntimeLimitKinds(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits).map(([category, limit]) => [
+      category,
+      limit?.kind || null,
+    ])
+  );
+}
+
+function buildRuntimeMaterialRecord(standard) {
+  return {
+    canonicalName: standard.canonical_name,
+    cas: standard.cas_numbers || [],
+    synonyms: (standard.synonyms || []).filter(
+      (synonym) => synonym && synonym !== "Not applicable."
+    ),
+    recommendationType: standard.standard_type
+      ? standard.standard_type.toLowerCase()
+      : null,
+    recommendationTypes: standard.standard_types || [],
+    status: standard.status || "active",
+    publicationYear: standard.publication_year ?? null,
+    amendment: standard.amendment ?? null,
+    implementationDates: {
+      newCreation: standard.implementation_dates?.new_creation ?? null,
+      existingCreation: standard.implementation_dates?.existing_creation ?? null,
+    },
+    limits: buildRuntimeLimits(standard.category_limits),
+    limitKinds: buildRuntimeLimitKinds(standard.category_limits),
+    limitUnit: "%",
+    source: {
+      document:
+        standard.source_document ||
+        ifraMasterDataset.metadata?.source_document ||
+        "IFRA - 51st Amendment.pdf",
+      pages: buildStandardPageList(standard.page_reference),
+    },
+    notes: standard.cas_notes || [],
+  };
+}
+
+const IFRA_MASTER_DATASET_MATERIALS = Object.fromEntries(
+  (ifraMasterDataset.standards || []).map((standard) => [
+    standard.lookup_key,
+    buildRuntimeMaterialRecord(standard),
+  ])
+);
+
+const IFRA_MASTER_DATASET_ALIAS_MAP = {
+  "hexyl cinnamic aldehyde": "alpha-hexyl cinnamic aldehyde",
+  "oakmoss absolute": "oakmoss extracts",
+  "jasmine sambac absolute": "jasmine absolute (sambac)",
+  "ylang ylang extra absolute": "ylang ylang extracts",
+  "peru balsam oil": "peru balsam",
+};
+
+const IFRA_MASTER_DATASET_ALIAS_MATERIALS = Object.fromEntries(
+  Object.entries(IFRA_MASTER_DATASET_ALIAS_MAP)
+    .map(([aliasKey, datasetKey]) => {
+      const material = IFRA_MASTER_DATASET_MATERIALS[datasetKey];
+      if (!material) return null;
+      return [
+        aliasKey,
+        {
+          ...material,
+          notes: [
+            ...(material.notes || []),
+            `Runtime compatibility alias for extracted master key "${datasetKey}".`,
+          ],
+        },
+      ];
+    })
+    .filter(Boolean)
+);
+
+export const IFRA_MASTER_MATERIALS = {
+  ...IFRA_SUPPLEMENTAL_MATERIALS,
+  ...IFRA_MASTER_DATASET_MATERIALS,
+  ...IFRA_MASTER_DATASET_ALIAS_MATERIALS,
 };
 
 export const INGREDIENT_IDENTITY_MAP = {
@@ -2420,7 +2666,7 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-export function resolveIngredientIdentity(name) {
+function resolveIngredientIdentityDirect(name) {
   const direct = INGREDIENT_IDENTITY_MAP[name];
   if (direct) return direct;
 
@@ -2435,6 +2681,25 @@ export function resolveIngredientIdentity(name) {
       return record;
   }
   return null;
+}
+
+export function resolveIngredientIdentity(name) {
+  const direct = resolveIngredientIdentityDirect(name);
+  if (direct) return direct;
+
+  const canonicalName = getCanonicalCatalogName(name);
+  if (!canonicalName) return null;
+
+  const inherited = resolveIngredientIdentityDirect(canonicalName);
+  if (!inherited) return null;
+
+  return {
+    ...inherited,
+    inheritedViaCanonicalMaterialKey: true,
+    inheritedFromCatalogName: canonicalName,
+    sourceCatalogName: name,
+    normalizationEntry: getMaterialNormalizationEntry(name),
+  };
 }
 
 export function getIfraMaterialRecord(name) {

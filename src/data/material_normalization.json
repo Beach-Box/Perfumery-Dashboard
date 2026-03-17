@@ -1,0 +1,292 @@
+{
+  "Balsam Peru EO": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "peru_balsam_oil",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "dead_url",
+        "note": "Historical pricing metadata retained for reference; the Eden Botanicals Peru Balsam URL appears inactive."
+      },
+      "Fraterworks": {
+        "status": "primary_listing"
+      }
+    }
+  },
+  "Peru Balsam Essential Oil": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "peru_balsam_oil",
+    "linkedDuplicateOfCatalogName": "Balsam Peru EO",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "linked_duplicate",
+        "duplicateOfCatalogName": "Balsam Peru EO",
+        "note": "Duplicates the Fraterworks Peru Balsam product link already carried on Balsam Peru EO."
+      }
+    }
+  },
+  "Peru Balsam “Signature” Resinoid": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "peru_balsam_resinoid",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Vendor-branded Peru balsam resinoid listing; preserved separately from the Peru balsam oil row."
+      }
+    }
+  },
+  "Labdanum Absolute 10%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "labdanum_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for the 10% labdanum absolute stock."
+      },
+      "Fraterworks": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a full/premium labdanum absolute listing rather than a 10% stock."
+      }
+    }
+  },
+  "Labdanum Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "labdanum_absolute"
+  },
+  "Benzoin Siam Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "benzoin_siam_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for benzoin Siam absolute."
+      },
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Supplier URL is a benzoin-siam-resinoid-50-tec product, so it is preserved as a related supplier variant rather than a clean absolute listing."
+      }
+    }
+  },
+  "Benzoin Siam “Signature” Tincture 20%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "benzoin_siam_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for the vendor-branded 20% benzoin Siam tincture stock."
+      }
+    }
+  },
+  "Tolu Balsam Resinoid 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "tolu_balsam_resinoid",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Diluted vendor-grade tolu balsam resinoid row preserved under a generic resinoid supplier page that does not explicitly call out the 50% TEC stock form."
+      }
+    }
+  },
+  "Tolu Balsam Resinoid": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "tolu_balsam_resinoid"
+  },
+  "Poplar Bud Absolute 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "poplar_bud_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Diluted vendor-grade poplar bud absolute row preserved under a generic poplar-bud-absolute supplier page that does not explicitly call out the 50% TEC stock form."
+      }
+    }
+  },
+  "Poplar Bud Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "poplar_bud_absolute"
+  },
+  "Ylang Ylang Extra Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Primary Eden Botanicals listing for the extra grade ylang row."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Primary Fraterworks extra-oil listing; the same supplier URL is also carried by Ylang-Ylang Extra Oil, Comoros."
+      }
+    }
+  },
+  "Ylang-Ylang Extra Oil, Comoros": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
+    "linkedDuplicateOfCatalogName": "Ylang Ylang Extra Absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "linked_duplicate",
+        "duplicateOfCatalogName": "Ylang Ylang Extra Absolute",
+        "note": "Duplicates the Fraterworks extra-oil URL and pricing already present on Ylang Ylang Extra Absolute."
+      }
+    }
+  },
+  "Ylang-Ylang Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_absolute",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang absolute supplier listing."
+      }
+    }
+  },
+  "Ylang-Ylang III Oil, Org": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_iii_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang grade III supplier listing."
+      }
+    }
+  },
+  "Ylang-Ylang Complete Oil": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_complete_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct ylang complete supplier listing."
+      }
+    }
+  },
+  "Ylang-Ylang Extra Superior Oil, Org": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_oil",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Vendor-specific superior/extra grade variant; preserved separately and not treated as an exact duplicate."
+      }
+    }
+  },
+  "Ylang Impériale": {
+    "entryKind": "accord",
+    "canonicalMaterialKey": "ylang_imperiale",
+    "supplierLinks": {
+      "Fraterworks": {
+        "status": "accord_listing",
+        "note": "Vendor-named ylang-themed accord/product, not treated as a canonical ylang raw material."
+      }
+    }
+  },
+  "Benzyl Acetate": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "benzyl_acetate"
+  },
+  "Benzyl Acetate ex Ylang-Ylang": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "benzyl_acetate"
+  },
+  "Vanilla Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Primary supplier listing for vanilla absolute."
+      },
+      "Fraterworks": {
+        "status": "cross_wired_listing",
+        "note": "This supplier URL is vanilla-bourbon-absolute and appears to fit the Vanilla Bourbon Absolute row more cleanly."
+      },
+      "Perfumers Apprentice": {
+        "status": "supplier_grade_variant",
+        "note": "Diluted vanilla absolute in benzyl benzoate; preserved as a supplier-specific variant rather than a neat absolute listing."
+      }
+    }
+  },
+  "Vanilla Bourbon Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_bourbon_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL is a generic vanilla-absolute page rather than a clearly bourbon-specific listing."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Primary Fraterworks listing for vanilla bourbon absolute."
+      }
+    }
+  },
+  "Vanilla CO2": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "vanilla_co2"
+  },
+  "Vanilla CO2 10%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "vanilla_co2",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL appears to point to a 30% vanilla CO2 product rather than a 10% stock."
+      },
+      "Nature in Bottle": {
+        "status": "primary_listing",
+        "note": "Cleanest supplier match for the 10% vanilla CO2 stock row."
+      },
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Vendor-branded vanilla stock/product kept under the vanilla CO2 stock row pending tighter canonical mapping."
+      },
+      "Perfumers Apprentice": {
+        "status": "linked_duplicate",
+        "duplicateOfCatalogName": "Vanilla Absolute",
+        "note": "This is the same vanilla-absolute-50-bb supplier link already carried on Vanilla Absolute and does not read as a CO2 listing."
+      }
+    }
+  },
+  "Neroli Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "neroli_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a neroli Morocco listing and does not clearly indicate an absolute extract."
+      },
+      "Perfumers Apprentice": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a neroli Tunisia listing and does not clearly indicate an absolute extract."
+      }
+    }
+  },
+  "Orange Blossom Water Abs": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "orange_blossom_water_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for orange blossom water absolute."
+      },
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Orange Blossom Supreme is preserved as a vendor-specific orange blossom product and not assumed to be the same extract type as orange blossom water absolute."
+      }
+    }
+  },
+  "Petitgrain Bigarade EO": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "petitgrain_bigarade_eo",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for petitgrain bigarade essential oil."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for petitgrain bigarade essential oil."
+      }
+    }
+  }
+}
