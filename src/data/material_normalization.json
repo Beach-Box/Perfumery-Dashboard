@@ -3,10 +3,6 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "peru_balsam_oil",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "dead_url",
-        "note": "Historical pricing metadata retained for reference; the Eden Botanicals Peru Balsam URL appears inactive."
-      },
       "Fraterworks": {
         "status": "primary_listing"
       }
@@ -61,10 +57,6 @@
       "Eden Botanicals": {
         "status": "primary_listing",
         "note": "Direct supplier match for the 10% labdanum absolute stock."
-      },
-      "Fraterworks": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a full/premium labdanum absolute listing rather than a 10% stock."
       }
     }
   },
@@ -101,22 +93,15 @@
     "canonicalMaterialKey": "peru_balsam_resinoid",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Vendor-branded Peru balsam resinoid listing; preserved separately from the Peru balsam oil row."
+        "status": "primary_listing",
+        "note": "Direct supplier match for the vendor-branded Peru balsam resinoid row."
       }
     }
   },
   "Peru Balsam Essential Oil": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "peru_balsam_oil",
-    "linkedDuplicateOfCatalogName": "Balsam Peru EO",
-    "supplierLinks": {
-      "Fraterworks": {
-        "status": "linked_duplicate",
-        "duplicateOfCatalogName": "Balsam Peru EO",
-        "note": "Duplicates the Fraterworks Peru Balsam product link already carried on Balsam Peru EO."
-      }
-    }
+    "linkedDuplicateOfCatalogName": "Balsam Peru EO"
   },
   "Petitgrain Bigarade EO": {
     "entryKind": "canonical_material",
@@ -141,8 +126,8 @@
     "canonicalMaterialKey": "poplar_bud_absolute",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Diluted vendor-grade poplar bud absolute row preserved under a generic poplar-bud-absolute supplier page that does not explicitly call out the 50% TEC stock form."
+        "status": "primary_listing",
+        "note": "Direct supplier listing for the live poplar bud diluted-stock row; structural chemistry still reads through the canonical poplar bud absolute seed."
       }
     }
   },
@@ -155,8 +140,8 @@
     "canonicalMaterialKey": "tolu_balsam_resinoid",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Diluted vendor-grade tolu balsam resinoid row preserved under a generic resinoid supplier page that does not explicitly call out the 50% TEC stock form."
+        "status": "primary_listing",
+        "note": "Direct supplier listing for the live tolu balsam diluted-stock row; structural chemistry still reads through the canonical tolu balsam resinoid seed."
       }
     }
   },

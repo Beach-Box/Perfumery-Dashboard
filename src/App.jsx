@@ -33112,19 +33112,6 @@ const PRICING = {
         [120, "mL", 180.0],
       ],
     },
-    Fraterworks: {
-      url: "https://fraterworks.com/products/labdanum-absolute-super-premium",
-      S: [
-        [4, "g", 11.8],
-        [15, "g", 23.6],
-        [25, "g", 33.04],
-        [50, "g", 51.92],
-        [100, "g", 89.68],
-        [250, "g", 204.14],
-        [500, "g", 383.5],
-      ],
-      inStock: true,
-    },
   },
   "Jasmine Sambac Absolute": {
     "Eden Botanicals": {
@@ -33418,13 +33405,6 @@ const PRICING = {
     },
   },
   "Balsam Peru EO": {
-    "Eden Botanicals": {
-      url: "https://www.edenbotanicals.com/balsam-peru-essential-oil.html",
-      S: [
-        [10, "mL", 9.0],
-        [30, "mL", 23.0],
-      ],
-    },
     Fraterworks: {
       url: "https://fraterworks.com/products/peru-balsam-essential-oil",
       S: [
@@ -40622,20 +40602,6 @@ const PRICING = {
     },
   },
   "Peru Balsam Essential Oil": {
-    Fraterworks: {
-      url: "https://fraterworks.com/products/peru-balsam-essential-oil",
-      S: [
-        [1, "g", 4.72],
-        [4, "g", 9.44],
-        [15, "g", 23.6],
-        [25, "g", 31.86],
-        [50, "g", 55.46],
-        [100, "g", 95.58],
-        [250, "g", 217.12],
-        [500, "g", 405.92],
-      ],
-      inStock: true,
-    },
   },
   Isophytol: {
     Fraterworks: {
@@ -55696,7 +55662,14 @@ function buildSupplierCoverageGapReport() {
         });
       }
 
-      if (normalizationEntry?.linkedDuplicateOfCatalogName) {
+      const duplicateRowHasOwnedSupplierLinks =
+        Object.keys(normalizationEntry?.supplierLinks || {}).length > 0 ||
+        Object.keys(PRICING?.[catalogDisplayName] || {}).length > 0;
+
+      if (
+        normalizationEntry?.linkedDuplicateOfCatalogName &&
+        duplicateRowHasOwnedSupplierLinks
+      ) {
         pushGap("supplier_link_integrity_issue", {
           catalogDisplayName,
           canonicalMaterialKey:
