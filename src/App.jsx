@@ -54954,6 +54954,80 @@ function ScoreBar({ label, value, max = 10, color }) {
 
 const SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY =
   "bb_supplier_import_local_review_v1";
+const EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY =
+  "bb_evidence_candidate_review_v1";
+
+function normalizeEvidenceCandidateReviewStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "approved_for_promotion") {
+    return "approved_for_promotion";
+  }
+  if (normalized === "rejected") {
+    return "rejected";
+  }
+  return "pending_review";
+}
+
+function buildEvidenceCandidateSourceSnapshot(candidate) {
+  return {
+    evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
+    sourceDocumentKey: candidate?.sourceDocumentKey || null,
+    canonicalMaterialKey: candidate?.canonicalMaterialKey || null,
+    relatedCatalogNames: Array.isArray(candidate?.relatedCatalogNames)
+      ? [...candidate.relatedCatalogNames]
+      : [],
+    candidateFieldName: candidate?.candidateFieldName || null,
+    candidateValue: Object.prototype.hasOwnProperty.call(
+      candidate || {},
+      "candidateValue"
+    )
+      ? candidate.candidateValue
+      : null,
+    confidence: candidate?.confidence || null,
+    supplier: candidate?.supplier || null,
+    sourceType: candidate?.sourceType || null,
+    sourceReviewStatus: candidate?.sourceReviewStatus || "pending_review",
+    notes: Array.isArray(candidate?.notes) ? [...candidate.notes] : [],
+  };
+}
+
+function getApprovedEvidenceCandidateRecords(localReviewState) {
+  return Object.entries(localReviewState || {})
+    .filter(([, record]) => record?.decision === "approved")
+    .map(([evidenceCandidateKey, record]) => {
+      const sourceSnapshot = record?.sourceSnapshot || null;
+      return {
+        evidenceCandidateKey,
+        approvalStatus: record?.reviewStatus || "approved_for_promotion",
+        reviewedAt: record?.reviewedAt || null,
+        sourceSnapshot,
+        promotionCandidate: sourceSnapshot
+          ? {
+              ...sourceSnapshot,
+              reviewStatus: record?.reviewStatus || "approved_for_promotion",
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => a.evidenceCandidateKey.localeCompare(b.evidenceCandidateKey));
+}
+
+function buildApprovedEvidenceCandidateExportPayload(localReviewState) {
+  const approvedEvidenceCandidates =
+    getApprovedEvidenceCandidateRecords(localReviewState);
+
+  return {
+    metadata: {
+      version: 1,
+      source: "browser_local_evidence_candidate_review",
+      exportedAt: new Date().toISOString(),
+      approvedCandidateCount: approvedEvidenceCandidates.length,
+      note:
+        "Portable approved evidence candidates only. First-pass promotion supports only low-risk helper seed fields: cas, inci, scentDesc, and isUVCB. IFRA, rep, note-role, and live catalog changes remain manual.",
+    },
+    approvedEvidenceCandidates,
+  };
+}
 
 function buildSupplierImportSourceSnapshot(item) {
   return {
@@ -55826,29 +55900,42 @@ const SOURCE_DOCUMENT_PRIORITY_WEIGHT = {
   low: 1,
 };
 
-function buildSourceDocumentEvidenceReviewPayload() {
+function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
   const evidenceCandidates = Object.entries(EVIDENCE_CANDIDATES)
-    .map(([evidenceCandidateKey, record]) => ({
-      evidenceCandidateKey,
-      canonicalMaterialKey: record?.canonicalMaterialKey || null,
-      relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
-        ? [...record.relatedCatalogNames]
-        : [],
-      sourceDocumentKey: record?.sourceDocumentKey || null,
-      sourceType: record?.sourceType || null,
-      supplier: record?.supplier || null,
-      extractedFields: record?.extractedFields
-        ? { ...record.extractedFields }
-        : {},
-      confidence: record?.confidence || null,
-      reviewStatus: record?.reviewStatus || null,
-      notes: Array.isArray(record?.notes) ? [...record.notes] : [],
-      family: classifySupplierCoverageFamily(
-        record?.canonicalMaterialKey,
-        record?.relatedCatalogNames,
-        record?.supplier
-      ),
-    }))
+    .map(([evidenceCandidateKey, record]) => {
+      const sourceReviewStatus = normalizeEvidenceCandidateReviewStatus(
+        record?.reviewStatus
+      );
+      const localReview = localReviewState[evidenceCandidateKey] || null;
+      const reviewStatus =
+        localReview?.reviewStatus || sourceReviewStatus || "pending_review";
+
+      return {
+        evidenceCandidateKey,
+        canonicalMaterialKey: record?.canonicalMaterialKey || null,
+        relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
+          ? [...record.relatedCatalogNames]
+          : [],
+        sourceDocumentKey: record?.sourceDocumentKey || null,
+        sourceType: record?.sourceType || null,
+        supplier: record?.supplier || null,
+        candidateFieldName: record?.candidateFieldName || null,
+        candidateValue: Object.prototype.hasOwnProperty.call(record || {}, "candidateValue")
+          ? record.candidateValue
+          : null,
+        confidence: record?.confidence || null,
+        sourceReviewStatus,
+        reviewStatus,
+        localDecision: localReview?.decision || null,
+        reviewedAt: localReview?.reviewedAt || null,
+        notes: Array.isArray(record?.notes) ? [...record.notes] : [],
+        family: classifySupplierCoverageFamily(
+          record?.canonicalMaterialKey,
+          record?.relatedCatalogNames,
+          record?.supplier
+        ),
+      };
+    })
     .sort((a, b) =>
       (a.canonicalMaterialKey || a.evidenceCandidateKey).localeCompare(
         b.canonicalMaterialKey || b.evidenceCandidateKey
@@ -55982,6 +56069,15 @@ function buildSourceDocumentEvidenceReviewPayload() {
     summary: {
       sourceDocumentCount: sourceDocuments.length,
       evidenceCandidateCount: evidenceCandidates.length,
+      pendingReviewCandidateCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "pending_review"
+      ).length,
+      approvedForPromotionCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "approved_for_promotion"
+      ).length,
+      rejectedCandidateCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "rejected"
+      ).length,
       intakeTargetCount: intakeTargets.length,
       awaitingDocumentTargetCount: intakeTargets.filter(
         (target) => target.linkedDocumentCount === 0
@@ -56072,7 +56168,20 @@ export default function App() {
         return {};
       }
     });
+  const [evidenceCandidateLocalReviewState, setEvidenceCandidateLocalReviewState] =
+    useState(() => {
+      try {
+        const s = localStorage.getItem(
+          EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY
+        );
+        return s ? JSON.parse(s) : {};
+      } catch {
+        return {};
+      }
+    });
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
+    useState("");
+  const [approvedEvidenceCandidateExportStatus, setApprovedEvidenceCandidateExportStatus] =
     useState("");
   const [supplierCatalogDraftExportStatus, setSupplierCatalogDraftExportStatus] =
     useState("");
@@ -56133,10 +56242,34 @@ export default function App() {
       );
     } catch (e) {}
   }, [supplierImportLocalReviewState]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY,
+        JSON.stringify(evidenceCandidateLocalReviewState)
+      );
+    } catch (e) {}
+  }, [evidenceCandidateLocalReviewState]);
   const approvedSupplierDraftRecords = useMemo(
     () =>
       getApprovedSupplierImportDraftRecords(supplierImportLocalReviewState),
     [supplierImportLocalReviewState]
+  );
+  const approvedEvidenceCandidateRecords = useMemo(
+    () =>
+      getApprovedEvidenceCandidateRecords(evidenceCandidateLocalReviewState),
+    [evidenceCandidateLocalReviewState]
+  );
+  const approvedEvidenceCandidateExportPayload = useMemo(
+    () =>
+      buildApprovedEvidenceCandidateExportPayload(
+        evidenceCandidateLocalReviewState
+      ),
+    [evidenceCandidateLocalReviewState]
+  );
+  const approvedEvidenceCandidateExportJson = useMemo(
+    () => JSON.stringify(approvedEvidenceCandidateExportPayload, null, 2),
+    [approvedEvidenceCandidateExportPayload]
   );
   const approvedSupplierDraftExportPayload = useMemo(
     () =>
@@ -56198,8 +56331,11 @@ export default function App() {
     [supplierCoverageGapReport]
   );
   const sourceDocumentEvidenceReviewPayload = useMemo(
-    () => buildSourceDocumentEvidenceReviewPayload(),
-    []
+    () =>
+      buildSourceDocumentEvidenceReviewPayload(
+        evidenceCandidateLocalReviewState
+      ),
+    [evidenceCandidateLocalReviewState]
   );
   const sourceDocumentEvidenceReviewJson = useMemo(
     () => JSON.stringify(sourceDocumentEvidenceReviewPayload, null, 2),
@@ -56237,6 +56373,46 @@ export default function App() {
       setSupplierDraftExportStatus("Copy failed.");
     }
   }, [approvedSupplierDraftExportJson, approvedSupplierDraftRecords.length]);
+  const exportApprovedEvidenceCandidates = useCallback(() => {
+    const blob = new Blob([approvedEvidenceCandidateExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_approved_evidence_candidates.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setApprovedEvidenceCandidateExportStatus(
+      `Exported ${approvedEvidenceCandidateRecords.length} approved evidence candidate${
+        approvedEvidenceCandidateRecords.length === 1 ? "" : "s"
+      }.`
+    );
+  }, [
+    approvedEvidenceCandidateExportJson,
+    approvedEvidenceCandidateRecords.length,
+  ]);
+  const copyApprovedEvidenceCandidates = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setApprovedEvidenceCandidateExportStatus(
+        "Copy unavailable in this browser."
+      );
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(approvedEvidenceCandidateExportJson);
+      setApprovedEvidenceCandidateExportStatus(
+        `Copied ${approvedEvidenceCandidateRecords.length} approved evidence candidate${
+          approvedEvidenceCandidateRecords.length === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setApprovedEvidenceCandidateExportStatus("Copy failed.");
+    }
+  }, [
+    approvedEvidenceCandidateExportJson,
+    approvedEvidenceCandidateRecords.length,
+  ]);
   const exportGeneratedSupplierCatalogRowDrafts = useCallback(() => {
     const blob = new Blob([generatedSupplierCatalogRowDraftExportJson], {
       type: "application/json",
@@ -61542,6 +61718,23 @@ Be specific, reference ingredient names, keep it under 300 words.`;
             const pendingSupplierImportCount = supplierImportQueueRows.filter(
               (item) => item.canReview
             ).length;
+            const evidenceCandidateReviewRows = [
+              ...sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+            ].sort((a, b) => {
+              const order = {
+                pending_review: 0,
+                approved_for_promotion: 1,
+                rejected: 2,
+              };
+              const statusDelta =
+                (order[a.reviewStatus] ?? 99) - (order[b.reviewStatus] ?? 99);
+              if (statusDelta !== 0) return statusDelta;
+              return (
+                (a.canonicalMaterialKey || a.evidenceCandidateKey).localeCompare(
+                  b.canonicalMaterialKey || b.evidenceCandidateKey
+                )
+              );
+            });
 
             const approveSupplierImport = (item) => {
               if (!item?.canReview) return;
@@ -61558,6 +61751,43 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   normalizationEntryDraft: draft.normalizationEntryDraft,
                 },
               }));
+            };
+
+            const approveEvidenceCandidate = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              const reviewedAt = new Date().toISOString();
+              setEvidenceCandidateLocalReviewState((prev) => ({
+                ...prev,
+                [candidate.evidenceCandidateKey]: {
+                  decision: "approved",
+                  reviewStatus: "approved_for_promotion",
+                  reviewedAt,
+                  sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+                },
+              }));
+            };
+
+            const rejectEvidenceCandidate = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              const reviewedAt = new Date().toISOString();
+              setEvidenceCandidateLocalReviewState((prev) => ({
+                ...prev,
+                [candidate.evidenceCandidateKey]: {
+                  decision: "rejected",
+                  reviewStatus: "rejected",
+                  reviewedAt,
+                  sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+                },
+              }));
+            };
+
+            const clearEvidenceCandidateReview = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              setEvidenceCandidateLocalReviewState((prev) => {
+                const next = { ...prev };
+                delete next[candidate.evidenceCandidateKey];
+                return next;
+              });
             };
 
             const rejectSupplierImport = (item) => {
@@ -62707,6 +62937,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           color: "#FDE68A",
                         },
                         {
+                          label: "Approved for Promotion",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .approvedForPromotionCount,
+                          color: "#86EFAC",
+                        },
+                        {
                           label: "Targets Awaiting Docs",
                           value:
                             sourceDocumentEvidenceReviewPayload.summary
@@ -62745,6 +62982,389 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           </div>
                         </div>
                       ))}
+                    </div>
+                    <div
+                      style={{
+                        marginBottom: 10,
+                        padding: "10px 12px",
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#FDE68A",
+                            }}
+                          >
+                            Evidence Candidate Review Queue
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#64748B",
+                              marginTop: 3,
+                            }}
+                          >
+                            Mark candidates as `pending_review`,
+                            `approved_for_promotion`, or `rejected`. Approval
+                            only creates portable promotion JSON.
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                          }}
+                        >
+                          <button
+                            onClick={exportApprovedEvidenceCandidates}
+                            style={{
+                              background: "#0A2E1A",
+                              border: "1px solid #166534",
+                              borderRadius: 8,
+                              color: "#86EFAC",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📤 Export Approved Candidates
+                          </button>
+                          <button
+                            onClick={copyApprovedEvidenceCandidates}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1D4ED8",
+                              borderRadius: 8,
+                              color: "#93C5FD",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📋 Copy JSON
+                          </button>
+                          {approvedEvidenceCandidateExportStatus && (
+                            <span
+                              style={{
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                              }}
+                            >
+                              {approvedEvidenceCandidateExportStatus}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {evidenceCandidateReviewRows.length > 0 ? (
+                        <>
+                          <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                            <table
+                              style={{
+                                width: "100%",
+                                fontSize: 8.5,
+                                borderCollapse: "collapse",
+                              }}
+                            >
+                              <thead>
+                                <tr
+                                  style={{
+                                    borderBottom: "1px solid #1E293B",
+                                  }}
+                                >
+                                  {[
+                                    "Candidate",
+                                    "Value",
+                                    "Source",
+                                    "Confidence",
+                                    "Status",
+                                    "Actions",
+                                  ].map((label) => (
+                                    <th
+                                      key={label}
+                                      style={{
+                                        textAlign: "left",
+                                        padding: "7px 8px",
+                                        color: "#64748B",
+                                        fontSize: 8,
+                                        fontWeight: 700,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {label}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {evidenceCandidateReviewRows.map(
+                                  (candidate, idx) => (
+                                    <tr
+                                      key={candidate.evidenceCandidateKey}
+                                      style={{
+                                        borderBottom:
+                                          idx ===
+                                          evidenceCandidateReviewRows.length - 1
+                                            ? "none"
+                                            : "1px solid #0F172A",
+                                      }}
+                                    >
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#E2E8F0",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        <div style={{ fontWeight: 700 }}>
+                                          {candidate.canonicalMaterialKey}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#FDE68A",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                          }}
+                                        >
+                                          {candidate.candidateFieldName}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                            fontFamily:
+                                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                          }}
+                                        >
+                                          {candidate.evidenceCandidateKey}
+                                        </div>
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        {typeof candidate.candidateValue ===
+                                        "boolean"
+                                          ? String(candidate.candidateValue)
+                                          : candidate.candidateValue || "—"}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        <div>
+                                          {candidate.supplier || "Unknown supplier"} ·{" "}
+                                          {candidate.sourceType || "unknown"}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                          }}
+                                        >
+                                          {candidate.sourceDocumentKey}
+                                        </div>
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 90,
+                                        }}
+                                      >
+                                        {candidate.confidence || "—"}
+                                      </td>
+                                      <td style={{ padding: "8px", minWidth: 160 }}>
+                                        <span
+                                          style={{
+                                            background:
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#0A2E1A"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#2A0F14"
+                                                : "#2A1A00",
+                                            border: `1px solid ${
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#166534"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#7F1D1D"
+                                                : "#78350F"
+                                            }`,
+                                            borderRadius: 999,
+                                            color:
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#86EFAC"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#FCA5A5"
+                                                : "#F59E0B",
+                                            padding: "2px 8px",
+                                            fontSize: 8,
+                                            fontWeight: 700,
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          {candidate.reviewStatus}
+                                        </span>
+                                        {candidate.reviewedAt && (
+                                          <div
+                                            style={{
+                                              marginTop: 4,
+                                              fontSize: 7.5,
+                                              color: "#475569",
+                                              whiteSpace: "nowrap",
+                                            }}
+                                          >
+                                            {new Date(
+                                              candidate.reviewedAt
+                                            ).toLocaleString()}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          minWidth: 180,
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: 6,
+                                            flexWrap: "wrap",
+                                          }}
+                                        >
+                                          <button
+                                            onClick={() =>
+                                              approveEvidenceCandidate(candidate)
+                                            }
+                                            style={{
+                                              background: "#0A2E1A",
+                                              border: "1px solid #166534",
+                                              borderRadius: 6,
+                                              color: "#86EFAC",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Approve
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              rejectEvidenceCandidate(candidate)
+                                            }
+                                            style={{
+                                              background: "#2A0F14",
+                                              border: "1px solid #7F1D1D",
+                                              borderRadius: 6,
+                                              color: "#FCA5A5",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Reject
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              clearEvidenceCandidateReview(
+                                                candidate
+                                              )
+                                            }
+                                            style={{
+                                              background: "#0A1628",
+                                              border: `1px solid ${BORDER}`,
+                                              borderRadius: 6,
+                                              color: "#94A3B8",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Reset
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <textarea
+                            readOnly
+                            value={approvedEvidenceCandidateExportJson}
+                            spellCheck={false}
+                            style={{
+                              width: "100%",
+                              minHeight: 140,
+                              background: "#020810",
+                              border: "1px solid #1E293B",
+                              borderRadius: 8,
+                              color: "#CBD5E1",
+                              padding: "10px 12px",
+                              fontSize: 8.5,
+                              lineHeight: 1.6,
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              resize: "vertical",
+                              boxSizing: "border-box",
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          No evidence candidates are stored yet. Generate them
+                          from ingested source documents first, then review and
+                          export approved low-risk candidates here.
+                        </div>
+                      )}
                     </div>
                     <div
                       style={{
