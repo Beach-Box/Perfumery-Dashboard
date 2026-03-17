@@ -294,6 +294,10 @@
       }
     }
   },
+  "Ylang-Ylang Fine Oil": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_fine_oil"
+  },
   "Ylang-Ylang Fine Oil, Org": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "ylang_ylang_fine_oil",
@@ -301,12 +305,20 @@
     "approvalState": "approved_draft_applied",
     "approvalAppliedAt": "2026-03-17T17:09:26.334Z"
   },
+  "Ylang-Ylang I Oil": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_i_oil"
+  },
   "Ylang-Ylang I Oil, Org": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "ylang_ylang_i_oil",
     "importedFromSupplierProductKey": "eden_botanicals:ylang-ylang-i-organic",
     "approvalState": "approved_draft_applied",
     "approvalAppliedAt": "2026-03-17T17:09:26.334Z"
+  },
+  "Ylang-Ylang II Oil": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "ylang_ylang_ii_oil"
   },
   "Ylang-Ylang II Oil, Org": {
     "entryKind": "supplier_product",

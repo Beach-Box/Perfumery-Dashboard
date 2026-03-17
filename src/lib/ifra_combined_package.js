@@ -1192,6 +1192,36 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     isUVCB: true,
     descriptorTags: ["Floral", "Creamy", "Ylang"],
   },
+  ylang_ylang_fine_oil: {
+    canonicalMaterialKey: "ylang_ylang_fine_oil",
+    canonicalName: "Ylang-Ylang Fine Oil",
+    type: "EO",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang fine grade essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang fine-oil grade. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_i_oil: {
+    canonicalMaterialKey: "ylang_ylang_i_oil",
+    canonicalName: "Ylang-Ylang I Oil",
+    type: "EO",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade I essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade I oil family. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_ii_oil: {
+    canonicalMaterialKey: "ylang_ylang_ii_oil",
+    canonicalName: "Ylang-Ylang II Oil",
+    type: "EO",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade II essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade II oil family. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
   labdanum_absolute: {
     canonicalMaterialKey: "labdanum_absolute",
     canonicalName: "Labdanum Absolute",
