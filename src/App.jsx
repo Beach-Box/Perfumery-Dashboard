@@ -21,6 +21,8 @@ import {
   ReferenceArea,
 } from "recharts";
 import {
+  MATERIAL_NORMALIZATION,
+  SUPPLIER_PRODUCT_REGISTRY,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
   getMaterialNormalizationEntry,
@@ -30,6 +32,7 @@ import {
   getSupplierProductRecord,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
+import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight";
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -55136,6 +55139,15 @@ export default function App() {
     () => JSON.stringify(approvedSupplierDraftExportPayload, null, 2),
     [approvedSupplierDraftExportPayload]
   );
+  const approvedSupplierDraftPreflightReport = useMemo(
+    () =>
+      validateApprovedSupplierDraftExport(approvedSupplierDraftExportPayload, {
+        catalogNames: Object.keys(DB),
+        materialNormalization: MATERIAL_NORMALIZATION,
+        supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+      }),
+    [approvedSupplierDraftExportPayload]
+  );
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
       type: "application/json",
@@ -61196,6 +61208,305 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         boxSizing: "border-box",
                       }}
                     />
+                    <div
+                      style={{
+                        marginTop: 12,
+                        paddingTop: 12,
+                        borderTop: "1px solid #1E293B",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: "#FCD34D",
+                            }}
+                          >
+                            🛡️ Draft Preflight Check
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#64748B",
+                              marginTop: 3,
+                            }}
+                          >
+                            Review-only validation against current repo catalog,
+                            normalization, and supplier registry data.
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background:
+                              approvedSupplierDraftPreflightReport.summary
+                                .overallStatus === "blocking_conflicts"
+                                ? "#2A0F14"
+                                : approvedSupplierDraftPreflightReport.summary
+                                    .overallStatus === "warnings"
+                                ? "#2A1A00"
+                                : "#0A2E1A",
+                            border: `1px solid ${
+                              approvedSupplierDraftPreflightReport.summary
+                                .overallStatus === "blocking_conflicts"
+                                ? "#7F1D1D"
+                                : approvedSupplierDraftPreflightReport.summary
+                                    .overallStatus === "warnings"
+                                ? "#78350F"
+                                : "#166534"
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              approvedSupplierDraftPreflightReport.summary
+                                .overallStatus === "blocking_conflicts"
+                                ? "#FCA5A5"
+                                : approvedSupplierDraftPreflightReport.summary
+                                    .overallStatus === "warnings"
+                                ? "#F59E0B"
+                                : "#86EFAC",
+                            padding: "4px 10px",
+                            fontSize: 8.5,
+                            fontWeight: 700,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {
+                            approvedSupplierDraftPreflightReport.summary
+                              .overallStatus
+                          }
+                        </div>
+                      </div>
+                      {approvedSupplierDraftRecords.length > 0 ? (
+                        <>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                              marginBottom: 8,
+                            }}
+                          >
+                            {[
+                              [
+                                "Safe",
+                                approvedSupplierDraftPreflightReport.summary
+                                  .safeToApplyCount,
+                                "#86EFAC",
+                              ],
+                              [
+                                "Warnings",
+                                approvedSupplierDraftPreflightReport.summary
+                                  .warningDraftCount,
+                                "#F59E0B",
+                              ],
+                              [
+                                "Blocking",
+                                approvedSupplierDraftPreflightReport.summary
+                                  .blockingConflictDraftCount,
+                                "#FCA5A5",
+                              ],
+                            ].map(([label, value, color]) => (
+                              <div
+                                key={label}
+                                style={{
+                                  background: "#020810",
+                                  border: "1px solid #1E293B",
+                                  borderRadius: 8,
+                                  padding: "6px 10px",
+                                  minWidth: 90,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 7.5,
+                                    color: "#64748B",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.08em",
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  {label}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    color,
+                                  }}
+                                >
+                                  {value}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ overflowX: "auto" }}>
+                            <table
+                              style={{
+                                width: "100%",
+                                fontSize: 8.5,
+                                borderCollapse: "collapse",
+                              }}
+                            >
+                              <thead>
+                                <tr
+                                  style={{
+                                    borderBottom: "1px solid #1E293B",
+                                  }}
+                                >
+                                  {[
+                                    "Supplier Product Key",
+                                    "Status",
+                                    "Warnings",
+                                    "Blocking",
+                                    "Details",
+                                  ].map((label) => (
+                                    <th
+                                      key={label}
+                                      style={{
+                                        textAlign: "left",
+                                        padding: "7px 8px",
+                                        color: "#64748B",
+                                        fontSize: 8,
+                                        fontWeight: 700,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {label}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {approvedSupplierDraftPreflightReport.drafts.map(
+                                  (draft, idx) => (
+                                    <tr
+                                      key={draft.supplierProductKey || idx}
+                                      style={{
+                                        borderBottom:
+                                          idx ===
+                                          approvedSupplierDraftPreflightReport
+                                            .drafts.length -
+                                            1
+                                            ? "none"
+                                            : "1px solid #0F172A",
+                                      }}
+                                    >
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          fontFamily:
+                                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {draft.supplierProductKey}
+                                      </td>
+                                      <td style={{ padding: "8px" }}>
+                                        <span
+                                          style={{
+                                            background:
+                                              draft.status ===
+                                              "blocking_conflicts"
+                                                ? "#2A0F14"
+                                                : draft.status === "warnings"
+                                                ? "#2A1A00"
+                                                : "#0A2E1A",
+                                            border: `1px solid ${
+                                              draft.status ===
+                                              "blocking_conflicts"
+                                                ? "#7F1D1D"
+                                                : draft.status === "warnings"
+                                                ? "#78350F"
+                                                : "#166534"
+                                            }`,
+                                            borderRadius: 999,
+                                            color:
+                                              draft.status ===
+                                              "blocking_conflicts"
+                                                ? "#FCA5A5"
+                                                : draft.status === "warnings"
+                                                ? "#F59E0B"
+                                                : "#86EFAC",
+                                            padding: "2px 8px",
+                                            fontSize: 8,
+                                            fontWeight: 700,
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          {draft.status}
+                                        </span>
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#F59E0B",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {draft.warnings.length}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#FCA5A5",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {draft.blockingConflicts.length}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#94A3B8",
+                                          lineHeight: 1.6,
+                                          minWidth: 280,
+                                        }}
+                                      >
+                                        {[
+                                          ...draft.blockingConflicts.map(
+                                            (issue) => `Block: ${issue.message}`
+                                          ),
+                                          ...draft.warnings.map(
+                                            (issue) => `Warn: ${issue.message}`
+                                          ),
+                                        ]
+                                          .slice(0, 3)
+                                          .join(" ")}
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "#475569",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          No approved drafts are available for preflight
+                          validation yet.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
