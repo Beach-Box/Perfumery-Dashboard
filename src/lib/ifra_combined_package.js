@@ -1149,9 +1149,12 @@ export function getSupplierProductsForCanonicalMaterialKey(
 }
 
 export function getPendingSupplierImportItems() {
-  return Object.values(SUPPLIER_IMPORT_REVIEW_QUEUE).map((item) =>
-    cloneJsonValue(item)
-  );
+  return Object.values(SUPPLIER_IMPORT_REVIEW_QUEUE)
+    .filter((item) => {
+      const status = String(item?.reviewStatus || "").trim().toLowerCase();
+      return !status || status.startsWith("pending");
+    })
+    .map((item) => cloneJsonValue(item));
 }
 
 const CANONICAL_ENTRY_NAME_BY_KEY = Object.fromEntries(
@@ -1192,6 +1195,33 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     isUVCB: true,
     descriptorTags: ["Floral", "Creamy", "Ylang"],
   },
+  ylang_ylang_absolute: {
+    canonicalMaterialKey: "ylang_ylang_absolute",
+    canonicalName: "Ylang-Ylang Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Extract",
+    scentClass: "Floral",
+    scentSummary: "Creamy, exotic banana-floral",
+    scentDesc:
+      "Canonical helper source seed for ylang-ylang absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Benzyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Creamy", "Ylang"],
+  },
+  ylang_ylang_complete_oil: {
+    canonicalMaterialKey: "ylang_ylang_complete_oil",
+    canonicalName: "Ylang-Ylang Complete Oil",
+    note: "mid",
+    type: "EO",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang complete essential oil",
+    scentDesc:
+      "Canonical helper source seed for the complete-distillation ylang family. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
   ylang_ylang_fine_oil: {
     canonicalMaterialKey: "ylang_ylang_fine_oil",
     canonicalName: "Ylang-Ylang Fine Oil",
@@ -1222,6 +1252,138 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
       "Canonical helper source seed for the ylang grade II oil family. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
     descriptorTags: ["Floral", "Ylang", "EO"],
   },
+  ylang_ylang_iii_oil: {
+    canonicalMaterialKey: "ylang_ylang_iii_oil",
+    canonicalName: "Ylang-Ylang III Oil",
+    note: "mid",
+    type: "EO",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade III essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade III oil family. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_imperiale: {
+    canonicalMaterialKey: "ylang_imperiale",
+    canonicalName: "Ylang Impériale",
+    note: "mid",
+    type: "SYNTH",
+    scentClass: "Floral",
+    scentSummary: "Vendor-style ylang accord/product",
+    scentDesc:
+      "Canonical helper source seed for the Ylang Impériale accord-style row. Treat as a separate vendor product identity, not as a canonical ylang raw material family or IFRA-listed source.",
+    descriptorTags: ["Floral", "Ylang", "Accord"],
+  },
+  neroli_absolute: {
+    canonicalMaterialKey: "neroli_absolute",
+    canonicalName: "Neroli Absolute",
+    note: "top",
+    type: "ABS",
+    cas: "8016-38-4",
+    inci: "Citrus Aurantium Flower Extract",
+    scentClass: "Floral",
+    scentSummary: "Bright, honeyed orange blossom",
+    scentDesc:
+      "Canonical helper source seed for neroli absolute. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but supplier ownership remains intentionally conservative until a clearly matching absolute listing is present.",
+    rep: "Linalool",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Orange Blossom", "Absolute"],
+  },
+  orange_blossom_water_absolute: {
+    canonicalMaterialKey: "orange_blossom_water_absolute",
+    canonicalName: "Orange Blossom Water Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "68917-75-9",
+    inci: "Citrus Aurantium Flower Water Extract",
+    scentClass: "Floral",
+    scentSummary: "Watery orange blossom with grape facet",
+    scentDesc:
+      "Canonical helper source seed for orange blossom water absolute. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but IFRA promotion remains conservative until structured standards coverage is promoted.",
+    rep: "Methyl Anthranilate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Orange Blossom", "Water Absolute"],
+  },
+  petitgrain_bigarade_eo: {
+    canonicalMaterialKey: "petitgrain_bigarade_eo",
+    canonicalName: "Petitgrain Bigarade EO",
+    note: "top",
+    type: "EO",
+    cas: "8014-17-3",
+    inci: "Citrus Aurantium Leaf/Twig Oil",
+    scentClass: "Citrus",
+    scentSummary: "Green, woody citrus bridge note",
+    scentDesc:
+      "Canonical helper source seed for petitgrain bigarade essential oil. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata.",
+    rep: "Linalyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Citrus", "Green", "Petitgrain"],
+  },
+  benzyl_acetate: {
+    canonicalMaterialKey: "benzyl_acetate",
+    canonicalName: "Benzyl Acetate",
+    note: "mid",
+    type: "SYNTH",
+    cas: "140-11-4",
+    inci: "Benzyl Acetate",
+    scentClass: "Floral",
+    scentSummary: "Jasmine-sweet fruity floral",
+    scentDesc:
+      "Canonical helper source seed for benzyl acetate. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but IFRA promotion remains conservative until structured standards coverage is promoted.",
+    rep: "Benzyl Acetate",
+    descriptorTags: ["Floral", "Fruity", "Jasmine"],
+  },
+  peru_balsam_oil: {
+    canonicalMaterialKey: "peru_balsam_oil",
+    canonicalName: "Peru Balsam Oil",
+    note: "base",
+    type: "EO",
+    cas: "8007-00-9",
+    inci: "Myroxylon Pereirae Resin Oil",
+    scentClass: "Oriental",
+    scentSummary: "Resinous cinnamic amber balsam warmth",
+    rep: "Benzyl Benzoate",
+    isUVCB: true,
+    descriptorTags: ["Balsamic", "Amber", "Resinous"],
+  },
+  peru_balsam_resinoid: {
+    canonicalMaterialKey: "peru_balsam_resinoid",
+    canonicalName: "Peru Balsam Resinoid",
+    note: "base",
+    type: "ABS",
+    scentClass: "Amber",
+    scentSummary: "Peru balsam resinoid",
+    scentDesc:
+      "Canonical helper source seed for Peru balsam resinoid. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid", "Balsamic"],
+  },
+  benzoin_siam_absolute: {
+    canonicalMaterialKey: "benzoin_siam_absolute",
+    canonicalName: "Benzoin Siam Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "9000-72-0",
+    inci: "Styrax Tonkinensis Resin Extract",
+    scentClass: "Oriental",
+    scentSummary: "Balsamic vanilla-sweet benzoin warmth",
+    rep: "Benzyl Benzoate",
+    isUVCB: true,
+    descriptorTags: ["Balsamic", "Vanilla", "Resin"],
+  },
+  benzoin_siam_resinoid: {
+    canonicalMaterialKey: "benzoin_siam_resinoid",
+    canonicalName: "Benzoin Siam Resinoid",
+    note: "base",
+    type: "ABS",
+    scentClass: "Amber",
+    scentSummary: "Benzoin Siam resinoid",
+    scentDesc:
+      "Canonical helper source seed for benzoin Siam resinoid. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid", "Balsamic"],
+  },
   labdanum_absolute: {
     canonicalMaterialKey: "labdanum_absolute",
     canonicalName: "Labdanum Absolute",
@@ -1234,6 +1396,36 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     rep: "Labdanolic Acid",
     isUVCB: true,
     descriptorTags: ["Resinous", "Amber", "Leather"],
+  },
+  vanilla_absolute: {
+    canonicalMaterialKey: "vanilla_absolute",
+    canonicalName: "Vanilla Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "8006-39-1",
+    inci: "Vanilla Planifolia Fruit Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Silky sweet vanilla warm anchor",
+    scentDesc:
+      "Canonical helper source seed for vanilla absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "Absolute"],
+  },
+  vanilla_bourbon_absolute: {
+    canonicalMaterialKey: "vanilla_bourbon_absolute",
+    canonicalName: "Vanilla Bourbon Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "84650-60-2",
+    inci: "Vanilla Planifolia Bourbon Fruit Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Rich creamy Bourbon vanilla depth",
+    scentDesc:
+      "Canonical helper source seed for vanilla bourbon absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "Bourbon"],
   },
   vanilla_co2: {
     canonicalMaterialKey: "vanilla_co2",

@@ -3,10 +3,6 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "peru_balsam_oil",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "dead_url",
-        "note": "Historical pricing metadata retained for reference; the Eden Botanicals Peru Balsam URL appears inactive."
-      },
       "Fraterworks": {
         "status": "primary_listing"
       }
@@ -29,10 +25,16 @@
       "Eden Botanicals": {
         "status": "primary_listing",
         "note": "Direct supplier match for benzoin Siam absolute."
-      },
+      }
+    }
+  },
+  "Benzoin Siam Resinoid 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "benzoin_siam_resinoid",
+    "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Supplier URL is a benzoin-siam-resinoid-50-tec product, so it is preserved as a related supplier variant rather than a clean absolute listing."
+        "status": "primary_listing",
+        "note": "Direct supplier match for the benzoin Siam resinoid 50% TEC stock."
       }
     }
   },
@@ -55,26 +57,12 @@
       "Eden Botanicals": {
         "status": "primary_listing",
         "note": "Direct supplier match for the 10% labdanum absolute stock."
-      },
-      "Fraterworks": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a full/premium labdanum absolute listing rather than a 10% stock."
       }
     }
   },
   "Neroli Absolute": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "neroli_absolute",
-    "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a neroli Morocco listing and does not clearly indicate an absolute extract."
-      },
-      "Perfumers Apprentice": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL reads as a neroli Tunisia listing and does not clearly indicate an absolute extract."
-      }
-    }
+    "canonicalMaterialKey": "neroli_absolute"
   },
   "Orange Blossom Water Abs": {
     "entryKind": "canonical_material",
@@ -95,22 +83,15 @@
     "canonicalMaterialKey": "peru_balsam_resinoid",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Vendor-branded Peru balsam resinoid listing; preserved separately from the Peru balsam oil row."
+        "status": "primary_listing",
+        "note": "Direct supplier match for the vendor-branded Peru balsam resinoid row."
       }
     }
   },
   "Peru Balsam Essential Oil": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "peru_balsam_oil",
-    "linkedDuplicateOfCatalogName": "Balsam Peru EO",
-    "supplierLinks": {
-      "Fraterworks": {
-        "status": "linked_duplicate",
-        "duplicateOfCatalogName": "Balsam Peru EO",
-        "note": "Duplicates the Fraterworks Peru Balsam product link already carried on Balsam Peru EO."
-      }
-    }
+    "linkedDuplicateOfCatalogName": "Balsam Peru EO"
   },
   "Petitgrain Bigarade EO": {
     "entryKind": "canonical_material",
@@ -135,8 +116,8 @@
     "canonicalMaterialKey": "poplar_bud_absolute",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Diluted vendor-grade poplar bud absolute row preserved under a generic poplar-bud-absolute supplier page that does not explicitly call out the 50% TEC stock form."
+        "status": "primary_listing",
+        "note": "Direct supplier listing for the live poplar bud diluted-stock row; structural chemistry still reads through the canonical poplar bud absolute seed."
       }
     }
   },
@@ -149,8 +130,8 @@
     "canonicalMaterialKey": "tolu_balsam_resinoid",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Diluted vendor-grade tolu balsam resinoid row preserved under a generic resinoid supplier page that does not explicitly call out the 50% TEC stock form."
+        "status": "primary_listing",
+        "note": "Direct supplier listing for the live tolu balsam diluted-stock row; structural chemistry still reads through the canonical tolu balsam resinoid seed."
       }
     }
   },
@@ -162,10 +143,6 @@
         "status": "primary_listing",
         "note": "Primary supplier listing for vanilla absolute."
       },
-      "Fraterworks": {
-        "status": "cross_wired_listing",
-        "note": "This supplier URL is vanilla-bourbon-absolute and appears to fit the Vanilla Bourbon Absolute row more cleanly."
-      },
       "Perfumers Apprentice": {
         "status": "supplier_grade_variant",
         "note": "Diluted vanilla absolute in benzyl benzoate; preserved as a supplier-specific variant rather than a neat absolute listing."
@@ -176,10 +153,6 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "vanilla_bourbon_absolute",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL is a generic vanilla-absolute page rather than a clearly bourbon-specific listing."
-      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Primary Fraterworks listing for vanilla bourbon absolute."
@@ -194,10 +167,6 @@
     "entryKind": "diluted_stock",
     "canonicalMaterialKey": "vanilla_co2",
     "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "cross_wired_listing",
-        "note": "Supplier URL appears to point to a 30% vanilla CO2 product rather than a 10% stock."
-      },
       "Nature in Bottle": {
         "status": "primary_listing",
         "note": "Cleanest supplier match for the 10% vanilla CO2 stock row."
@@ -205,11 +174,6 @@
       "Fraterworks": {
         "status": "supplier_grade_variant",
         "note": "Vendor-branded vanilla stock/product kept under the vanilla CO2 stock row pending tighter canonical mapping."
-      },
-      "Perfumers Apprentice": {
-        "status": "linked_duplicate",
-        "duplicateOfCatalogName": "Vanilla Absolute",
-        "note": "This is the same vanilla-absolute-50-bb supplier link already carried on Vanilla Absolute and does not read as a CO2 listing."
       }
     }
   },
