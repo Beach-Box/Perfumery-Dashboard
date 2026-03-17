@@ -378,6 +378,56 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
       "Maps diluted vanilla CO2 stock names to a canonical helper identity so stock active-percent handling can apply when IFRA limits are added later.",
     ],
   },
+  "tolu balsam resinoid": {
+    canonicalName: "Tolu Balsam Resinoid",
+    cas: [],
+    synonyms: ["tolu balsam resinoid", "tolu balsam"],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+    ],
+  },
+  "poplar bud absolute": {
+    canonicalName: "Poplar Bud Absolute",
+    cas: [],
+    synonyms: ["poplar bud absolute", "poplar buds absolute", "poplar bud"],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+    ],
+  },
   "agarwood oil": {
     canonicalName: "Agarwood Oil",
     cas: [],
@@ -995,6 +1045,71 @@ export function getCanonicalCatalogName(name) {
 
   const canonicalName = CANONICAL_ENTRY_NAME_BY_KEY[canonicalMaterialKey] || null;
   return canonicalName && canonicalName !== name ? canonicalName : null;
+}
+
+const CANONICAL_MATERIAL_SOURCE_DATA = {
+  labdanum_absolute: {
+    canonicalMaterialKey: "labdanum_absolute",
+    canonicalName: "Labdanum Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "8016-26-0",
+    inci: "Cistus Ladaniferus Resin Extract",
+    scentClass: "Oriental",
+    scentSummary: "Resinous amber leathery Mediterranean",
+    rep: "Labdanolic Acid",
+    isUVCB: true,
+    descriptorTags: ["Resinous", "Amber", "Leather"],
+  },
+  vanilla_co2: {
+    canonicalMaterialKey: "vanilla_co2",
+    canonicalName: "Vanilla CO2",
+    note: "mid",
+    type: "CO2",
+    cas: "8024-06-4",
+    inci: "Vanilla Planifolia Fruit CO2 Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Smooth, natural warm vanilla CO2",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "CO2"],
+  },
+  tolu_balsam_resinoid: {
+    canonicalMaterialKey: "tolu_balsam_resinoid",
+    canonicalName: "Tolu Balsam Resinoid",
+    note: "base",
+    type: "ABS",
+    scentClass: "Amber",
+    scentSummary: "Tolu balsam resinoid",
+    scentDesc:
+      "Canonical helper source seed for tolu balsam resinoid. Detailed source-backed chemistry has not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid"],
+  },
+  poplar_bud_absolute: {
+    canonicalMaterialKey: "poplar_bud_absolute",
+    canonicalName: "Poplar Bud Absolute",
+    note: "mid",
+    type: "ABS",
+    scentClass: "Aromatic",
+    scentSummary: "Poplar bud absolute",
+    scentDesc:
+      "Canonical helper source seed for poplar bud absolute. Detailed source-backed chemistry has not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Aromatic", "Balsamic"],
+  },
+};
+
+export function getCanonicalMaterialSource(canonicalMaterialKey) {
+  const source = CANONICAL_MATERIAL_SOURCE_DATA[canonicalMaterialKey];
+  if (!source) return null;
+
+  return {
+    ...source,
+    descriptorTags: Array.isArray(source.descriptorTags)
+      ? [...source.descriptorTags]
+      : source.descriptorTags,
+  };
 }
 
 function buildStandardPageList(pageReference) {

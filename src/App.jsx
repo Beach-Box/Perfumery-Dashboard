@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import {
   computeActiveRestrictedPercent,
+  getCanonicalMaterialSource,
   getMaterialNormalizationEntry,
   getIfraMaterialRecord,
   getIfraUiState,
@@ -31394,6 +31395,16 @@ const CANONICAL_CHEMISTRY_FIELDS = [
   "isIsomerMix",
 ];
 
+const CANONICAL_HELPER_SOURCE_FIELDS = [
+  ...CANONICAL_CHEMISTRY_FIELDS,
+  "note",
+  "type",
+  "scentClass",
+  "scentSummary",
+  "scentDesc",
+  "rep",
+];
+
 function hasDbMetadataValue(value) {
   if (value == null) return false;
   if (Array.isArray(value)) return value.length > 0;
@@ -31419,15 +31430,24 @@ Object.entries(DB).forEach(([name, d]) => {
   }
 
   const canonicalName = CANONICAL_DB_NAME_BY_KEY[d.canonicalMaterialKey];
-  if (!canonicalName) return;
+  if (canonicalName) {
+    const canonicalRecord = DB[canonicalName];
+    if (canonicalRecord && canonicalRecord !== d) {
+      CANONICAL_CHEMISTRY_FIELDS.forEach((field) => {
+        if (hasDbMetadataValue(d[field])) return;
+        if (!hasDbMetadataValue(canonicalRecord[field])) return;
+        d[field] = cloneDbMetadataValue(canonicalRecord[field]);
+      });
+    }
+  }
 
-  const canonicalRecord = DB[canonicalName];
-  if (!canonicalRecord || canonicalRecord === d) return;
+  const canonicalHelperSource = getCanonicalMaterialSource(d.canonicalMaterialKey);
+  if (!canonicalHelperSource) return;
 
-  CANONICAL_CHEMISTRY_FIELDS.forEach((field) => {
+  CANONICAL_HELPER_SOURCE_FIELDS.forEach((field) => {
     if (hasDbMetadataValue(d[field])) return;
-    if (!hasDbMetadataValue(canonicalRecord[field])) return;
-    d[field] = cloneDbMetadataValue(canonicalRecord[field]);
+    if (!hasDbMetadataValue(canonicalHelperSource[field])) return;
+    d[field] = cloneDbMetadataValue(canonicalHelperSource[field]);
   });
 });
 
