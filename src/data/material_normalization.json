@@ -39,6 +39,10 @@
     "entryKind": "accord",
     "canonicalMaterialKey": "ylang_imperiale"
   },
+  "Benzyl Acetate": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "benzyl_acetate"
+  },
   "Benzyl Acetate ex Ylang-Ylang": {
     "entryKind": "supplier_product",
     "canonicalMaterialKey": "benzyl_acetate"

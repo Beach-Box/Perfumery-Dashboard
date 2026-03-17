@@ -975,9 +975,26 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
 export const MATERIAL_NORMALIZATION = materialNormalization;
+const CANONICAL_ENTRY_NAME_BY_KEY = Object.fromEntries(
+  Object.entries(MATERIAL_NORMALIZATION)
+    .filter(
+      ([, entry]) =>
+        entry?.entryKind === "canonical_material" && entry?.canonicalMaterialKey
+    )
+    .map(([name, entry]) => [entry.canonicalMaterialKey, name])
+);
 
 export function getMaterialNormalizationEntry(name) {
   return MATERIAL_NORMALIZATION[name] || null;
+}
+
+export function getCanonicalCatalogName(name) {
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const canonicalMaterialKey = normalizationEntry?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return null;
+
+  const canonicalName = CANONICAL_ENTRY_NAME_BY_KEY[canonicalMaterialKey] || null;
+  return canonicalName && canonicalName !== name ? canonicalName : null;
 }
 
 function buildStandardPageList(pageReference) {
@@ -2534,7 +2551,7 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
-export function resolveIngredientIdentity(name) {
+function resolveIngredientIdentityDirect(name) {
   const direct = INGREDIENT_IDENTITY_MAP[name];
   if (direct) return direct;
 
@@ -2549,6 +2566,25 @@ export function resolveIngredientIdentity(name) {
       return record;
   }
   return null;
+}
+
+export function resolveIngredientIdentity(name) {
+  const direct = resolveIngredientIdentityDirect(name);
+  if (direct) return direct;
+
+  const canonicalName = getCanonicalCatalogName(name);
+  if (!canonicalName) return null;
+
+  const inherited = resolveIngredientIdentityDirect(canonicalName);
+  if (!inherited) return null;
+
+  return {
+    ...inherited,
+    inheritedViaCanonicalMaterialKey: true,
+    inheritedFromCatalogName: canonicalName,
+    sourceCatalogName: name,
+    normalizationEntry: getMaterialNormalizationEntry(name),
+  };
 }
 
 export function getIfraMaterialRecord(name) {

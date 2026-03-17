@@ -31356,9 +31356,70 @@ const DB = Object.fromEntries(
     return [k, record];
   })
 );
+
+const CANONICAL_DB_NAME_BY_KEY = Object.fromEntries(
+  Object.entries(DB)
+    .filter(
+      ([, record]) =>
+        record.entryKind === "canonical_material" && record.canonicalMaterialKey
+    )
+    .map(([name, record]) => [record.canonicalMaterialKey, name])
+);
+
+const CANONICAL_CHEMISTRY_FIELDS = [
+  "mw",
+  "logP",
+  "tpsa",
+  "hbd",
+  "hba",
+  "vp",
+  "odt",
+  "n",
+  "rep",
+  "cas",
+  "inci",
+  "isUVCB",
+  "descriptorTags",
+  "odorThreshold_ngL",
+  "vpConfidence",
+  "isIsomerMix",
+];
+
+function hasDbMetadataValue(value) {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim() !== "";
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
+
+function cloneDbMetadataValue(value) {
+  if (Array.isArray(value)) return [...value];
+  if (value && typeof value === "object") return { ...value };
+  return value;
+}
+
 // Fix density — use index 14 (densityGmL first occurrence)
 Object.keys(DB).forEach((k) => {
   DB[k].densityGmL = RAW_DB[k][14] || 1.0;
+});
+
+Object.entries(DB).forEach(([name, d]) => {
+  if (d.entryKind === "canonical_material" || !d.canonicalMaterialKey) {
+    return;
+  }
+
+  const canonicalName = CANONICAL_DB_NAME_BY_KEY[d.canonicalMaterialKey];
+  if (!canonicalName) return;
+
+  const canonicalRecord = DB[canonicalName];
+  if (!canonicalRecord || canonicalRecord === d) return;
+
+  CANONICAL_CHEMISTRY_FIELDS.forEach((field) => {
+    if (hasDbMetadataValue(d[field])) return;
+    if (!hasDbMetadataValue(canonicalRecord[field])) return;
+    d[field] = cloneDbMetadataValue(canonicalRecord[field]);
+  });
 });
 
 const IFRA_STATE_LABELS = {
