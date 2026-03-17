@@ -35,21 +35,24 @@
       "urlSlug": "ylang-ylang-absolute"
     },
     "eden_botanicals:ylang-ylang-complete-fine-organic": {
-      "mappedCanonicalMaterialKey": null,
-      "mappedCatalogName": null,
-      "mappedEntryKind": null,
-      "normalizationStatus": "unmapped",
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang, Fine - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      "urlSlug": "ylang-ylang-complete-fine-organic",
+      "sku": null,
+      "registryStatus": "approved_draft_applied",
+      "mappedCatalogName": "Ylang-Ylang Fine Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_fine_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "draft_applied_pending_catalog_row",
+      "approvalState": "approved_draft_applied",
+      "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
       "notes": [
         "Proof-of-flow import target for the distinct Eden Fine grade listing.",
-        "Supplier-first registry record only; do not merge into Complete or Extra Superior during import."
-      ],
-      "productTitle": "Ylang Ylang, Fine - Organic EO",
-      "registryStatus": "pending_review",
-      "sku": null,
-      "supplierDisplayName": "Eden Botanicals",
-      "supplierKey": "eden_botanicals",
-      "url": "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
-      "urlSlug": "ylang-ylang-complete-fine-organic"
+        "Supplier-first registry record only; do not merge into Complete or Extra Superior during import.",
+        "Applied from approved supplier discovery draft export. Mapping only; canonical chemistry and IFRA remain manual review steps."
+      ]
     },
     "eden_botanicals:ylang-ylang-complete-organic-2080": {
       "mappedCanonicalMaterialKey": "ylang_ylang_complete_oil",
@@ -86,38 +89,44 @@
       "urlSlug": "ylang-ylang-extra-organic"
     },
     "eden_botanicals:ylang-ylang-i-organic": {
-      "mappedCanonicalMaterialKey": null,
-      "mappedCatalogName": null,
-      "mappedEntryKind": null,
-      "normalizationStatus": "unmapped",
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang I - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      "urlSlug": "ylang-ylang-i-organic",
+      "sku": null,
+      "registryStatus": "approved_draft_applied",
+      "mappedCatalogName": "Ylang-Ylang I Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_i_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "draft_applied_pending_catalog_row",
+      "approvalState": "approved_draft_applied",
+      "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
       "notes": [
         "Proof-of-flow import target for a distinct Eden fractional grade with no current catalog row.",
-        "Supplier-first registry record only; do not create canonical chemistry or IFRA data during import."
-      ],
-      "productTitle": "Ylang Ylang I - Organic EO",
-      "registryStatus": "pending_review",
-      "sku": null,
-      "supplierDisplayName": "Eden Botanicals",
-      "supplierKey": "eden_botanicals",
-      "url": "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
-      "urlSlug": "ylang-ylang-i-organic"
+        "Supplier-first registry record only; do not create canonical chemistry or IFRA data during import.",
+        "Applied from approved supplier discovery draft export. Mapping only; canonical chemistry and IFRA remain manual review steps."
+      ]
     },
     "eden_botanicals:ylang-ylang-ii-organic": {
-      "mappedCanonicalMaterialKey": null,
-      "mappedCatalogName": null,
-      "mappedEntryKind": null,
-      "normalizationStatus": "unmapped",
+      "supplierKey": "eden_botanicals",
+      "supplierDisplayName": "Eden Botanicals",
+      "productTitle": "Ylang Ylang II - Organic EO",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      "urlSlug": "ylang-ylang-ii-organic",
+      "sku": null,
+      "registryStatus": "approved_draft_applied",
+      "mappedCatalogName": "Ylang-Ylang II Oil, Org",
+      "mappedCanonicalMaterialKey": "ylang_ylang_ii_oil",
+      "mappedEntryKind": "supplier_product",
+      "normalizationStatus": "draft_applied_pending_catalog_row",
+      "approvalState": "approved_draft_applied",
+      "approvalAppliedAt": "2026-03-17T17:09:26.334Z",
       "notes": [
         "Proof-of-flow import target for a distinct Eden fractional grade with no current catalog row.",
-        "Supplier-first registry record only; do not create canonical chemistry or IFRA data during import."
-      ],
-      "productTitle": "Ylang Ylang II - Organic EO",
-      "registryStatus": "pending_review",
-      "sku": null,
-      "supplierDisplayName": "Eden Botanicals",
-      "supplierKey": "eden_botanicals",
-      "url": "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
-      "urlSlug": "ylang-ylang-ii-organic"
+        "Supplier-first registry record only; do not create canonical chemistry or IFRA data during import.",
+        "Applied from approved supplier discovery draft export. Mapping only; canonical chemistry and IFRA remain manual review steps."
+      ]
     },
     "eden_botanicals:ylang-ylang-iii-organic": {
       "mappedCanonicalMaterialKey": "ylang_ylang_iii_oil",
