@@ -175,5 +175,47 @@
         "note": "This is the same vanilla-absolute-50-bb supplier link already carried on Vanilla Absolute and does not read as a CO2 listing."
       }
     }
+  },
+  "Neroli Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "neroli_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a neroli Morocco listing and does not clearly indicate an absolute extract."
+      },
+      "Perfumers Apprentice": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a neroli Tunisia listing and does not clearly indicate an absolute extract."
+      }
+    }
+  },
+  "Orange Blossom Water Abs": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "orange_blossom_water_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for orange blossom water absolute."
+      },
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Orange Blossom Supreme is preserved as a vendor-specific orange blossom product and not assumed to be the same extract type as orange blossom water absolute."
+      }
+    }
+  },
+  "Petitgrain Bigarade EO": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "petitgrain_bigarade_eo",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for petitgrain bigarade essential oil."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for petitgrain bigarade essential oil."
+      }
+    }
   }
 }
