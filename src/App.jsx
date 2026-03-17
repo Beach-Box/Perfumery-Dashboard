@@ -384,28 +384,28 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Ylang Ylang Extra Absolute": [
-    150.17,
-    1.96,
-    26.3,
-    0,
-    2,
-    0.05,
-    5.0,
-    0.5,
-    "top",
-    "ABS",
-    false,
-    "Eden Botanicals",
-    "Creamy banana floral; exotic spice richness",
-    "Benzyl Acetate",
-    0,
-    "8006-81-3",
-    "Cananga Odorata Flower Extract",
-    "Floral",
-    "Creamy, exotic banana-floral",
-    "The 'Extra' grade absolute (first distillation) is the most complex and expensive. Rich benzyl acetate-driven banana-creamy floral with spicy eugenol facets. Extraordinarily powerful — use at low percentages for tropical florals.",
     null,
-    1.02,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    false,
+    null,
+    "Legacy compatibility alias — use Ylang-Ylang Extra Oil, Comoros or Ylang-Ylang Absolute.",
+    null,
+    0,
+    null,
+    null,
+    null,
+    "Legacy Ylang Alias",
+    "Deprecated compatibility row for a misnamed Ylang product. Use Ylang-Ylang Extra Oil, Comoros for the extra-oil product or Ylang-Ylang Absolute for the absolute.",
+    null,
+    null,
     null, null, null, null, null, null, null
   ],
   "Cinnamon Bark EO": [
@@ -22435,28 +22435,28 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Ylang-Ylang Absolute": [
-    null,
-    6.2,
-    null,
+    150.17,
+    1.96,
+    26.3,
     0,
-    0,
-    null,
-    null,
-    null,
+    2,
+    0.05,
+    5.0,
+    0.5,
     "mid",
     "ABS",
     false,
     "Fraterworks",
-    "Floral abs by Biolandes",
-    null,
+    "Creamy banana floral; exotic spice richness",
+    "Benzyl Acetate",
     0,
-    null,
-    "Ylang-Ylang Absolute",
+    "8006-81-3",
+    "Cananga Odorata Flower Extract",
     "Floral",
-    "Ylang-Ylang Absolute",
-    "Floral abs by Biolandes",
+    "Creamy, exotic banana-floral",
+    "Ylang-ylang absolute floral extract with creamy banana richness and a more tenacious extract profile than the distilled oil grades.",
     null,
-    null,
+    1.02,
     null, null, null, null, null, null, null
   ],
   "Animusk™ Extra": [
@@ -32257,34 +32257,6 @@ const PRICING = {
         [15.0, "ml", 209.5],
         [50.0, "g", 620.0],
       ],
-    },
-  },
-  "Ylang Ylang Extra Absolute": {
-    "Eden Botanicals": {
-      url: "https://www.edenbotanicals.com/ylang-ylang-extra-organic.html",
-      S: [
-        [5.0, "mL", 15.5],
-        [15.0, "mL", 26.5],
-        [30.0, "mL", 46.0],
-        [59.1, "mL", 81.75],
-        [118.3, "mL", 145.25],
-        [236.6, "mL", 260.5],
-        [473.2, "mL", 472.0],
-        [1000, "g", 940.75],
-      ],
-    },
-    Fraterworks: {
-      url: "https://fraterworks.com/products/ylang-ylang-extra-oil-comoros",
-      S: [
-        [1, "g", 9.44],
-        [4, "g", 18.88],
-        [15, "g", 56.64],
-        [25, "g", 82.6],
-        [50, "g", 143.96],
-        [100, "g", 253.7],
-        [250, "g", 572.3],
-      ],
-      inStock: true,
     },
   },
   "Cinnamon Bark EO": {
@@ -48058,6 +48030,16 @@ const PRICING = {
     },
   },
   "Ylang-Ylang Absolute": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-absolute.html",
+      S: [
+        [1.0, "mL", 5.75],
+        [2.0, "mL", 11.0],
+        [5.0, "mL", 22.0],
+        [15.0, "mL", 55.0],
+        [30.0, "mL", 99.0],
+      ],
+    },
     Fraterworks: {
       url: "https://fraterworks.com/products/ylang-ylang-absolute",
       S: [
@@ -51092,6 +51074,19 @@ const PRICING = {
     },
   },
   "Ylang-Ylang Extra Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-extra-organic.html",
+      S: [
+        [5.0, "mL", 15.5],
+        [15.0, "mL", 26.5],
+        [30.0, "mL", 46.0],
+        [59.1, "mL", 81.75],
+        [118.3, "mL", 145.25],
+        [236.6, "mL", 260.5],
+        [473.2, "mL", 472.0],
+        [1000, "g", 940.75],
+      ],
+    },
     Fraterworks: {
       url: "https://fraterworks.com/products/ylang-ylang-extra-comoros",
       S: [
@@ -51325,6 +51320,20 @@ const PRICING = {
     },
   },
   "Ylang-Ylang III Oil, Org": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-iii-organic.html",
+      S: [
+        [1.0, "mL", 3.0],
+        [5.0, "mL", 9.5],
+        [15.0, "mL", 14.5],
+        [30.0, "mL", 25.25],
+        [59.1, "mL", 43.0],
+        [118.3, "mL", 76.5],
+        [236.6, "mL", 135.75],
+        [473.2, "mL", 246.25],
+        [1000, "g", 513.5],
+      ],
+    },
     Fraterworks: {
       url: "https://fraterworks.com/products/ylang-ylang-iii-oil",
       S: [
@@ -52475,6 +52484,20 @@ const PRICING = {
     },
   },
   "Ylang-Ylang Complete Oil": {
+    "Eden Botanicals": {
+      url: "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
+      S: [
+        [1.0, "mL", 3.0],
+        [5.0, "mL", 12.5],
+        [15.0, "mL", 20.0],
+        [30.0, "mL", 34.5],
+        [59.1, "mL", 59.25],
+        [118.3, "mL", 106.25],
+        [236.6, "mL", 191.0],
+        [473.2, "mL", 345.75],
+        [1000, "g", 707.75],
+      ],
+    },
     Fraterworks: {
       url: "https://fraterworks.com/products/ylang-ylang-complete",
       S: [
@@ -53722,7 +53745,7 @@ const FORMULAS_INIT = [
     ingredients: [
       { name: "Sweet Orange Absolute", g: 65, note: "top" },
       { name: "Gamma Decalactone", g: 50, note: "top" },
-      { name: "Ylang Ylang Extra Absolute", g: 30, note: "top" },
+      { name: "Ylang-Ylang Extra Oil, Comoros", g: 30, note: "top" },
       { name: "Methyl Pamplemousse", g: 25, note: "top" },
       { name: "Coconut CO2", g: 100, note: "mid" },
       { name: "Heliotropin", g: 30, note: "mid" },
@@ -54237,7 +54260,7 @@ const _dilOverrides = {
 };
 const _uvNames = new Set([
   "Bergamot EO FCF","Lemon EO Italy","Jasmine Sambac Absolute",
-  "Ylang Ylang Extra Absolute","Ylang Ylang Complete",
+  "Ylang-Ylang Extra Oil, Comoros","Ylang Ylang Complete",
   "Himalayan Cedarwood EO","Clearwood\u00ae PRISMA","Clearwood",
   "Oakmoss Absolute (10%)","Frangipani Absolute (10%)","Osmanthus Absolute (10%)",
 ]);

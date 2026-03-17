@@ -1048,6 +1048,21 @@ export function getCanonicalCatalogName(name) {
 }
 
 const CANONICAL_MATERIAL_SOURCE_DATA = {
+  ylang_ylang_extra_oil: {
+    canonicalMaterialKey: "ylang_ylang_extra_oil",
+    canonicalName: "Ylang-Ylang Extra Oil",
+    note: "mid",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Diffusive creamy ylang extra oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang extra-oil family. Supplier product pages indicate this family is an essential oil, not an absolute.",
+    rep: "Benzyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Creamy", "Ylang"],
+  },
   labdanum_absolute: {
     canonicalMaterialKey: "labdanum_absolute",
     canonicalName: "Labdanum Absolute",
@@ -1623,25 +1638,21 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Ylang Ylang Extra Absolute": {
     canonicalAppName: "Ylang Ylang Extra Absolute",
     normalizedName: "Ylang Ylang Extra Absolute",
-    matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: "ylang ylang extra absolute",
+    matchStrategy: "legacy_compatibility_alias",
+    resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: [
-      "Ylang Ylang Extra Absolute",
-      "Ylang Ylang Extra",
-      "Ylang ylang oil",
-      "Ylang ylang",
-    ],
+    aliases: ["Ylang Ylang Extra Absolute", "Ylang-Ylang Extra Absolute"],
     stock: null,
-    dbNoteRole: "top",
-    dbMaterialType: "ABS",
+    dbNoteRole: "mid",
+    dbMaterialType: "EO",
     currentAppIfraFlag: false,
     currentAppIfraText:
-      "The 'Extra' grade absolute (first distillation) is the most complex and expensive. Rich benzyl acetate-driven banana-creamy floral with spicy eugenol facets. Extraordinarily powerful \u2014 use at low percentages for tropical florals.",
-    pdfMatchStatus: "index_match",
-    pdfMatchedAlias: "Ylang Ylang Extra",
-    pdfMatchedPage: 16.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+      "Legacy compatibility alias \u2014 use Ylang-Ylang Extra Oil, Comoros for the extra-oil product or Ylang-Ylang Absolute for the absolute.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Deprecated compatibility alias for a misnamed Ylang row. Do not treat as a standalone supplier product or direct listed IFRA identity.",
   },
   "Benzyl Benzoate": {
     canonicalAppName: "Benzyl Benzoate",

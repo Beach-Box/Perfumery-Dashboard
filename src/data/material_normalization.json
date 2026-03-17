@@ -104,29 +104,36 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "poplar_bud_absolute"
   },
-  "Ylang Ylang Extra Absolute": {
+  "Ylang-Ylang Extra Oil": {
     "entryKind": "canonical_material",
-    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
-    "supplierLinks": {
-      "Eden Botanicals": {
-        "status": "primary_listing",
-        "note": "Primary Eden Botanicals listing for the extra grade ylang row."
-      },
-      "Fraterworks": {
-        "status": "primary_listing",
-        "note": "Primary Fraterworks extra-oil listing; the same supplier URL is also carried by Ylang-Ylang Extra Oil, Comoros."
-      }
-    }
+    "canonicalMaterialKey": "ylang_ylang_extra_oil"
+  },
+  "Ylang Ylang Extra Absolute": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_oil",
+    "linkedDuplicateOfCatalogName": "Ylang-Ylang Extra Oil, Comoros"
   },
   "Ylang-Ylang Extra Oil, Comoros": {
     "entryKind": "supplier_product",
-    "canonicalMaterialKey": "ylang_ylang_extra_absolute",
-    "linkedDuplicateOfCatalogName": "Ylang Ylang Extra Absolute",
+    "canonicalMaterialKey": "ylang_ylang_extra_oil",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "linked_duplicate",
-        "duplicateOfCatalogName": "Ylang Ylang Extra Absolute",
-        "note": "Duplicates the Fraterworks extra-oil URL and pricing already present on Ylang Ylang Extra Absolute."
+        "status": "primary_listing",
+        "note": "Distinct Fraterworks Ylang-Ylang Extra Oil, Comoros listing."
+      }
+    }
+  },
+  "Ylang-Ylang Extra Oil, Org": {
+    "entryKind": "supplier_product",
+    "canonicalMaterialKey": "ylang_ylang_extra_oil",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Extra - Organic EO listing."
+      },
+      "Fraterworks": {
+        "status": "primary_listing",
+        "note": "Distinct Fraterworks Ylang-Ylang Extra Oil, Org listing; product title differs from the Comoros extra-oil listing even though the URL slug is similar."
       }
     }
   },
@@ -134,6 +141,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_absolute",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Absolute listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang absolute supplier listing."
@@ -144,6 +155,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_iii_oil",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang III - Organic EO listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang grade III supplier listing."
@@ -154,6 +169,10 @@
     "entryKind": "canonical_material",
     "canonicalMaterialKey": "ylang_ylang_complete_oil",
     "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Matching Eden Botanicals Ylang Ylang Complete - Organic EO listing."
+      },
       "Fraterworks": {
         "status": "primary_listing",
         "note": "Distinct ylang complete supplier listing."
@@ -166,7 +185,7 @@
     "supplierLinks": {
       "Fraterworks": {
         "status": "supplier_grade_variant",
-        "note": "Vendor-specific superior/extra grade variant; preserved separately and not treated as an exact duplicate."
+        "note": "Vendor-specific superior extra-oil grade variant; preserved separately and not treated as an exact duplicate."
       }
     }
   },
