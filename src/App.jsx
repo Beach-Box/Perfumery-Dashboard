@@ -21,6 +21,7 @@ import {
   ReferenceArea,
 } from "recharts";
 import {
+  computeActiveRestrictedPercent,
   getIfraMaterialRecord,
   getIfraUiState,
   resolveIngredientIdentity,
@@ -31395,6 +31396,9 @@ function getIngredientIfraData(name) {
       ? IFRA_STATE_BADGE_META[displayState] ||
         IFRA_STATE_BADGE_META.unresolved_identity
       : null;
+  const limits = material?.limits ? { ...material.limits } : null;
+  const hasDefinedLimit =
+    limits != null && Object.values(limits).some((limit) => limit != null);
   const cat4Limit = material?.limits?.cat4 ?? null;
 
   return {
@@ -31405,6 +31409,8 @@ function getIngredientIfraData(name) {
           IFRA_STATE_LABELS.unresolved_identity
         : null,
     cat4Limit,
+    limits,
+    hasDefinedLimit,
     badgeLabel: badgeMeta?.compactLabel || null,
     badgeStyle: badgeMeta
       ? {
@@ -31452,10 +31458,49 @@ Object.entries(DB).forEach(([name, d]) => {
   }
 
   const ifraData = getIngredientIfraData(name);
-  if (d.ifraLimits == null && ifraData.cat4Limit != null) {
-    d.ifraLimits = { cat4: ifraData.cat4Limit };
+  const helperLimits = Object.fromEntries(
+    Object.entries(ifraData.limits || {}).filter(([, limit]) => limit != null)
+  );
+  if (ifraData.state === "listed" && Object.keys(helperLimits).length > 0) {
+    d.ifraLimits = {
+      ...(d.ifraLimits || {}),
+      ...helperLimits,
+    };
   }
 });
+
+function getFormulaIfraRows(items, category) {
+  const totalG = items.reduce((s, i) => s + i.g, 0) || 1;
+
+  return items
+    .map((item) => {
+      const ifraData = getIngredientIfraData(item.name);
+      if (ifraData.state !== "listed" || !ifraData.hasDefinedLimit) return null;
+
+      const formulaPercent = (item.g / totalG) * 100;
+      const activePercent =
+        computeActiveRestrictedPercent({
+          formulaPercent,
+          ingredientName: item.name,
+        }) ?? formulaPercent;
+      const limit = ifraData.limits?.[category] ?? null;
+
+      let status = "ok";
+      if (limit == null) status = "unknown";
+      else if (activePercent > limit) status = "fail";
+      else if (activePercent > limit * 0.8) status = "warn";
+
+      return {
+        name: item.name,
+        limit,
+        status,
+        formulaPercent,
+        activePercent,
+        usesActivePercent: Math.abs(activePercent - formulaPercent) > 0.0001,
+      };
+    })
+    .filter(Boolean);
+}
 
 // ─────────────────────────────────────────────────────────────
 // SUPPLIER PRICING   [qty, unit, priceUSD]
@@ -58111,19 +58156,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     </div>
                   </div>
                   {(() => {
-                    const ifraItems = buildItems.filter(item => DB[item.name]?.ifraLimits);
-                    if (ifraItems.length === 0) return null;
-                    const totalG = buildItems.reduce((s, i) => s + i.g, 0) || 1;
+                    const rows = getFormulaIfraRows(buildItems, ifraCategory);
+                    if (rows.length === 0) return null;
                     const catLabels = { cat4: "Cat 4 — Fine Fragrance", cat5b: "Cat 5b — Face Moisturizer", cat9: "Cat 9 — Body Lotion", cat1: "Cat 1 — Lip Product", cat11a: "Cat 11a — Rinse-off Body" };
-                    const rows = ifraItems.map(item => {
-                      const pct = (item.g / totalG) * 100;
-                      const limit = DB[item.name].ifraLimits[ifraCategory];
-                      let status = "ok";
-                      if (limit == null) status = "unknown";
-                      else if (pct > limit) status = "fail";
-                      else if (pct > limit * 0.8) status = "warn";
-                      return { name: item.name, pct, limit, status };
-                    });
+                    const anyActiveAdjusted = rows.some(r => r.usesActivePercent);
                     const allOk = rows.every(r => r.status === "ok" || r.status === "unknown");
                     const anyFail = rows.some(r => r.status === "fail");
                     return (
@@ -58134,14 +58170,28 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             {Object.entries(catLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                           </select>
                         </div>
-                        {rows.map(({ name, pct, limit, status }) => (
+                        {rows.map(({ name, activePercent, formulaPercent, limit, status, usesActivePercent }) => (
                           <div key={name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5, fontSize: 10 }}>
                             <span style={{ flex: 1, color: "#CBD5E1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
-                            <span style={{ color: "#64748B", minWidth: 48, textAlign: "right" }}>{pct.toFixed(2)}%</span>
+                            <span
+                              style={{ color: "#64748B", minWidth: 48, textAlign: "right" }}
+                              title={
+                                usesActivePercent
+                                  ? `Active restricted material percent: ${activePercent.toFixed(2)}% from ${formulaPercent.toFixed(2)}% stock usage`
+                                  : undefined
+                              }
+                            >
+                              {activePercent.toFixed(2)}%
+                            </span>
                             <span style={{ color: "#475569", minWidth: 48, textAlign: "right" }}>{limit != null ? `≤${limit}%` : "—"}</span>
                             <span style={{ minWidth: 18 }}>{status === "ok" ? "✅" : status === "warn" ? "⚠️" : status === "fail" ? "🚫" : "❓"}</span>
                           </div>
                         ))}
+                        {anyActiveAdjusted && (
+                          <div style={{ marginTop: 6, fontSize: 9, color: "#64748B" }}>
+                            Diluted stocks are evaluated by active restricted material percent.
+                          </div>
+                        )}
                         <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: anyFail ? "#450A0A" : allOk ? "#052E16" : "#431407", border: `1px solid ${anyFail ? "#991B1B" : allOk ? "#166534" : "#92400E"}`, fontSize: 10, color: anyFail ? "#FCA5A5" : allOk ? "#86EFAC" : "#FCD34D", fontWeight: 600 }}>
                           {anyFail ? "🚫 IFRA Violations Detected — Reduce highlighted ingredients" : allOk ? `✅ IFRA Compliant — ${catLabels[ifraCategory]}` : "⚠️ Some ingredients approaching limit — review before production"}
                         </div>
@@ -59238,13 +59288,9 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 const withData = ings.filter(i => DB[i.name]?.VP > 0 && DB[i.name]?.ODT > 0);
                 const dataCompleteness = (withData.reduce((s, i) => s + i.g, 0) / totalG) * 10;
                 const ifraScore = (() => {
-                  const ifraIngs = ings.filter(i => DB[i.name]?.ifraLimits);
-                  if (ifraIngs.length === 0) return 10;
-                  const violations = ifraIngs.filter(i => {
-                    const pct = (i.g / totalG) * 100;
-                    const lim = DB[i.name].ifraLimits["cat4"];
-                    return lim != null && pct > lim;
-                  });
+                  const ifraRows = getFormulaIfraRows(ings, "cat4");
+                  if (ifraRows.length === 0) return 10;
+                  const violations = ifraRows.filter(r => r.status === "fail");
                   return Math.max(0, 10 - violations.length * 3);
                 })();
                 const accordScore = (() => {
