@@ -29,10 +29,16 @@
       "Eden Botanicals": {
         "status": "primary_listing",
         "note": "Direct supplier match for benzoin Siam absolute."
-      },
+      }
+    }
+  },
+  "Benzoin Siam Resinoid 50% TEC": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "benzoin_siam_resinoid",
+    "supplierLinks": {
       "Fraterworks": {
-        "status": "supplier_grade_variant",
-        "note": "Supplier URL is a benzoin-siam-resinoid-50-tec product, so it is preserved as a related supplier variant rather than a clean absolute listing."
+        "status": "primary_listing",
+        "note": "Direct supplier match for the benzoin Siam resinoid 50% TEC stock."
       }
     }
   },
