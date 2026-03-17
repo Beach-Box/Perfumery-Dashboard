@@ -54963,6 +54963,38 @@ function buildApprovedSupplierImportDraft(item) {
   };
 }
 
+function getApprovedSupplierImportDraftRecords(localReviewState) {
+  return Object.entries(localReviewState || {})
+    .filter(([, record]) => record?.decision === "approved")
+    .map(([supplierProductKey, record]) => ({
+      supplierProductKey,
+      approvalStatus: record?.reviewStatus || "approved_local_draft",
+      reviewedAt: record?.reviewedAt || null,
+      sourceSnapshot: record?.sourceSnapshot || null,
+      supplierProductRowDraft: record?.supplierProductRowDraft || null,
+      normalizationEntryDraft: record?.normalizationEntryDraft || null,
+    }))
+    .sort((a, b) => a.supplierProductKey.localeCompare(b.supplierProductKey));
+}
+
+function buildApprovedSupplierImportExportPayload(localReviewState) {
+  const approvedDrafts = getApprovedSupplierImportDraftRecords(
+    localReviewState
+  );
+
+  return {
+    metadata: {
+      version: 1,
+      source: "browser_local_supplier_import_review",
+      exportedAt: new Date().toISOString(),
+      approvedDraftCount: approvedDrafts.length,
+      note:
+        "Portable review artifacts only. Canonical chemistry, IFRA, and live catalog rows must still be reviewed and applied manually.",
+    },
+    approvedDrafts,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -55035,6 +55067,8 @@ export default function App() {
         return {};
       }
     });
+  const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
+    useState("");
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
   const [dilVolume, setDilVolume] = useState("30");
@@ -55086,6 +55120,54 @@ export default function App() {
       );
     } catch (e) {}
   }, [supplierImportLocalReviewState]);
+  const approvedSupplierDraftRecords = useMemo(
+    () =>
+      getApprovedSupplierImportDraftRecords(supplierImportLocalReviewState),
+    [supplierImportLocalReviewState]
+  );
+  const approvedSupplierDraftExportPayload = useMemo(
+    () =>
+      buildApprovedSupplierImportExportPayload(
+        supplierImportLocalReviewState
+      ),
+    [supplierImportLocalReviewState]
+  );
+  const approvedSupplierDraftExportJson = useMemo(
+    () => JSON.stringify(approvedSupplierDraftExportPayload, null, 2),
+    [approvedSupplierDraftExportPayload]
+  );
+  const exportApprovedSupplierDrafts = useCallback(() => {
+    const blob = new Blob([approvedSupplierDraftExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_supplier_import_approved_drafts.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSupplierDraftExportStatus(
+      `Exported ${approvedSupplierDraftRecords.length} approved draft${
+        approvedSupplierDraftRecords.length === 1 ? "" : "s"
+      }.`
+    );
+  }, [approvedSupplierDraftExportJson, approvedSupplierDraftRecords.length]);
+  const copyApprovedSupplierDrafts = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSupplierDraftExportStatus("Copy unavailable in this browser.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(approvedSupplierDraftExportJson);
+      setSupplierDraftExportStatus(
+        `Copied ${approvedSupplierDraftRecords.length} approved draft${
+          approvedSupplierDraftRecords.length === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSupplierDraftExportStatus("Copy failed.");
+    }
+  }, [approvedSupplierDraftExportJson, approvedSupplierDraftRecords.length]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -60949,6 +61031,172 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       review queue.
                     </div>
                   )}
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#93C5FD",
+                          }}
+                        >
+                          📦 Approved Draft Export
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                          }}
+                        >
+                          Exports approved local supplier-product drafts as
+                          portable review JSON only. No live apply step runs
+                          here.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background:
+                            approvedSupplierDraftRecords.length > 0
+                              ? "#0A2E1A"
+                              : "#0A1628",
+                          border: `1px solid ${
+                            approvedSupplierDraftRecords.length > 0
+                              ? "#166534"
+                              : BORDER
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            approvedSupplierDraftRecords.length > 0
+                              ? "#86EFAC"
+                              : "#94A3B8",
+                          padding: "4px 10px",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {approvedSupplierDraftRecords.length > 0
+                          ? `${approvedSupplierDraftRecords.length} approved`
+                          : "no approved drafts"}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <button
+                        onClick={exportApprovedSupplierDrafts}
+                        disabled={approvedSupplierDraftRecords.length === 0}
+                        style={{
+                          background:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "#0A1628"
+                              : "#0A2E1A",
+                          border: `1px solid ${
+                            approvedSupplierDraftRecords.length === 0
+                              ? BORDER
+                              : "#166534"
+                          }`,
+                          borderRadius: 8,
+                          color:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "#475569"
+                              : "#86EFAC",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "not-allowed"
+                              : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📤 Export Approved Drafts
+                      </button>
+                      <button
+                        onClick={copyApprovedSupplierDrafts}
+                        disabled={approvedSupplierDraftRecords.length === 0}
+                        style={{
+                          background:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "#0A1628"
+                              : "#0A1628",
+                          border: `1px solid ${
+                            approvedSupplierDraftRecords.length === 0
+                              ? BORDER
+                              : "#1D4ED8"
+                          }`,
+                          borderRadius: 8,
+                          color:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "#475569"
+                              : "#93C5FD",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor:
+                            approvedSupplierDraftRecords.length === 0
+                              ? "not-allowed"
+                              : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📋 Copy JSON
+                      </button>
+                      {supplierDraftExportStatus && (
+                        <span
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          {supplierDraftExportStatus}
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      readOnly
+                      value={approvedSupplierDraftExportJson}
+                      spellCheck={false}
+                      style={{
+                        width: "100%",
+                        minHeight: 160,
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                        color: "#CBD5E1",
+                        padding: "10px 12px",
+                        fontSize: 8.5,
+                        lineHeight: 1.6,
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Info box */}
