@@ -33,6 +33,7 @@ import {
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
 import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
+import supplierPriceDraftSeedsFile from "./data/supplier_price_draft_seeds.json";
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -37039,19 +37040,34 @@ const PRICING = {
   "Ylang-Ylang Fine Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 11.25],
+        [3, "mL", 27],
+        [5, "mL", 43],
+        [15, "mL", 117],
+      ],
     },
   },
   "Ylang-Ylang I Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 10],
+        [3, "mL", 23.25],
+        [5, "mL", 38],
+        [15, "mL", 104],
+      ],
     },
   },
   "Ylang-Ylang II Oil, Org": {
     "Eden Botanicals": {
       url: "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
-      S: [],
+      S: [
+        [1, "mL", 8.75],
+        [3, "mL", 21],
+        [5, "mL", 33],
+        [15, "mL", 90.75],
+      ],
     },
   },
   Zenolide: {
@@ -55117,6 +55133,7 @@ const CANONICAL_NORMALIZATION_NAME_BY_KEY = Object.fromEntries(
     )
     .map(([name, entry]) => [entry.canonicalMaterialKey, name])
 );
+const SUPPLIER_PRICE_DRAFT_SEEDS = supplierPriceDraftSeedsFile.drafts || {};
 
 function buildCatalogRowDraftSupplierSnapshot(supplierProductKey, record) {
   return {
@@ -55377,6 +55394,8 @@ function buildSupplierPriceDraftReviewNotes({
   supplierProductKey,
   normalizationEntry,
   registryRecord,
+  seededPricePoints,
+  seedRecord,
   ownedPricePoints,
 }) {
   const notes = [
@@ -55395,7 +55414,13 @@ function buildSupplierPriceDraftReviewNotes({
     );
   }
 
-  if (!ownedPricePoints.length) {
+  if (seededPricePoints.length > 0) {
+    notes.push(
+      `Trusted supplier size/price tuples were captured for review on ${
+        seedRecord?.capturedAt || "an earlier pass"
+      }.`
+    );
+  } else if (!ownedPricePoints.length) {
     notes.push(
       "No trusted supplier size/price points are currently stored for this owned row. Capture sizes and prices from the supplier page before applying."
     );
@@ -55407,6 +55432,10 @@ function buildSupplierPriceDraftReviewNotes({
 
   if (registryRecord?.notes?.length) {
     notes.push(registryRecord.notes[0]);
+  }
+
+  if (seedRecord?.notes?.length) {
+    notes.push(seedRecord.notes[0]);
   }
 
   return notes;
@@ -55446,6 +55475,12 @@ function getGeneratedSupplierPriceDraftRecords() {
 
       const registryUrl = normalizeSupplierDraftUrl(registryRecord.url);
       if (!registryUrl || registryUrl !== ownedUrl) return [];
+      const seedRecord = SUPPLIER_PRICE_DRAFT_SEEDS[supplierProductKey] || null;
+      const seededPricePoints = Array.isArray(seedRecord?.pricePoints)
+        ? seedRecord.pricePoints
+            .map(normalizeSupplierDraftPricePoint)
+            .filter(Boolean)
+        : [];
 
       const ownedPricePoints = Array.isArray(ownedSupplierEntry?.S)
         ? ownedSupplierEntry.S.map(normalizeSupplierDraftPricePoint).filter(Boolean)
@@ -55457,8 +55492,10 @@ function getGeneratedSupplierPriceDraftRecords() {
           supplierName,
           supplierProductKey,
           url: ownedSupplierEntry.url,
-          pricePoints: [],
-          priceDraftStatus: ownedPricePoints.length
+          pricePoints: seededPricePoints,
+          priceDraftStatus: seededPricePoints.length
+            ? "trusted_price_points_captured"
+            : ownedPricePoints.length
             ? "live_prices_present_review_only"
             : "missing_trusted_price_data",
           entryKind: normalizationEntry?.entryKind || null,
@@ -55469,12 +55506,20 @@ function getGeneratedSupplierPriceDraftRecords() {
             registryRecord
           ),
           normalizationEntry: { ...normalizationEntry },
+          trustedPriceSeed: seedRecord
+            ? {
+                capturedAt: seedRecord.capturedAt || null,
+                captureMethod: seedRecord.captureMethod || null,
+              }
+            : null,
           notes: buildSupplierPriceDraftReviewNotes({
             catalogName,
             supplierName,
             supplierProductKey,
             normalizationEntry,
             registryRecord,
+            seededPricePoints,
+            seedRecord,
             ownedPricePoints,
           }),
         },

@@ -196,7 +196,8 @@ function getTopLevelObjectEntryMatches(objectText) {
 }
 
 function findSupplierSArrayBounds(pricingSection, catalogDisplayName, supplierName) {
-  const objectText = pricingSection.slice("const PRICING = ".length);
+  const pricingObjectOffset = "const PRICING = ".length;
+  const objectText = pricingSection.slice(pricingObjectOffset);
   const rowMatches = getTopLevelObjectEntryMatches(objectText);
   const rowMatch = rowMatches.find(
     (match) => normalizeName(match.key) === normalizeName(catalogDisplayName)
@@ -205,7 +206,9 @@ function findSupplierSArrayBounds(pricingSection, catalogDisplayName, supplierNa
     throw new Error(`Could not locate PRICING row for "${catalogDisplayName}".`);
   }
 
-  const rowText = objectText.slice(rowMatch.keyStart, rowMatch.closingBraceIndex + 1);
+  const rowAbsoluteStart = pricingObjectOffset + rowMatch.keyStart;
+  const rowAbsoluteEnd = pricingObjectOffset + rowMatch.closingBraceIndex;
+  const rowText = pricingSection.slice(rowAbsoluteStart, rowAbsoluteEnd + 1);
   const rowObjectStart = rowText.indexOf("{");
   const rowInnerText = rowText.slice(rowObjectStart + 1, -1);
   const supplierMatches = getTopLevelObjectEntryMatches(`{${rowInnerText}}`).map(
@@ -224,15 +227,16 @@ function findSupplierSArrayBounds(pricingSection, catalogDisplayName, supplierNa
     );
   }
 
-  const supplierAbsoluteStart =
-    "const PRICING = ".length + rowMatch.keyStart + rowObjectStart + 1 + supplierMatch.keyStart;
-  const supplierAbsoluteEnd =
-    "const PRICING = ".length +
-    rowMatch.keyStart +
-    rowObjectStart +
-    1 +
-    supplierMatch.closingBraceIndex;
-  const supplierText = objectText.slice(supplierAbsoluteStart, supplierAbsoluteEnd + 1);
+  const supplierRelativeStart =
+    rowObjectStart + 1 + supplierMatch.keyStart;
+  const supplierRelativeEnd =
+    rowObjectStart + 1 + supplierMatch.closingBraceIndex;
+  const supplierAbsoluteStart = rowAbsoluteStart + supplierRelativeStart;
+  const supplierAbsoluteEnd = rowAbsoluteStart + supplierRelativeEnd;
+  const supplierText = pricingSection.slice(
+    supplierAbsoluteStart,
+    supplierAbsoluteEnd + 1
+  );
   const sFieldIndex = supplierText.indexOf("S:");
   if (sFieldIndex === -1) {
     throw new Error(
