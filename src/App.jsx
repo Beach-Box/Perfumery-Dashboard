@@ -31597,7 +31597,7 @@ function getNormalizationGroupKey(name, record = DB[name]) {
   );
 }
 
-function buildIngredientPickerSearchText(name, record = DB[name]) {
+function buildIngredientSearchText(name, record = DB[name]) {
   const parts = [
     name,
     record?.scentClass,
@@ -31629,6 +31629,12 @@ function buildIngredientPickerSearchText(name, record = DB[name]) {
   return parts.filter(Boolean).join(" ").toLowerCase();
 }
 
+function matchesIngredientSearch(name, query, record = DB[name]) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+  return buildIngredientSearchText(name, record).includes(normalizedQuery);
+}
+
 function getNormalizationAwarePickerResult(
   candidateNames,
   { query = "", excludeNames = [] } = {}
@@ -31637,8 +31643,7 @@ function getNormalizationAwarePickerResult(
   const excludedNames = new Set(excludeNames);
   const candidates = candidateNames.filter((name) => {
     if (excludedNames.has(name)) return false;
-    if (!normalizedQuery) return true;
-    return buildIngredientPickerSearchText(name).includes(normalizedQuery);
+    return matchesIngredientSearch(name, normalizedQuery);
   });
 
   const primaryGroupKeys = new Set(
@@ -55007,13 +55012,7 @@ export default function App() {
     () =>
       allIngredients.filter((n) => {
         const d = DB[n];
-        if (
-          catSearch &&
-          !n.toLowerCase().includes(catSearch.toLowerCase()) &&
-          !d.scentClass?.toLowerCase().includes(catSearch.toLowerCase()) &&
-          !d.scentSummary?.toLowerCase().includes(catSearch.toLowerCase())
-        )
-          return false;
+        if (!matchesIngredientSearch(n, catSearch, d)) return false;
         if (
           catSupplier !== "All" &&
           d.supplier !== catSupplier &&
