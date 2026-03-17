@@ -29,7 +29,36 @@
     "canonicalMaterialKey": "peru_balsam_resinoid",
     "supplierLinks": {
       "Fraterworks": {
-        "status": "primary_listing"
+        "status": "supplier_grade_variant",
+        "note": "Vendor-branded Peru balsam resinoid listing; preserved separately from the Peru balsam oil row."
+      }
+    }
+  },
+  "Labdanum Absolute 10%": {
+    "entryKind": "diluted_stock",
+    "canonicalMaterialKey": "labdanum_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for the 10% labdanum absolute stock."
+      },
+      "Fraterworks": {
+        "status": "cross_wired_listing",
+        "note": "Supplier URL reads as a full/premium labdanum absolute listing rather than a 10% stock."
+      }
+    }
+  },
+  "Benzoin Siam Absolute": {
+    "entryKind": "canonical_material",
+    "canonicalMaterialKey": "benzoin_siam_absolute",
+    "supplierLinks": {
+      "Eden Botanicals": {
+        "status": "primary_listing",
+        "note": "Direct supplier match for benzoin Siam absolute."
+      },
+      "Fraterworks": {
+        "status": "supplier_grade_variant",
+        "note": "Supplier URL is a benzoin-siam-resinoid-50-tec product, so it is preserved as a related supplier variant rather than a clean absolute listing."
       }
     }
   },
