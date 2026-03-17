@@ -54914,6 +54914,55 @@ function ScoreBar({ label, value, max = 10, color }) {
   );
 }
 
+const SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY =
+  "bb_supplier_import_local_review_v1";
+
+function buildSupplierImportSourceSnapshot(item) {
+  return {
+    supplierProductKey: item?.supplierProductKey || null,
+    supplier: item?.supplier || null,
+    productTitle: item?.productTitle || null,
+    url: item?.url || null,
+    proposedCatalogName: item?.proposedCatalogNameRaw || null,
+    proposedEntryKind: item?.proposedEntryKindRaw || null,
+    proposedCanonicalMaterialKey: item?.proposedCanonicalMaterialKeyRaw || null,
+    sourceReviewStatus: item?.sourceReviewStatus || null,
+    sourceNormalizationStatus: item?.sourceNormalizationStatus || null,
+  };
+}
+
+function buildApprovedSupplierImportDraft(item) {
+  const proposedCatalogName = item?.proposedCatalogNameRaw || null;
+  const proposedEntryKind = item?.proposedEntryKindRaw || "supplier_product";
+  const proposedCanonicalMaterialKey =
+    item?.proposedCanonicalMaterialKeyRaw || null;
+
+  return {
+    supplierProductRowDraft: proposedCatalogName
+      ? {
+          catalogName: proposedCatalogName,
+          entryKind: proposedEntryKind,
+          canonicalMaterialKey: proposedCanonicalMaterialKey,
+          supplierProductKey: item?.supplierProductKey || null,
+          supplierDisplayName: item?.supplier || null,
+          productTitle: item?.productTitle || null,
+          url: item?.url || null,
+          approvalState: "approved_local_draft",
+        }
+      : null,
+    normalizationEntryDraft: proposedCatalogName
+      ? {
+          [proposedCatalogName]: {
+            entryKind: proposedEntryKind,
+            canonicalMaterialKey: proposedCanonicalMaterialKey,
+            importedFromSupplierProductKey: item?.supplierProductKey || null,
+            approvalState: "approved_local_draft",
+          },
+        }
+      : null,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -54975,6 +55024,17 @@ export default function App() {
   });
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
+  const [supplierImportLocalReviewState, setSupplierImportLocalReviewState] =
+    useState(() => {
+      try {
+        const s = localStorage.getItem(
+          SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY
+        );
+        return s ? JSON.parse(s) : {};
+      } catch {
+        return {};
+      }
+    });
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
   const [dilVolume, setDilVolume] = useState("30");
@@ -55018,6 +55078,14 @@ export default function App() {
       localStorage.setItem("bb_supplier_data_v4", JSON.stringify(pricesState));
     } catch (e) {}
   }, [pricesState]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY,
+        JSON.stringify(supplierImportLocalReviewState)
+      );
+    } catch (e) {}
+  }, [supplierImportLocalReviewState]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -60111,11 +60179,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   .includes(supplierSearch.toLowerCase());
               return matchSup && matchSearch;
             });
-            const pendingSupplierImports = getPendingSupplierImportItems()
+            const supplierImportQueueRows = getPendingSupplierImportItems()
               .map((item) => {
                 const registryRecord = getSupplierProductRecord(
                   item.supplierProductKey
                 );
+                const localReview =
+                  supplierImportLocalReviewState[item.supplierProductKey] ||
+                  null;
+                const sourceReviewStatus = item.reviewStatus || "unknown";
+                const sourceNormalizationStatus =
+                  registryRecord?.normalizationStatus ||
+                  registryRecord?.registryStatus ||
+                  "unknown";
                 const supplierFromKey = String(
                   item.supplierProductKey || ""
                 )
@@ -60127,22 +60203,75 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     registryRecord?.supplierDisplayName || supplierFromKey,
                   productTitle: registryRecord?.productTitle || "Unknown product",
                   url: registryRecord?.url || "",
+                  proposedCatalogNameRaw: item.proposedCatalogName || null,
                   proposedCatalogName: item.proposedCatalogName || "—",
+                  proposedEntryKindRaw: item.proposedEntryKind || null,
                   proposedEntryKind: item.proposedEntryKind || "—",
+                  proposedCanonicalMaterialKeyRaw:
+                    item.proposedCanonicalMaterialKey || null,
                   proposedCanonicalMaterialKey:
                     item.proposedCanonicalMaterialKey || "—",
-                  reviewStatus: item.reviewStatus || "unknown",
+                  sourceReviewStatus,
+                  reviewStatus:
+                    localReview?.reviewStatus || sourceReviewStatus,
+                  localDecision: localReview?.decision || null,
+                  reviewedAt: localReview?.reviewedAt || null,
+                  canReview: !localReview,
                   normalizationStatus:
-                    registryRecord?.normalizationStatus ||
-                    registryRecord?.registryStatus ||
-                    "unknown",
+                    localReview?.decision === "approved"
+                      ? "draft_ready"
+                      : sourceNormalizationStatus,
+                  sourceNormalizationStatus,
+                  supplierProductRowDraft:
+                    localReview?.supplierProductRowDraft || null,
+                  normalizationEntryDraft:
+                    localReview?.normalizationEntryDraft || null,
                 };
               })
-              .sort((a, b) =>
-                a.supplierProductKey.localeCompare(b.supplierProductKey)
-              );
-            const hasPendingSupplierImports =
-              pendingSupplierImports.length > 0;
+              .sort((a, b) => {
+                if (a.canReview !== b.canReview) {
+                  return a.canReview ? -1 : 1;
+                }
+                return a.supplierProductKey.localeCompare(b.supplierProductKey);
+              });
+            const hasSupplierImportQueueItems =
+              supplierImportQueueRows.length > 0;
+            const pendingSupplierImportCount = supplierImportQueueRows.filter(
+              (item) => item.canReview
+            ).length;
+
+            const approveSupplierImport = (item) => {
+              if (!item?.canReview) return;
+              const approvedAt = new Date().toISOString();
+              const draft = buildApprovedSupplierImportDraft(item);
+              setSupplierImportLocalReviewState((prev) => ({
+                ...prev,
+                [item.supplierProductKey]: {
+                  decision: "approved",
+                  reviewStatus: "approved_local_draft",
+                  reviewedAt: approvedAt,
+                  sourceSnapshot: buildSupplierImportSourceSnapshot(item),
+                  supplierProductRowDraft: draft.supplierProductRowDraft,
+                  normalizationEntryDraft: draft.normalizationEntryDraft,
+                },
+              }));
+            };
+
+            const rejectSupplierImport = (item) => {
+              if (!item?.canReview) return;
+              const rejectedAt = new Date().toISOString();
+              setSupplierImportLocalReviewState((prev) => ({
+                ...prev,
+                [item.supplierProductKey]: {
+                  decision: "rejected",
+                  reviewStatus: "rejected_local",
+                  reviewedAt: rejectedAt,
+                  sourceSnapshot: buildSupplierImportSourceSnapshot(item),
+                  supplierProductRowDraft: null,
+                  normalizationEntryDraft: null,
+                },
+              }));
+            };
 
             const saveUrl = (ing, sup, newUrl) => {
               setPricesState((prev) => {
@@ -60474,15 +60603,23 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     </div>
                     <div
                       style={{
-                        background: hasPendingSupplierImports
-                          ? "#2A1A00"
+                        background: hasSupplierImportQueueItems
+                          ? pendingSupplierImportCount > 0
+                            ? "#2A1A00"
+                            : "#0A2E1A"
                           : "#0A2E1A",
                         border: `1px solid ${
-                          hasPendingSupplierImports ? "#78350F" : "#166534"
+                          hasSupplierImportQueueItems
+                            ? pendingSupplierImportCount > 0
+                              ? "#78350F"
+                              : "#166534"
+                            : "#166534"
                         }`,
                         borderRadius: 999,
-                        color: hasPendingSupplierImports
-                          ? "#F59E0B"
+                        color: hasSupplierImportQueueItems
+                          ? pendingSupplierImportCount > 0
+                            ? "#F59E0B"
+                            : "#86EFAC"
                           : "#86EFAC",
                         padding: "4px 10px",
                         fontSize: 8.5,
@@ -60491,12 +60628,14 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         textTransform: "uppercase",
                       }}
                     >
-                      {hasPendingSupplierImports
-                        ? `${pendingSupplierImports.length} pending`
+                      {hasSupplierImportQueueItems
+                        ? pendingSupplierImportCount > 0
+                          ? `${pendingSupplierImportCount} pending / ${supplierImportQueueRows.length} total`
+                          : `${supplierImportQueueRows.length} reviewed`
                         : "queue clear"}
                     </div>
                   </div>
-                  {hasPendingSupplierImports ? (
+                  {hasSupplierImportQueueItems ? (
                     <div style={{ overflowX: "auto" }}>
                       <table
                         style={{
@@ -60517,6 +60656,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               "Canonical Key",
                               "Review Status",
                               "Normalization",
+                              "Actions",
                             ].map((label) => (
                               <th
                                 key={label}
@@ -60537,12 +60677,12 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           </tr>
                         </thead>
                         <tbody>
-                          {pendingSupplierImports.map((item, idx) => (
+                          {supplierImportQueueRows.map((item, idx) => (
                             <tr
                               key={item.supplierProductKey}
                               style={{
                                 borderBottom:
-                                  idx === pendingSupplierImports.length - 1
+                                  idx === supplierImportQueueRows.length - 1
                                     ? "none"
                                     : "1px solid #0F172A",
                               }}
@@ -60630,11 +60770,23 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       item.reviewStatus ===
                                       "pending_catalog_import"
                                         ? "#2A1A00"
+                                        : item.reviewStatus ===
+                                          "approved_local_draft"
+                                        ? "#0A2E1A"
+                                        : item.reviewStatus ===
+                                          "rejected_local"
+                                        ? "#2A0F14"
                                         : "#0A1628",
                                     border: `1px solid ${
                                       item.reviewStatus ===
                                       "pending_catalog_import"
                                         ? "#78350F"
+                                        : item.reviewStatus ===
+                                          "approved_local_draft"
+                                        ? "#166534"
+                                        : item.reviewStatus ===
+                                          "rejected_local"
+                                        ? "#7F1D1D"
                                         : BORDER
                                     }`,
                                     borderRadius: 999,
@@ -60642,6 +60794,12 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       item.reviewStatus ===
                                       "pending_catalog_import"
                                         ? "#F59E0B"
+                                        : item.reviewStatus ===
+                                          "approved_local_draft"
+                                        ? "#86EFAC"
+                                        : item.reviewStatus ===
+                                          "rejected_local"
+                                        ? "#FCA5A5"
                                         : "#94A3B8",
                                     padding: "2px 8px",
                                     fontSize: 8,
@@ -60651,6 +60809,18 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                 >
                                   {item.reviewStatus}
                                 </span>
+                                {item.reviewedAt && (
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 7.5,
+                                      color: "#475569",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {new Date(item.reviewedAt).toLocaleString()}
+                                  </div>
+                                )}
                               </td>
                               <td style={{ padding: "8px" }}>
                                 <span
@@ -60677,6 +60847,90 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                 >
                                   {item.normalizationStatus}
                                 </span>
+                                {item.localDecision === "approved" && (
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 7.5,
+                                      color: "#86EFAC",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    Draft supplier row + normalization entry
+                                    ready
+                                  </div>
+                                )}
+                                {item.localDecision === "rejected" && (
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 7.5,
+                                      color: "#94A3B8",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    Source preserved, no draft created
+                                  </div>
+                                )}
+                              </td>
+                              <td style={{ padding: "8px", whiteSpace: "nowrap" }}>
+                                {item.canReview ? (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 6,
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        approveSupplierImport(item)
+                                      }
+                                      style={{
+                                        background: "#0A2E1A",
+                                        border: "1px solid #166534",
+                                        borderRadius: 6,
+                                        color: "#86EFAC",
+                                        padding: "4px 8px",
+                                        fontSize: 8.5,
+                                        cursor: "pointer",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Approve
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        rejectSupplierImport(item)
+                                      }
+                                      style={{
+                                        background: "#2A0F14",
+                                        border: "1px solid #7F1D1D",
+                                        borderRadius: 6,
+                                        color: "#FCA5A5",
+                                        padding: "4px 8px",
+                                        fontSize: 8.5,
+                                        cursor: "pointer",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Reject
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div
+                                    style={{
+                                      fontSize: 8,
+                                      color: "#64748B",
+                                      lineHeight: 1.5,
+                                      minWidth: 120,
+                                    }}
+                                  >
+                                    {item.localDecision === "approved"
+                                      ? "Approved locally. Drafts are kept outside the live catalog."
+                                      : "Rejected locally. Source record remains in queue history."}
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           ))}
