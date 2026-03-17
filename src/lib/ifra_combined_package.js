@@ -1397,6 +1397,8 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     inci: "Myroxylon Pereirae Resin Oil",
     scentClass: "Oriental",
     scentSummary: "Resinous cinnamic amber balsam warmth",
+    scentDesc:
+      "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
     rep: "Benzyl Benzoate",
     isUVCB: true,
     descriptorTags: ["Balsamic", "Amber", "Resinous"],
@@ -1422,6 +1424,8 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     inci: "Styrax Tonkinensis Resin Extract",
     scentClass: "Oriental",
     scentSummary: "Balsamic vanilla-sweet benzoin warmth",
+    scentDesc:
+      "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
     rep: "Benzyl Benzoate",
     isUVCB: true,
     descriptorTags: ["Balsamic", "Vanilla", "Resin"],
