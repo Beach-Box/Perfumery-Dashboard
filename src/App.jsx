@@ -59714,52 +59714,6 @@ export default function App() {
     },
     []
   );
-  const saveSubstitutionReviewDraft = useCallback(() => {
-    if (!substitutionReviewSourceFormula || !substitutionReviewDraftFormula) return;
-    const nowIso = new Date().toISOString();
-    const newDraftRecord = createPersistedFormulaRecord(
-      {
-        ...substitutionReviewDraftFormula,
-        formulaKey: buildFormulaKey(substitutionReviewSourceFormula.name, "formula"),
-        versionLabel: incrementFormulaVersionLabel(
-          substitutionReviewSourceFormula.versionLabel
-        ),
-        parentVersionId: substitutionReviewSourceFormula.formulaKey,
-        parentFormulaKey:
-          substitutionReviewSourceFormula.parentFormulaKey ||
-          substitutionReviewSourceFormula.formulaKey,
-        isLocked: false,
-        isSeeded: false,
-        isCustom: true,
-        sourceType: "version",
-        revisionNote:
-          substitutionReviewState?.revisionNote ||
-          `Draft substitution review: replace ${substitutionReviewState?.originalIngredientName} with ${substitutionReviewState?.candidateName}.`,
-        createdAt: nowIso,
-        updatedAt: nowIso,
-        seedSourceKey:
-          substitutionReviewSourceFormula.seedSourceKey ||
-          (substitutionReviewSourceFormula.isSeeded
-            ? substitutionReviewSourceFormula.formulaKey
-            : null),
-      },
-      0,
-      { db: DB }
-    );
-    setSavedBuilds((prev) => [...prev, newDraftRecord]);
-    setFormulaCompareState({
-      leftFormulaKey: substitutionReviewSourceFormula.formulaKey,
-      rightFormulaKey: newDraftRecord.formulaKey,
-    });
-    setPendingFormulaSelectionKey(newDraftRecord.formulaKey);
-    setMainTab("formulas");
-    setSubTab("compare");
-    setSubstitutionReviewState(null);
-  }, [
-    substitutionReviewDraftFormula,
-    substitutionReviewSourceFormula,
-    substitutionReviewState,
-  ]);
   const lockFormulaVersion = useCallback(() => {
     if (!formula || formula.isLocked) return;
     if (
@@ -60219,6 +60173,54 @@ export default function App() {
     substitutionReviewDraftCritiqueReport,
     substitutionReviewDraftReadiness,
     substitutionReviewDraftTrustSummary,
+    substitutionReviewState,
+  ]);
+  const saveSubstitutionReviewDraft = useCallback(() => {
+    if (!substitutionReviewSourceFormula || !substitutionReviewDraftFormula) {
+      return;
+    }
+    const nowIso = new Date().toISOString();
+    const newDraftRecord = createPersistedFormulaRecord(
+      {
+        ...substitutionReviewDraftFormula,
+        formulaKey: buildFormulaKey(substitutionReviewSourceFormula.name, "formula"),
+        versionLabel: incrementFormulaVersionLabel(
+          substitutionReviewSourceFormula.versionLabel
+        ),
+        parentVersionId: substitutionReviewSourceFormula.formulaKey,
+        parentFormulaKey:
+          substitutionReviewSourceFormula.parentFormulaKey ||
+          substitutionReviewSourceFormula.formulaKey,
+        isLocked: false,
+        isSeeded: false,
+        isCustom: true,
+        sourceType: "version",
+        revisionNote:
+          substitutionReviewState?.revisionNote ||
+          `Draft substitution review: replace ${substitutionReviewState?.originalIngredientName} with ${substitutionReviewState?.candidateName}.`,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        seedSourceKey:
+          substitutionReviewSourceFormula.seedSourceKey ||
+          (substitutionReviewSourceFormula.isSeeded
+            ? substitutionReviewSourceFormula.formulaKey
+            : null),
+      },
+      0,
+      { db: DB }
+    );
+    setSavedBuilds((prev) => [...prev, newDraftRecord]);
+    setFormulaCompareState({
+      leftFormulaKey: substitutionReviewSourceFormula.formulaKey,
+      rightFormulaKey: newDraftRecord.formulaKey,
+    });
+    setPendingFormulaSelectionKey(newDraftRecord.formulaKey);
+    setMainTab("formulas");
+    setSubTab("compare");
+    setSubstitutionReviewState(null);
+  }, [
+    substitutionReviewDraftFormula,
+    substitutionReviewSourceFormula,
     substitutionReviewState,
   ]);
   const founderDashboardItems = useMemo(
