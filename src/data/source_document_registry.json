@@ -208,7 +208,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/fiche-securite-F1952.pdf?v=1710525597",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_fiche_securite_f1952_pdf.pdf",
       "sourceType": "sds",
       "supplier": "Fraterworks"
     },
@@ -228,7 +228,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/IFR-BL51-F1952.pdf?v=1710749988",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifr_bl51_f1952_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     },
@@ -248,7 +248,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Poplar_Buds_Absolute_50_TEC_2.pdf?v=1727923257",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_poplar_buds_absolute_50_tec_2_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     },
