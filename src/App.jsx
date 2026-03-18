@@ -71,6 +71,7 @@ import {
 } from "./lib/formula_runtime_helpers";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildFounderProductContextState,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderDashboardSummary,
@@ -91,6 +92,8 @@ import {
   CRITIQUE_LENS_META,
   CRITIQUE_LENS_ORDER,
   createFounderLaunchScenarioRecord,
+  FOUNDER_PRODUCT_PROFILE_META,
+  FOUNDER_PRODUCT_PROFILE_ORDER,
   FOUNDER_RECOMMENDER_EMPHASIS_META,
   FOUNDER_TRUST_LEVEL_META,
   getLivePricingForIngredient,
@@ -55851,8 +55854,8 @@ function IngredientDetailPanel({
             }}
           >
             {[
-              `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
-              `${skuFillVolumeMl.toFixed(0)}mL fill`,
+              `${founderProductContext.label} · ${founderFragranceType.pct}% load`,
+              `${founderProductContext.fillVolumeMl.toFixed(0)}mL fill`,
               `${selectedBasketModeMeta.label} basket`,
               `${launchRunPlannerSummary.context.diluentMaterialName} diluent`,
               `Retail $${skuRetailPrice.toFixed(2)}`,
@@ -58892,6 +58895,11 @@ export default function App() {
   const [inventoryScale, setInventoryScale] = useState(1000);
   const [batchPlannerSourceKey, setBatchPlannerSourceKey] = useState(null);
   const [batchPlannerTargetG, setBatchPlannerTargetG] = useState(1000);
+  const [founderProductProfile, setFounderProductProfile] = useState(
+    () => buildFounderProductContextState().profileKey
+  );
+  const [founderFragranceLoadPercent, setFounderFragranceLoadPercent] =
+    useState(() => buildFounderProductContextState().fragranceLoadPercent);
   const [skuFillVolumeMl, setSkuFillVolumeMl] = useState(50);
   const [skuRetailPrice, setSkuRetailPrice] = useState(95);
   const [skuPackagingCost, setSkuPackagingCost] = useState(4.5);
@@ -59032,6 +59040,31 @@ export default function App() {
   });
   const selectedFragranceType =
     FRAGRANCE_TYPE_PRESETS[dilType] || FRAGRANCE_TYPE_PRESETS.EDP;
+  const founderProductContext = useMemo(
+    () =>
+      buildFounderProductContextState({
+        founderProductProfile,
+        founderFragranceLoadPercent,
+        skuFillVolumeMl,
+        dilType,
+        dilAlcohol,
+      }),
+    [
+      dilAlcohol,
+      dilType,
+      founderFragranceLoadPercent,
+      founderProductProfile,
+      skuFillVolumeMl,
+    ]
+  );
+  const founderFragranceType = useMemo(
+    () => ({
+      pct: founderProductContext.fragranceLoadPercent,
+      label: founderProductContext.label,
+      range: founderProductContext.fragranceLoadLabel,
+    }),
+    [founderProductContext]
+  );
   const founderInsightsEnabled = mainTab === "founder";
   const parentFormula =
     formula?.parentVersionId
@@ -59247,14 +59280,12 @@ export default function App() {
   const selectedBasketModeMeta =
     SUPPLIER_BASKET_MODE_META[basketMode] ||
     SUPPLIER_BASKET_MODE_META.cheapest;
-  const diluentMaterialName = dilAlcohol
-    ? "Deluxe Perfumer's Alcohol"
-    : "DPG";
+  const diluentMaterialName = founderProductContext.diluentMaterialName;
   const skuFragranceOilG =
-    Math.max(0, Number(skuFillVolumeMl) || 0) * (selectedFragranceType.pct / 100);
+    founderProductContext.fillVolumeMl * (founderProductContext.fragranceLoadPercent / 100);
   const skuDiluentG = Math.max(
     0,
-    (Number(skuFillVolumeMl) || 0) - skuFragranceOilG
+    founderProductContext.fillVolumeMl - skuFragranceOilG
   );
   const diluentBasketStrategies = useMemo(() => {
     if (skuDiluentG <= 0) return null;
@@ -59304,11 +59335,13 @@ export default function App() {
     () =>
       buildFounderScenarioInputState({
         basketMode,
+        founderProductProfile,
+        founderFragranceLoadPercent: founderFragranceType.pct,
         dilType,
         ifraCategory,
         batchPlannerTargetG,
-        dilAlcohol,
-        skuFillVolumeMl,
+        dilAlcohol: founderProductContext.diluentMode === "alcohol",
+        skuFillVolumeMl: founderProductContext.fillVolumeMl,
         skuRetailPrice,
         skuPackagingCost,
         skuLaborCost,
@@ -59317,11 +59350,12 @@ export default function App() {
     [
       basketMode,
       batchPlannerTargetG,
-      dilAlcohol,
       dilType,
+      founderFragranceType,
+      founderProductContext,
+      founderProductProfile,
       ifraCategory,
       launchPlanUnitsByFormula,
-      skuFillVolumeMl,
       skuLaborCost,
       skuPackagingCost,
       skuRetailPrice,
@@ -59343,19 +59377,24 @@ export default function App() {
   const buildFounderScenarioSnapshot = useCallback(
     (scenarioInputs = {}) => {
       const normalizedScenario = buildFounderScenarioInputState(scenarioInputs);
-      const scenarioFragranceType =
-        FRAGRANCE_TYPE_PRESETS[normalizedScenario.dilType] ||
-        FRAGRANCE_TYPE_PRESETS.EDP;
+      const scenarioFounderProductContext = buildFounderProductContextState(
+        normalizedScenario
+      );
+      const scenarioFragranceType = {
+        pct: scenarioFounderProductContext.fragranceLoadPercent,
+        label: scenarioFounderProductContext.label,
+        range: scenarioFounderProductContext.fragranceLoadLabel,
+      };
       const scenarioIfraCategory = normalizedScenario.ifraCategory;
       const scenarioBatchTargetG = normalizedScenario.batchPlannerTargetG;
       const scenarioBasketModeMeta =
         SUPPLIER_BASKET_MODE_META[normalizedScenario.basketMode] ||
         SUPPLIER_BASKET_MODE_META.cheapest;
-      const scenarioDiluentMaterialName = normalizedScenario.dilAlcohol
-        ? "Deluxe Perfumer's Alcohol"
-        : "DPG";
+      const scenarioDiluentMaterialName =
+        scenarioFounderProductContext.diluentMaterialName;
       const scenarioFragranceOilG =
-        normalizedScenario.skuFillVolumeMl * (scenarioFragranceType.pct / 100);
+        normalizedScenario.skuFillVolumeMl *
+        (scenarioFounderProductContext.fragranceLoadPercent / 100);
       const scenarioDiluentG = Math.max(
         0,
         normalizedScenario.skuFillVolumeMl - scenarioFragranceOilG
@@ -59411,7 +59450,8 @@ export default function App() {
         const finishedProductGuidance = buildFinishedProductIfraGuidance({
           items: entry.ingredients || [],
           category: scenarioIfraCategory,
-          fragranceLoadPercent: scenarioFragranceType.pct,
+          fragranceLoadPercent:
+            scenarioFounderProductContext.fragranceLoadPercent,
         });
         const batchReport = buildBatchPlannerReport({
           ingredients: entry.ingredients || [],
@@ -59468,7 +59508,8 @@ export default function App() {
         founderItems,
         {
           fillVolumeMl: normalizedScenario.skuFillVolumeMl,
-          fragranceLoadPercent: scenarioFragranceType.pct,
+          fragranceLoadPercent:
+            scenarioFounderProductContext.fragranceLoadPercent,
           packagingCost: normalizedScenario.skuPackagingCost,
           laborCost: normalizedScenario.skuLaborCost,
           retailPrice: normalizedScenario.skuRetailPrice,
@@ -59484,7 +59525,8 @@ export default function App() {
         pricesState,
         basketMode: normalizedScenario.basketMode,
         fillVolumeMl: normalizedScenario.skuFillVolumeMl,
-        fragranceLoadPercent: scenarioFragranceType.pct,
+        fragranceLoadPercent:
+          scenarioFounderProductContext.fragranceLoadPercent,
         packagingCost: normalizedScenario.skuPackagingCost,
         laborCost: normalizedScenario.skuLaborCost,
         retailPrice: normalizedScenario.skuRetailPrice,
@@ -59496,6 +59538,7 @@ export default function App() {
 
       return {
         normalizedScenario,
+        founderProductContext: scenarioFounderProductContext,
         selectedFragranceType: scenarioFragranceType,
         selectedBasketModeMeta: scenarioBasketModeMeta,
         diluentMaterialName: scenarioDiluentMaterialName,
@@ -59526,6 +59569,8 @@ export default function App() {
   const applyFounderScenarioInputs = useCallback((scenarioInputs = {}) => {
     const normalizedInputs = buildFounderScenarioInputState(scenarioInputs);
     setBasketMode(normalizedInputs.basketMode);
+    setFounderProductProfile(normalizedInputs.founderProductProfile);
+    setFounderFragranceLoadPercent(normalizedInputs.founderFragranceLoadPercent);
     setDilType(normalizedInputs.dilType);
     setIfraCategory(normalizedInputs.ifraCategory);
     setBatchPlannerTargetG(normalizedInputs.batchPlannerTargetG);
@@ -61006,7 +61051,7 @@ export default function App() {
         const finishedProductGuidance = buildFinishedProductIfraGuidance({
           items: entry.ingredients || [],
           category: ifraCategory,
-          fragranceLoadPercent: selectedFragranceType.pct,
+          fragranceLoadPercent: founderFragranceType.pct,
         });
         const batchReport = buildBatchPlannerReport({
           ingredients: entry.ingredients || [],
@@ -61068,13 +61113,13 @@ export default function App() {
       basketMode,
       batchPlannerTargetG,
       critiqueLens,
+      founderFragranceType,
       formulas,
       formulaSupplierOverrides,
       ifraCategory,
       inventory,
       pricesState,
       selectedBasketModeMeta,
-      selectedFragranceType,
     ]
   );
   const founderDashboardSummary = useMemo(
@@ -61084,8 +61129,8 @@ export default function App() {
   const skuEconomicsSummary = useMemo(
     () =>
       buildSkuEconomicsDashboardSummary(founderDashboardItems, {
-        fillVolumeMl: skuFillVolumeMl,
-        fragranceLoadPercent: selectedFragranceType.pct,
+        fillVolumeMl: founderProductContext.fillVolumeMl,
+        fragranceLoadPercent: founderFragranceType.pct,
         packagingCost: skuPackagingCost,
         laborCost: skuLaborCost,
         retailPrice: skuRetailPrice,
@@ -61094,10 +61139,10 @@ export default function App() {
       }),
     [
       diluentMaterialName,
+      founderFragranceType,
+      founderProductContext,
       founderDashboardItems,
       selectedDiluentBasket,
-      selectedFragranceType,
-      skuFillVolumeMl,
       skuLaborCost,
       skuPackagingCost,
       skuRetailPrice,
@@ -61112,8 +61157,8 @@ export default function App() {
         inventory,
         pricesState,
         basketMode,
-        fillVolumeMl: skuFillVolumeMl,
-        fragranceLoadPercent: selectedFragranceType.pct,
+        fillVolumeMl: founderProductContext.fillVolumeMl,
+        fragranceLoadPercent: founderFragranceType.pct,
         packagingCost: skuPackagingCost,
         laborCost: skuLaborCost,
         retailPrice: skuRetailPrice,
@@ -61125,14 +61170,14 @@ export default function App() {
     [
       basketMode,
       diluentMaterialName,
+      founderFragranceType,
+      founderProductContext,
       founderDashboardItems,
       formulaSupplierOverrides,
       inventory,
       launchPlanUnitsByFormula,
       pricesState,
-      selectedFragranceType,
       skuEconomicsSummary,
-      skuFillVolumeMl,
       skuLaborCost,
       skuPackagingCost,
       skuRetailPrice,
@@ -61168,8 +61213,8 @@ export default function App() {
         inventory: founderInsightsEnabled ? inventory : {},
         pricesState: founderInsightsEnabled ? pricesState : {},
         basketMode,
-        fillVolumeMl: skuFillVolumeMl,
-        fragranceLoadPercent: selectedFragranceType.pct,
+        fillVolumeMl: founderProductContext.fillVolumeMl,
+        fragranceLoadPercent: founderFragranceType.pct,
         packagingCost: skuPackagingCost,
         laborCost: skuLaborCost,
         retailPrice: skuRetailPrice,
@@ -61188,6 +61233,8 @@ export default function App() {
     [
       basketMode,
       diluentMaterialName,
+      founderFragranceType,
+      founderProductContext,
       founderInsightsEnabled,
       founderDashboardItems,
       formulaSupplierOverrides,
@@ -61197,9 +61244,7 @@ export default function App() {
       launchRecommendationEmphasis,
       launchRecommendationSkuLimit,
       pricesState,
-      selectedFragranceType,
       skuEconomicsSummary,
-      skuFillVolumeMl,
       skuLaborCost,
       skuPackagingCost,
       skuRetailPrice,
@@ -63620,11 +63665,13 @@ export default function App() {
   const founderDashboardContent = useMemo(() => {
     if (!founderInsightsEnabled) return null;
     const dashboardItems = founderDashboardSummary.sortedItems;
-    const currentContextLabel = `${selectedBasketModeMeta.label} basket · ${batchPlannerTargetG.toFixed(
+    const currentContextLabel = `${selectedBasketModeMeta.label} basket · ${
+      founderProductContext.label
+    } · ${founderFragranceType.pct}% load · ${founderProductContext.fillVolumeMl.toFixed(
       0
-    )}g batch target · ${IFRA_CATEGORY_LABELS[ifraCategory]} · ${
-      selectedFragranceType.label
-    }`;
+    )}mL · ${IFRA_CATEGORY_LABELS[ifraCategory]} · ${batchPlannerTargetG.toFixed(
+      0
+    )}g batch target`;
     const currentScenarioFormulaCount = Object.keys(
       currentFounderScenarioInputs.launchPlanUnitsByFormula || {}
     ).length;
@@ -63640,22 +63687,22 @@ export default function App() {
       const totalUnits = Object.values(
         normalizedScenario.launchPlanUnitsByFormula || {}
       ).reduce((sum, units) => sum + (Number(units) || 0), 0);
-      const scenarioFragranceType =
-        FRAGRANCE_TYPE_PRESETS[normalizedScenario.dilType] ||
-        FRAGRANCE_TYPE_PRESETS.EDP;
+      const scenarioProductContext = buildFounderProductContextState(
+        normalizedScenario
+      );
       const scenarioBasketMeta =
         SUPPLIER_BASKET_MODE_META[normalizedScenario.basketMode] ||
         SUPPLIER_BASKET_MODE_META.cheapest;
       return {
         selectedFormulaCount,
         totalUnits,
-        scenarioFragranceType,
+        scenarioProductContext,
         scenarioBasketMeta,
         ifraLabel:
           IFRA_CATEGORY_LABELS[normalizedScenario.ifraCategory] ||
           normalizedScenario.ifraCategory,
         batchTargetG: normalizedScenario.batchPlannerTargetG,
-        diluentLabel: normalizedScenario.dilAlcohol ? "Alcohol" : "Carrier",
+        diluentLabel: scenarioProductContext.diluentModeLabel,
       };
     };
     const getScenarioPrimaryCaveat = (launchPlannerSnapshot) => {
@@ -64270,8 +64317,8 @@ export default function App() {
             }}
           >
             {[
-              `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
-              `${skuFillVolumeMl.toFixed(0)}mL fill`,
+              `${founderProductContext.label} · ${founderFragranceType.pct}% load`,
+              `${founderProductContext.fillVolumeMl.toFixed(0)}mL fill`,
               `${selectedBasketModeMeta.label} basket`,
               `${launchRunPlannerSummary.context.diluentMaterialName} diluent`,
               `Retail $${skuRetailPrice.toFixed(2)}`,
@@ -64881,10 +64928,10 @@ export default function App() {
                   }}
                 >
                   Stored in each scenario record: formulas + units, basket
-                  mode, fragrance/load context, IFRA category, batch target,
-                  diluent mode, and shared SKU pricing inputs. Live formulas,
-                  pricing, inventory, and readiness math are still recomputed at
-                  compare/export time.
+                  mode, product context, fragrance/load context, IFRA category,
+                  batch target, locked spray base context, and shared SKU
+                  pricing inputs. Live formulas, pricing, inventory, and
+                  readiness math are still recomputed at compare/export time.
                 </div>
               </div>
               <div>
@@ -65282,10 +65329,14 @@ export default function App() {
                           >
                             {[
                               selectionSummary.scenarioBasketMeta.label,
-                              selectionSummary.scenarioFragranceType.label,
+                              selectionSummary.scenarioProductContext.label,
+                              selectionSummary.scenarioProductContext.fragranceLoadLabel,
+                              `${selectionSummary.scenarioProductContext.fillVolumeMl.toFixed(
+                                0
+                              )}mL`,
                               selectionSummary.ifraLabel,
                               `${selectionSummary.batchTargetG.toFixed(0)}g target`,
-                              selectionSummary.diluentLabel,
+                              selectionSummary.scenarioProductContext.diluentMaterialName,
                               `${selectionSummary.selectedFormulaCount} formula${
                                 selectionSummary.selectedFormulaCount === 1
                                   ? ""
@@ -65593,13 +65644,20 @@ export default function App() {
                             >
                               {snapshot.selectedBasketModeMeta.label} basket
                               <br />
-                              {snapshot.selectedFragranceType.label}
+                              {snapshot.founderProductContext?.label ||
+                                snapshot.selectedFragranceType.label}
+                              <br />
+                              {snapshot.founderProductContext?.fragranceLoadLabel ||
+                                `${snapshot.selectedFragranceType.pct}% load`}
                               <br />
                               {IFRA_CATEGORY_LABELS[
                                 snapshot.normalizedScenario.ifraCategory
                               ] || snapshot.normalizedScenario.ifraCategory}
                               <br />
                               {snapshot.diluentMaterialName}
+                              <br />
+                              {snapshot.normalizedScenario.skuFillVolumeMl.toFixed(0)}
+                              mL fill
                               <br />
                               {snapshot.normalizedScenario.batchPlannerTargetG.toFixed(
                                 0
@@ -66576,9 +66634,9 @@ export default function App() {
                 }}
               >
                 Founder-oriented only. This reuses the active supplier basket
-                mode, current fragrance-load context, and the current alcohol or
-                carrier setting to estimate per-SKU liquid cost, rough COGS, and
-                gross margin. It is not accounting-grade.
+                mode, the active Founder product context, and the current spray
+                base assumption to estimate per-SKU liquid cost, rough COGS,
+                and gross margin. It is not accounting-grade.
               </div>
             </div>
             <div
@@ -66590,9 +66648,9 @@ export default function App() {
               }}
             >
               {[
-                `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
+                `${founderProductContext.label} · ${founderFragranceType.pct}% load`,
                 `${selectedBasketModeMeta.label} basket`,
-                `${economicsContext.fillVolumeMl.toFixed(0)}mL SKU`,
+                `${founderProductContext.fillVolumeMl.toFixed(0)}mL SKU`,
                 selectedDiluentLine?.mappingConfidence
                   ? `${diluentMaterialName} ${selectedDiluentLine.mappingConfidence}`
                   : diluentMaterialName,
@@ -66625,6 +66683,84 @@ export default function App() {
               gap: 10,
             }}
           >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+                gridColumn: "span 2",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                Product Context / SKU Profile
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {FOUNDER_PRODUCT_PROFILE_ORDER.map((profileKey) => {
+                  const profileMeta = FOUNDER_PRODUCT_PROFILE_META[profileKey];
+                  const isActive = founderProductProfile === profileKey;
+                  const isDisabled = !profileMeta?.isEnabled;
+                  return (
+                    <button
+                      key={`founder-profile-${profileKey}`}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => {
+                        if (isDisabled) return;
+                        setFounderProductProfile(profileKey);
+                        setDilAlcohol(profileMeta.diluentMode === "alcohol");
+                      }}
+                      style={{
+                        flex: "1 1 170px",
+                        minWidth: 0,
+                        background: isActive ? "#0E4D6E" : "#0A1628",
+                        border: `1px solid ${
+                          isActive ? "#22D3EE" : "#1E3A52"
+                        }`,
+                        borderRadius: 8,
+                        color: isDisabled
+                          ? "#475569"
+                          : isActive
+                          ? "#7DD3FC"
+                          : "#CBD5E1",
+                        padding: "8px 10px",
+                        cursor: isDisabled ? "not-allowed" : "pointer",
+                        opacity: isDisabled ? 0.7 : 1,
+                        textAlign: "left",
+                      }}
+                    >
+                      <div style={{ fontSize: 10, fontWeight: 700 }}>
+                        {profileMeta.label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 2,
+                          fontSize: 8.1,
+                          color: isDisabled
+                            ? "#64748B"
+                            : isActive
+                            ? "#BAE6FD"
+                            : "#64748B",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {isDisabled ? "Coming soon foundation" : profileMeta.description}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {[
               {
                 label: "SKU Fill",
@@ -66633,6 +66769,15 @@ export default function App() {
                 step: 5,
                 min: 1,
                 suffix: "mL",
+              },
+              {
+                label: "Fragrance % Load",
+                value: founderFragranceLoadPercent,
+                setter: setFounderFragranceLoadPercent,
+                step: 0.5,
+                min: 0,
+                max: 100,
+                suffix: "%",
               },
               {
                 label: "Retail Price",
@@ -66695,6 +66840,7 @@ export default function App() {
                   <input
                     type="number"
                     min={field.min}
+                    max={field.max}
                     step={field.step}
                     value={field.value}
                     onChange={(e) =>
@@ -66739,57 +66885,32 @@ export default function App() {
                   marginBottom: 8,
                 }}
               >
-                Diluent Context
+                Spray Base Context
               </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {[
-                  {
-                    value: true,
-                    label: "Alcohol",
-                    meta: "Deluxe Perfumer's Alcohol",
-                  },
-                  {
-                    value: false,
-                    label: "Carrier",
-                    meta: "DPG",
-                  },
-                ].map((option) => {
-                  const isActive = dilAlcohol === option.value;
-                  return (
-                    <button
-                      key={`sku-diluent-${option.label}`}
-                      type="button"
-                      onClick={() => setDilAlcohol(option.value)}
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        background: isActive ? "#0E4D6E" : "#0A1628",
-                        border: `1px solid ${
-                          isActive ? "#22D3EE" : "#1E3A52"
-                        }`,
-                        borderRadius: 8,
-                        color: isActive ? "#7DD3FC" : "#94A3B8",
-                        padding: "7px 10px",
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
-                    >
-                      <div style={{ fontSize: 10, fontWeight: 700 }}>
-                        {option.label}
-                      </div>
-                      <div
-                        style={{
-                          marginTop: 2,
-                          fontSize: 8.2,
-                          color: isActive ? "#BAE6FD" : "#64748B",
-                          lineHeight: 1.45,
-                        }}
-                      >
-                        {option.meta}
-                      </div>
-                    </button>
-                  );
-                })}
+              <div
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                }}
+              >
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#7DD3FC" }}>
+                  Locked to {diluentMaterialName}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.2,
+                    color: "#64748B",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Fine Fragrance Spray in Founder always models an alcohol base,
+                  so DPG or other non-spray dilution assumptions from the
+                  Dilutions tab do not carry into SKU economics or launch
+                  planning.
+                </div>
               </div>
             </div>
           </div>
@@ -66803,9 +66924,11 @@ export default function App() {
             }}
           >
             Current SKU liquid model: {economicsContext.fragranceOilG.toFixed(1)}g
-            fragrance oil + {economicsContext.diluentG.toFixed(1)}g {diluentMaterialName}.
-            Finished-liquid math assumes roughly 1mL ≈ 1g for a quick founder
-            estimate.
+            fragrance oil + {economicsContext.diluentG.toFixed(1)}g {diluentMaterialName} for{" "}
+            {founderProductContext.fillVolumeMl.toFixed(0)}mL of{" "}
+            {founderProductContext.label.toLowerCase()} at{" "}
+            {founderFragranceType.pct}% load. Finished-liquid math assumes
+            roughly 1mL ≈ 1g for a quick founder estimate.
           </div>
 
           <div style={{ marginTop: 12 }}>
@@ -68329,11 +68452,14 @@ export default function App() {
     copyFounderScenarioBrief,
     deleteFounderScenario,
     downloadFounderScenarioBrief,
-    dilAlcohol,
     diluentMaterialName,
     duplicateFounderScenario,
     formula,
+    founderFragranceLoadPercent,
+    founderFragranceType,
     founderInsightsEnabled,
+    founderProductContext,
+    founderProductProfile,
     founderComparedScenarioIds,
     founderComparedScenarioSnapshots,
     founderDashboardSummary,
@@ -68357,10 +68483,8 @@ export default function App() {
     savedFounderScenarios,
     selectedBasketModeMeta,
     selectedDiluentBasket,
-    selectedFragranceType,
     setLaunchPlanUnits,
     skuEconomicsSummary,
-    skuFillVolumeMl,
     skuLaborCost,
     skuPackagingCost,
     skuRetailPrice,

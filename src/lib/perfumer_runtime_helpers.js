@@ -44,6 +44,164 @@ export const SUPPLIER_BASKET_MODE_ORDER = Object.keys(
   SUPPLIER_BASKET_MODE_META
 );
 
+export const FOUNDER_PRODUCT_PROFILE_META = {
+  fine_fragrance_spray: {
+    label: "Fine Fragrance Spray",
+    shortLabel: "Spray",
+    description:
+      "Alcohol-based fine fragrance SKU modeling for bottle-size and fragrance-load planning.",
+    isEnabled: true,
+    diluentMode: "alcohol",
+    diluentMaterialName: "Deluxe Perfumer's Alcohol",
+    defaultFillVolumeMl: 50,
+    defaultFragranceLoadPercent: 17.5,
+  },
+  oil_roll_on: {
+    label: "Oil Roll-On",
+    shortLabel: "Roll-On",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "carrier",
+    diluentMaterialName: "DPG",
+    defaultFillVolumeMl: 10,
+    defaultFragranceLoadPercent: 20,
+  },
+  pulse_point_solid: {
+    label: "Pulse Point Solid",
+    shortLabel: "Solid",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "solid_base",
+    diluentMaterialName: "Wax / butter base",
+    defaultFillVolumeMl: 15,
+    defaultFragranceLoadPercent: 12,
+  },
+  bath_soak: {
+    label: "Bath Soak",
+    shortLabel: "Bath",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "dry_base",
+    diluentMaterialName: "Salt / soak base",
+    defaultFillVolumeMl: 250,
+    defaultFragranceLoadPercent: 3,
+  },
+  soap_bar: {
+    label: "Soap Bar",
+    shortLabel: "Soap",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "soap_base",
+    diluentMaterialName: "Soap base",
+    defaultFillVolumeMl: 120,
+    defaultFragranceLoadPercent: 3,
+  },
+  room_spray: {
+    label: "Room Spray",
+    shortLabel: "Room",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "alcohol",
+    diluentMaterialName: "Deluxe Perfumer's Alcohol",
+    defaultFillVolumeMl: 100,
+    defaultFragranceLoadPercent: 8,
+  },
+  scent_sachet: {
+    label: "Scent Sachet",
+    shortLabel: "Sachet",
+    description: "Foundation only for now. Economics are not modeled yet.",
+    isEnabled: false,
+    diluentMode: "dry_base",
+    diluentMaterialName: "Absorbent base",
+    defaultFillVolumeMl: 20,
+    defaultFragranceLoadPercent: 10,
+  },
+};
+
+export const FOUNDER_PRODUCT_PROFILE_ORDER = Object.keys(
+  FOUNDER_PRODUCT_PROFILE_META
+);
+
+const FOUNDER_LEGACY_DILUTION_LOAD_BY_TYPE = {
+  Extrait: 25,
+  EDP: 17.5,
+  EDT: 12.5,
+  EDC: 7.5,
+  Mist: 3.5,
+};
+
+function normalizeFounderProductProfileKey(productProfile = "fine_fragrance_spray") {
+  const requestedKey =
+    String(productProfile || "fine_fragrance_spray").trim() ||
+    "fine_fragrance_spray";
+  if (FOUNDER_PRODUCT_PROFILE_META[requestedKey]?.isEnabled) {
+    return requestedKey;
+  }
+  return "fine_fragrance_spray";
+}
+
+function formatFounderLoadLabel(loadPercent = 0) {
+  const normalizedLoad = toFiniteNumber(loadPercent);
+  const displayValue = Number.isInteger(normalizedLoad)
+    ? normalizedLoad.toFixed(0)
+    : normalizedLoad.toFixed(1);
+  return `${displayValue}% load`;
+}
+
+export function buildFounderProductContextState({
+  founderProductProfile = "fine_fragrance_spray",
+  founderFragranceLoadPercent = null,
+  skuFillVolumeMl = null,
+  dilType = "EDP",
+  dilAlcohol = false,
+} = {}) {
+  const profileKey = normalizeFounderProductProfileKey(founderProductProfile);
+  const profileMeta =
+    FOUNDER_PRODUCT_PROFILE_META[profileKey] ||
+    FOUNDER_PRODUCT_PROFILE_META.fine_fragrance_spray;
+  const fallbackLoadPercent =
+    founderFragranceLoadPercent == null || founderFragranceLoadPercent === ""
+      ? FOUNDER_LEGACY_DILUTION_LOAD_BY_TYPE[dilType] ??
+        profileMeta.defaultFragranceLoadPercent
+      : founderFragranceLoadPercent;
+  const fragranceLoadPercent = Math.min(
+    100,
+    Math.max(
+      0,
+      toFiniteNumber(
+        fallbackLoadPercent,
+        profileMeta.defaultFragranceLoadPercent
+      )
+    )
+  );
+  const fillVolumeMl = Math.max(
+    1,
+    toFiniteNumber(skuFillVolumeMl, profileMeta.defaultFillVolumeMl)
+  );
+  const diluentMode = profileMeta.diluentMode || (dilAlcohol ? "alcohol" : "carrier");
+  const diluentMaterialName =
+    profileMeta.diluentMaterialName ||
+    (diluentMode === "alcohol" ? "Deluxe Perfumer's Alcohol" : "DPG");
+
+  return {
+    profileKey,
+    profileMeta,
+    label: profileMeta.label,
+    shortLabel: profileMeta.shortLabel || profileMeta.label,
+    description: profileMeta.description || "",
+    fillVolumeMl,
+    fragranceLoadPercent,
+    fragranceLoadLabel: formatFounderLoadLabel(fragranceLoadPercent),
+    contextLabel: `${profileMeta.label} · ${formatFounderLoadLabel(
+      fragranceLoadPercent
+    )}`,
+    diluentMode,
+    diluentModeLabel: diluentMode === "alcohol" ? "Alcohol" : "Carrier",
+    diluentMaterialName,
+    diluentLocked: true,
+  };
+}
+
 const SUPPLIER_BASKET_VALUE_MAX_COVERAGE_MULTIPLE = 3;
 const BATCH_PLANNER_SHORTAGE_TOLERANCE = 0.0001;
 export const PERFORMANCE_FIXATIVE_NAMES = [
@@ -2853,6 +3011,8 @@ export function normalizeFounderLaunchPlanUnits(unitsByFormula = {}) {
 
 export function buildFounderScenarioInputState({
   basketMode = "cheapest",
+  founderProductProfile = "fine_fragrance_spray",
+  founderFragranceLoadPercent = null,
   dilType = "EDP",
   ifraCategory = "cat4",
   batchPlannerTargetG = 1000,
@@ -2863,13 +3023,22 @@ export function buildFounderScenarioInputState({
   skuLaborCost = 1.5,
   launchPlanUnitsByFormula = {},
 } = {}) {
+  const founderProductContext = buildFounderProductContextState({
+    founderProductProfile,
+    founderFragranceLoadPercent,
+    skuFillVolumeMl,
+    dilType,
+    dilAlcohol,
+  });
   return {
     basketMode: SUPPLIER_BASKET_MODE_META[basketMode] ? basketMode : "cheapest",
     dilType: String(dilType || "EDP").trim() || "EDP",
+    founderProductProfile: founderProductContext.profileKey,
+    founderFragranceLoadPercent: founderProductContext.fragranceLoadPercent,
     ifraCategory: IFRA_CATEGORY_LABELS[ifraCategory] ? ifraCategory : "cat4",
     batchPlannerTargetG: Math.max(1, toFiniteNumber(batchPlannerTargetG, 1000)),
-    dilAlcohol: Boolean(dilAlcohol),
-    skuFillVolumeMl: Math.max(1, toFiniteNumber(skuFillVolumeMl, 50)),
+    dilAlcohol: founderProductContext.diluentMode === "alcohol",
+    skuFillVolumeMl: founderProductContext.fillVolumeMl,
     skuRetailPrice: Math.max(0, toFiniteNumber(skuRetailPrice, 95)),
     skuPackagingCost: Math.max(0, toFiniteNumber(skuPackagingCost, 4.5)),
     skuLaborCost: Math.max(0, toFiniteNumber(skuLaborCost, 1.5)),
@@ -2930,12 +3099,18 @@ export function buildFounderScenarioShareBrief({
     snapshot?.selectedBasketModeMeta?.label ||
     SUPPLIER_BASKET_MODE_META[normalizedInputs.basketMode]?.label ||
     normalizedInputs.basketMode;
+  const founderProductContext =
+    snapshot?.founderProductContext ||
+    buildFounderProductContextState(normalizedInputs);
   const fragranceLabel =
-    snapshot?.selectedFragranceType?.label || normalizedInputs.dilType;
+    founderProductContext?.contextLabel ||
+    snapshot?.selectedFragranceType?.label ||
+    normalizedInputs.dilType;
   const ifraLabel =
     IFRA_CATEGORY_LABELS[normalizedInputs.ifraCategory] ||
     normalizedInputs.ifraCategory;
   const diluentMaterialName =
+    founderProductContext?.diluentMaterialName ||
     snapshot?.diluentMaterialName ||
     (normalizedInputs.dilAlcohol ? "Deluxe Perfumer's Alcohol" : "DPG");
   const launchRunPlannerSummary = snapshot?.launchRunPlannerSummary || null;
@@ -2980,13 +3155,15 @@ export function buildFounderScenarioShareBrief({
     ``,
     `## Stored Scenario Context`,
     `- Basket mode: ${basketLabel}`,
+    `- Product context: ${founderProductContext?.label || "Fine Fragrance Spray"}`,
     `- Fragrance/load context: ${fragranceLabel}`,
     `- IFRA category: ${ifraLabel}`,
     `- Batch target: ${toFiniteNumber(normalizedInputs.batchPlannerTargetG).toFixed(
       0
     )}g`,
     `- Diluent mode: ${
-      normalizedInputs.dilAlcohol ? "Alcohol" : "Carrier"
+      founderProductContext?.diluentModeLabel ||
+      (normalizedInputs.dilAlcohol ? "Alcohol" : "Carrier")
     } (${diluentMaterialName})`,
     `- SKU fill: ${toFiniteNumber(normalizedInputs.skuFillVolumeMl).toFixed(
       0

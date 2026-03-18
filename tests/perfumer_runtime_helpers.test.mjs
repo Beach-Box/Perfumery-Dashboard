@@ -201,10 +201,12 @@ test("buildSubstitutionReviewDraftFormula swaps and merges duplicate ingredients
 test("founder scenario inputs preserve batch target and IFRA context through record normalization", () => {
   const scenarioInputs = buildFounderScenarioInputState({
     basketMode: "best_value",
+    founderProductProfile: "fine_fragrance_spray",
+    founderFragranceLoadPercent: 18,
     dilType: "EDT",
     ifraCategory: "cat5b",
     batchPlannerTargetG: 750,
-    dilAlcohol: true,
+    dilAlcohol: false,
     skuFillVolumeMl: 30,
     skuRetailPrice: 82,
     skuPackagingCost: 5,
@@ -222,6 +224,8 @@ test("founder scenario inputs preserve batch target and IFRA context through rec
   const normalized = normalizeFounderLaunchScenarioRecord(scenarioRecord);
 
   assert.equal(normalized.inputs.basketMode, "best_value");
+  assert.equal(normalized.inputs.founderProductProfile, "fine_fragrance_spray");
+  assert.equal(normalized.inputs.founderFragranceLoadPercent, 18);
   assert.equal(normalized.inputs.dilType, "EDT");
   assert.equal(normalized.inputs.ifraCategory, "cat5b");
   assert.equal(normalized.inputs.batchPlannerTargetG, 750);
@@ -236,6 +240,8 @@ test("founder scenario share brief includes stored context and live launch metri
     name: "Broad Launch",
     inputs: {
       basketMode: "best_quality",
+      founderProductProfile: "fine_fragrance_spray",
+      founderFragranceLoadPercent: 18,
       dilType: "EDP",
       ifraCategory: "cat4",
       batchPlannerTargetG: 1200,
@@ -255,8 +261,14 @@ test("founder scenario share brief includes stored context and live launch metri
     snapshot: {
       normalizedScenario: scenario.inputs,
       selectedBasketModeMeta: { label: "Best Quality" },
-      selectedFragranceType: { label: "EDP" },
-      diluentMaterialName: "DPG",
+      founderProductContext: {
+        label: "Fine Fragrance Spray",
+        contextLabel: "Fine Fragrance Spray · 18% load",
+        diluentModeLabel: "Alcohol",
+        diluentMaterialName: "Deluxe Perfumer's Alcohol",
+      },
+      selectedFragranceType: { label: "Fine Fragrance Spray", pct: 18 },
+      diluentMaterialName: "Deluxe Perfumer's Alcohol",
       launchRunPlannerSummary: {
         summary: {
           totalUnits: 36,
@@ -296,8 +308,11 @@ test("founder scenario share brief includes stored context and live launch metri
 
   assert.match(brief, /Scenario: Broad Launch/);
   assert.match(brief, /Basket mode: Best Quality/);
+  assert.match(brief, /Product context: Fine Fragrance Spray/);
+  assert.match(brief, /Fragrance\/load context: Fine Fragrance Spray · 18% load/);
   assert.match(brief, /IFRA category: Cat 4/);
   assert.match(brief, /Batch target: 1200g/);
+  assert.match(brief, /Diluent mode: Alcohol \(Deluxe Perfumer's Alcohol\)/);
   assert.match(brief, /Launch cash need: \$540.00/);
   assert.match(brief, /Estimated revenue: \$3960.00/);
   assert.match(brief, /Habanolide: \$95.00 estimated buy cost/);
