@@ -38,9 +38,64 @@ import {
   getPendingSupplierImportItems,
   getSourceDocumentsForCanonicalMaterialKey,
   getSupplierProductRecord,
+  getSupplierProductsForCanonicalMaterialKey,
   getSupplierProductsForCatalogName,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
+import {
+  APP_STORAGE_KEYS,
+  readJsonStorage,
+  readTextStorage,
+  writeJsonStorage,
+  writeTextStorage,
+} from "./lib/browser_storage";
+import {
+  buildFormulaKey,
+  buildFormulaLibrary,
+  createPersistedFormulaRecord,
+  formatFormulaDateLabel,
+  getFormulaDisplayLabel,
+  incrementFormulaVersionLabel,
+  readFormulaCompareState,
+  readPersistedFormulaRecords,
+  removeFormulaRecord,
+  sortFormulaIngredients,
+  upsertFormulaRecord,
+} from "./lib/formula_runtime_helpers";
+import {
+  buildCapitalConstrainedLaunchRecommendation,
+  buildFounderScenarioInputState,
+  buildFounderScenarioShareBrief,
+  buildFounderDashboardSummary,
+  buildFounderTrustSummary,
+  buildLaunchRunPlannerSummary,
+  buildMaterialBehaviorSignals,
+  buildSubstitutionReviewDraftFormula,
+  buildMaterialSubstitutionSuggestions,
+  buildAiCritiquePrompt,
+  buildBatchPlannerReport,
+  buildFormulaComparison,
+  buildFormulaCritiqueReport,
+  buildFormulaProcurementRows,
+  buildLaunchReadinessSummary,
+  buildSkuEconomicsDashboardSummary,
+  buildPerformanceModelSummary,
+  buildSupplierBasketStrategies,
+  CRITIQUE_LENS_META,
+  CRITIQUE_LENS_ORDER,
+  createFounderLaunchScenarioRecord,
+  FOUNDER_RECOMMENDER_EMPHASIS_META,
+  FOUNDER_TRUST_LEVEL_META,
+  getLivePricingForIngredient,
+  LAUNCH_READINESS_STATUS_META,
+  normalizeFounderLaunchScenarioRecord,
+  PERFORMANCE_FIXATIVE_NAMES,
+  replaceIngredientInItems,
+  SKU_ECONOMICS_STATUS_META,
+  summarizeComputedChemistry,
+  SUPPLIER_BASKET_MODE_META,
+  SUPPLIER_BASKET_MODE_ORDER,
+} from "./lib/perfumer_runtime_helpers";
 import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
 import supplierPriceDraftSeedsFile from "./data/supplier_price_draft_seeds.json";
 
@@ -54079,340 +54134,6 @@ const FORMULAS_INIT = [
   },
 ];
 
-const FORMULA_STORAGE_KEY = "bb_saved_builds";
-const FORMULA_COMPARE_STORAGE_KEY = "bb_formula_compare_state";
-const CRITIQUE_LENS_STORAGE_KEY = "bb_critique_lens";
-const FORMULA_NOTE_ORDER = {
-  top: 0,
-  mid: 1,
-  base: 2,
-  carrier: 3,
-};
-const FORMULA_VERSION_RE = /^v(\d+)\.(\d+)$/i;
-const FORMULA_COMPARE_DEFAULT_STATE = {
-  leftFormulaKey: null,
-  rightFormulaKey: null,
-};
-const SUPPLIER_BASKET_MODE_META = {
-  cheapest: {
-    label: "Cheapest",
-    title: "Cheapest Basket",
-    color: "#34D399",
-    description: "Lowest immediate line spend per ingredient using current live pricing.",
-  },
-  best_value: {
-    label: "Best Value",
-    title: "Best-Value Basket",
-    color: "#7DD3FC",
-    description:
-      "Prefers the lowest unit-cost pack among reasonably sized purchase tiers, then falls back to cheapest coverage.",
-  },
-  best_quality: {
-    label: "Best Quality",
-    title: "Best-Quality Basket",
-    color: "#F59E0B",
-    description:
-      "Heuristic: favors preferred or registry-backed supplier ownership first, then cheapest coverage within that supplier.",
-  },
-};
-const SUPPLIER_BASKET_MODE_ORDER = Object.keys(SUPPLIER_BASKET_MODE_META);
-const SUPPLIER_BASKET_VALUE_MAX_COVERAGE_MULTIPLE = 3;
-const BATCH_PLANNER_SHORTAGE_TOLERANCE = 0.0001;
-const PERFORMANCE_FIXATIVE_NAMES = [
-  "Benzyl Salicylate",
-  "Hexyl Cinnamic Aldehyde",
-  "Habanolide",
-  "Helvetolide",
-  "Ethylene Brassylate",
-  "Benzoin Siam Absolute",
-  "Labdanum Absolute 10%",
-  "Coumarin",
-  "Benzyl Benzoate",
-  "Oakmoss Absolute",
-];
-const PERFORMANCE_FRESH_CLASSES = new Set([
-  "Citrus",
-  "Green",
-  "Marine",
-  "Aromatic",
-  "Floral",
-]);
-const PERFORMANCE_DENSE_CLASSES = new Set([
-  "Amber",
-  "Woody",
-  "Oriental",
-  "Musk",
-  "Chypre",
-  "Gourmand",
-  "Spice",
-]);
-const SUPPLIER_LINK_NEGATIVE_STATUSES = new Set([
-  "linked_duplicate",
-  "cross_wired_listing",
-  "dead_url",
-  "accord_listing",
-]);
-const CRITIQUE_LENS_META = {
-  perfumer: {
-    label: "Perfumer",
-    color: "#F472B6",
-    description: "Balance, movement, and sensory polish.",
-  },
-  chemist: {
-    label: "Chemist",
-    color: "#7DD3FC",
-    description: "Volatility structure, data confidence, and material behavior.",
-  },
-  cost: {
-    label: "Cost",
-    color: "#34D399",
-    description: "Spend concentration, supplier confidence, and sourcing tradeoffs.",
-  },
-  compliance: {
-    label: "Compliance",
-    color: "#F59E0B",
-    description: "IFRA exposure, restrictions, and reformulation risk.",
-  },
-  brand: {
-    label: "Brand",
-    color: "#A78BFA",
-    description: "Distinctiveness, coherence, and signature story.",
-  },
-};
-const CRITIQUE_LENS_ORDER = Object.keys(CRITIQUE_LENS_META);
-
-function formatHumanList(values = [], maxItems = 3) {
-  const list = values.filter(Boolean).slice(0, maxItems);
-  if (list.length === 0) return "";
-  if (list.length === 1) return list[0];
-  if (list.length === 2) return `${list[0]} and ${list[1]}`;
-  return `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
-}
-
-function pushUniqueItem(items, value) {
-  if (!value || items.includes(value)) return;
-  items.push(value);
-}
-
-function slugifyFormulaName(name = "") {
-  const slug = String(name)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return slug || "formula";
-}
-
-function buildFormulaKey(name, prefix = "formula") {
-  return [
-    prefix,
-    slugifyFormulaName(name),
-    Date.now().toString(36),
-    Math.random().toString(36).slice(2, 6),
-  ].join("-");
-}
-
-function normalizeFormulaVersionLabel(versionLabel, fallback = "v1.0") {
-  if (typeof versionLabel !== "string") return fallback;
-  const trimmed = versionLabel.trim();
-  return FORMULA_VERSION_RE.test(trimmed) ? trimmed : fallback;
-}
-
-function incrementFormulaVersionLabel(versionLabel) {
-  const match = FORMULA_VERSION_RE.exec(
-    normalizeFormulaVersionLabel(versionLabel)
-  );
-  if (!match) return "v1.1";
-  const major = Number(match[1]) || 1;
-  const minor = Number(match[2]) || 0;
-  return `v${major}.${minor + 1}`;
-}
-
-function sortFormulaIngredients(ingredients = []) {
-  return [...ingredients]
-    .filter((ingredient) => ingredient && ingredient.name)
-    .map((ingredient) => {
-      const name = String(ingredient.name).trim();
-      return {
-        ...ingredient,
-        name,
-        g: Number.isFinite(Number(ingredient.g)) ? Number(ingredient.g) : 0,
-        note: ingredient.note || DB[name]?.note || "mid",
-      };
-    })
-    .sort(
-      (a, b) =>
-        (FORMULA_NOTE_ORDER[a.note] ?? 2) - (FORMULA_NOTE_ORDER[b.note] ?? 2)
-    );
-}
-
-function getFormulaDisplayLabel(formula, { includeVersion = false } = {}) {
-  if (!formula) return "";
-  return includeVersion && formula.versionLabel
-    ? `${formula.name} ${formula.versionLabel}`
-    : formula.name;
-}
-
-function formatFormulaDateLabel(value) {
-  if (!value) return null;
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toLocaleDateString();
-}
-
-function createSeedFormulaRecord(formula, index) {
-  const formulaKey =
-    formula.formulaKey || `seed-${slugifyFormulaName(formula.name)}-${index + 1}`;
-  return {
-    ...formula,
-    formulaKey,
-    versionLabel: normalizeFormulaVersionLabel(formula.versionLabel, "v1.0"),
-    parentFormulaKey: formula.parentFormulaKey || null,
-    parentVersionId: formula.parentVersionId || null,
-    isLocked: Boolean(formula.isLocked),
-    revisionNote:
-      typeof formula.revisionNote === "string" ? formula.revisionNote : "",
-    createdAt: formula.createdAt || null,
-    updatedAt: formula.updatedAt || null,
-    ingredients: sortFormulaIngredients(formula.ingredients),
-    isSeeded: true,
-    isCustom: false,
-    sourceType: "seeded",
-    seedSourceKey: formulaKey,
-  };
-}
-
-function createPersistedFormulaRecord(formula, index = 0) {
-  const name =
-    typeof formula?.name === "string" && formula.name.trim()
-      ? formula.name.trim()
-      : `Saved Formula ${index + 1}`;
-  const nowIso = new Date().toISOString();
-  const createdAt = formula?.createdAt || formula?.updatedAt || nowIso;
-  const updatedAt = formula?.updatedAt || createdAt;
-  const formulaKey =
-    formula?.formulaKey || buildFormulaKey(name, "formula");
-  const parentVersionId = formula?.parentVersionId || null;
-  const sourceType =
-    formula?.sourceType ||
-    (parentVersionId
-      ? "version"
-      : formula?.isSeeded
-      ? "seeded_override"
-      : "custom");
-
-  return {
-    ...formula,
-    name,
-    formulaKey,
-    emoji: formula?.emoji || "🧪",
-    tagline: formula?.tagline || "Custom build",
-    desc: formula?.desc || "Created in Build Lab.",
-    ingredients: sortFormulaIngredients(formula?.ingredients || []),
-    versionLabel: normalizeFormulaVersionLabel(formula?.versionLabel, "v1.0"),
-    parentFormulaKey: formula?.parentFormulaKey || null,
-    parentVersionId,
-    isLocked: Boolean(formula?.isLocked),
-    revisionNote:
-      typeof formula?.revisionNote === "string" ? formula.revisionNote : "",
-    createdAt,
-    updatedAt,
-    isSeeded: Boolean(formula?.isSeeded),
-    isCustom:
-      typeof formula?.isCustom === "boolean"
-        ? formula.isCustom
-        : !formula?.isSeeded,
-    sourceType,
-    seedSourceKey: formula?.seedSourceKey || null,
-  };
-}
-
-function readPersistedFormulaRecords() {
-  if (typeof localStorage === "undefined") return [];
-  try {
-    const saved = localStorage.getItem(FORMULA_STORAGE_KEY);
-    if (!saved) return [];
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed)
-      ? parsed.map((record, index) =>
-          createPersistedFormulaRecord(record, index)
-        )
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function upsertFormulaRecord(records, formulaRecord) {
-  const normalized = createPersistedFormulaRecord(formulaRecord);
-  const existingIndex = records.findIndex(
-    (record) => record.formulaKey === normalized.formulaKey
-  );
-  if (existingIndex === -1) return [...records, normalized];
-  const next = [...records];
-  next[existingIndex] = normalized;
-  return next;
-}
-
-function removeFormulaRecord(records, formulaKey) {
-  return records.filter((record) => record.formulaKey !== formulaKey);
-}
-
-function buildFormulaLibrary(seedFormulas, persistedRecords) {
-  const seeded = seedFormulas.map((formula, index) =>
-    createSeedFormulaRecord(formula, index)
-  );
-  const seededKeys = new Set(seeded.map((formula) => formula.formulaKey));
-  const persisted = persistedRecords.map((record, index) =>
-    createPersistedFormulaRecord(record, index)
-  );
-  const persistedByKey = new Map(
-    persisted.map((record) => [record.formulaKey, record])
-  );
-
-  const mergedSeeded = seeded.map((seedFormula) => {
-    const override = persistedByKey.get(seedFormula.formulaKey);
-    if (!override) return seedFormula;
-    return {
-      ...seedFormula,
-      ...override,
-      formulaKey: seedFormula.formulaKey,
-      isSeeded: true,
-      sourceType:
-        override.sourceType === "seeded" ? "seeded_override" : override.sourceType,
-      seedSourceKey: seedFormula.seedSourceKey,
-    };
-  });
-
-  const additional = persisted
-    .filter((record) => !seededKeys.has(record.formulaKey))
-    .sort((a, b) => {
-      const createdCompare = String(a.createdAt || "").localeCompare(
-        String(b.createdAt || "")
-      );
-      if (createdCompare !== 0) return createdCompare;
-      return a.name.localeCompare(b.name);
-    });
-
-  return [...mergedSeeded, ...additional];
-}
-
-function readFormulaCompareState() {
-  if (typeof localStorage === "undefined") {
-    return FORMULA_COMPARE_DEFAULT_STATE;
-  }
-  try {
-    const saved = localStorage.getItem(FORMULA_COMPARE_STORAGE_KEY);
-    if (!saved) return FORMULA_COMPARE_DEFAULT_STATE;
-    const parsed = JSON.parse(saved);
-    return {
-      leftFormulaKey: parsed?.leftFormulaKey || null,
-      rightFormulaKey: parsed?.rightFormulaKey || null,
-    };
-  } catch {
-    return FORMULA_COMPARE_DEFAULT_STATE;
-  }
-}
-
 // ─────────────────────────────────────────────────────────────
 // CHEMISTRY ENGINE
 // ─────────────────────────────────────────────────────────────
@@ -54506,517 +54227,6 @@ function getInventoryPlan(name, gNeeded) {
   return { ...best, remaining: Math.max(0, best.grams - gNeeded) };
 }
 
-function getLivePricingForIngredient(name, pricesState) {
-  return pricesState?.[name] || PRICING[name] || {};
-}
-
-function getSupplierMappingAssessment(ingredientName, supplierName, supplierData) {
-  const dbRecord = DB[ingredientName] || {};
-  const registryConfirmed = getSupplierProductsForCatalogName(ingredientName).some(
-    (record) => record?.supplierDisplayName === supplierName
-  );
-  const linkStatus = supplierData?.linkStatus || "primary_listing";
-  const linkNote = supplierData?.linkNote || null;
-  const linkedDuplicateOfCatalogName =
-    supplierData?.linkedDuplicateOfCatalogName || null;
-  let qualityScore = 0;
-  const reasons = [];
-
-  if (dbRecord.supplier === supplierName) {
-    qualityScore += 4;
-    reasons.push("Matches the current live preferred supplier.");
-  }
-  if (registryConfirmed) {
-    qualityScore += 4;
-    reasons.push("Supplier ownership is confirmed in the supplier registry.");
-  }
-  if (linkStatus === "primary_listing") {
-    qualityScore += 3;
-    reasons.push("Normalization marks this as a primary supplier listing.");
-  } else if (linkStatus === "supplier_grade_variant") {
-    qualityScore += 2;
-    reasons.push("Normalization recognizes this supplier grade variant.");
-  } else if (linkStatus === "linked_duplicate") {
-    qualityScore -= 3;
-    reasons.push("Normalization marks this row as a linked duplicate.");
-  } else if (linkStatus === "cross_wired_listing") {
-    qualityScore -= 5;
-    reasons.push("Normalization flags a cross-wired supplier listing.");
-  } else if (linkStatus === "dead_url") {
-    qualityScore -= 4;
-    reasons.push("Normalization flags this supplier URL as dead.");
-  } else if (linkStatus === "accord_listing") {
-    qualityScore -= 2;
-    reasons.push("Normalization treats this supplier row as an accord listing.");
-  }
-  if (supplierData?.url) {
-    qualityScore += 1;
-  }
-
-  let mappingConfidence = "inferred";
-  if (registryConfirmed || linkStatus === "primary_listing") {
-    mappingConfidence = "confirmed";
-  } else if (SUPPLIER_LINK_NEGATIVE_STATUSES.has(linkStatus)) {
-    mappingConfidence = "uncertain";
-  }
-
-  const detailParts = [];
-  if (registryConfirmed) detailParts.push("Registry-backed ownership.");
-  if (dbRecord.supplier === supplierName) {
-    detailParts.push("Matches live preferred supplier.");
-  }
-  if (linkedDuplicateOfCatalogName) {
-    detailParts.push(
-      `Linked duplicate of "${linkedDuplicateOfCatalogName}".`
-    );
-  }
-  if (linkNote) detailParts.push(linkNote);
-
-  return {
-    qualityScore,
-    mappingConfidence,
-    registryConfirmed,
-    linkStatus,
-    linkNote,
-    linkedDuplicateOfCatalogName,
-    confidenceNote: detailParts.join(" "),
-    qualityNote: reasons.join(" "),
-  };
-}
-
-function buildSupplierPurchaseCandidates(ingredient, supplierName, supplierData) {
-  const needG = Number(ingredient.g) || 0;
-  const d = DB[ingredient.name];
-  const density = d?.density || d?.densityGmL || 1.0;
-  if (!Array.isArray(supplierData?.S) || supplierData.S.length === 0) {
-    return [];
-  }
-
-  return supplierData.S
-    .map(([qty, unit, price]) => {
-      const grams = unit === "mL" ? qty * density : qty;
-      if (!Number.isFinite(grams) || grams <= 0 || !Number.isFinite(price)) {
-        return null;
-      }
-      const multi = grams >= needG ? 1 : Math.max(1, Math.ceil(needG / grams));
-      const totalPurchasedG = grams * multi;
-      const lineCost = price * multi;
-      return {
-        supplier: supplierName,
-        qty,
-        unit,
-        price,
-        grams,
-        multi,
-        totalPurchasedG,
-        lineCost,
-        remaining: Math.max(0, totalPurchasedG - needG),
-        pricePerPurchasedGram: price / grams,
-      };
-    })
-    .filter(Boolean);
-}
-
-function selectCheapestPurchaseCandidate(candidates = []) {
-  return [...candidates].sort((a, b) => {
-    if (a.lineCost !== b.lineCost) return a.lineCost - b.lineCost;
-    if (a.remaining !== b.remaining) return a.remaining - b.remaining;
-    return a.pricePerPurchasedGram - b.pricePerPurchasedGram;
-  })[0] || null;
-}
-
-function selectBestValuePurchaseCandidate(candidates = []) {
-  if (!candidates.length) return null;
-  const needG = Math.max(
-    candidates[0]?.totalPurchasedG - candidates[0]?.remaining || 0,
-    0.0001
-  );
-  const pool = candidates.filter(
-    (candidate) =>
-      candidate.totalPurchasedG <=
-      needG * SUPPLIER_BASKET_VALUE_MAX_COVERAGE_MULTIPLE + 0.0001
-  );
-  const rankedPool = (pool.length ? pool : candidates).slice();
-  return rankedPool.sort((a, b) => {
-    if (a.pricePerPurchasedGram !== b.pricePerPurchasedGram) {
-      return a.pricePerPurchasedGram - b.pricePerPurchasedGram;
-    }
-    if (a.lineCost !== b.lineCost) return a.lineCost - b.lineCost;
-    return a.remaining - b.remaining;
-  })[0] || null;
-}
-
-function buildIngredientSupplierOptions(
-  ingredient,
-  pricesState,
-  supplierOverrides = {}
-) {
-  const pricing = getLivePricingForIngredient(ingredient.name, pricesState);
-  const overrideSupplier = supplierOverrides[ingredient.name] || null;
-  const supplierNames = overrideSupplier
-    ? [overrideSupplier]
-    : Object.keys(pricing);
-
-  const supplierOptions = supplierNames.map((supplierName) => {
-    const supplierData = pricing[supplierName] || null;
-    const assessment = getSupplierMappingAssessment(
-      ingredient.name,
-      supplierName,
-      supplierData
-    );
-    const candidates = buildSupplierPurchaseCandidates(
-      ingredient,
-      supplierName,
-      supplierData
-    );
-    return {
-      supplier: supplierName,
-      supplierData,
-      assessment,
-      candidates,
-      cheapestCandidate: selectCheapestPurchaseCandidate(candidates),
-      bestValueCandidate: selectBestValuePurchaseCandidate(candidates),
-      forcedByOverride: Boolean(overrideSupplier),
-      isMissingPricing:
-        !supplierData || !Array.isArray(supplierData.S) || supplierData.S.length === 0,
-    };
-  });
-
-  return {
-    ingredient,
-    overrideSupplier,
-    supplierOptions,
-    availableOptions: supplierOptions.filter((option) => option.candidates.length > 0),
-  };
-}
-
-function getBasketConfidenceRank(mappingConfidence) {
-  if (mappingConfidence === "confirmed") return 3;
-  if (mappingConfidence === "inferred") return 2;
-  if (mappingConfidence === "uncertain") return 1;
-  return 0;
-}
-
-function selectIngredientBasketLine(
-  ingredient,
-  pricesState,
-  supplierOverrides = {},
-  mode = "cheapest"
-) {
-  const optionState = buildIngredientSupplierOptions(
-    ingredient,
-    pricesState,
-    supplierOverrides
-  );
-  const { overrideSupplier, supplierOptions, availableOptions } = optionState;
-  const requestedMode = SUPPLIER_BASKET_MODE_META[mode] ? mode : "cheapest";
-
-  if (!availableOptions.length) {
-    const missingOption = supplierOptions[0] || null;
-    const missingReason = overrideSupplier
-      ? `Supplier override "${overrideSupplier}" has no saved size/price data.`
-      : "No supplier size/price data is currently stored.";
-    return {
-      ingredientName: ingredient.name,
-      needG: Number(ingredient.g) || 0,
-      note: ingredient.note,
-      supplier: overrideSupplier || missingOption?.supplier || null,
-      lineCost: null,
-      buyText: "—",
-      remaining: null,
-      mappingConfidence: "missing",
-      confidenceNote:
-        missingOption?.assessment?.confidenceNote || missingReason,
-      qualityNote: missingOption?.assessment?.qualityNote || "",
-      forcedByOverride: Boolean(overrideSupplier),
-      status: "missing",
-      missingReason,
-      linkStatus: missingOption?.assessment?.linkStatus || null,
-      registryConfirmed:
-        missingOption?.assessment?.registryConfirmed || false,
-      linkedDuplicateOfCatalogName:
-        missingOption?.assessment?.linkedDuplicateOfCatalogName || null,
-      line: null,
-    };
-  }
-
-  const selectedOption = (() => {
-    if (overrideSupplier) {
-      return availableOptions[0];
-    }
-    if (requestedMode === "cheapest") {
-      return [...availableOptions].sort((a, b) => {
-        const aCandidate = a.cheapestCandidate;
-        const bCandidate = b.cheapestCandidate;
-        if (aCandidate.lineCost !== bCandidate.lineCost) {
-          return aCandidate.lineCost - bCandidate.lineCost;
-        }
-        if (aCandidate.remaining !== bCandidate.remaining) {
-          return aCandidate.remaining - bCandidate.remaining;
-        }
-        return (
-          aCandidate.pricePerPurchasedGram - bCandidate.pricePerPurchasedGram
-        );
-      })[0];
-    }
-    if (requestedMode === "best_value") {
-      return [...availableOptions].sort((a, b) => {
-        const aCandidate = a.bestValueCandidate || a.cheapestCandidate;
-        const bCandidate = b.bestValueCandidate || b.cheapestCandidate;
-        if (
-          aCandidate.pricePerPurchasedGram !== bCandidate.pricePerPurchasedGram
-        ) {
-          return (
-            aCandidate.pricePerPurchasedGram - bCandidate.pricePerPurchasedGram
-          );
-        }
-        if (aCandidate.lineCost !== bCandidate.lineCost) {
-          return aCandidate.lineCost - bCandidate.lineCost;
-        }
-        return aCandidate.remaining - bCandidate.remaining;
-      })[0];
-    }
-    return [...availableOptions].sort((a, b) => {
-      if (a.assessment.qualityScore !== b.assessment.qualityScore) {
-        return b.assessment.qualityScore - a.assessment.qualityScore;
-      }
-      const confidenceDelta =
-        getBasketConfidenceRank(b.assessment.mappingConfidence) -
-        getBasketConfidenceRank(a.assessment.mappingConfidence);
-      if (confidenceDelta !== 0) return confidenceDelta;
-      return a.cheapestCandidate.lineCost - b.cheapestCandidate.lineCost;
-    })[0];
-  })();
-
-  const line =
-    requestedMode === "best_value"
-      ? selectedOption.bestValueCandidate || selectedOption.cheapestCandidate
-      : selectedOption.cheapestCandidate;
-
-  return {
-    ingredientName: ingredient.name,
-    needG: Number(ingredient.g) || 0,
-    note: ingredient.note,
-    supplier: selectedOption.supplier,
-    lineCost: line.lineCost,
-    buyText: `${line.qty}${line.unit}${line.multi > 1 ? ` ×${line.multi}` : ""}`,
-    remaining: line.remaining,
-    mappingConfidence: selectedOption.assessment.mappingConfidence,
-    confidenceNote: selectedOption.assessment.confidenceNote,
-    qualityNote: selectedOption.assessment.qualityNote,
-    forcedByOverride: selectedOption.forcedByOverride,
-    status:
-      selectedOption.assessment.mappingConfidence === "uncertain"
-        ? "uncertain"
-        : selectedOption.assessment.mappingConfidence,
-    missingReason: null,
-    linkStatus: selectedOption.assessment.linkStatus,
-    registryConfirmed: selectedOption.assessment.registryConfirmed,
-    linkedDuplicateOfCatalogName:
-      selectedOption.assessment.linkedDuplicateOfCatalogName,
-    line,
-  };
-}
-
-function buildSupplierBasket(
-  ingredients,
-  pricesState,
-  supplierOverrides = {},
-  mode = "cheapest"
-) {
-  const lines = ingredients.map((ingredient) =>
-    selectIngredientBasketLine(
-      ingredient,
-      pricesState,
-      supplierOverrides,
-      mode
-    )
-  );
-  const totalCost = lines.reduce((sum, line) => sum + (line.lineCost || 0), 0);
-  const suppliersInUse = Array.from(
-    new Set(lines.map((line) => line.supplier).filter(Boolean))
-  );
-  return {
-    mode,
-    meta: SUPPLIER_BASKET_MODE_META[mode] || SUPPLIER_BASKET_MODE_META.cheapest,
-    lines,
-    totalCost,
-    missingCount: lines.filter((line) => line.status === "missing").length,
-    uncertainCount: lines.filter((line) => line.status === "uncertain").length,
-    inferredCount: lines.filter((line) => line.status === "inferred").length,
-    confirmedCount: lines.filter((line) => line.status === "confirmed").length,
-    supplierCount: suppliersInUse.length,
-    suppliersInUse,
-  };
-}
-
-function buildSupplierBasketStrategies(
-  ingredients,
-  pricesState,
-  supplierOverrides = {}
-) {
-  return Object.fromEntries(
-    SUPPLIER_BASKET_MODE_ORDER.map((mode) => [
-      mode,
-      buildSupplierBasket(ingredients, pricesState, supplierOverrides, mode),
-    ])
-  );
-}
-
-function buildBatchPlannerReport({
-  ingredients = [],
-  targetBatchG = 0,
-  inventory = {},
-  pricesState,
-  supplierOverrides = {},
-  basketMode = "cheapest",
-}) {
-  const normalizedIngredients = Array.isArray(ingredients)
-    ? ingredients
-        .map((ingredient) => ({
-          ...ingredient,
-          g: Number(ingredient?.g) || 0,
-          note: ingredient?.note || DB[ingredient?.name]?.note || "mid",
-        }))
-        .filter((ingredient) => ingredient.name && ingredient.g > 0)
-    : [];
-  const sourceTotalG = normalizedIngredients.reduce(
-    (sum, ingredient) => sum + ingredient.g,
-    0
-  );
-  const normalizedTargetBatchG = Math.max(0, Number(targetBatchG) || 0);
-
-  if (sourceTotalG <= 0 || normalizedTargetBatchG <= 0) {
-    return {
-      sourceTotalG,
-      targetBatchG: normalizedTargetBatchG,
-      totalRequiredG: 0,
-      lines: [],
-      blockingMaterials: [],
-      constrainingMaterials: [],
-      shortageBasket: null,
-      shortageCount: 0,
-      shortageTotalG: 0,
-      canFulfill: false,
-      maxProducibleG: 0,
-      coveragePercent: 0,
-    };
-  }
-
-  const lines = normalizedIngredients
-    .map((ingredient) => {
-      const proportion = ingredient.g / sourceTotalG;
-      const requiredG = proportion * normalizedTargetBatchG;
-      const onHand = Math.max(0, Number(inventory?.[ingredient.name]?.qty) || 0);
-      const shortageG = Math.max(0, requiredG - onHand);
-      const remainingG = Math.max(0, onHand - requiredG);
-      const maxProducibleG =
-        proportion > 0 ? onHand / proportion : Number.POSITIVE_INFINITY;
-      return {
-        name: ingredient.name,
-        note: ingredient.note,
-        sourceG: ingredient.g,
-        proportion,
-        requiredG,
-        onHand,
-        shortageG,
-        remainingG,
-        isBlocked: shortageG > BATCH_PLANNER_SHORTAGE_TOLERANCE,
-        maxProducibleG,
-      };
-    })
-    .sort((a, b) => b.requiredG - a.requiredG);
-
-  const blockingMaterials = lines
-    .filter((line) => line.isBlocked)
-    .sort((a, b) => {
-      if (b.shortageG !== a.shortageG) return b.shortageG - a.shortageG;
-      return a.maxProducibleG - b.maxProducibleG;
-    });
-  const constrainingMaterials = [...lines].sort((a, b) => {
-    if (a.maxProducibleG !== b.maxProducibleG) {
-      return a.maxProducibleG - b.maxProducibleG;
-    }
-    return b.requiredG - a.requiredG;
-  });
-  const shortageIngredients = blockingMaterials.map((line) => ({
-    name: line.name,
-    note: line.note,
-    g: line.shortageG,
-  }));
-  const shortageBasket = shortageIngredients.length
-    ? buildSupplierBasket(
-        shortageIngredients,
-        pricesState,
-        supplierOverrides,
-        basketMode
-      )
-    : null;
-  const finiteMaxBatchValues = lines
-    .map((line) => line.maxProducibleG)
-    .filter((value) => Number.isFinite(value));
-  const maxProducibleG = finiteMaxBatchValues.length
-    ? Math.max(0, Math.min(...finiteMaxBatchValues))
-    : 0;
-
-  return {
-    sourceTotalG,
-    targetBatchG: normalizedTargetBatchG,
-    totalRequiredG: lines.reduce((sum, line) => sum + line.requiredG, 0),
-    lines,
-    blockingMaterials,
-    constrainingMaterials,
-    shortageBasket,
-    shortageCount: blockingMaterials.length,
-    shortageTotalG: blockingMaterials.reduce(
-      (sum, line) => sum + line.shortageG,
-      0
-    ),
-    canFulfill: blockingMaterials.length === 0,
-    maxProducibleG,
-    coveragePercent:
-      normalizedTargetBatchG > 0
-        ? Math.max(0, (maxProducibleG / normalizedTargetBatchG) * 100)
-        : 0,
-  };
-}
-
-function buildFormulaProcurementRows(
-  ingredients,
-  pricesState,
-  supplierOverrides = {}
-) {
-  const total = ingredients.reduce((s, i) => s + i.g, 0);
-  const cheapestBasket = buildSupplierBasket(
-    ingredients,
-    pricesState,
-    supplierOverrides,
-    "cheapest"
-  );
-  const rows = cheapestBasket.lines.map((line, index) => {
-    const ing = ingredients[index];
-    return {
-      ...ing,
-      best: line.line
-        ? {
-            qty: line.line.qty,
-            unit: line.line.unit,
-            price: line.line.price,
-            g: line.line.grams,
-            sup: line.supplier,
-            url:
-              getLivePricingForIngredient(ing.name, pricesState)[line.supplier]
-                ?.url || "",
-            multi: line.line.multi,
-          }
-        : null,
-      cost: line.lineCost,
-      pct: total > 0 ? ((ing.g / total) * 100).toFixed(1) : "0.0",
-    };
-  });
-  return { total, grandTotal: cheapestBasket.totalCost, rows };
-}
-
 function totalCost(buildItems) {
   let cost = 0;
   buildItems.forEach((item) => {
@@ -55091,1323 +54301,6 @@ function perfScore(ingredients) {
     longevity: Math.max(0, longevity),
     sillage: Math.max(0, sillage),
     projection: Math.max(0, projection),
-  };
-}
-
-function getFormulaCompareIngredientKey(name) {
-  const normalizationEntry = getMaterialNormalizationEntry(name);
-  const identity = resolveIngredientIdentity(name);
-  return (
-    normalizationEntry?.canonicalMaterialKey ||
-    identity?.normalizationEntry?.canonicalMaterialKey ||
-    identity?.resolvedIfraMaterial ||
-    String(name || "").trim().toLowerCase()
-  );
-}
-
-function buildFormulaIngredientSummaryMap(ingredients = []) {
-  const summaryMap = new Map();
-  ingredients.forEach((ingredient) => {
-    const key = getFormulaCompareIngredientKey(ingredient.name);
-    const existing = summaryMap.get(key);
-    const nextNames = new Set(existing?.names || []);
-    nextNames.add(ingredient.name);
-    const nextNotes = new Set(existing?.notes || []);
-    nextNotes.add(ingredient.note || "mid");
-    summaryMap.set(key, {
-      key,
-      primaryName: existing?.primaryName || ingredient.name,
-      names: Array.from(nextNames),
-      notes: Array.from(nextNotes).sort(
-        (a, b) =>
-          (FORMULA_NOTE_ORDER[a] ?? 2) - (FORMULA_NOTE_ORDER[b] ?? 2)
-      ),
-      totalG: (existing?.totalG || 0) + (Number(ingredient.g) || 0),
-    });
-  });
-  return summaryMap;
-}
-
-function summarizeComputedChemistry(chem = []) {
-  const topContributor = [...chem].sort(
-    (a, b) => (b.intensity || 0) - (a.intensity || 0)
-  )[0];
-  return {
-    totalIntensity: chem.reduce((s, ing) => s + (ing.intensity || 0), 0),
-    totalOV: chem.reduce((s, ing) => s + (ing.OV || 0), 0),
-    weightedXLogP: chem.reduce(
-      (s, ing) => s + (ing.wfrac || 0) * (ing.d?.xLogP || 0),
-      0
-    ),
-    weightedVP: chem.reduce(
-      (s, ing) => s + (ing.wfrac || 0) * (ing.d?.VP || 0),
-      0
-    ),
-    topContributor: topContributor?.name || "—",
-  };
-}
-
-function summarizeFormulaChemistry(ingredients = []) {
-  return summarizeComputedChemistry(computeChemistry(ingredients));
-}
-
-function clampPerformanceModelScore(value, min = 0, max = 10) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function getPerformanceModelBand(
-  score,
-  {
-    low = 3.5,
-    high = 7,
-    labels = { low: "Low", mid: "Moderate", high: "High" },
-  } = {}
-) {
-  if (score >= high) return labels.high;
-  if (score <= low) return labels.low;
-  return labels.mid;
-}
-
-function buildPerformanceModelSummary(ingredients = [], options = {}) {
-  const activeIngredients = Array.isArray(ingredients)
-    ? ingredients
-        .map((ingredient) => ({
-          ...ingredient,
-          g: Number(ingredient?.g) || 0,
-          note: ingredient?.note || DB[ingredient?.name]?.note || "mid",
-        }))
-        .filter((ingredient) => ingredient.name && ingredient.g > 0)
-    : [];
-
-  if (!activeIngredients.length) {
-    return {
-      headline: "Add ingredients to see a model-based performance read.",
-      estimateNote:
-        "Estimate only — this layer translates the current chemistry and score heuristics into plain English.",
-      caveats: [],
-      facets: [],
-      axisScores: {},
-    };
-  }
-
-  const chemistry = options.chemistry || computeChemistry(activeIngredients);
-  const performance = options.performance || perfScore(activeIngredients);
-  const chemistrySummary =
-    options.chemistrySummary || summarizeComputedChemistry(chemistry);
-  const totalG =
-    activeIngredients.reduce((sum, ingredient) => sum + ingredient.g, 0) || 1;
-  const noteWeight = {
-    top:
-      activeIngredients
-        .filter((ingredient) => ingredient.note === "top")
-        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
-    mid:
-      activeIngredients
-        .filter((ingredient) => ingredient.note === "mid")
-        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
-    base:
-      activeIngredients
-        .filter((ingredient) => ingredient.note === "base")
-        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
-    carrier:
-      activeIngredients
-        .filter((ingredient) => ingredient.note === "carrier")
-        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
-  };
-  const totalIntensity =
-    chemistry.reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0) ||
-    0;
-  const noteIntensity = {
-    top: chemistry
-      .filter((ingredient) => ingredient.note === "top")
-      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
-    mid: chemistry
-      .filter((ingredient) => ingredient.note === "mid")
-      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
-    base: chemistry
-      .filter((ingredient) => ingredient.note === "base")
-      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
-    carrier: chemistry
-      .filter((ingredient) => ingredient.note === "carrier")
-      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
-  };
-  const noteIntensityShare = {
-    top: totalIntensity > 0 ? noteIntensity.top / totalIntensity : noteWeight.top,
-    mid: totalIntensity > 0 ? noteIntensity.mid / totalIntensity : noteWeight.mid,
-    base:
-      totalIntensity > 0 ? noteIntensity.base / totalIntensity : noteWeight.base,
-  };
-  const freshClassPct =
-    activeIngredients
-      .filter((ingredient) =>
-        PERFORMANCE_FRESH_CLASSES.has(DB[ingredient.name]?.scentClass)
-      )
-      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
-  const denseClassPct =
-    activeIngredients
-      .filter((ingredient) =>
-        PERFORMANCE_DENSE_CLASSES.has(DB[ingredient.name]?.scentClass)
-      )
-      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
-  const fixativePct =
-    activeIngredients
-      .filter((ingredient) => PERFORMANCE_FIXATIVE_NAMES.includes(ingredient.name))
-      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
-  const highImpactMaterials = chemistry.filter((ingredient) => (ingredient.OV || 0) > 1);
-  const crowdedFamilies = Object.entries(
-    highImpactMaterials.reduce((acc, ingredient) => {
-      const family = ingredient.d?.scentClass || "Other";
-      if (!acc[family]) acc[family] = [];
-      acc[family].push(ingredient);
-      return acc;
-    }, {})
-  )
-    .map(([family, members]) => ({
-      family,
-      count: members.length,
-      share:
-        totalIntensity > 0
-          ? members.reduce(
-              (sum, ingredient) => sum + (ingredient.intensity || 0),
-              0
-            ) / totalIntensity
-          : 0,
-    }))
-    .filter((family) => family.count >= 3 || family.share >= 0.35)
-    .sort((a, b) => {
-      if (b.share !== a.share) return b.share - a.share;
-      return b.count - a.count;
-    });
-  const dominantNoteLayer =
-    Object.entries({
-      opening: noteWeight.top,
-      heart: noteWeight.mid,
-      drydown: noteWeight.base,
-    }).sort((a, b) => b[1] - a[1])[0]?.[0] || "heart";
-  const unknownIngredientCount = chemistry.filter((ingredient) => !ingredient.d).length;
-
-  const axisScores = {
-    openingImpact: clampPerformanceModelScore(
-      performance.projection * 0.55 +
-        noteWeight.top * 3.25 +
-        noteIntensityShare.top * 3.25
-    ),
-    liftFreshness: clampPerformanceModelScore(
-      noteWeight.top * 3 + freshClassPct * 4.8 + Math.min(performance.projection, 6) * 0.35
-    ),
-    densityHeaviness: clampPerformanceModelScore(
-      noteWeight.base * 4 +
-        denseClassPct * 2.5 +
-        Math.min(chemistrySummary.weightedXLogP || 0, 5) * 0.7 +
-        fixativePct * 5
-    ),
-    drydownPersistence: clampPerformanceModelScore(
-      performance.longevity * 0.8 + noteWeight.base * 2 + fixativePct * 5
-    ),
-    likelyProjection: clampPerformanceModelScore(
-      performance.projection * 0.65 + performance.sillage * 0.35
-    ),
-    clutterImbalance: clampPerformanceModelScore(
-      crowdedFamilies.length * 2.4 +
-        Math.max(0, highImpactMaterials.length - 6) * 0.45 +
-        (Math.max(noteWeight.top, noteWeight.mid, noteWeight.base) > 0.62 ? 1.4 : 0) +
-        (crowdedFamilies[0]?.share || 0) * 3
-    ),
-    bridgeWeakness: clampPerformanceModelScore(
-      (noteWeight.mid < 0.18 ? 4 : 0) +
-        (noteIntensityShare.mid < 0.16 ? 3 : 0) +
-        (noteWeight.top > 0.24 && noteWeight.base > 0.28 ? 2 : 0)
-    ),
-  };
-
-  const openingBand = getPerformanceModelBand(axisScores.openingImpact, {
-    labels: { low: "Soft", mid: "Moderate", high: "Strong" },
-  });
-  const liftBand = getPerformanceModelBand(axisScores.liftFreshness, {
-    labels: { low: "Grounded", mid: "Balanced", high: "Fresh" },
-  });
-  const densityBand = getPerformanceModelBand(axisScores.densityHeaviness, {
-    labels: { low: "Light", mid: "Moderate", high: "Dense" },
-  });
-  const drydownBand = getPerformanceModelBand(axisScores.drydownPersistence, {
-    labels: { low: "Short", mid: "Steady", high: "Persistent" },
-  });
-  const projectionBand = getPerformanceModelBand(axisScores.likelyProjection, {
-    labels: { low: "Intimate", mid: "Noticeable", high: "Expansive" },
-  });
-  const clutterBand = getPerformanceModelBand(axisScores.clutterImbalance, {
-    low: 2.5,
-    high: 6,
-    labels: { low: "Low", mid: "Watch", high: "Elevated" },
-  });
-  const bridgeBand = getPerformanceModelBand(axisScores.bridgeWeakness, {
-    low: 2.5,
-    high: 6,
-    labels: { low: "Solid", mid: "Watch", high: "Possible gap" },
-  });
-
-  const headlineParts = [];
-  if (axisScores.openingImpact >= 7) headlineParts.push("a lively opening");
-  else if (axisScores.openingImpact <= 3.5)
-    headlineParts.push("a restrained opening");
-  else headlineParts.push("a measured opening");
-  if (axisScores.drydownPersistence >= 7)
-    headlineParts.push("a fairly persistent drydown");
-  else if (axisScores.drydownPersistence <= 3.5)
-    headlineParts.push("a shorter drydown");
-  else headlineParts.push("a steady drydown");
-  if (axisScores.likelyProjection >= 7)
-    headlineParts.push("noticeable projection");
-  else if (axisScores.likelyProjection <= 3.5)
-    headlineParts.push("an intimate scent cloud");
-  else headlineParts.push("moderate projection");
-
-  const caveats = [];
-  if (unknownIngredientCount > 0) {
-    caveats.push(
-      `${unknownIngredientCount} ingredient${
-        unknownIngredientCount === 1 ? "" : "s"
-      } lack full chemistry data, so this read is rougher than usual.`
-    );
-  }
-  if (chemistry.filter((ingredient) => ingredient.isUVCB).length > 0) {
-    caveats.push(
-      "Some naturals/UVCB materials are treated more coarsely in the current model."
-    );
-  }
-
-  return {
-    headline: `Model read: ${headlineParts.join(", ")}.`,
-    estimateNote:
-      "Estimate only — this summary translates the current chemistry and score heuristics into plain English, not guaranteed wear behavior.",
-    caveats,
-    axisScores,
-    facets: [
-      {
-        key: "openingImpact",
-        label: "Opening impact",
-        rating: openingBand,
-        tone:
-          axisScores.openingImpact >= 7
-            ? "warm"
-            : axisScores.openingImpact <= 3.5
-            ? "muted"
-            : "accent",
-        detail:
-          axisScores.openingImpact >= 7
-            ? "Top-note weight and the current projection model suggest a fairly assertive first impression."
-            : axisScores.openingImpact <= 3.5
-            ? "The opening reads restrained in the current model rather than sharp or explosive."
-            : "The opening should register clearly without reading especially forceful.",
-      },
-      {
-        key: "liftFreshness",
-        label: "Lift / freshness",
-        rating: liftBand,
-        tone:
-          axisScores.liftFreshness >= 7
-            ? "positive"
-            : axisScores.liftFreshness <= 3.5
-            ? "muted"
-            : "accent",
-        detail:
-          axisScores.liftFreshness >= 7
-            ? "Top-heavy weight plus fresher material classes suggest a bright, lifted feel."
-            : axisScores.liftFreshness <= 3.5
-            ? "The balance leans more grounded than sparkling; freshness signals look modest."
-            : "There is some lift, but the model does not read this as especially airy.",
-      },
-      {
-        key: "densityHeaviness",
-        label: "Density / heaviness",
-        rating: densityBand,
-        tone:
-          axisScores.densityHeaviness >= 7
-            ? "cool"
-            : axisScores.densityHeaviness <= 3.5
-            ? "muted"
-            : "accent",
-        detail:
-          axisScores.densityHeaviness >= 7
-            ? "Base weight and more lipophilic materials point to a denser body through the heart and drydown."
-            : axisScores.densityHeaviness <= 3.5
-            ? "The structure reads relatively open and light-bodied rather than dense."
-            : "The body looks balanced between openness and density in the current model.",
-      },
-      {
-        key: "drydownPersistence",
-        label: "Drydown persistence",
-        rating: drydownBand,
-        tone:
-          axisScores.drydownPersistence >= 7
-            ? "cool"
-            : axisScores.drydownPersistence <= 3.5
-            ? "caution"
-            : "accent",
-        detail:
-          axisScores.drydownPersistence >= 7
-            ? "Longevity signals, base-note weight, and fixative support suggest a persistent drydown."
-            : axisScores.drydownPersistence <= 3.5
-            ? "The drydown may taper earlier than the opening suggests."
-            : "The drydown should hold reasonably well without reading especially tenacious.",
-      },
-      {
-        key: "likelyProjection",
-        label: "Likely projection",
-        rating: projectionBand,
-        tone:
-          axisScores.likelyProjection >= 7
-            ? "warm"
-            : axisScores.likelyProjection <= 3.5
-            ? "muted"
-            : "accent",
-        detail:
-          axisScores.likelyProjection >= 7
-            ? "Projection and sillage scores point to a fairly noticeable scent cloud."
-            : axisScores.likelyProjection <= 3.5
-            ? "The model reads projection as intimate rather than room-filling."
-            : "Projection looks present but not especially aggressive.",
-      },
-      {
-        key: "clutterImbalance",
-        label: "Possible clutter / imbalance",
-        rating: clutterBand,
-        tone:
-          axisScores.clutterImbalance >= 6
-            ? "danger"
-            : axisScores.clutterImbalance > 2.5
-            ? "caution"
-            : "positive",
-        detail:
-          axisScores.clutterImbalance >= 6
-            ? crowdedFamilies.length > 0
-              ? `Several high-impact materials are competing in ${crowdedFamilies
-                  .slice(0, 2)
-                  .map((family) => family.family)
-                  .join(" / ")}, so the formula could read crowded.`
-              : `The current balance leans heavily toward the ${dominantNoteLayer}, so parts of the formula may overshadow the rest.`
-            : axisScores.clutterImbalance > 2.5
-            ? `There is a mild imbalance signal, mostly around ${dominantNoteLayer} weight or crowded high-impact materials.`
-            : "No obvious crowding signal stands out in the current model.",
-      },
-      {
-        key: "bridgeWeakness",
-        label: "Transition / bridge",
-        rating: bridgeBand,
-        tone:
-          axisScores.bridgeWeakness >= 6
-            ? "danger"
-            : axisScores.bridgeWeakness > 2.5
-            ? "caution"
-            : "positive",
-        detail:
-          axisScores.bridgeWeakness >= 6
-            ? "Mid-note coverage looks thin relative to the top and base, so the transition may feel abrupt."
-            : axisScores.bridgeWeakness > 2.5
-            ? "The heart looks a bit lean, so the opening-to-drydown handoff is worth watching."
-            : "No obvious bridge gap stands out from the current note balance.",
-      },
-    ],
-  };
-}
-
-function buildPerformanceComparisonNarrative(leftSummary, rightSummary) {
-  if (!leftSummary?.axisScores || !rightSummary?.axisScores) {
-    return [];
-  }
-  const notes = [];
-  const openingDelta =
-    rightSummary.axisScores.openingImpact -
-    leftSummary.axisScores.openingImpact;
-  const drydownDelta =
-    rightSummary.axisScores.drydownPersistence -
-    leftSummary.axisScores.drydownPersistence;
-  const densityDelta =
-    rightSummary.axisScores.densityHeaviness -
-    leftSummary.axisScores.densityHeaviness;
-  const clutterDelta =
-    rightSummary.axisScores.clutterImbalance -
-    leftSummary.axisScores.clutterImbalance;
-  const bridgeDelta =
-    rightSummary.axisScores.bridgeWeakness -
-    leftSummary.axisScores.bridgeWeakness;
-
-  if (openingDelta > 1.1) {
-    notes.push("Compared formula reads livelier in the opening.");
-  } else if (openingDelta < -1.1) {
-    notes.push("Compared formula reads softer in the opening.");
-  }
-  if (drydownDelta > 1.1) {
-    notes.push("Compared formula looks more persistent in the drydown.");
-  } else if (drydownDelta < -1.1) {
-    notes.push("Compared formula looks shorter in the drydown.");
-  }
-  if (densityDelta > 1.1) {
-    notes.push("Compared formula reads denser through the heart and base.");
-  } else if (densityDelta < -1.1) {
-    notes.push("Compared formula reads lighter and more open through the body.");
-  }
-  if (clutterDelta > 1.1) {
-    notes.push("Compared formula carries a higher clutter or imbalance signal.");
-  } else if (bridgeDelta > 1.1) {
-    notes.push("Compared formula shows a weaker modeled bridge from opening to drydown.");
-  }
-  if (!notes.length) {
-    notes.push(
-      "Both formulas read fairly similar in the current model, with no major shift in opening, body, or drydown."
-    );
-  }
-  return notes.slice(0, 3);
-}
-
-function buildFormulaCritiqueReport({
-  formula,
-  chemistry = [],
-  performance = { longevity: 0, sillage: 0, projection: 0 },
-  performanceModel,
-  basket,
-  cheapestBasket,
-  basketModeMeta,
-  ifraRows = [],
-  lens = "perfumer",
-}) {
-  const lensMeta = CRITIQUE_LENS_META[lens] || CRITIQUE_LENS_META.perfumer;
-  const formulaLabel = getFormulaDisplayLabel(formula, {
-    includeVersion: true,
-  });
-  const fallback = {
-    lens,
-    lensMeta,
-    formulaLabel,
-    headline: `Structured critique — ${lensMeta.label} lens`,
-    lensSummary: lensMeta.description,
-    supportNote:
-      "Estimate only — this critique stays grounded in the app's current model signals.",
-    strengths: [
-      "Add a formula with ingredients to see structured critique findings.",
-    ],
-    weaknesses: [
-      "No formula data is available yet, so no weakness signal can be inferred.",
-    ],
-    sensoryIssues: [
-      "Likely sensory issues appear here once the formula has ingredient data.",
-    ],
-    costIssues: [
-      "Likely cost issues appear here once the formula has supplier basket data.",
-    ],
-    suggestedChanges: [
-      "Build or load a formula first, then use the selected lens to guide the next revision.",
-    ],
-    uncertainty: [
-      "This advisor is model-based and should be treated as an estimate rather than certainty.",
-    ],
-  };
-
-  if (!formula?.ingredients?.length) return fallback;
-
-  const totalG =
-    formula.ingredients.reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) ||
-    1;
-  const noteWeight = {
-    top:
-      formula.ingredients
-        .filter((ingredient) => ingredient.note === "top")
-        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
-    mid:
-      formula.ingredients
-        .filter((ingredient) => ingredient.note === "mid")
-        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
-    base:
-      formula.ingredients
-        .filter((ingredient) => ingredient.note === "base")
-        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
-  };
-  const modelFacets = Object.fromEntries(
-    (performanceModel?.facets || []).map((facet) => [facet.key, facet])
-  );
-  const axisScores = performanceModel?.axisScores || {};
-  const openingScore = axisScores.openingImpact || 0;
-  const liftScore = axisScores.liftFreshness || 0;
-  const densityScore = axisScores.densityHeaviness || 0;
-  const drydownScore = axisScores.drydownPersistence || 0;
-  const projectionScore = axisScores.likelyProjection || 0;
-  const clutterScore = axisScores.clutterImbalance || 0;
-  const bridgeScore = axisScores.bridgeWeakness || 0;
-  const unknownIngredientCount = chemistry.filter((ingredient) => !ingredient.d).length;
-  const uvcbCount = chemistry.filter((ingredient) => ingredient.isUVCB).length;
-  const highImpactMaterials = [...chemistry]
-    .filter((ingredient) => ingredient.d && (ingredient.OV || 0) > 1)
-    .sort((a, b) => (b.intensity || 0) - (a.intensity || 0));
-  const dominantFamilies = Object.entries(
-    highImpactMaterials.reduce((acc, ingredient) => {
-      const family = ingredient.d?.scentClass || "Other";
-      if (!acc[family]) {
-        acc[family] = { family, count: 0, intensity: 0 };
-      }
-      acc[family].count += 1;
-      acc[family].intensity += ingredient.intensity || 0;
-      return acc;
-    }, {})
-  )
-    .map(([, value]) => value)
-    .sort((a, b) => {
-      if (b.intensity !== a.intensity) return b.intensity - a.intensity;
-      return b.count - a.count;
-    });
-  const dominantFamily = dominantFamilies[0]?.family || null;
-  const heroMaterials = highImpactMaterials.slice(0, 3).map((ingredient) => ingredient.name);
-  const basketLines = basket?.lines || [];
-  const totalBasketCost = basket?.totalCost || 0;
-  const topSpendLines = [...basketLines]
-    .filter((line) => line.lineCost != null)
-    .sort((a, b) => (b.lineCost || 0) - (a.lineCost || 0));
-  const spendLeader = topSpendLines[0] || null;
-  const spendLeaderShare =
-    totalBasketCost > 0 && spendLeader ? spendLeader.lineCost / totalBasketCost : 0;
-  const basketDeltaVsCheapest =
-    basket && cheapestBasket ? basket.totalCost - cheapestBasket.totalCost : 0;
-  const ifraFails = ifraRows.filter((row) => row.status === "fail");
-  const ifraWarns = ifraRows.filter((row) => row.status === "warn");
-  const restrictedRows = ifraRows.filter((row) => row.limit != null);
-
-  const strengths = [];
-  const weaknesses = [];
-  const sensoryIssues = [];
-  const costIssues = [];
-  const suggestedChanges = [];
-  const uncertainty = [...(performanceModel?.caveats || [])];
-
-  if (basket?.missingCount) {
-    pushUniqueItem(
-      uncertainty,
-      `${basket.missingCount} supplier price line${
-        basket.missingCount === 1 ? "" : "s"
-      } are missing in the current ${basket.meta.title.toLowerCase()}.`
-    );
-  }
-  if (basket?.uncertainCount) {
-    pushUniqueItem(
-      uncertainty,
-      `${basket.uncertainCount} supplier mapping${
-        basket.uncertainCount === 1 ? "" : "s"
-      } are still low-confidence in the current basket.`
-    );
-  }
-  if (ifraWarns.length && !ifraFails.length) {
-    pushUniqueItem(
-      uncertainty,
-      `Cat 4 IFRA review shows ${ifraWarns.length} caution flag${
-        ifraWarns.length === 1 ? "" : "s"
-      }, so compliance still needs review before production decisions.`
-    );
-  }
-
-  if (performanceModel?.headline) {
-    pushUniqueItem(strengths, performanceModel.headline);
-  }
-  if (openingScore >= 6.5) {
-    pushUniqueItem(strengths, modelFacets.openingImpact?.detail);
-  }
-  if (drydownScore >= 6.5) {
-    pushUniqueItem(strengths, modelFacets.drydownPersistence?.detail);
-  }
-  if (bridgeScore <= 2.5) {
-    pushUniqueItem(strengths, modelFacets.bridgeWeakness?.detail);
-  }
-  if (!ifraFails.length && !ifraWarns.length) {
-    pushUniqueItem(
-      strengths,
-      "Current Cat 4 IFRA review shows no modeled violations."
-    );
-  }
-  if (basket && basket.missingCount === 0 && basket.uncertainCount === 0) {
-    pushUniqueItem(
-      strengths,
-      `Current ${basket.meta.title.toLowerCase()} is fully mapped with no missing or uncertain supplier lines.`
-    );
-  }
-
-  if (clutterScore > 4.5) {
-    pushUniqueItem(weaknesses, modelFacets.clutterImbalance?.detail);
-  }
-  if (bridgeScore > 4) {
-    pushUniqueItem(weaknesses, modelFacets.bridgeWeakness?.detail);
-  }
-  if (openingScore < 4) {
-    pushUniqueItem(weaknesses, modelFacets.openingImpact?.detail);
-  }
-  if (drydownScore < 4) {
-    pushUniqueItem(weaknesses, modelFacets.drydownPersistence?.detail);
-  }
-  if (unknownIngredientCount > 0) {
-    pushUniqueItem(
-      weaknesses,
-      `${unknownIngredientCount} ingredient${
-        unknownIngredientCount === 1 ? "" : "s"
-      } still lack full chemistry data, so confidence in the volatility read is reduced.`
-    );
-  }
-  if (uvcbCount > 0) {
-    pushUniqueItem(
-      weaknesses,
-      `${uvcbCount} natural/UVCB material${
-        uvcbCount === 1 ? "" : "s"
-      } are being modeled more coarsely than single molecules.`
-    );
-  }
-  if (ifraFails.length) {
-    pushUniqueItem(
-      weaknesses,
-      `Cat 4 IFRA review currently flags ${formatHumanList(
-        ifraFails.map((row) => row.name)
-      )} above the modeled limit.`
-    );
-  }
-
-  if (clutterScore > 4.5) {
-    pushUniqueItem(
-      sensoryIssues,
-      dominantFamily
-        ? `Several high-impact ${dominantFamily.toLowerCase()} materials may compete, so the formula could read crowded.`
-        : "Several high-impact materials may compete, so parts of the formula could read crowded."
-    );
-  }
-  if (densityScore >= 7 && liftScore <= 4) {
-    pushUniqueItem(
-      sensoryIssues,
-      "The formula may feel denser than it is fresh, especially through the heart and early drydown."
-    );
-  }
-  if (projectionScore < 4 && drydownScore >= 6.5) {
-    pushUniqueItem(
-      sensoryIssues,
-      "Drydown support looks stronger than the opening throw, so it may wear closer to the skin than its base weight suggests."
-    );
-  }
-  if (bridgeScore > 4) {
-    pushUniqueItem(
-      sensoryIssues,
-      "The opening-to-heart transition may feel abrupt if the mid-notes do not bridge enough of the top/base contrast."
-    );
-  }
-  if (openingScore > 7 && drydownScore < 4.5) {
-    pushUniqueItem(
-      sensoryIssues,
-      "The opening may promise more lift than the later wear can sustain."
-    );
-  }
-
-  if (spendLeaderShare > 0.32 && spendLeader) {
-    pushUniqueItem(
-      costIssues,
-      `${spendLeader.ingredientName} is the main spend driver in the current basket at about ${Math.round(
-        spendLeaderShare * 100
-      )}% of the modeled line cost.`
-    );
-  }
-  if (basketDeltaVsCheapest > 0.01 && basketModeMeta?.label) {
-    pushUniqueItem(
-      costIssues,
-      `Current ${basketModeMeta.label.toLowerCase()} mode is +$${basketDeltaVsCheapest.toFixed(
-        2
-      )} versus the cheapest basket before shipping.`
-    );
-  }
-  if (basket?.missingCount || basket?.uncertainCount) {
-    pushUniqueItem(
-      costIssues,
-      "Cost confidence is reduced because some supplier lines are missing or still low-confidence."
-    );
-  }
-  if (basket?.supplierCount > 3) {
-    pushUniqueItem(
-      costIssues,
-      `The current basket spans ${basket.supplierCount} suppliers, and shipping is not modeled in the total.`
-    );
-  }
-
-  if (bridgeScore > 4) {
-    pushUniqueItem(
-      suggestedChanges,
-      "Test a slightly fuller heart so the opening and drydown connect more smoothly."
-    );
-  }
-  if (clutterScore > 4.5) {
-    pushUniqueItem(
-      suggestedChanges,
-      dominantFamily
-        ? `Trim one or two overlapping ${dominantFamily.toLowerCase()} materials before adding anything new.`
-        : "Trim one or two overlapping high-impact materials before adding anything new."
-    );
-  }
-  if (drydownScore < 4) {
-    pushUniqueItem(
-      suggestedChanges,
-      "If you want more staying power, test a modest increase in base support or fixative weight."
-    );
-  }
-  if (openingScore < 4) {
-    pushUniqueItem(
-      suggestedChanges,
-      "If you want more lift, test a clearer top-note accent or reduce a little dense base weight."
-    );
-  }
-  if (basketDeltaVsCheapest > 0.01) {
-    pushUniqueItem(
-      suggestedChanges,
-      `If cost is the priority, the cheapest basket saves about $${basketDeltaVsCheapest.toFixed(
-        2
-      )} against the current mode.`
-    );
-  }
-  if (spendLeaderShare > 0.32 && spendLeader) {
-    pushUniqueItem(
-      suggestedChanges,
-      `Audit ${spendLeader.ingredientName} first if you need to lower spend without changing many lines.`
-    );
-  }
-  if (basket?.missingCount || basket?.uncertainCount) {
-    pushUniqueItem(
-      suggestedChanges,
-      "Resolve missing or uncertain supplier lines before treating the cost read as final."
-    );
-  }
-  if (ifraFails.length || ifraWarns.length) {
-    pushUniqueItem(
-      suggestedChanges,
-      `Recheck ${formatHumanList(
-        [...ifraFails, ...ifraWarns].map((row) => row.name)
-      )} against Cat 4 limits before locking this version.`
-    );
-  }
-
-  const lensOverrides = {
-    perfumer: {
-      strengths,
-      weaknesses,
-      sensoryIssues,
-      costIssues,
-      suggestedChanges,
-    },
-    chemist: {
-      strengths: [
-        strengths.find((item) => item?.includes("chemistry data")) ||
-          (unknownIngredientCount === 0
-            ? "Most ingredients in this formula have chemistry data, which makes the current volatility read more dependable."
-            : null),
-        strengths.find((item) => item?.includes("bridge")) || modelFacets.bridgeWeakness?.detail,
-        strengths.find((item) => item?.includes("drydown")) || modelFacets.drydownPersistence?.detail,
-      ],
-      weaknesses: [
-        unknownIngredientCount > 0
-          ? `${unknownIngredientCount} ingredient${
-              unknownIngredientCount === 1 ? "" : "s"
-            } still lack full chemistry data, which weakens the modeled volatility curve.`
-          : null,
-        uvcbCount > 0
-          ? `${uvcbCount} natural/UVCB material${
-              uvcbCount === 1 ? "" : "s"
-            } are being handled with coarser assumptions than single molecules.`
-          : null,
-        clutterScore > 4.5
-          ? `High-impact materials in ${
-              dominantFamily ? dominantFamily.toLowerCase() : "one dominant family"
-            } may be overlapping enough to blur the effective OV picture.`
-          : null,
-      ],
-      sensoryIssues: [
-        bridgeScore > 4
-          ? "The current volatility curve suggests a weaker mid-note bridge than the opening/base contrast needs."
-          : null,
-        densityScore >= 7 && liftScore <= 4
-          ? "The structure may read heavier than it is fresh because dense/base-heavy signals are outrunning lift."
-          : null,
-        projectionScore < 4 && drydownScore >= 6.5
-          ? "The formula may retain on skin more than it throws into the air."
-          : null,
-      ],
-      costIssues: [
-        basket?.missingCount || basket?.uncertainCount
-          ? "Supplier confidence gaps also reduce reproducibility of the current cost and sourcing read."
-          : null,
-        basket?.supplierCount > 3
-          ? `The current sourcing path is split across ${basket.supplierCount} suppliers.`
-          : null,
-        spendLeaderShare > 0.32 && spendLeader
-          ? `${spendLeader.ingredientName} dominates spend enough that any concentration change there will move total cost materially.`
-          : null,
-      ],
-      suggestedChanges: [
-        unknownIngredientCount > 0
-          ? "Fill the main chemistry data gaps before over-trusting small volatility differences."
-          : null,
-        clutterScore > 4.5
-          ? "Simplify overlapping high-OV materials before adding more complexity."
-          : null,
-        uvcbCount > 0 || restrictedRows.length > 0
-          ? "Verify diluted or restricted materials at the active-percent level when possible."
-          : null,
-      ],
-    },
-    cost: {
-      strengths: [
-        basket && basket.missingCount === 0 && basket.uncertainCount === 0
-          ? `Current ${basket.meta.title.toLowerCase()} is fully mapped, which makes this cost read relatively dependable.`
-          : null,
-        basket?.supplierCount <= 2 && basket?.supplierCount > 0
-          ? `The current basket stays fairly consolidated across ${basket.supplierCount} supplier${
-              basket.supplierCount === 1 ? "" : "s"
-            }.`
-          : null,
-        totalBasketCost > 0
-          ? `Current modeled basket total is $${totalBasketCost.toFixed(2)} in ${basketModeMeta?.label || "current"} mode.`
-          : null,
-      ],
-      weaknesses: [
-        spendLeaderShare > 0.32 && spendLeader
-          ? `${spendLeader.ingredientName} dominates spend enough to limit low-risk savings elsewhere.`
-          : null,
-        basketDeltaVsCheapest > 0.01
-          ? `The selected sourcing mode is paying a $${basketDeltaVsCheapest.toFixed(
-              2
-            )} premium over cheapest before shipping.`
-          : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Some supplier lines are still missing or low-confidence, so the total should not be treated as final."
-          : null,
-      ],
-      sensoryIssues: [
-        clutterScore > 4.5
-          ? "If you reduce cost without simplifying the crowded families first, you may still keep the same sensory clutter."
-          : null,
-        drydownScore < 4
-          ? "Cutting base support further would likely make the short drydown more obvious."
-          : null,
-        openingScore < 4
-          ? "Removing lift-heavy materials first could make the opening read even quieter."
-          : null,
-      ],
-      costIssues: [
-        spendLeaderShare > 0.32 && spendLeader
-          ? `${spendLeader.ingredientName} is about ${Math.round(
-              spendLeaderShare * 100
-            )}% of modeled basket cost right now.`
-          : null,
-        basket?.supplierCount > 3
-          ? `The basket spans ${basket.supplierCount} suppliers, and shipping is outside the modeled total.`
-          : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Missing or uncertain supplier data is still the biggest blocker to a confident cost read."
-          : null,
-      ],
-      suggestedChanges: [
-        spendLeaderShare > 0.32 && spendLeader
-          ? `Start with ${spendLeader.ingredientName} if you need to test lower-cost revisions.`
-          : null,
-        basketDeltaVsCheapest > 0.01
-          ? `Switching back to cheapest mode would save about $${basketDeltaVsCheapest.toFixed(
-              2
-            )} before shipping.`
-          : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Resolve missing and uncertain basket lines before making supplier decisions permanent."
-          : null,
-      ],
-    },
-    compliance: {
-      strengths: [
-        !ifraFails.length && !ifraWarns.length
-          ? "Current Cat 4 IFRA review shows no modeled failures or caution flags."
-          : null,
-        restrictedRows.length > 0 && !ifraFails.length
-          ? `Restricted materials are present, but the current model does not show them over Cat 4 limits.`
-          : null,
-        bridgeScore <= 2.5 ? modelFacets.bridgeWeakness?.detail : null,
-      ],
-      weaknesses: [
-        ifraFails.length
-          ? `Cat 4 IFRA review currently fails ${formatHumanList(
-              ifraFails.map((row) => row.name)
-            )}.`
-          : null,
-        ifraWarns.length
-          ? `Cat 4 IFRA review is already close on ${formatHumanList(
-              ifraWarns.map((row) => row.name)
-            )}.`
-          : null,
-        restrictedRows.length >= 4
-          ? `There are ${restrictedRows.length} restricted-material rows in play, so reformulation risk is not trivial.`
-          : null,
-      ],
-      sensoryIssues: [
-        ifraFails.length || ifraWarns.length
-          ? "Any required compliance cuts could change the balance the performance model is currently describing."
-          : null,
-        openingScore > 7 && ifraRows.some((row) => row.status !== "ok" && DB[row.name]?.note === "top")
-          ? "Some of the lift may depend on top-note materials that already need compliance review."
-          : null,
-        drydownScore >= 6.5 && ifraRows.some((row) => row.status !== "ok" && DB[row.name]?.note === "base")
-          ? "Some of the modeled persistence may depend on base materials that already need compliance review."
-          : null,
-      ],
-      costIssues: [
-        basket?.missingCount || basket?.uncertainCount
-          ? "Supplier confidence gaps make it harder to estimate reformulation cost cleanly."
-          : null,
-        spendLeaderShare > 0.32 && spendLeader
-          ? `${spendLeader.ingredientName} is both a major spend line and a likely place to watch if reformulation becomes necessary.`
-          : null,
-      ],
-      suggestedChanges: [
-        ifraFails.length || ifraWarns.length
-          ? `Prioritize ${formatHumanList(
-              [...ifraFails, ...ifraWarns].map((row) => row.name)
-            )} for compliance review before locking the formula.`
-          : null,
-        restrictedRows.length > 0
-          ? "Keep Cat 4 as the working baseline and verify active-percent assumptions for diluted stocks."
-          : null,
-        bridgeScore > 4
-          ? "If compliance cuts are required, protect the mid-note bridge first so the transition does not collapse."
-          : null,
-      ],
-    },
-    brand: {
-      strengths: [
-        heroMaterials.length
-          ? `The current read suggests ${formatHumanList(heroMaterials)} are the main signature materials.`
-          : null,
-        performanceModel?.headline,
-        openingScore >= 6.5 || drydownScore >= 6.5
-          ? "There is enough modeled movement between opening and drydown to build a clearer story around the formula."
-          : null,
-      ],
-      weaknesses: [
-        clutterScore > 4.5
-          ? "Too many high-impact signals may blur the formula's identity instead of sharpening it."
-          : null,
-        dominantFamilies.length >= 4
-          ? `The formula is pulling from ${dominantFamilies.length} strong scent families, which can dilute the story.`
-          : null,
-        bridgeScore > 4
-          ? "The opening-to-drydown handoff may be less coherent than the brand story wants."
-          : null,
-      ],
-      sensoryIssues: [
-        clutterScore > 4.5
-          ? "The character may feel busy instead of signature if the crowded families all stay at current strength."
-          : null,
-        openingScore > 7 && drydownScore < 4.5
-          ? "The first impression may over-promise versus the later wear."
-          : null,
-        densityScore >= 7 && liftScore <= 4
-          ? "The formula may read more dense than fresh, which narrows the personality it projects."
-          : null,
-      ],
-      costIssues: [
-        spendLeaderShare > 0.32 && spendLeader
-          ? `${spendLeader.ingredientName} is a signature-level spend driver in the current basket.`
-          : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Uncertain supplier lines make the commercial story less settled than it looks."
-          : null,
-      ],
-      suggestedChanges: [
-        heroMaterials.length
-          ? `Choose whether ${formatHumanList(heroMaterials.slice(0, 2))} are the hero materials, then simplify anything fighting them.`
-          : null,
-        clutterScore > 4.5
-          ? "Edit for identity first: remove overlapping accents before you add more nuance."
-          : null,
-        bridgeScore > 4
-          ? "Use the heart to connect the opening and drydown so the overall story reads as one idea."
-          : null,
-      ],
-    },
-  };
-
-  const activeLensSections = lensOverrides[lens] || lensOverrides.perfumer;
-  const sectionDefaults = {
-    strengths:
-      "No standout strength dominates the current read beyond a workable baseline.",
-    weaknesses:
-      "No single weakness dominates the current read, though the estimate remains heuristic.",
-    sensoryIssues:
-      "No single sensory issue stands out strongly in the current model.",
-    costIssues:
-      "No major cost issue stands out beyond ordinary supplier and shipping variability.",
-    suggestedChanges:
-      "If you iterate further, make one small change at a time so the next revision stays readable.",
-  };
-
-  const cleanSection = (items, fallbackText) => {
-    const cleaned = items.filter(Boolean).slice(0, 3);
-    return cleaned.length ? cleaned : [fallbackText];
-  };
-
-  const critiqueHeadline = `${lensMeta.label} lens on ${formulaLabel}`;
-  const supportNote = [
-    performanceModel?.headline || null,
-    totalBasketCost > 0
-      ? `${basketModeMeta?.label || basket?.meta?.label || "Current"} basket: $${totalBasketCost.toFixed(
-          2
-        )}`
-      : null,
-    ifraFails.length
-      ? `Cat 4 IFRA: ${ifraFails.length} fail`
-      : ifraWarns.length
-      ? `Cat 4 IFRA: ${ifraWarns.length} caution`
-      : "Cat 4 IFRA: no modeled failures",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return {
-    lens,
-    lensMeta,
-    formulaLabel,
-    headline: critiqueHeadline,
-    lensSummary: lensMeta.description,
-    supportNote,
-    strengths: cleanSection(
-      activeLensSections.strengths,
-      sectionDefaults.strengths
-    ),
-    weaknesses: cleanSection(
-      activeLensSections.weaknesses,
-      sectionDefaults.weaknesses
-    ),
-    sensoryIssues: cleanSection(
-      activeLensSections.sensoryIssues,
-      sectionDefaults.sensoryIssues
-    ),
-    costIssues: cleanSection(
-      activeLensSections.costIssues,
-      sectionDefaults.costIssues
-    ),
-    suggestedChanges: cleanSection(
-      activeLensSections.suggestedChanges,
-      sectionDefaults.suggestedChanges
-    ),
-    uncertainty: cleanSection(
-      uncertainty,
-      "Estimate only — this advisor stays grounded in current formula, cost, and compliance heuristics rather than certainty."
-    ),
-    promptSummary: {
-      performanceHeadline: performanceModel?.headline || "",
-      performance: {
-        longevity: performance.longevity || 0,
-        sillage: performance.sillage || 0,
-        projection: performance.projection || 0,
-      },
-      basketTotal: totalBasketCost,
-      basketModeLabel: basketModeMeta?.label || basket?.meta?.label || "Current",
-      heroMaterials,
-      dominantFamily,
-      topSpendIngredient: spendLeader?.ingredientName || null,
-      restrictedCount: restrictedRows.length,
-      noteWeight,
-    },
-  };
-}
-
-function buildAiCritiquePrompt({
-  targetFormula,
-  critiqueReport,
-  performance,
-}) {
-  const total = targetFormula.ingredients.reduce((sum, ingredient) => sum + ingredient.g, 0);
-  const formulaLabel = getFormulaDisplayLabel(targetFormula, {
-    includeVersion: true,
-  });
-  const ingList = targetFormula.ingredients
-    .map((ingredient) => {
-      const d = DB[ingredient.name];
-      return `  • ${ingredient.name} (${ingredient.g}g, ${((ingredient.g / total) * 100).toFixed(
-        1
-      )}%, ${ingredient.note}${d ? `, ${d.scentClass}` : ""})`;
-    })
-    .join("\n");
-  const formatSection = (label, items) =>
-    `${label}:\n${items.map((item) => `- ${item}`).join("\n")}`;
-
-  return `You are an expert fragrance advisor reviewing a concentrate through the ${
-    critiqueReport.lensMeta.label
-  } lens.
-
-Stay consistent with the app's current model signals unless you clearly mark uncertainty. Do not contradict the supplied rule-based findings casually.
-
-Formula: "${formulaLabel}" — ${targetFormula.tagline}
-Total: ${total}g concentrate
-
-Ingredients:
-${ingList}
-
-Current model anchors:
-- ${critiqueReport.supportNote}
-- Performance scores: Longevity ${performance.longevity.toFixed(
-    1
-  )}/10, Sillage ${performance.sillage.toFixed(1)}/10, Projection ${performance.projection.toFixed(
-    1
-  )}/10
-- Lens focus: ${critiqueReport.lensSummary}
-
-Structured rule-based findings:
-${formatSection("Strengths", critiqueReport.strengths)}
-
-${formatSection("Weaknesses", critiqueReport.weaknesses)}
-
-${formatSection("Likely sensory issues", critiqueReport.sensoryIssues)}
-
-${formatSection("Likely cost issues", critiqueReport.costIssues)}
-
-${formatSection("Suggested next changes", critiqueReport.suggestedChanges)}
-
-${formatSection("Uncertainty", critiqueReport.uncertainty)}
-
-Return under exactly these headings:
-**Strengths**
-**Weaknesses**
-**Likely sensory issues**
-**Likely cost issues**
-**Suggested next changes**
-**Uncertainty**
-
-Keep it under 300 words, practical, and grounded in the supplied signals.`;
-}
-
-function buildFormulaComparison(
-  leftFormula,
-  rightFormula,
-  pricesState,
-  formulaSupplierOverrides = {}
-) {
-  if (!leftFormula || !rightFormula) return null;
-
-  const leftIngredients = buildFormulaIngredientSummaryMap(
-    leftFormula.ingredients || []
-  );
-  const rightIngredients = buildFormulaIngredientSummaryMap(
-    rightFormula.ingredients || []
-  );
-  const allKeys = Array.from(
-    new Set([...leftIngredients.keys(), ...rightIngredients.keys()])
-  );
-
-  const diffRows = allKeys
-    .map((key) => {
-      const left = leftIngredients.get(key) || null;
-      const right = rightIngredients.get(key) || null;
-      const leftNotes = left?.notes.join(", ") || "—";
-      const rightNotes = right?.notes.join(", ") || "—";
-      const gramDelta = (right?.totalG || 0) - (left?.totalG || 0);
-      const status = !left
-        ? "added"
-        : !right
-        ? "removed"
-        : leftNotes !== rightNotes || Math.abs(gramDelta) > 0.0001
-        ? "changed"
-        : "same";
-
-      return {
-        key,
-        status,
-        displayName: left?.primaryName || right?.primaryName || key,
-        leftNames: left?.names || [],
-        rightNames: right?.names || [],
-        leftGrams: left?.totalG || 0,
-        rightGrams: right?.totalG || 0,
-        gramDelta,
-        leftNotes,
-        rightNotes,
-        noteChanged: leftNotes !== rightNotes,
-      };
-    })
-    .filter((row) => row.status !== "same")
-    .sort((a, b) => {
-      const statusWeight = { changed: 0, added: 1, removed: 2 };
-      const statusDelta =
-        (statusWeight[a.status] ?? 3) - (statusWeight[b.status] ?? 3);
-      if (statusDelta !== 0) return statusDelta;
-      return Math.abs(b.gramDelta) - Math.abs(a.gramDelta);
-    });
-
-  const leftCost = buildFormulaProcurementRows(
-    leftFormula.ingredients || [],
-    pricesState,
-    formulaSupplierOverrides[leftFormula.formulaKey] || {}
-  );
-  const rightCost = buildFormulaProcurementRows(
-    rightFormula.ingredients || [],
-    pricesState,
-    formulaSupplierOverrides[rightFormula.formulaKey] || {}
-  );
-  const leftChemistryModel = computeChemistry(leftFormula.ingredients || []);
-  const rightChemistryModel = computeChemistry(rightFormula.ingredients || []);
-  const leftPerformance = perfScore(leftFormula.ingredients || []);
-  const rightPerformance = perfScore(rightFormula.ingredients || []);
-  const leftChemistry = summarizeComputedChemistry(leftChemistryModel);
-  const rightChemistry = summarizeComputedChemistry(rightChemistryModel);
-  const leftPerformanceModel = buildPerformanceModelSummary(
-    leftFormula.ingredients || [],
-    {
-      chemistry: leftChemistryModel,
-      performance: leftPerformance,
-      chemistrySummary: leftChemistry,
-    }
-  );
-  const rightPerformanceModel = buildPerformanceModelSummary(
-    rightFormula.ingredients || [],
-    {
-      chemistry: rightChemistryModel,
-      performance: rightPerformance,
-      chemistrySummary: rightChemistry,
-    }
-  );
-  const leftBaskets = buildSupplierBasketStrategies(
-    leftFormula.ingredients || [],
-    pricesState,
-    formulaSupplierOverrides[leftFormula.formulaKey] || {}
-  );
-  const rightBaskets = buildSupplierBasketStrategies(
-    rightFormula.ingredients || [],
-    pricesState,
-    formulaSupplierOverrides[rightFormula.formulaKey] || {}
-  );
-
-  return {
-    diffRows,
-    addedCount: diffRows.filter((row) => row.status === "added").length,
-    removedCount: diffRows.filter((row) => row.status === "removed").length,
-    changedCount: diffRows.filter((row) => row.status === "changed").length,
-    leftCost,
-    rightCost,
-    costDelta: rightCost.grandTotal - leftCost.grandTotal,
-    leftBaskets,
-    rightBaskets,
-    leftPerformance,
-    rightPerformance,
-    leftPerformanceModel,
-    rightPerformanceModel,
-    performanceNarrative: buildPerformanceComparisonNarrative(
-      leftPerformanceModel,
-      rightPerformanceModel
-    ),
-    performanceDelta: {
-      longevity: rightPerformance.longevity - leftPerformance.longevity,
-      sillage: rightPerformance.sillage - leftPerformance.sillage,
-      projection: rightPerformance.projection - leftPerformance.projection,
-    },
-    leftChemistry,
-    rightChemistry,
-    chemistryDelta: {
-      totalIntensity:
-        rightChemistry.totalIntensity - leftChemistry.totalIntensity,
-      totalOV: rightChemistry.totalOV - leftChemistry.totalOV,
-      weightedXLogP:
-        rightChemistry.weightedXLogP - leftChemistry.weightedXLogP,
-      weightedVP: rightChemistry.weightedVP - leftChemistry.weightedVP,
-    },
   };
 }
 
@@ -56698,27 +54591,315 @@ function PyramidSVG({ ingredients }) {
   );
 }
 
-function IngredientDetailPanel({ name, onClose }) {
+function getFinishedProductStatusRank(status) {
+  const ranks = {
+    offender_with_missing: 0,
+    offender: 1,
+    warning_with_missing: 2,
+    warning: 3,
+    blocked_missing: 4,
+    appears_compliant_with_missing: 5,
+    no_restricted_rows: 6,
+    appears_compliant: 7,
+  };
+  return ranks[status] ?? 4;
+}
+
+function IngredientDetailPanel({
+  name,
+  onClose,
+  onSelectMaterial,
+  onStartSubstitutionReview,
+  pricesState,
+  inventory,
+  formulas,
+  currentFormula,
+  currentFormulaSupplierOverrides,
+  buildItems,
+  buildName,
+  basketMode,
+  ifraCategory,
+  selectedFragranceType,
+  batchPlannerReport,
+}) {
   const d = DB[name];
-  const p = PRICING[name];
   if (!d) return null;
+
   const nc = NC[d.note] || NC.carrier;
   const ifraData = getIngredientIfraData(name);
   const catalogMetadata = getIngredientCatalogMetadata(name);
+  const resolvedIdentity = resolveIngredientIdentity(name);
+  const canonicalMaterialKey =
+    catalogMetadata.canonicalMaterialKey ||
+    resolvedIdentity?.normalizationEntry?.canonicalMaterialKey ||
+    resolvedIdentity?.canonicalMaterialKey ||
+    null;
+  const canonicalSource = canonicalMaterialKey
+    ? getCanonicalMaterialSource(canonicalMaterialKey)
+    : null;
+  const sourceDocuments = canonicalMaterialKey
+    ? getSourceDocumentsForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const evidenceCandidates = canonicalMaterialKey
+    ? getEvidenceCandidatesForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const catalogSupplierProducts = getSupplierProductsForCatalogName(name);
+  const canonicalSupplierProducts = canonicalMaterialKey
+    ? getSupplierProductsForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const livePricing = getLivePricingForIngredient(name, pricesState, PRICING);
+  const livePricingEntries = Object.entries(livePricing || {});
+  const inventoryQty = Number(inventory?.[name]?.qty) || 0;
+  const behaviorSignals = useMemo(
+    () => buildMaterialBehaviorSignals(name, { db: DB }),
+    [name]
+  );
+
+  const formulasUsingMaterial = useMemo(
+    () =>
+      formulas
+        .filter((entry) =>
+          (entry.ingredients || []).some((ingredient) => ingredient.name === name)
+        )
+        .map((entry) => ({
+          formulaKey: entry.formulaKey,
+          label: getFormulaDisplayLabel(entry, { includeVersion: true }),
+          amountG:
+            entry.ingredients.find((ingredient) => ingredient.name === name)?.g || 0,
+        })),
+    [formulas, name]
+  );
+
+  const currentFormulaLine =
+    currentFormula?.ingredients?.find((ingredient) => ingredient.name === name) ||
+    null;
+  const currentBuildLine =
+    buildItems?.find((ingredient) => ingredient.name === name) || null;
+  const activeContext = currentFormulaLine
+    ? {
+        kind: "formula",
+        label: getFormulaDisplayLabel(currentFormula, { includeVersion: true }),
+        items: currentFormula.ingredients,
+        supplierOverrides: currentFormulaSupplierOverrides || {},
+        line: currentFormulaLine,
+      }
+    : currentBuildLine
+    ? {
+        kind: "build",
+        label: buildName?.trim() ? `${buildName.trim()} (Current Build)` : "Current Build",
+        items: buildItems,
+        supplierOverrides: {},
+        line: currentBuildLine,
+      }
+    : null;
+  const canStartSubstitutionReview =
+    activeContext?.kind === "formula" && Boolean(currentFormula?.formulaKey);
+
+  const activeContextBasket = useMemo(() => {
+    if (!activeContext) return null;
+    const strategies = buildSupplierBasketStrategies(
+      activeContext.items,
+      pricesState,
+      activeContext.supplierOverrides,
+      { db: DB, pricing: PRICING }
+    );
+    return strategies[basketMode] || strategies.cheapest;
+  }, [activeContext, basketMode, pricesState]);
+
+  const activeContextBasketLine = activeContextBasket?.lines?.find(
+    (line) => line.ingredientName === name
+  ) || null;
+  const activeContextIfraRows = useMemo(
+    () => (activeContext ? getFormulaIfraRows(activeContext.items, ifraCategory) : []),
+    [activeContext, ifraCategory]
+  );
+  const activeContextFinishedGuidance = useMemo(
+    () =>
+      activeContext
+        ? buildFinishedProductIfraGuidance({
+            items: activeContext.items,
+            category: ifraCategory,
+            fragranceLoadPercent: selectedFragranceType.pct,
+          })
+        : null,
+    [activeContext, ifraCategory, selectedFragranceType]
+  );
+  const batchPlannerLine =
+    batchPlannerReport?.lines?.find((line) => line.name === name) || null;
+
+  const substitutionSuggestions = useMemo(
+    () =>
+      buildMaterialSubstitutionSuggestions(name, {
+        db: DB,
+        pricesState,
+        pricing: PRICING,
+        basketMode,
+        ifraCategory,
+        amountG: activeContext?.line?.g || 10,
+      }),
+    [activeContext, basketMode, ifraCategory, name, pricesState]
+  );
+
+  const formulaAwarePreviewMap = useMemo(() => {
+    if (!activeContext) return {};
+
+    const previewNames = Array.from(
+      new Set(
+        Object.values(substitutionSuggestions.categories || {})
+          .flatMap((list) => list.slice(0, 3).map((candidate) => candidate.name))
+          .filter(Boolean)
+      )
+    );
+
+    const baselinePerformance = perfScore(activeContext.items);
+    const baselineIfraFails = activeContextIfraRows.filter(
+      (row) => row.status === "fail"
+    ).length;
+    const baselineIfraWarns = activeContextIfraRows.filter(
+      (row) => row.status === "warn"
+    ).length;
+    const baselineFinishedRank = getFinishedProductStatusRank(
+      activeContextFinishedGuidance?.overallStatus
+    );
+
+    return Object.fromEntries(
+      previewNames.map((candidateName) => {
+        const swappedItems = replaceIngredientInItems(
+          activeContext.items,
+          name,
+          candidateName
+        );
+        const swappedBasketStrategies = buildSupplierBasketStrategies(
+          swappedItems,
+          pricesState,
+          activeContext.supplierOverrides,
+          { db: DB, pricing: PRICING }
+        );
+        const swappedBasket =
+          swappedBasketStrategies[basketMode] || swappedBasketStrategies.cheapest;
+        const swappedPerformance = perfScore(swappedItems);
+        const swappedIfraRows = getFormulaIfraRows(swappedItems, ifraCategory);
+        const swappedIfraFails = swappedIfraRows.filter(
+          (row) => row.status === "fail"
+        ).length;
+        const swappedIfraWarns = swappedIfraRows.filter(
+          (row) => row.status === "warn"
+        ).length;
+        const swappedFinishedGuidance = buildFinishedProductIfraGuidance({
+          items: swappedItems,
+          category: ifraCategory,
+          fragranceLoadPercent: selectedFragranceType.pct,
+        });
+        const swappedFinishedRank = getFinishedProductStatusRank(
+          swappedFinishedGuidance?.overallStatus
+        );
+        const costDelta =
+          (swappedBasket?.totalCost || 0) - (activeContextBasket?.totalCost || 0);
+        const projectionDelta =
+          swappedPerformance.projection - baselinePerformance.projection;
+        const longevityDelta =
+          swappedPerformance.longevity - baselinePerformance.longevity;
+
+        const previewNotes = [];
+        if (Math.abs(costDelta) > 0.01) {
+          previewNotes.push(
+            `${costDelta < 0 ? "Cost down" : "Cost up"} ${costDelta >= 0 ? "+" : ""}$${costDelta.toFixed(
+              2
+            )}`
+          );
+        }
+        if (Math.abs(projectionDelta) >= 0.2) {
+          previewNotes.push(
+            `Projection ${projectionDelta >= 0 ? "+" : ""}${projectionDelta.toFixed(
+              1
+            )}`
+          );
+        }
+        if (Math.abs(longevityDelta) >= 0.2) {
+          previewNotes.push(
+            `Longevity ${longevityDelta >= 0 ? "+" : ""}${longevityDelta.toFixed(
+              1
+            )}`
+          );
+        }
+        if (swappedIfraFails !== baselineIfraFails) {
+          previewNotes.push(
+            `Cat 4 fails ${baselineIfraFails}→${swappedIfraFails}`
+          );
+        } else if (swappedIfraWarns !== baselineIfraWarns) {
+          previewNotes.push(
+            `Cat 4 warns ${baselineIfraWarns}→${swappedIfraWarns}`
+          );
+        }
+        if (swappedFinishedRank !== baselineFinishedRank) {
+          previewNotes.push(
+            swappedFinishedRank > baselineFinishedRank
+              ? "Finished-product headroom improves"
+              : "Finished-product headroom tightens"
+          );
+        }
+        if (!previewNotes.length) {
+          previewNotes.push(
+            "Current formula/build read stays broadly similar in the app's current model."
+          );
+        }
+
+        return [
+          candidateName,
+          {
+            summary: previewNotes.join(" · "),
+          },
+        ];
+      })
+    );
+  }, [
+    activeContext,
+    activeContextBasket,
+    activeContextFinishedGuidance,
+    activeContextIfraRows,
+    basketMode,
+    ifraCategory,
+    name,
+    pricesState,
+    selectedFragranceType,
+    substitutionSuggestions,
+  ]);
+
+  const registryProducts = Array.from(
+    new Map(
+      [...catalogSupplierProducts, ...canonicalSupplierProducts].map((record) => [
+        record.supplierProductKey ||
+          `${record.supplierDisplayName || "supplier"}:${record.productTitle || "product"}`,
+        record,
+      ])
+    ).values()
+  );
+
   const cat4LimitText =
     ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
   const identityRows = [
-    ["CAS", d.cas],
-    ["INCI", d.inci],
-    ["Rep. Odorant", d.rep],
+    ["CAS", d.cas || canonicalSource?.cas],
+    ["INCI", d.inci || canonicalSource?.inci],
+    ["Rep. Odorant", d.rep || canonicalSource?.rep],
     ["IFRA State", ifraData.stateLabel],
     ["Cat 4 Limit", cat4LimitText],
+    [
+      "Identity Path",
+      resolvedIdentity?.inheritedViaCanonicalMaterialKey
+        ? `Inherited via ${resolvedIdentity.inheritedFromCatalogName}`
+        : resolvedIdentity
+        ? "Direct helper identity"
+        : "Unresolved",
+    ],
   ];
   if (catalogMetadata.entryKindLabel) {
     identityRows.push(["Catalog Entry", catalogMetadata.entryKindLabel]);
   }
-  if (catalogMetadata.canonicalMaterialKey) {
-    identityRows.push(["Canonical Key", catalogMetadata.canonicalMaterialKey]);
+  if (canonicalMaterialKey) {
+    identityRows.push(["Canonical Key", canonicalMaterialKey]);
+  }
+  if (canonicalSource?.canonicalName) {
+    identityRows.push(["Canonical Name", canonicalSource.canonicalName]);
   }
   if (catalogMetadata.linkedDuplicateOfCatalogName) {
     identityRows.push([
@@ -56726,6 +54907,94 @@ function IngredientDetailPanel({ name, onClose }) {
       catalogMetadata.linkedDuplicateOfCatalogName,
     ]);
   }
+
+  const dossierMetricCards = [
+    {
+      label: "Used In Formulas",
+      value: String(formulasUsingMaterial.length),
+      meta:
+        formulasUsingMaterial.length > 0
+          ? formulasUsingMaterial
+              .slice(0, 2)
+              .map((entry) => entry.label)
+              .join(" · ")
+          : "Not currently used in saved formulas",
+      color: "#7DD3FC",
+    },
+    {
+      label: "Inventory On Hand",
+      value: `${inventoryQty.toFixed(1)}g`,
+      meta: batchPlannerLine
+        ? batchPlannerLine.isBlocked
+          ? `Blocking current planner target by ${batchPlannerLine.shortageG.toFixed(
+              1
+            )}g`
+          : batchPlannerLine.remainingG > 0
+          ? `${batchPlannerLine.remainingG.toFixed(1)}g remains after active batch target`
+          : "Touches the active batch planner target"
+        : "No active batch-planner line for this material",
+      color: inventoryQty > 0 ? "#34D399" : "#F87171",
+    },
+    {
+      label: activeContext ? `${activeContext.kind === "formula" ? "Formula" : "Build"} Line` : "Current Line",
+      value: activeContext?.line ? `${activeContext.line.g.toFixed(1)}g` : "—",
+      meta: activeContextBasketLine?.lineCost != null
+        ? `${selectedFragranceType.label} context · $${activeContextBasketLine.lineCost.toFixed(
+            2
+          )} estimated line cost`
+        : activeContext
+        ? "Present in current context, but no resolved line cost"
+        : "Not in the current formula/build context",
+      color: activeContext?.line ? "#F59E0B" : "#64748B",
+    },
+    {
+      label: "Evidence Context",
+      value: `${sourceDocuments.length}/${evidenceCandidates.length}`,
+      meta: `${sourceDocuments.length} source doc${
+        sourceDocuments.length === 1 ? "" : "s"
+      } · ${evidenceCandidates.length} evidence candidate${
+        evidenceCandidates.length === 1 ? "" : "s"
+      }`,
+      color:
+        sourceDocuments.length + evidenceCandidates.length > 0
+          ? "#A78BFA"
+          : "#64748B",
+    },
+  ];
+
+  const substitutionCategoryMeta = {
+    cheaper: {
+      title: "Cheaper Alternatives",
+      color: "#34D399",
+      bg: "#052E16",
+      border: "#166534",
+    },
+    complianceFriendlier: {
+      title: "Compliance-Friendlier",
+      color: "#F59E0B",
+      bg: "#251404",
+      border: "#B45309",
+    },
+    moreDiffusive: {
+      title: "More Diffusive",
+      color: "#7DD3FC",
+      bg: "#071826",
+      border: "#1E3A52",
+    },
+    morePersistent: {
+      title: "More Persistent",
+      color: "#A78BFA",
+      bg: "#120C26",
+      border: "#4338CA",
+    },
+    stylisticFit: {
+      title: "Closest Stylistic Fit",
+      color: "#CBD5E1",
+      bg: "#0F172A",
+      border: "#334155",
+    },
+  };
+
   return (
     <div
       style={{
@@ -56746,8 +55015,8 @@ function IngredientDetailPanel({ name, onClose }) {
           borderRadius: 16,
           border: `1px solid ${BORDER}`,
           width: "100%",
-          maxWidth: 780,
-          maxHeight: "85vh",
+          maxWidth: 1080,
+          maxHeight: "88vh",
           overflowY: "auto",
           padding: 24,
         }}
@@ -56759,15 +55028,17 @@ function IngredientDetailPanel({ name, onClose }) {
             justifyContent: "space-between",
             alignItems: "flex-start",
             marginBottom: 18,
+            gap: 12,
           }}
         >
-          <div>
+          <div style={{ minWidth: 0, flex: 1 }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
                 marginBottom: 6,
+                flexWrap: "wrap",
               }}
             >
               <span
@@ -56785,10 +55056,25 @@ function IngredientDetailPanel({ name, onClose }) {
               </span>
               <IfraStateBadge ifraData={ifraData} />
               <CatalogMetadataBadges name={name} compact />
+              <span
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Dossier + Heuristic Substitution View
+              </span>
             </div>
             <h2
               style={{
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: 800,
                 color: "#fff",
                 margin: 0,
@@ -56800,22 +55086,22 @@ function IngredientDetailPanel({ name, onClose }) {
               style={{
                 fontSize: 12,
                 color: ACC,
-                margin: "3px 0 0",
+                margin: "4px 0 0",
                 fontStyle: "italic",
               }}
             >
               {d.scentClass} · {d.scentSummary}
             </p>
-            {catalogMetadata.canonicalMaterialKey && (
+            {canonicalMaterialKey && (
               <p
                 style={{
                   fontSize: 10,
                   color: "#64748B",
-                  margin: "5px 0 0",
+                  margin: "6px 0 0",
                   fontFamily: "monospace",
                 }}
               >
-                canonicalMaterialKey: {catalogMetadata.canonicalMaterialKey}
+                canonicalMaterialKey: {canonicalMaterialKey}
               </p>
             )}
           </div>
@@ -56833,6 +55119,7 @@ function IngredientDetailPanel({ name, onClose }) {
             ✕
           </button>
         </div>
+
         <p
           style={{
             fontSize: 12,
@@ -56847,10 +55134,1069 @@ function IngredientDetailPanel({ name, onClose }) {
         >
           {d.scentDesc}
         </p>
+
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          {dossierMetricCards.map((card) => (
+            <div
+              key={card.label}
+              style={{
+                background: "#060E1E",
+                borderRadius: 10,
+                padding: "10px 12px",
+                border: `1px solid ${BORDER}`,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#475569",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {card.label}
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: card.color,
+                }}
+              >
+                {card.value}
+              </div>
+              <div
+                style={{
+                  marginTop: 3,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.5,
+                }}
+              >
+                {card.meta}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {renderTrustSummaryPanel(dashboardTrustSummary, {
+          title: "Founder Trust / Evidence Context",
+          accent: "#34D399",
+          footnote:
+            "This rolls up the active founder formula library under the current basket, batch, IFRA, and finished-product assumptions.",
+        })}
+
+        {founderTrustWarnings.length > 0 && (
+          <div
+            style={{
+              background: "#2A1806",
+              border: "1px solid #92400E",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 8.5,
+                color: "#FCD34D",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+              }}
+            >
+              Sparse-Data Guardrail
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: 8.8,
+                color: "#FDE68A",
+                lineHeight: 1.65,
+              }}
+            >
+              One or more founder-critical reads are currently being driven by
+              missing or uncertain support. Treat rankings, launch cash, and
+              scenario compare output as directional until the highlighted gaps
+              are tightened.
+            </div>
+            <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+              {founderTrustWarnings.map((warning) => (
+                <div
+                  key={`founder-trust-warning-${warning.label}`}
+                  style={{
+                    background: "#251404",
+                    border: "1px solid #B45309",
+                    borderRadius: 10,
+                    padding: "9px 10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 8.8,
+                        fontWeight: 700,
+                        color: "#FDE68A",
+                      }}
+                    >
+                      {warning.label}
+                    </div>
+                    {renderTrustBadge(warning.trustSummary)}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.3,
+                      color: "#FCD34D",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {warning.driver}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 360px" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#F59E0B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Launch Run Planner / Capital Requirement
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.9,
+                  color: "#64748B",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Founder-oriented only. Select formulas and planned units, then the
+                app reuses current SKU economics, basket mode, inventory, and
+                launch-readiness signals to estimate launch-run COGS, revenue,
+                buy-list gaps, and rough capital needs.
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formula?.formulaKey) return;
+                  setLaunchPlanUnitsByFormula((prev) => ({
+                    ...prev,
+                    [formula.formulaKey]: Math.max(
+                      100,
+                      Math.round(Number(prev[formula.formulaKey]) || 0)
+                    ),
+                  }));
+                }}
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  color: "#CBD5E1",
+                  padding: "7px 10px",
+                  fontSize: 8.8,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Add Current Formula (100)
+              </button>
+              <button
+                type="button"
+                onClick={() => setLaunchPlanUnitsByFormula({})}
+                style={{
+                  background: "#2A0C0C",
+                  border: "1px solid #991B1B",
+                  borderRadius: 8,
+                  color: "#FCA5A5",
+                  padding: "7px 10px",
+                  fontSize: 8.8,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Clear Plan
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
+              `${skuFillVolumeMl.toFixed(0)}mL fill`,
+              `${selectedBasketModeMeta.label} basket`,
+              `${launchRunPlannerSummary.context.diluentMaterialName} diluent`,
+              `Retail $${skuRetailPrice.toFixed(2)}`,
+            ].map((tag) => (
+              <div
+                key={`launch-context-${tag}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                  fontSize: 8.6,
+                  color: "#7DD3FC",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {tag}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            {renderTrustSummaryPanel(launchPlannerTrustSummary, {
+              title: "Launch Planner Trust / Evidence",
+              accent: "#F59E0B",
+              footnote:
+                "This combines selected-formula basket support with shortage buy-list confidence under the active launch mix.",
+            })}
+          </div>
+
+          {launchRunPlannerSummary.summary.selectedFormulaCount === 0 && (
+            <div
+              style={{
+                marginTop: 12,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.65,
+              }}
+            >
+              No formulas are in the launch mix yet. Enter units for one or more
+              formulas, or use <strong style={{ color: "#CBD5E1" }}>Add Current Formula (100)</strong>,
+              to turn the launch planner into a live capital, shortage, and buy-list
+              read.
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: 12,
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Planned SKU Mix
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Non-zero unit counts are included in the proposed launch run.
+                </div>
+              </div>
+              <div style={{ fontSize: 9, color: "#64748B" }}>
+                {launchRunPlannerSummary.summary.selectedFormulaCount} selected ·{" "}
+                {launchRunPlannerSummary.summary.totalUnits} total units
+              </div>
+            </div>
+            <div style={{ overflowX: "auto", maxHeight: 320, overflowY: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  fontSize: 10,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                    {[
+                      "Include",
+                      "Formula",
+                      "Type",
+                      "Readiness",
+                      "Units",
+                      "Per-SKU COGS",
+                      "Launch COGS",
+                      "Key Caveat",
+                    ].map((heading) => (
+                      <th
+                        key={`launch-plan-head-${heading}`}
+                        style={{
+                          padding: "6px 8px",
+                          textAlign: "left",
+                          color: "#475569",
+                          fontWeight: 700,
+                          fontSize: 8.5,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardItems.map((item) => {
+                    const units = Math.max(
+                      0,
+                      Math.round(Number(launchPlanUnitsByFormula[item.formula.formulaKey]) || 0)
+                    );
+                    const isIncluded = units > 0;
+                    const readinessMeta =
+                      LAUNCH_READINESS_STATUS_META[item.launchReadiness.status] ||
+                      LAUNCH_READINESS_STATUS_META.early;
+                    const economics =
+                      skuEconomicsByFormulaKey.get(item.formula.formulaKey) || null;
+                    const selectedPlanItem =
+                      launchPlannerByFormulaKey.get(item.formula.formulaKey) || null;
+                    return (
+                      <tr
+                        key={`launch-plan-row-${item.formula.formulaKey}`}
+                        style={{
+                          borderBottom: "1px solid #0A1628",
+                          background: isIncluded ? "#071826" : "transparent",
+                        }}
+                      >
+                        <td style={{ padding: "6px 8px" }}>
+                          <input
+                            type="checkbox"
+                            checked={isIncluded}
+                            onChange={(e) =>
+                              setLaunchPlanUnitsByFormula((prev) => ({
+                                ...prev,
+                                [item.formula.formulaKey]: e.target.checked
+                                  ? Math.max(
+                                      100,
+                                      Math.round(Number(prev[item.formula.formulaKey]) || 0)
+                                    )
+                                  : 0,
+                              }))
+                            }
+                          />
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color: "#E2E8F0",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {item.displayLabel}
+                        </td>
+                        <td style={{ padding: "6px 8px", color: "#94A3B8" }}>
+                          {renderFormulaTypeLabel(item.formula)}
+                        </td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <span
+                            style={{
+                              background: readinessMeta.bg,
+                              border: `1px solid ${readinessMeta.border}`,
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              color: readinessMeta.color,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {readinessMeta.label}
+                          </span>
+                        </td>
+                        <td style={{ padding: "6px 8px", minWidth: 88 }}>
+                          <input
+                            type="number"
+                            min={0}
+                            step={1}
+                            value={units > 0 ? units : ""}
+                            onChange={(e) =>
+                              setLaunchPlanUnitsByFormula((prev) => ({
+                                ...prev,
+                                [item.formula.formulaKey]:
+                                  Math.max(0, Math.round(parseFloat(e.target.value) || 0)),
+                              }))
+                            }
+                            placeholder="0"
+                            style={{
+                              width: 72,
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: isIncluded ? "#22D3EE" : "#94A3B8",
+                              padding: "6px 8px",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              outline: "none",
+                            }}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              economics?.status === "blocked"
+                                ? "#FCA5A5"
+                                : "#7DD3FC",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {!economics
+                            ? "—"
+                            : economics.status === "blocked"
+                            ? "Blocked"
+                            : `$${economics.estimatedCogs.toFixed(2)}`}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              !selectedPlanItem || !selectedPlanItem.economics
+                                ? "#64748B"
+                                : selectedPlanItem.economics.status === "blocked"
+                                ? "#FCA5A5"
+                                : "#34D399",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {!isIncluded
+                            ? "—"
+                            : !selectedPlanItem?.economics
+                            ? "Partial"
+                            : selectedPlanItem.economics.status === "blocked"
+                            ? "Blocked"
+                            : `$${(
+                                selectedPlanItem.economics.estimatedCogs * units
+                              ).toFixed(2)}`}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              item.launchReadiness.blockers.length > 0
+                                ? "#FCA5A5"
+                                : "#94A3B8",
+                            lineHeight: 1.55,
+                            minWidth: 240,
+                          }}
+                        >
+                          {(economics?.pricingBlockers?.[0] &&
+                            economics.status === "blocked" &&
+                            economics.pricingBlockers[0]) ||
+                            item.launchReadiness.blockers[0] ||
+                            economics?.cautions?.[0] ||
+                            item.launchReadiness.cautions[0] ||
+                            item.launchReadiness.launchNote}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              {
+                label: "Selected Formulas",
+                value: launchRunPlannerSummary.summary.selectedFormulaCount,
+                meta: `${launchRunPlannerSummary.summary.totalUnits} total units planned`,
+                color: "#7DD3FC",
+              },
+              {
+                label: "Raw Materials",
+                value: `${launchRunPlannerSummary.summary.totalRawMaterialRequiredG.toFixed(
+                  0
+                )}g`,
+                meta: `${launchRunPlannerSummary.summary.totalRawMaterialCoveredG.toFixed(
+                  0
+                )}g covered · ${launchRunPlannerSummary.summary.totalRawMaterialShortageG.toFixed(
+                  0
+                )}g shortage`,
+                color:
+                  launchRunPlannerSummary.summary.totalRawMaterialShortageG > 0
+                    ? "#F59E0B"
+                    : "#34D399",
+              },
+              {
+                label: "Packaging + Labor",
+                value: `$${launchRunPlannerSummary.summary.totalPackagingLaborCost.toFixed(
+                  2
+                )}`,
+                meta: `${launchRunPlannerSummary.summary.totalUnits} units at current founder inputs`,
+                color: "#A78BFA",
+              },
+              {
+                label: "Est. Launch COGS",
+                value: `$${launchRunPlannerSummary.summary.estimatedTotalCogs.toFixed(
+                  2
+                )}`,
+                meta: launchRunPlannerSummary.summary.isPartialEconomics
+                  ? "Partial: blocked formulas excluded from modeled COGS"
+                  : "Modeled from current per-SKU economics",
+                color: "#34D399",
+              },
+              {
+                label: "Gross Revenue",
+                value: `$${launchRunPlannerSummary.summary.estimatedGrossRevenue.toFixed(
+                  2
+                )}`,
+                meta: `${launchRunPlannerSummary.summary.totalUnits} units at $${skuRetailPrice.toFixed(
+                  2
+                )}`,
+                color: "#7DD3FC",
+              },
+              {
+                label: "Gross Profit",
+                value: `$${launchRunPlannerSummary.summary.estimatedGrossProfit.toFixed(
+                  2
+                )}`,
+                meta: `${launchRunPlannerSummary.summary.estimatedGrossMarginPercent.toFixed(
+                  0
+                )}% gross margin`,
+                color:
+                  launchRunPlannerSummary.summary.estimatedGrossProfit >= 0
+                    ? "#34D399"
+                    : "#F87171",
+              },
+              {
+                label: "Material Gap Capital",
+                value: `$${launchRunPlannerSummary.summary.materialGapCapitalRequired.toFixed(
+                  2
+                )}`,
+                meta: `${launchRunPlannerSummary.summary.shortageIngredientCount} shortage ingredient${
+                  launchRunPlannerSummary.summary.shortageIngredientCount === 1
+                    ? ""
+                    : "s"
+                } in the current basket`,
+                color:
+                  launchRunPlannerSummary.summary.materialGapCapitalRequired > 0
+                    ? "#F59E0B"
+                    : "#34D399",
+              },
+              {
+                label: "Launch Cash Need",
+                value: `$${launchRunPlannerSummary.summary.launchCashRequirement.toFixed(
+                  2
+                )}`,
+                meta: "Gap buy list + packaging/labor cash",
+                color: "#F472B6",
+              },
+            ].map((card) => (
+              <div
+                key={`launch-summary-${card.label}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "10px 14px",
+                }}
+              >
+                <div style={{ fontSize: 19, fontWeight: 800, color: card.color }}>
+                  {card.value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 9,
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {card.label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {card.meta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1.3fr) minmax(300px,0.9fr)",
+              gap: 12,
+              alignItems: "start",
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 10,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#475569",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    Launch Buy List / Capital Gaps
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#64748B",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Shortages are aggregated across all selected SKUs, then priced
+                    through the current shared basket mode.
+                  </div>
+                </div>
+                <div style={{ fontSize: 9, color: "#64748B" }}>
+                  {selectedBasketModeMeta.label} basket ·{" "}
+                  {launchRunPlannerSummary.buyListLines.length} buy line
+                  {launchRunPlannerSummary.buyListLines.length === 1 ? "" : "s"}
+                </div>
+              </div>
+              {launchRunPlannerSummary.buyListLines.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: 9.2,
+                    color: "#86EFAC",
+                    lineHeight: 1.65,
+                  }}
+                >
+                  Current inventory covers the selected launch run under the
+                  current material model.
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      fontSize: 10,
+                      borderCollapse: "collapse",
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                        {[
+                          "Ingredient",
+                          "Needed",
+                          "On Hand",
+                          "Shortage",
+                          "Suggested Buy",
+                          "Est. Cost",
+                          "Confidence",
+                        ].map((heading) => (
+                          <th
+                            key={`launch-buy-head-${heading}`}
+                            style={{
+                              padding: "6px 8px",
+                              textAlign: "left",
+                              color: "#475569",
+                              fontWeight: 700,
+                              fontSize: 8.5,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.07em",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {heading}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {launchRunPlannerSummary.buyListLines.map((line) => {
+                        const ingredientLine =
+                          launchPlannerIngredientByName.get(line.ingredientName) || null;
+                        return (
+                          <tr
+                            key={`launch-buy-row-${line.ingredientName}`}
+                            style={{ borderBottom: "1px solid #0A1628" }}
+                          >
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#E2E8F0",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {line.ingredientName}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#CBD5E1",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {ingredientLine?.requiredG?.toFixed(1) || "0.0"}g
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#34D399",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {ingredientLine?.onHand?.toFixed(1) || "0.0"}g
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#F59E0B",
+                                fontFamily: "monospace",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {line.shortageG.toFixed(1)}g
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#94A3B8",
+                              }}
+                            >
+                              {(line.supplier ? `${line.supplier} · ` : "") + line.buyText}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#34D399",
+                                fontFamily: "monospace",
+                                fontWeight: 700,
+                              }}
+                            >
+                              ${line.lineCost.toFixed(2)}
+                            </td>
+                            <td style={{ padding: "6px 8px" }}>
+                              <span
+                                style={{
+                                  background:
+                                    line.mappingConfidence === "confirmed"
+                                      ? "#052E16"
+                                      : line.mappingConfidence === "inferred"
+                                      ? "#071826"
+                                      : "#2A0C0C",
+                                  border: `1px solid ${
+                                    line.mappingConfidence === "confirmed"
+                                      ? "#166534"
+                                      : line.mappingConfidence === "inferred"
+                                      ? "#1E3A52"
+                                      : "#991B1B"
+                                  }`,
+                                  borderRadius: 999,
+                                  padding: "2px 8px",
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                  color:
+                                    line.mappingConfidence === "confirmed"
+                                      ? "#86EFAC"
+                                      : line.mappingConfidence === "inferred"
+                                      ? "#7DD3FC"
+                                      : "#FCA5A5",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                }}
+                                title={line.confidenceNote || undefined}
+                              >
+                                {line.mappingConfidence}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gap: 12 }}>
+              {renderTrustSummaryPanel(recommendationTrustSummary, {
+                title: "Recommendation Trust",
+                accent: "#FCD34D",
+                footnote:
+                  "This trust read follows the currently selected recommendation mix, not a frozen scenario snapshot.",
+              })}
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginBottom: 8,
+                  }}
+                >
+                  Launch Caveats
+                </div>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {launchRunPlannerSummary.summary.selectedFormulaCount === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 9.2,
+                        color: "#94A3B8",
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      Add unit counts above to model a proposed launch run.
+                    </div>
+                  ) : (
+                    [
+                      ...launchRunPlannerSummary.capitalCaveats,
+                      ...launchRunPlannerSummary.selectedItems
+                        .filter(
+                          (item) =>
+                            item.launchReadiness?.status === "blocked" ||
+                            item.economics?.status === "blocked"
+                        )
+                        .slice(0, 4)
+                        .map(
+                          (item) =>
+                            `${item.displayLabel}: ${
+                              item.economics?.pricingBlockers?.[0] ||
+                              item.launchReadiness?.blockers?.[0] ||
+                              item.launchReadiness?.cautions?.[0] ||
+                              "Needs review before confident inclusion."
+                            }`
+                        ),
+                    ]
+                      .slice(0, 6)
+                      .map((message, index) => (
+                        <div
+                          key={`launch-caveat-${index}`}
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "9px 10px",
+                            fontSize: 8.8,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {message}
+                        </div>
+                      ))
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginBottom: 8,
+                  }}
+                >
+                  Top Launch Capital Drivers
+                </div>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {launchRunPlannerSummary.topCapitalIngredients.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 9.2,
+                        color: "#94A3B8",
+                        lineHeight: 1.65,
+                      }}
+                    >
+                      No shortage-driven capital lines are currently surfaced.
+                    </div>
+                  ) : (
+                    launchRunPlannerSummary.topCapitalIngredients.map((line) => (
+                      <div
+                        key={`launch-capital-${line.ingredientName}`}
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9.6,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {line.ingredientName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.8,
+                              color: "#34D399",
+                              fontWeight: 700,
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            ${line.lineCost.toFixed(2)}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.6,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {line.shortageG.toFixed(1)}g shortage · {line.buyText}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
             gap: 16,
             marginBottom: 18,
           }}
@@ -56873,33 +56219,54 @@ function IngredientDetailPanel({ name, onClose }) {
                 margin: "0 0 10px",
               }}
             >
-              Identity
+              Identity + Canonical Context
             </p>
-            {identityRows.map(([l, v]) => (
+            {identityRows.map(([label, value]) => (
               <div
-                key={l}
+                key={label}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  gap: 12,
                   marginBottom: 6,
                   fontSize: 11,
                 }}
               >
-                <span style={{ color: "#475569" }}>{l}</span>
+                <span style={{ color: "#475569" }}>{label}</span>
                 <span
                   style={{
                     color: "#CBD5E1",
                     fontFamily: "monospace",
                     fontSize: 10,
-                    maxWidth: 180,
+                    maxWidth: 260,
                     textAlign: "right",
                   }}
                 >
-                  {v || "—"}
+                  {value || "—"}
                 </span>
               </div>
             ))}
+            {canonicalSource && (
+              <div
+                style={{
+                  marginTop: 10,
+                  paddingTop: 10,
+                  borderTop: "1px solid #1E3A52",
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                }}
+              >
+                Canonical helper source fills structural gaps when live row
+                metadata is incomplete. Current canonical source note/type:
+                {" "}
+                <span style={{ color: "#CBD5E1" }}>
+                  {canonicalSource.note || "—"} · {canonicalSource.type || "—"}
+                </span>
+              </div>
+            )}
           </div>
+
           <div
             style={{
               background: "#060E1E",
@@ -56918,7 +56285,7 @@ function IngredientDetailPanel({ name, onClose }) {
                 margin: "0 0 10px",
               }}
             >
-              Molecular Data
+              Molecular + Technical Signals
             </p>
             {[
               ["MW (g/mol)", d.MW],
@@ -56927,24 +56294,131 @@ function IngredientDetailPanel({ name, onClose }) {
               ["HBD / HBA", `${d.HBD} / ${d.HBA}`],
               ["VP (mmHg)", d.VP],
               ["ODT (ppbv)", d.ODT],
-            ].map(([l, v]) => (
+            ].map(([label, value]) => (
               <div
-                key={l}
+                key={label}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  gap: 12,
                   marginBottom: 6,
                   fontSize: 11,
                 }}
               >
-                <span style={{ color: "#475569" }}>{l}</span>
-                <span style={{ color: ACC, fontFamily: "monospace" }}>{v}</span>
+                <span style={{ color: "#475569" }}>{label}</span>
+                <span style={{ color: ACC, fontFamily: "monospace" }}>
+                  {value ?? "—"}
+                </span>
               </div>
             ))}
+            <div
+              style={{
+                marginTop: 10,
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+              }}
+            >
+              {(behaviorSignals.descriptorTags || []).map((tag) => (
+                <span
+                  key={`${name}-tag-${tag}`}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 8.5,
+                    color: "#7DD3FC",
+                    fontWeight: 700,
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-        {p && (
-          <div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 10,
+            marginBottom: 18,
+          }}
+        >
+          {(behaviorSignals.facets || []).map((facet) => (
+            <div
+              key={`${name}-${facet.key}`}
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: "#CBD5E1",
+                  }}
+                >
+                  {facet.label}
+                </div>
+                <span
+                  style={{
+                    background: "#0A2540",
+                    border: "1px solid #1D4ED8",
+                    borderRadius: 999,
+                    padding: "2px 7px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#7DD3FC",
+                  }}
+                >
+                  {facet.rating}
+                </span>
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                }}
+              >
+                {facet.detail}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+            gap: 16,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              background: "#060E1E",
+              borderRadius: 10,
+              padding: 14,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
             <p
               style={{
                 fontSize: 9,
@@ -56955,17 +56429,246 @@ function IngredientDetailPanel({ name, onClose }) {
                 margin: "0 0 10px",
               }}
             >
-              Supplier Pricing
+              Evidence + Confidence Context
             </p>
             <div style={{ display: "grid", gap: 8 }}>
-              {Object.entries(p).map(([sup, supplierData]) => {
+              <div style={{ fontSize: 9.2, color: "#CBD5E1", lineHeight: 1.6 }}>
+                {resolvedIdentity?.inheritedViaCanonicalMaterialKey
+                  ? `Identity resolves by canonical inheritance from ${resolvedIdentity.inheritedFromCatalogName}.`
+                  : resolvedIdentity
+                  ? "Identity resolves directly through the current helper map."
+                  : "Identity is unresolved in the current helper map and should be reviewed before treating IFRA or substitution guidance as strong."}
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                  gap: 8,
+                }}
+              >
+                {[
+                  ["Registry supplier rows", registryProducts.length, "#34D399"],
+                  ["Source documents", sourceDocuments.length, "#A78BFA"],
+                  ["Evidence candidates", evidenceCandidates.length, "#7DD3FC"],
+                ].map(([label, value, color]) => (
+                  <div
+                    key={`${name}-${label}`}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 8,
+                        color: "#475569",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color,
+                      }}
+                    >
+                      {value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {registryProducts.slice(0, 3).map((product) => (
+                <div
+                  key={product.supplierProductKey || product.productTitle}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    fontSize: 8.8,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <span style={{ color: "#CBD5E1", fontWeight: 700 }}>
+                    {product.supplierDisplayName || "Supplier"}
+                  </span>
+                  {" · "}
+                  {product.productTitle || product.urlSlug || "Registry row"}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: "#060E1E",
+              borderRadius: 10,
+              padding: 14,
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <p
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#475569",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                margin: "0 0 10px",
+              }}
+            >
+              Formula + Ops Relevance
+            </p>
+            <div style={{ display: "grid", gap: 8 }}>
+              <div
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                }}
+              >
+                {formulasUsingMaterial.length > 0
+                  ? `Appears in ${formulasUsingMaterial.length} saved formula${
+                      formulasUsingMaterial.length === 1 ? "" : "s"
+                    }, led by ${formulasUsingMaterial
+                      .slice(0, 2)
+                      .map((entry) => entry.label)
+                      .join(" and ")}.`
+                  : "Not currently used in the saved formula library."}
+              </div>
+              {activeContext && (
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    fontSize: 8.8,
+                    color: "#94A3B8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Active context:
+                  {" "}
+                  <span style={{ color: "#CBD5E1", fontWeight: 700 }}>
+                    {activeContext.label}
+                  </span>
+                  {" · "}
+                  {activeContext.line.g.toFixed(1)}g line
+                  {activeContextBasketLine?.lineCost != null &&
+                    ` · $${activeContextBasketLine.lineCost.toFixed(
+                      2
+                    )} estimated line cost`}
+                </div>
+              )}
+              {batchPlannerLine && (
+                <div
+                  style={{
+                    background: batchPlannerLine.isBlocked ? "#2A0C0C" : "#071826",
+                    border: `1px solid ${
+                      batchPlannerLine.isBlocked ? "#991B1B" : "#1E3A52"
+                    }`,
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                    fontSize: 8.8,
+                    color: batchPlannerLine.isBlocked ? "#FCA5A5" : "#94A3B8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {batchPlannerLine.isBlocked
+                    ? `Blocking the current batch-plan target by ${batchPlannerLine.shortageG.toFixed(
+                        1
+                      )}g.`
+                    : `Supports the current batch-plan target with up to ${batchPlannerLine.maxProducibleG.toFixed(
+                        1
+                      )}g max output.`}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              marginBottom: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  margin: 0,
+                }}
+              >
+                Supplier Variants + Live Pricing
+              </p>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                }}
+              >
+                Live pricing uses the current merged pricing state. Registry rows
+                below are shown as context, not as proof of equivalence.
+              </div>
+            </div>
+            <div style={{ fontSize: 9, color: "#94A3B8" }}>
+              {livePricingEntries.length} live supplier row
+              {livePricingEntries.length === 1 ? "" : "s"} · {registryProducts.length} registry
+              {" "}variant{registryProducts.length === 1 ? "" : "s"}
+            </div>
+          </div>
+          {livePricingEntries.length === 0 ? (
+            <div
+              style={{
+                background: "#060E1E",
+                borderRadius: 10,
+                padding: 12,
+                border: `1px solid ${BORDER}`,
+                fontSize: 9.2,
+                color: "#94A3B8",
+                lineHeight: 1.6,
+              }}
+            >
+              No live supplier price rows are currently stored for this material.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {livePricingEntries.map(([supplierName, supplierData]) => {
                 const {
                   url,
-                  S,
+                  S = [],
                   linkStatus,
                   linkNote,
                   linkedDuplicateOfCatalogName,
-                } = supplierData;
+                } = supplierData || {};
+                const registryMatches = registryProducts.filter(
+                  (record) => record.supplierDisplayName === supplierName
+                );
                 const supplierLinkSummary =
                   linkStatus && linkStatus !== "primary_listing"
                     ? linkNote ||
@@ -56975,99 +56678,432 @@ function IngredientDetailPanel({ name, onClose }) {
                     : null;
                 return (
                   <div
-                    key={sup}
+                    key={`${name}-${supplierName}`}
                     style={{
                       background: "#060E1E",
                       borderRadius: 8,
                       padding: "10px 14px",
                       border: `1px solid ${BORDER}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      flexWrap: "wrap",
+                      display: "grid",
                       gap: 8,
                     }}
                   >
-                    <div style={{ minWidth: 0, flex: "1 1 220px" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: SUPPLIER_COLORS[sup] || "#fff",
-                          }}
-                        >
-                          {sup}
-                        </span>
-                        <SupplierLinkStatusBadge
-                          linkStatus={linkStatus}
-                          linkNote={linkNote}
-                          linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
-                        />
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontSize: 9,
-                            color: "#475569",
-                            textDecoration: "none",
-                          }}
-                        >
-                          ↗ Visit
-                        </a>
-                      </div>
-                      {supplierLinkSummary && (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 8,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ minWidth: 0, flex: "1 1 240px" }}>
                         <div
                           style={{
-                            fontSize: 9,
-                            color: "#64748B",
-                            marginTop: 4,
-                            lineHeight: 1.4,
-                            maxWidth: 360,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            flexWrap: "wrap",
                           }}
                         >
-                          {supplierLinkSummary}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {S.map(([qty, unit, price], i) => (
-                        <span
-                          key={i}
-                          style={{
-                            background: CARD,
-                            border: `1px solid ${BORDER}`,
-                            borderRadius: 6,
-                            padding: "4px 10px",
-                            fontSize: 11,
-                            color: "#E2E8F0",
-                          }}
-                        >
-                          <span style={{ color: ACC, fontWeight: 700 }}>
-                            {qty}
-                            {unit}
-                          </span>{" "}
-                          ·{" "}
-                          <span style={{ color: "#34D399" }}>
-                            ${price.toFixed(2)}
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: SUPPLIER_COLORS[supplierName] || "#fff",
+                            }}
+                          >
+                            {supplierName}
                           </span>
-                        </span>
-                      ))}
+                          <SupplierLinkStatusBadge
+                            linkStatus={linkStatus}
+                            linkNote={linkNote}
+                            linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
+                          />
+                          {url && (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                fontSize: 9,
+                                color: "#475569",
+                                textDecoration: "none",
+                              }}
+                            >
+                              ↗ Visit
+                            </a>
+                          )}
+                        </div>
+                        {supplierLinkSummary && (
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: "#64748B",
+                              marginTop: 4,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {supplierLinkSummary}
+                          </div>
+                        )}
+                        {registryMatches.slice(0, 2).map((record) => (
+                          <div
+                            key={record.supplierProductKey || record.productTitle}
+                            style={{
+                              marginTop: 4,
+                              fontSize: 8.5,
+                              color: "#94A3B8",
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            Registry: {record.productTitle || record.urlSlug || "supplier row"}
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {S.map(([qty, unit, price], index) => (
+                          <span
+                            key={`${supplierName}-${index}`}
+                            style={{
+                              background: CARD,
+                              border: `1px solid ${BORDER}`,
+                              borderRadius: 6,
+                              padding: "4px 10px",
+                              fontSize: 11,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            <span style={{ color: ACC, fontWeight: 700 }}>
+                              {qty}
+                              {unit}
+                            </span>
+                            {" · "}
+                            <span style={{ color: "#34D399" }}>
+                              ${price.toFixed(2)}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+          )}
+        </div>
+
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              marginBottom: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  margin: 0,
+                }}
+              >
+                Substitution Engine
+              </p>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                  maxWidth: 780,
+                }}
+              >
+                Suggestions are heuristic only. They reuse current material metadata,
+                live pricing, IFRA helper limits, and note-role / behavior signals.
+                They should not be treated as exact equivalences.
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 999,
+                padding: "4px 10px",
+                fontSize: 8,
+                fontWeight: 700,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {activeContext
+                ? `Formula-aware for ${activeContext.label}`
+                : "General substitutions"}
+            </div>
           </div>
-        )}
+
+          {activeContext && (
+            <div
+              style={{
+                marginBottom: 12,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: 12,
+                fontSize: 8.9,
+                color: "#94A3B8",
+                lineHeight: 1.6,
+              }}
+            >
+              Current context line:{" "}
+              <span style={{ color: "#CBD5E1", fontWeight: 700 }}>
+                {activeContext.line.g.toFixed(1)}g in {activeContext.label}
+              </span>
+              {activeContextBasketLine?.lineCost != null &&
+                ` · current estimated line cost $${activeContextBasketLine.lineCost.toFixed(
+                  2
+                )}`}
+              {activeContextFinishedGuidance &&
+                ` · finished-product status ${
+                  finishedProductIfraStatusMeta[
+                    activeContextFinishedGuidance.overallStatus
+                  ]?.label || activeContextFinishedGuidance.overallStatus
+                }`}
+            </div>
+          )}
+          {activeContext?.kind === "build" && (
+            <div
+              style={{
+                marginBottom: 12,
+                background: "#1E1B4B",
+                border: "1px solid #4338CA",
+                borderRadius: 10,
+                padding: 12,
+                fontSize: 8.8,
+                color: "#DDD6FE",
+                lineHeight: 1.6,
+              }}
+            >
+              Guided substitution review saves through the formula versioning path,
+              so it is only available when this material is being reviewed inside a
+              saved formula/version context.
+            </div>
+          )}
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+              gap: 12,
+            }}
+          >
+            {Object.entries(substitutionCategoryMeta).map(([key, meta]) => {
+              const suggestions =
+                substitutionSuggestions.categories?.[key]?.slice(0, 3) || [];
+              return (
+                <div
+                  key={`${name}-${key}`}
+                  style={{
+                    background: meta.bg,
+                    border: `1px solid ${meta.border}`,
+                    borderRadius: 12,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: meta.color,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {meta.title}
+                  </div>
+                  {suggestions.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 8.8,
+                        color: "#94A3B8",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      No clear suggestion surfaced from the current metadata
+                      and pricing signals in this category.
+                    </div>
+                  ) : (
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {suggestions.map((candidate) => (
+                        <div
+                          key={`${key}-${candidate.name}`}
+                          style={{
+                            background: "#060E1E",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "9px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => onSelectMaterial?.(candidate.name)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#E2E8F0",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                padding: 0,
+                                textAlign: "left",
+                              }}
+                            >
+                              {candidate.name}
+                            </button>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 5,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              {candidate.note && (
+                                <span
+                                  style={{
+                                    background: "#071826",
+                                    border: "1px solid #1E3A52",
+                                    borderRadius: 999,
+                                    padding: "1px 7px",
+                                    fontSize: 8,
+                                    color: "#7DD3FC",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {candidate.note}
+                                </span>
+                              )}
+                              {candidate.candidateCost != null && (
+                                <span
+                                  style={{
+                                    background: "#052E16",
+                                    border: "1px solid #166534",
+                                    borderRadius: 999,
+                                    padding: "1px 7px",
+                                    fontSize: 8,
+                                    color: "#34D399",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  ${candidate.candidateCost.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 5,
+                              fontSize: 8.8,
+                              color: "#94A3B8",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {candidate.reason}
+                          </div>
+                          {formulaAwarePreviewMap[candidate.name]?.summary && (
+                            <div
+                              style={{
+                                marginTop: 6,
+                                fontSize: 8.5,
+                                color: "#CBD5E1",
+                                lineHeight: 1.55,
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 8,
+                                padding: "6px 8px",
+                              }}
+                            >
+                              {formulaAwarePreviewMap[candidate.name].summary}
+                            </div>
+                          )}
+                          {canStartSubstitutionReview && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 8.2,
+                                  color: "#64748B",
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                Review this swap as a draft version before saving.
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  onStartSubstitutionReview?.({
+                                    sourceFormulaKey: currentFormula.formulaKey,
+                                    originalIngredientName: name,
+                                    candidateName: candidate.name,
+                                    categoryKey: key,
+                                    categoryTitle: meta.title,
+                                    candidateReason: candidate.reason,
+                                    previewSummary:
+                                      formulaAwarePreviewMap[candidate.name]
+                                        ?.summary || "",
+                                    amountG: activeContext.line.g,
+                                    contextLabel: activeContext.label,
+                                  })
+                                }
+                                style={{
+                                  background: "#0A2540",
+                                  border: "1px solid #1D4ED8",
+                                  borderRadius: 8,
+                                  color: "#7DD3FC",
+                                  padding: "5px 10px",
+                                  fontSize: 8.3,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Review As Draft
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -57111,11 +57147,6 @@ function ScoreBar({ label, value, max = 10, color }) {
     </div>
   );
 }
-
-const SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY =
-  "bb_supplier_import_local_review_v1";
-const EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY =
-  "bb_evidence_candidate_review_v1";
 
 function normalizeEvidenceCandidateReviewStatus(value) {
   const normalized = String(value || "").trim().toLowerCase();
@@ -58275,10 +58306,11 @@ export default function App() {
   const [catNormalization, setCatNormalization] = useState("all");
   const [hideLinkedDuplicates, setHideLinkedDuplicates] = useState(false);
   const [detailName, setDetailName] = useState(null);
+  const [substitutionReviewState, setSubstitutionReviewState] = useState(null);
   const [refreshStatus, setRefreshStatus] = useState({});
   const [refreshLoading, setRefreshLoading] = useState({});
-  const [apiKey, setApiKey] = useState(
-    () => localStorage.getItem("bb_api_key") || ""
+  const [apiKey, setApiKey] = useState(() =>
+    readTextStorage(APP_STORAGE_KEYS.apiKey, "")
   );
   const apiKeyRef = useRef(apiKey);
   useEffect(() => {
@@ -58294,24 +58326,43 @@ export default function App() {
   const [editingPrice, setEditingPrice] = useState(null);
   const [urlStatus, setUrlStatus] = useState({}); // {ing|sup: "ok"|"404"|"checking"}
   const [formulaSupplierOverrides, setFormulaSupplierOverrides] = useState({});
-  const [inventory, setInventory] = useState(() => {
-    try {
-      const s = localStorage.getItem("bb_inventory");
-      return s ? JSON.parse(s) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [inventory, setInventory] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.inventory, {})
+  );
   const [inventoryScale, setInventoryScale] = useState(1000);
   const [batchPlannerSourceKey, setBatchPlannerSourceKey] = useState(null);
   const [batchPlannerTargetG, setBatchPlannerTargetG] = useState(1000);
+  const [skuFillVolumeMl, setSkuFillVolumeMl] = useState(50);
+  const [skuRetailPrice, setSkuRetailPrice] = useState(95);
+  const [skuPackagingCost, setSkuPackagingCost] = useState(4.5);
+  const [skuLaborCost, setSkuLaborCost] = useState(1.5);
+  const [launchPlanUnitsByFormula, setLaunchPlanUnitsByFormula] = useState({});
+  const [launchRecommendationBudget, setLaunchRecommendationBudget] =
+    useState(2500);
+  const [launchRecommendationSkuLimit, setLaunchRecommendationSkuLimit] =
+    useState(3);
+  const [launchRecommendationEmphasis, setLaunchRecommendationEmphasis] =
+    useState("balanced");
+  const [savedFounderScenarios, setSavedFounderScenarios] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.founderLaunchScenarios, [])
+      .map((record) => normalizeFounderLaunchScenarioRecord(record))
+      .filter(Boolean)
+      .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""))
+  );
+  const [activeFounderScenarioId, setActiveFounderScenarioId] = useState(null);
+  const [founderScenarioName, setFounderScenarioName] = useState("Launch Scenario");
+  const [founderComparedScenarioIds, setFounderComparedScenarioIds] = useState([]);
+  const [founderScenarioExportStatus, setFounderScenarioExportStatus] =
+    useState("");
+  const [launchRecommendationStatus, setLaunchRecommendationStatus] =
+    useState("");
   const [inventorySearch, setInventorySearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [paScraperStatus, setPaScraperStatus] = useState("idle"); // idle|running|done|error
   const [ingSearchQuery, setIngSearchQuery] = useState("");
   const [ingSearchOpen, setIngSearchOpen] = useState(false);
   const [savedBuilds, setSavedBuilds] = useState(() =>
-    readPersistedFormulaRecords()
+    readPersistedFormulaRecords({ db: DB })
   );
   const [formulaCompareState, setFormulaCompareState] = useState(() =>
     readFormulaCompareState()
@@ -58320,27 +58371,13 @@ export default function App() {
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
   const [supplierImportLocalReviewState, setSupplierImportLocalReviewState] =
-    useState(() => {
-      try {
-        const s = localStorage.getItem(
-          SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY
-        );
-        return s ? JSON.parse(s) : {};
-      } catch {
-        return {};
-      }
-    });
+    useState(() =>
+      readJsonStorage(APP_STORAGE_KEYS.supplierImportLocalReview, {})
+    );
   const [evidenceCandidateLocalReviewState, setEvidenceCandidateLocalReviewState] =
-    useState(() => {
-      try {
-        const s = localStorage.getItem(
-          EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY
-        );
-        return s ? JSON.parse(s) : {};
-      } catch {
-        return {};
-      }
-    });
+    useState(() =>
+      readJsonStorage(APP_STORAGE_KEYS.evidenceCandidateLocalReview, {})
+    );
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
     useState("");
   const [approvedEvidenceCandidateExportStatus, setApprovedEvidenceCandidateExportStatus] =
@@ -58359,69 +58396,54 @@ export default function App() {
   const [dilType, setDilType] = useState("EDP");
   const [dilAlcohol, setDilAlcohol] = useState(false);
   // ── Formula Notes ──
-  const [formulaNotes, setFormulaNotes] = useState(() => {
-    try {
-      const s = localStorage.getItem("bb_formula_notes");
-      return s ? JSON.parse(s) : {};
-    } catch { return {}; }
-  });
+  const [formulaNotes, setFormulaNotes] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.formulaNotes, {})
+  );
   useEffect(() => {
-    try { localStorage.setItem("bb_formula_notes", JSON.stringify(formulaNotes)); } catch(e) {}
+    writeJsonStorage(APP_STORAGE_KEYS.formulaNotes, formulaNotes);
   }, [formulaNotes]);
   useEffect(() => {
-    try {
-      localStorage.setItem(FORMULA_STORAGE_KEY, JSON.stringify(savedBuilds));
-    } catch (e) {}
+    writeJsonStorage(APP_STORAGE_KEYS.savedBuilds, savedBuilds);
   }, [savedBuilds]);
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        FORMULA_COMPARE_STORAGE_KEY,
-        JSON.stringify(formulaCompareState)
-      );
-    } catch (e) {}
+    writeJsonStorage(APP_STORAGE_KEYS.formulaCompare, formulaCompareState);
   }, [formulaCompareState]);
   // ── AI Formula Critique ──
-  const [critiqueLens, setCritiqueLens] = useState(() => {
-    try {
-      return localStorage.getItem(CRITIQUE_LENS_STORAGE_KEY) || "perfumer";
-    } catch {
-      return "perfumer";
-    }
-  });
+  const [critiqueLens, setCritiqueLens] = useState(
+    () => readTextStorage(APP_STORAGE_KEYS.critiqueLens, "perfumer") || "perfumer"
+  );
   const [critiqueText, setCritiqueText] = useState("");
   const [critiqueLoading, setCritiqueLoading] = useState(false);
   const [critiqueFormula, setCritiqueFormula] = useState(null);
   const [critiqueLensUsed, setCritiqueLensUsed] = useState("perfumer");
   useEffect(() => {
-    try {
-      localStorage.setItem(CRITIQUE_LENS_STORAGE_KEY, critiqueLens);
-    } catch (e) {}
+    writeTextStorage(APP_STORAGE_KEYS.critiqueLens, critiqueLens);
   }, [critiqueLens]);
   const [pricesState, setPricesState] = useState(() => {
-    try {
-      const saved = localStorage.getItem("bb_supplier_data_v4");
-      if (saved) {
-        const overrides = JSON.parse(saved);
-        const merged = JSON.parse(JSON.stringify(PRICING));
-        Object.keys(overrides).forEach((ing) => {
-          if (!merged[ing]) merged[ing] = {};
-          Object.keys(overrides[ing]).forEach((sup) => {
-            merged[ing][sup] = overrides[ing][sup];
-          });
+    const overrides = readJsonStorage(APP_STORAGE_KEYS.supplierData, null);
+    if (overrides && typeof overrides === "object") {
+      const merged = JSON.parse(JSON.stringify(PRICING));
+      Object.keys(overrides).forEach((ing) => {
+        if (!merged[ing]) merged[ing] = {};
+        Object.keys(overrides[ing]).forEach((sup) => {
+          merged[ing][sup] = overrides[ing][sup];
         });
-        return merged;
-      }
-    } catch (e) {}
+      });
+      return merged;
+    }
     return JSON.parse(JSON.stringify(PRICING));
   });
   const formulas = useMemo(
-    () => buildFormulaLibrary(FORMULAS_INIT, savedBuilds),
+    () => buildFormulaLibrary(FORMULAS_INIT, savedBuilds, { db: DB }),
     [savedBuilds]
   );
   const formula = formulas[selFrag] || formulas[0];
   const formulaByKey = useMemo(
     () => new Map(formulas.map((entry) => [entry.formulaKey, entry])),
+    [formulas]
+  );
+  const formulaIndexByKey = useMemo(
+    () => new Map(formulas.map((entry, index) => [entry.formulaKey, index])),
     [formulas]
   );
   const formulaChildrenByParent = useMemo(() => {
@@ -58449,6 +58471,7 @@ export default function App() {
   });
   const selectedFragranceType =
     FRAGRANCE_TYPE_PRESETS[dilType] || FRAGRANCE_TYPE_PRESETS.EDP;
+  const founderInsightsEnabled = mainTab === "founder";
   const parentFormula =
     formula?.parentVersionId
       ? formulaByKey.get(formula.parentVersionId) || null
@@ -58464,6 +58487,66 @@ export default function App() {
   const nextFormulaVersionLabel = formula
     ? incrementFormulaVersionLabel(formula.versionLabel)
     : "v1.1";
+  const formulaVersionStatusLabel = formula?.isLocked
+    ? "Locked Version"
+    : formula?.parentVersionId
+    ? "Draft Version"
+    : formula?.isSeeded
+    ? "Seeded Baseline"
+    : "Saved Draft";
+  const getFormulaVersionStatusText = (entry) =>
+    entry?.isLocked
+      ? "locked version"
+      : entry?.parentVersionId
+      ? "draft version"
+      : entry?.isSeeded
+      ? "seeded baseline"
+      : "saved draft";
+  const substitutionReviewDiscardMessage = substitutionReviewState
+    ? `Discard the unsaved substitution review for ${substitutionReviewState.originalIngredientName} → ${substitutionReviewState.candidateName}? This draft only exists in the review modal until you save it as a new version.`
+    : "";
+  const startSubstitutionReview = useCallback((payload = {}) => {
+    if (
+      !payload?.sourceFormulaKey ||
+      !payload?.originalIngredientName ||
+      !payload?.candidateName
+    ) {
+      return;
+    }
+    setSubstitutionReviewState({
+      ...payload,
+      revisionNote:
+        payload.revisionNote ||
+        `Draft substitution review: replace ${payload.originalIngredientName} with ${payload.candidateName}.`,
+    });
+    setDetailName(null);
+    setMainTab("formulas");
+  }, []);
+  const closeSubstitutionReview = useCallback((options = {}) => {
+    if (
+      !options?.force &&
+      substitutionReviewState &&
+      typeof window !== "undefined" &&
+      !window.confirm(substitutionReviewDiscardMessage)
+    ) {
+      return false;
+    }
+    setSubstitutionReviewState(null);
+    return true;
+  }, [substitutionReviewDiscardMessage, substitutionReviewState]);
+  useEffect(() => {
+    if (!substitutionReviewState || typeof window === "undefined") {
+      return undefined;
+    }
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+      return "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () =>
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [substitutionReviewState]);
   const critiqueTarget = critiqueFormula
     ? formulaByKey.get(critiqueFormula) || null
     : null;
@@ -58488,8 +58571,14 @@ export default function App() {
       buildFormulaComparison(
         compareLeftFormula,
         compareRightFormula,
-        pricesState,
-        formulaSupplierOverrides
+        {
+          pricesState,
+          formulaSupplierOverrides,
+          computeChemistry,
+          perfScore,
+          db: DB,
+          pricing: PRICING,
+        }
       ),
     [compareLeftFormula, compareRightFormula, pricesState, formulaSupplierOverrides]
   );
@@ -58498,14 +58587,19 @@ export default function App() {
       buildSupplierBasketStrategies(
         formula?.ingredients || [],
         pricesState,
-        currentFormulaSupplierOverrides
+        currentFormulaSupplierOverrides,
+        { db: DB, pricing: PRICING }
       ),
     [formula, pricesState, currentFormulaSupplierOverrides]
   );
   const selectedFormulaBasket =
     formulaBasketStrategies[basketMode] || formulaBasketStrategies.cheapest;
   const buildBasketStrategies = useMemo(
-    () => buildSupplierBasketStrategies(buildItems, pricesState, {}),
+    () =>
+      buildSupplierBasketStrategies(buildItems, pricesState, {}, {
+        db: DB,
+        pricing: PRICING,
+      }),
     [buildItems, pricesState]
   );
   const selectedBuildBasket =
@@ -58568,6 +58662,8 @@ export default function App() {
         pricesState,
         supplierOverrides: selectedBatchPlannerSource?.supplierOverrides || {},
         basketMode,
+        db: DB,
+        pricing: PRICING,
       }),
     [
       selectedBatchPlannerSource,
@@ -58590,6 +58686,34 @@ export default function App() {
   const selectedBasketModeMeta =
     SUPPLIER_BASKET_MODE_META[basketMode] ||
     SUPPLIER_BASKET_MODE_META.cheapest;
+  const diluentMaterialName = dilAlcohol
+    ? "Deluxe Perfumer's Alcohol"
+    : "DPG";
+  const skuFragranceOilG =
+    Math.max(0, Number(skuFillVolumeMl) || 0) * (selectedFragranceType.pct / 100);
+  const skuDiluentG = Math.max(
+    0,
+    (Number(skuFillVolumeMl) || 0) - skuFragranceOilG
+  );
+  const diluentBasketStrategies = useMemo(() => {
+    if (skuDiluentG <= 0) return null;
+    return buildSupplierBasketStrategies(
+      [
+        {
+          name: diluentMaterialName,
+          note: "carrier",
+          g: skuDiluentG,
+        },
+      ],
+      pricesState,
+      {},
+      { db: DB, pricing: PRICING }
+    );
+  }, [diluentMaterialName, pricesState, skuDiluentG]);
+  const selectedDiluentBasket =
+    diluentBasketStrategies?.[basketMode] ||
+    diluentBasketStrategies?.cheapest ||
+    null;
   const selectedCritiqueLensMeta =
     CRITIQUE_LENS_META[critiqueLens] || CRITIQUE_LENS_META.perfumer;
   const compareLeftBasket = formulaComparison?.leftBaskets?.[basketMode] || null;
@@ -58609,6 +58733,433 @@ export default function App() {
       formulaComparison.rightPerformance.sillage +
       formulaComparison.rightPerformance.projection
     : 0;
+  const activeFounderScenario = useMemo(
+    () =>
+      savedFounderScenarios.find((scenario) => scenario.id === activeFounderScenarioId) ||
+      null,
+    [activeFounderScenarioId, savedFounderScenarios]
+  );
+  const currentFounderScenarioInputs = useMemo(
+    () =>
+      buildFounderScenarioInputState({
+        basketMode,
+        dilType,
+        ifraCategory,
+        batchPlannerTargetG,
+        dilAlcohol,
+        skuFillVolumeMl,
+        skuRetailPrice,
+        skuPackagingCost,
+        skuLaborCost,
+        launchPlanUnitsByFormula,
+      }),
+    [
+      basketMode,
+      batchPlannerTargetG,
+      dilAlcohol,
+      dilType,
+      ifraCategory,
+      launchPlanUnitsByFormula,
+      skuFillVolumeMl,
+      skuLaborCost,
+      skuPackagingCost,
+      skuRetailPrice,
+    ]
+  );
+  const currentFounderScenarioIsDirty = useMemo(() => {
+    if (!activeFounderScenario) return false;
+    const activeScenarioName =
+      String(activeFounderScenario.name || "Launch Scenario").trim() ||
+      "Launch Scenario";
+    const currentScenarioName =
+      String(founderScenarioName || "").trim() || "Launch Scenario";
+    return (
+      activeScenarioName !== currentScenarioName ||
+      JSON.stringify(activeFounderScenario.inputs || {}) !==
+        JSON.stringify(currentFounderScenarioInputs)
+    );
+  }, [activeFounderScenario, currentFounderScenarioInputs, founderScenarioName]);
+  const buildFounderScenarioSnapshot = useCallback(
+    (scenarioInputs = {}) => {
+      const normalizedScenario = buildFounderScenarioInputState(scenarioInputs);
+      const scenarioFragranceType =
+        FRAGRANCE_TYPE_PRESETS[normalizedScenario.dilType] ||
+        FRAGRANCE_TYPE_PRESETS.EDP;
+      const scenarioIfraCategory = normalizedScenario.ifraCategory;
+      const scenarioBatchTargetG = normalizedScenario.batchPlannerTargetG;
+      const scenarioBasketModeMeta =
+        SUPPLIER_BASKET_MODE_META[normalizedScenario.basketMode] ||
+        SUPPLIER_BASKET_MODE_META.cheapest;
+      const scenarioDiluentMaterialName = normalizedScenario.dilAlcohol
+        ? "Deluxe Perfumer's Alcohol"
+        : "DPG";
+      const scenarioFragranceOilG =
+        normalizedScenario.skuFillVolumeMl * (scenarioFragranceType.pct / 100);
+      const scenarioDiluentG = Math.max(
+        0,
+        normalizedScenario.skuFillVolumeMl - scenarioFragranceOilG
+      );
+      const scenarioDiluentBasketStrategies =
+        scenarioDiluentG > 0
+          ? buildSupplierBasketStrategies(
+              [
+                {
+                  name: scenarioDiluentMaterialName,
+                  note: "carrier",
+                  g: scenarioDiluentG,
+                },
+              ],
+              pricesState,
+              {},
+              { db: DB, pricing: PRICING }
+            )
+          : null;
+      const scenarioSelectedDiluentBasket =
+        scenarioDiluentBasketStrategies?.[normalizedScenario.basketMode] ||
+        scenarioDiluentBasketStrategies?.cheapest ||
+        null;
+
+      const founderItems = formulas.map((entry) => {
+        const supplierOverrides =
+          formulaSupplierOverrides[entry.formulaKey] || {};
+        const basketStrategies = buildSupplierBasketStrategies(
+          entry.ingredients || [],
+          pricesState,
+          supplierOverrides,
+          { db: DB, pricing: PRICING }
+        );
+        const selectedBasket =
+          basketStrategies[normalizedScenario.basketMode] ||
+          basketStrategies.cheapest;
+        const chemistry = computeChemistry(entry.ingredients || []);
+        const performance = perfScore(entry.ingredients || []);
+        const performanceModel = buildPerformanceModelSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            chemistry,
+            performance,
+            computeChemistry,
+            perfScore,
+          }
+        );
+        const ifraRows = getFormulaIfraRows(
+          entry.ingredients || [],
+          scenarioIfraCategory
+        );
+        const finishedProductGuidance = buildFinishedProductIfraGuidance({
+          items: entry.ingredients || [],
+          category: scenarioIfraCategory,
+          fragranceLoadPercent: scenarioFragranceType.pct,
+        });
+        const batchReport = buildBatchPlannerReport({
+          ingredients: entry.ingredients || [],
+          targetBatchG: scenarioBatchTargetG,
+          inventory,
+          pricesState,
+          supplierOverrides,
+          basketMode: normalizedScenario.basketMode,
+          db: DB,
+          pricing: PRICING,
+        });
+        const critiqueReport = buildFormulaCritiqueReport({
+          formula: entry,
+          chemistry,
+          performance,
+          performanceModel,
+          basket: selectedBasket,
+          cheapestBasket: basketStrategies.cheapest || null,
+          basketModeMeta: scenarioBasketModeMeta,
+          ifraRows,
+          lens: critiqueLens,
+          db: DB,
+        });
+        const launchReadiness = buildLaunchReadinessSummary({
+          formula: entry,
+          basket: selectedBasket,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performanceModel,
+          critiqueReport,
+          targetBatchG: scenarioBatchTargetG,
+        });
+
+        return {
+          formula: entry,
+          displayLabel: getFormulaDisplayLabel(entry, {
+            includeVersion: true,
+          }),
+          selectedBasket,
+          basketStrategies,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performanceModel,
+          critiqueReport,
+          launchReadiness,
+        };
+      });
+
+      const scenarioFounderDashboardSummary =
+        buildFounderDashboardSummary(founderItems);
+      const scenarioSkuEconomicsSummary = buildSkuEconomicsDashboardSummary(
+        founderItems,
+        {
+          fillVolumeMl: normalizedScenario.skuFillVolumeMl,
+          fragranceLoadPercent: scenarioFragranceType.pct,
+          packagingCost: normalizedScenario.skuPackagingCost,
+          laborCost: normalizedScenario.skuLaborCost,
+          retailPrice: normalizedScenario.skuRetailPrice,
+          diluentMaterialName: scenarioDiluentMaterialName,
+          diluentBasket: scenarioSelectedDiluentBasket,
+        }
+      );
+      const scenarioLaunchRunPlannerSummary = buildLaunchRunPlannerSummary({
+        founderItems,
+        economicsItems: scenarioSkuEconomicsSummary.items,
+        selectedUnitsByFormula: normalizedScenario.launchPlanUnitsByFormula,
+        inventory,
+        pricesState,
+        basketMode: normalizedScenario.basketMode,
+        fillVolumeMl: normalizedScenario.skuFillVolumeMl,
+        fragranceLoadPercent: scenarioFragranceType.pct,
+        packagingCost: normalizedScenario.skuPackagingCost,
+        laborCost: normalizedScenario.skuLaborCost,
+        retailPrice: normalizedScenario.skuRetailPrice,
+        diluentMaterialName: scenarioDiluentMaterialName,
+        formulaSupplierOverridesByFormula: formulaSupplierOverrides,
+        db: DB,
+        pricing: PRICING,
+      });
+
+      return {
+        normalizedScenario,
+        selectedFragranceType: scenarioFragranceType,
+        selectedBasketModeMeta: scenarioBasketModeMeta,
+        diluentMaterialName: scenarioDiluentMaterialName,
+        selectedDiluentBasket: scenarioSelectedDiluentBasket,
+        founderDashboardItems: founderItems,
+        founderDashboardSummary: scenarioFounderDashboardSummary,
+        skuEconomicsSummary: scenarioSkuEconomicsSummary,
+        launchRunPlannerSummary: scenarioLaunchRunPlannerSummary,
+      };
+    },
+    [
+      batchPlannerTargetG,
+      critiqueLens,
+      formulas,
+      formulaSupplierOverrides,
+      ifraCategory,
+      inventory,
+      pricesState,
+    ]
+  );
+  const sortFounderScenarioRecords = useCallback(
+    (scenarioRecords = []) =>
+      [...scenarioRecords].sort((a, b) =>
+        (b.updatedAt || "").localeCompare(a.updatedAt || "")
+      ),
+    []
+  );
+  const applyFounderScenarioInputs = useCallback((scenarioInputs = {}) => {
+    const normalizedInputs = buildFounderScenarioInputState(scenarioInputs);
+    setBasketMode(normalizedInputs.basketMode);
+    setDilType(normalizedInputs.dilType);
+    setIfraCategory(normalizedInputs.ifraCategory);
+    setBatchPlannerTargetG(normalizedInputs.batchPlannerTargetG);
+    setDilAlcohol(normalizedInputs.dilAlcohol);
+    setSkuFillVolumeMl(normalizedInputs.skuFillVolumeMl);
+    setSkuRetailPrice(normalizedInputs.skuRetailPrice);
+    setSkuPackagingCost(normalizedInputs.skuPackagingCost);
+    setSkuLaborCost(normalizedInputs.skuLaborCost);
+    setLaunchPlanUnitsByFormula(normalizedInputs.launchPlanUnitsByFormula);
+    return normalizedInputs;
+  }, []);
+  const loadFounderScenario = useCallback(
+    (scenarioRecord) => {
+      const normalizedScenario =
+        normalizeFounderLaunchScenarioRecord(scenarioRecord);
+      if (!normalizedScenario) return;
+      applyFounderScenarioInputs(normalizedScenario.inputs);
+      setActiveFounderScenarioId(normalizedScenario.id);
+      setFounderScenarioName(normalizedScenario.name);
+      setMainTab("founder");
+    },
+    [applyFounderScenarioInputs]
+  );
+  const saveCurrentFounderScenario = useCallback(
+    ({ duplicate = false } = {}) => {
+      const scenarioName =
+        String(founderScenarioName || "").trim() || "Launch Scenario";
+      const nowIso = new Date().toISOString();
+
+      if (activeFounderScenario && !duplicate) {
+        const updatedScenario = normalizeFounderLaunchScenarioRecord({
+          ...activeFounderScenario,
+          name: scenarioName,
+          updatedAt: nowIso,
+          inputs: currentFounderScenarioInputs,
+        });
+        if (!updatedScenario) return null;
+        setSavedFounderScenarios((prev) =>
+          sortFounderScenarioRecords(
+            prev.map((scenario) =>
+              scenario.id === updatedScenario.id ? updatedScenario : scenario
+            )
+          )
+        );
+        setFounderScenarioName(updatedScenario.name);
+        return updatedScenario;
+      }
+
+      const savedScenario = createFounderLaunchScenarioRecord({
+        name: duplicate ? `${scenarioName} Copy` : scenarioName,
+        inputs: currentFounderScenarioInputs,
+        createdAt: duplicate ? null : nowIso,
+        updatedAt: nowIso,
+      });
+      setSavedFounderScenarios((prev) =>
+        sortFounderScenarioRecords([...prev, savedScenario])
+      );
+      setActiveFounderScenarioId(savedScenario.id);
+      setFounderScenarioName(savedScenario.name);
+      return savedScenario;
+    },
+    [
+      activeFounderScenario,
+      currentFounderScenarioInputs,
+      founderScenarioName,
+      sortFounderScenarioRecords,
+    ]
+  );
+  const duplicateFounderScenario = useCallback(
+    (scenarioRecord = null) => {
+      const sourceScenario = normalizeFounderLaunchScenarioRecord(
+        scenarioRecord || {
+          name: founderScenarioName,
+          inputs: currentFounderScenarioInputs,
+        }
+      );
+      if (!sourceScenario) return null;
+      const duplicatedScenario = createFounderLaunchScenarioRecord({
+        name: `${sourceScenario.name} Copy`,
+        inputs: sourceScenario.inputs,
+      });
+      setSavedFounderScenarios((prev) =>
+        sortFounderScenarioRecords([...prev, duplicatedScenario])
+      );
+      applyFounderScenarioInputs(duplicatedScenario.inputs);
+      setActiveFounderScenarioId(duplicatedScenario.id);
+      setFounderScenarioName(duplicatedScenario.name);
+      setMainTab("founder");
+      return duplicatedScenario;
+    },
+    [
+      applyFounderScenarioInputs,
+      currentFounderScenarioInputs,
+      founderScenarioName,
+      sortFounderScenarioRecords,
+    ]
+  );
+  const deleteFounderScenario = useCallback((scenarioRecord) => {
+    const normalizedScenario =
+      normalizeFounderLaunchScenarioRecord(scenarioRecord);
+    if (!normalizedScenario) return;
+    if (
+      !confirm(
+        `Delete saved scenario "${normalizedScenario.name}"? This only removes the browser-saved scenario record.`
+      )
+    ) {
+      return;
+    }
+    setSavedFounderScenarios((prev) =>
+      prev.filter((scenario) => scenario.id !== normalizedScenario.id)
+    );
+  }, []);
+  const clearActiveFounderScenario = useCallback(() => {
+    setActiveFounderScenarioId(null);
+  }, []);
+  const toggleFounderScenarioCompare = useCallback((scenarioId) => {
+    setFounderComparedScenarioIds((prev) => {
+      if (prev.includes(scenarioId)) {
+        return prev.filter((id) => id !== scenarioId);
+      }
+      return [...prev, scenarioId].slice(-3);
+    });
+  }, []);
+  const buildFounderScenarioBriefText = useCallback(
+    (scenarioRecord) => {
+      const normalizedScenario =
+        normalizeFounderLaunchScenarioRecord(scenarioRecord);
+      if (!normalizedScenario) return "";
+      const snapshot = buildFounderScenarioSnapshot(normalizedScenario.inputs);
+      return buildFounderScenarioShareBrief({
+        scenario: normalizedScenario,
+        snapshot,
+      });
+    },
+    [buildFounderScenarioSnapshot]
+  );
+  const copyFounderScenarioBrief = useCallback(
+    async (scenarioRecord) => {
+      const normalizedScenario =
+        normalizeFounderLaunchScenarioRecord(scenarioRecord);
+      if (!normalizedScenario) {
+        setFounderScenarioExportStatus("Scenario brief unavailable.");
+        return;
+      }
+      const briefText = buildFounderScenarioBriefText(normalizedScenario);
+      if (!briefText) {
+        setFounderScenarioExportStatus("Scenario brief unavailable.");
+        return;
+      }
+      if (!navigator?.clipboard?.writeText) {
+        setFounderScenarioExportStatus("Clipboard copy unavailable in this browser.");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(briefText);
+        setFounderScenarioExportStatus(
+          `Copied brief for "${normalizedScenario.name}".`
+        );
+      } catch (e) {
+        setFounderScenarioExportStatus("Scenario brief copy failed.");
+      }
+    },
+    [buildFounderScenarioBriefText]
+  );
+  const downloadFounderScenarioBrief = useCallback(
+    (scenarioRecord) => {
+      const normalizedScenario =
+        normalizeFounderLaunchScenarioRecord(scenarioRecord);
+      if (!normalizedScenario) {
+        setFounderScenarioExportStatus("Scenario brief unavailable.");
+        return;
+      }
+      const briefText = buildFounderScenarioBriefText(normalizedScenario);
+      if (!briefText) {
+        setFounderScenarioExportStatus("Scenario brief unavailable.");
+        return;
+      }
+      const safeFileName =
+        String(normalizedScenario.name || "launch-scenario")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "launch-scenario";
+      const blob = new Blob([briefText], { type: "text/markdown" });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = `${safeFileName}-brief.md`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(href), 0);
+      setFounderScenarioExportStatus(
+        `Downloaded brief for "${normalizedScenario.name}".`
+      );
+    },
+    [buildFounderScenarioBriefText]
+  );
   useEffect(() => {
     if (!formulas.length) return;
     if (pendingFormulaSelectionKey) {
@@ -58671,27 +59222,57 @@ export default function App() {
         : prev;
     });
   }, [formulas, formula, parentFormula]);
+  useEffect(() => {
+    const availableKeys = new Set(formulas.map((entry) => entry.formulaKey));
+    setLaunchPlanUnitsByFormula((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([formulaKey]) => availableKeys.has(formulaKey))
+      );
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      if (
+        prevKeys.length === nextKeys.length &&
+        prevKeys.every((formulaKey) => prev[formulaKey] === next[formulaKey])
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [formulas]);
+  useEffect(() => {
+    writeJsonStorage(APP_STORAGE_KEYS.inventory, inventory);
+  }, [inventory]);
+  useEffect(() => {
+    writeJsonStorage(
+      APP_STORAGE_KEYS.founderLaunchScenarios,
+      savedFounderScenarios
+    );
+  }, [savedFounderScenarios]);
+  useEffect(() => {
+    const validIds = new Set(savedFounderScenarios.map((scenario) => scenario.id));
+    if (activeFounderScenarioId && !validIds.has(activeFounderScenarioId)) {
+      setActiveFounderScenarioId(null);
+    }
+    setFounderComparedScenarioIds((prev) => {
+      const next = prev.filter((scenarioId) => validIds.has(scenarioId));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [activeFounderScenarioId, savedFounderScenarios]);
   // Persist supplier data to localStorage
   useEffect(() => {
-    try {
-      localStorage.setItem("bb_supplier_data_v4", JSON.stringify(pricesState));
-    } catch (e) {}
+    writeJsonStorage(APP_STORAGE_KEYS.supplierData, pricesState);
   }, [pricesState]);
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY,
-        JSON.stringify(supplierImportLocalReviewState)
-      );
-    } catch (e) {}
+    writeJsonStorage(
+      APP_STORAGE_KEYS.supplierImportLocalReview,
+      supplierImportLocalReviewState
+    );
   }, [supplierImportLocalReviewState]);
   useEffect(() => {
-    try {
-      localStorage.setItem(
-        EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY,
-        JSON.stringify(evidenceCandidateLocalReviewState)
-      );
-    } catch (e) {}
+    writeJsonStorage(
+      APP_STORAGE_KEYS.evidenceCandidateLocalReview,
+      evidenceCandidateLocalReviewState
+    );
   }, [evidenceCandidateLocalReviewState]);
   const approvedSupplierDraftRecords = useMemo(
     () =>
@@ -59013,27 +59594,34 @@ export default function App() {
       const currentFormulaRecord = nextFormula?.formulaKey
         ? formulaByKey.get(nextFormula.formulaKey) || null
         : null;
-      const normalizedRecord = createPersistedFormulaRecord({
-        ...currentFormulaRecord,
-        ...nextFormula,
-        formulaKey: nextFormula?.formulaKey || currentFormulaRecord?.formulaKey,
-        sourceType:
-          nextFormula?.sourceType ||
-          (currentFormulaRecord?.sourceType === "seeded"
-            ? "seeded_override"
-            : currentFormulaRecord?.sourceType) ||
-          (nextFormula?.parentVersionId
-            ? "version"
-            : nextFormula?.isSeeded
-            ? "seeded_override"
-            : "custom"),
-        createdAt:
-          nextFormula?.createdAt ||
-          currentFormulaRecord?.createdAt ||
-          new Date().toISOString(),
-        updatedAt: nextFormula?.updatedAt || new Date().toISOString(),
-      });
-      setSavedBuilds((prev) => upsertFormulaRecord(prev, normalizedRecord));
+      const normalizedRecord = createPersistedFormulaRecord(
+        {
+          ...currentFormulaRecord,
+          ...nextFormula,
+          formulaKey:
+            nextFormula?.formulaKey || currentFormulaRecord?.formulaKey,
+          sourceType:
+            nextFormula?.sourceType ||
+            (currentFormulaRecord?.sourceType === "seeded"
+              ? "seeded_override"
+              : currentFormulaRecord?.sourceType) ||
+            (nextFormula?.parentVersionId
+              ? "version"
+              : nextFormula?.isSeeded
+              ? "seeded_override"
+              : "custom"),
+          createdAt:
+            nextFormula?.createdAt ||
+            currentFormulaRecord?.createdAt ||
+            new Date().toISOString(),
+          updatedAt: nextFormula?.updatedAt || new Date().toISOString(),
+        },
+        0,
+        { db: DB }
+      );
+      setSavedBuilds((prev) =>
+        upsertFormulaRecord(prev, normalizedRecord, { db: DB })
+      );
       return normalizedRecord;
     },
     [formulaByKey]
@@ -59064,23 +59652,27 @@ export default function App() {
     const name = buildName.trim();
     if (!name || buildItems.length === 0) return;
     const nowIso = new Date().toISOString();
-    const newFormula = createPersistedFormulaRecord({
-      name,
-      emoji: "🧪",
-      tagline: "Custom build",
-      desc: "Created in Build Lab.",
-      ingredients: sortFormulaIngredients(buildItems),
-      isCustom: true,
-      isSeeded: false,
-      sourceType: "custom",
-      versionLabel: "v1.0",
-      parentFormulaKey: null,
-      parentVersionId: null,
-      isLocked: false,
-      revisionNote: "",
-      createdAt: nowIso,
-      updatedAt: nowIso,
-    });
+    const newFormula = createPersistedFormulaRecord(
+      {
+        name,
+        emoji: "🧪",
+        tagline: "Custom build",
+        desc: "Created in Build Lab.",
+        ingredients: sortFormulaIngredients(buildItems, DB),
+        isCustom: true,
+        isSeeded: false,
+        sourceType: "custom",
+        versionLabel: "v1.0",
+        parentFormulaKey: null,
+        parentVersionId: null,
+        isLocked: false,
+        revisionNote: "",
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      },
+      0,
+      { db: DB }
+    );
     setSavedBuilds((prev) => [...prev, newFormula]);
     setPendingFormulaSelectionKey(newFormula.formulaKey);
     setBuildName("");
@@ -59091,26 +59683,30 @@ export default function App() {
     (sourceFormula) => {
       if (!sourceFormula) return null;
       const nowIso = new Date().toISOString();
-      const clonedFormula = createPersistedFormulaRecord({
-        ...sourceFormula,
-        formulaKey: buildFormulaKey(sourceFormula.name, "formula"),
-        versionLabel: incrementFormulaVersionLabel(sourceFormula.versionLabel),
-        parentVersionId: sourceFormula.formulaKey,
-        parentFormulaKey:
-          sourceFormula.parentFormulaKey || sourceFormula.formulaKey,
-        isLocked: false,
-        isSeeded: false,
-        isCustom: true,
-        sourceType: "version",
-        revisionNote: `Derived from ${getFormulaDisplayLabel(sourceFormula, {
-          includeVersion: true,
-        })}`,
-        createdAt: nowIso,
-        updatedAt: nowIso,
-        seedSourceKey:
-          sourceFormula.seedSourceKey ||
-          (sourceFormula.isSeeded ? sourceFormula.formulaKey : null),
-      });
+      const clonedFormula = createPersistedFormulaRecord(
+        {
+          ...sourceFormula,
+          formulaKey: buildFormulaKey(sourceFormula.name, "formula"),
+          versionLabel: incrementFormulaVersionLabel(sourceFormula.versionLabel),
+          parentVersionId: sourceFormula.formulaKey,
+          parentFormulaKey:
+            sourceFormula.parentFormulaKey || sourceFormula.formulaKey,
+          isLocked: false,
+          isSeeded: false,
+          isCustom: true,
+          sourceType: "version",
+          revisionNote: `Derived from ${getFormulaDisplayLabel(sourceFormula, {
+            includeVersion: true,
+          })}`,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+          seedSourceKey:
+            sourceFormula.seedSourceKey ||
+            (sourceFormula.isSeeded ? sourceFormula.formulaKey : null),
+        },
+        0,
+        { db: DB }
+      );
       setSavedBuilds((prev) => [...prev, clonedFormula]);
       setPendingFormulaSelectionKey(clonedFormula.formulaKey);
       setSubTab("edit");
@@ -59118,6 +59714,52 @@ export default function App() {
     },
     []
   );
+  const saveSubstitutionReviewDraft = useCallback(() => {
+    if (!substitutionReviewSourceFormula || !substitutionReviewDraftFormula) return;
+    const nowIso = new Date().toISOString();
+    const newDraftRecord = createPersistedFormulaRecord(
+      {
+        ...substitutionReviewDraftFormula,
+        formulaKey: buildFormulaKey(substitutionReviewSourceFormula.name, "formula"),
+        versionLabel: incrementFormulaVersionLabel(
+          substitutionReviewSourceFormula.versionLabel
+        ),
+        parentVersionId: substitutionReviewSourceFormula.formulaKey,
+        parentFormulaKey:
+          substitutionReviewSourceFormula.parentFormulaKey ||
+          substitutionReviewSourceFormula.formulaKey,
+        isLocked: false,
+        isSeeded: false,
+        isCustom: true,
+        sourceType: "version",
+        revisionNote:
+          substitutionReviewState?.revisionNote ||
+          `Draft substitution review: replace ${substitutionReviewState?.originalIngredientName} with ${substitutionReviewState?.candidateName}.`,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        seedSourceKey:
+          substitutionReviewSourceFormula.seedSourceKey ||
+          (substitutionReviewSourceFormula.isSeeded
+            ? substitutionReviewSourceFormula.formulaKey
+            : null),
+      },
+      0,
+      { db: DB }
+    );
+    setSavedBuilds((prev) => [...prev, newDraftRecord]);
+    setFormulaCompareState({
+      leftFormulaKey: substitutionReviewSourceFormula.formulaKey,
+      rightFormulaKey: newDraftRecord.formulaKey,
+    });
+    setPendingFormulaSelectionKey(newDraftRecord.formulaKey);
+    setMainTab("formulas");
+    setSubTab("compare");
+    setSubstitutionReviewState(null);
+  }, [
+    substitutionReviewDraftFormula,
+    substitutionReviewSourceFormula,
+    substitutionReviewState,
+  ]);
   const lockFormulaVersion = useCallback(() => {
     if (!formula || formula.isLocked) return;
     if (
@@ -59169,18 +59811,24 @@ export default function App() {
   const formulaPerformanceModel = useMemo(
     () =>
       buildPerformanceModelSummary(formula.ingredients, {
+        db: DB,
         chemistry: chem,
         performance: formulaScore,
         chemistrySummary: formulaChemistrySummary,
+        computeChemistry,
+        perfScore,
       }),
     [chem, formula, formulaChemistrySummary, formulaScore]
   );
   const buildPerformanceModel = useMemo(
     () =>
       buildPerformanceModelSummary(buildItems, {
+        db: DB,
         chemistry: buildChem,
         performance: buildScore,
         chemistrySummary: buildChemistrySummary,
+        computeChemistry,
+        perfScore,
       }),
     [buildChem, buildChemistrySummary, buildItems, buildScore]
   );
@@ -59214,6 +59862,7 @@ export default function App() {
         basketModeMeta: selectedBasketModeMeta,
         ifraRows: formulaCritiqueIfraRows,
         lens: critiqueLens,
+        db: DB,
       }),
     [
       chem,
@@ -59227,6 +59876,631 @@ export default function App() {
       selectedFormulaBasket,
     ]
   );
+  const substitutionReviewSourceFormula = useMemo(
+    () =>
+      substitutionReviewState?.sourceFormulaKey
+        ? formulaByKey.get(substitutionReviewState.sourceFormulaKey) || null
+        : null,
+    [formulaByKey, substitutionReviewState]
+  );
+  const substitutionReviewSourceOverrides = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? formulaSupplierOverrides[substitutionReviewSourceFormula.formulaKey] || {}
+        : {},
+    [formulaSupplierOverrides, substitutionReviewSourceFormula]
+  );
+  const substitutionReviewDraftVersionLabel = substitutionReviewSourceFormula
+    ? incrementFormulaVersionLabel(substitutionReviewSourceFormula.versionLabel)
+    : "v1.1";
+  const substitutionReviewDraftFormula = useMemo(
+    () =>
+      substitutionReviewSourceFormula && substitutionReviewState
+        ? buildSubstitutionReviewDraftFormula(
+            substitutionReviewSourceFormula,
+            substitutionReviewState.originalIngredientName,
+            substitutionReviewState.candidateName,
+            {
+              db: DB,
+              formulaKey: `review-draft-${substitutionReviewSourceFormula.formulaKey}`,
+              versionLabel: substitutionReviewDraftVersionLabel,
+              revisionNote: substitutionReviewState.revisionNote || "",
+            }
+          )
+        : null,
+    [
+      substitutionReviewDraftVersionLabel,
+      substitutionReviewSourceFormula,
+      substitutionReviewState,
+    ]
+  );
+  const substitutionReviewComparison = useMemo(
+    () =>
+      buildFormulaComparison(
+        substitutionReviewSourceFormula,
+        substitutionReviewDraftFormula,
+        {
+          pricesState,
+          formulaSupplierOverrides: {
+            ...(substitutionReviewSourceFormula?.formulaKey
+              ? {
+                  [substitutionReviewSourceFormula.formulaKey]:
+                    substitutionReviewSourceOverrides,
+                }
+              : {}),
+            ...(substitutionReviewDraftFormula?.formulaKey
+              ? {
+                  [substitutionReviewDraftFormula.formulaKey]:
+                    substitutionReviewSourceOverrides,
+                }
+              : {}),
+          },
+          computeChemistry,
+          perfScore,
+          db: DB,
+          pricing: PRICING,
+        }
+      ),
+    [
+      pricesState,
+      substitutionReviewDraftFormula,
+      substitutionReviewSourceFormula,
+      substitutionReviewSourceOverrides,
+    ]
+  );
+  const substitutionReviewBaseIfraRows = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? getFormulaIfraRows(substitutionReviewSourceFormula.ingredients, ifraCategory)
+        : [],
+    [ifraCategory, substitutionReviewSourceFormula]
+  );
+  const substitutionReviewDraftIfraRows = useMemo(
+    () =>
+      substitutionReviewDraftFormula
+        ? getFormulaIfraRows(substitutionReviewDraftFormula.ingredients, ifraCategory)
+        : [],
+    [ifraCategory, substitutionReviewDraftFormula]
+  );
+  const substitutionReviewBaseFinishedGuidance = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? buildFinishedProductIfraGuidance({
+            items: substitutionReviewSourceFormula.ingredients || [],
+            category: ifraCategory,
+            fragranceLoadPercent: selectedFragranceType.pct,
+          })
+        : null,
+    [ifraCategory, selectedFragranceType, substitutionReviewSourceFormula]
+  );
+  const substitutionReviewDraftFinishedGuidance = useMemo(
+    () =>
+      substitutionReviewDraftFormula
+        ? buildFinishedProductIfraGuidance({
+            items: substitutionReviewDraftFormula.ingredients || [],
+            category: ifraCategory,
+            fragranceLoadPercent: selectedFragranceType.pct,
+          })
+        : null,
+    [ifraCategory, selectedFragranceType, substitutionReviewDraftFormula]
+  );
+  const substitutionReviewBaseChem = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? computeChemistry(substitutionReviewSourceFormula.ingredients || [])
+        : [],
+    [substitutionReviewSourceFormula]
+  );
+  const substitutionReviewDraftChem = useMemo(
+    () =>
+      substitutionReviewDraftFormula
+        ? computeChemistry(substitutionReviewDraftFormula.ingredients || [])
+        : [],
+    [substitutionReviewDraftFormula]
+  );
+  const substitutionReviewBasePerformance = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? perfScore(substitutionReviewSourceFormula.ingredients || [])
+        : { longevity: 0, sillage: 0, projection: 0 },
+    [substitutionReviewSourceFormula]
+  );
+  const substitutionReviewDraftPerformance = useMemo(
+    () =>
+      substitutionReviewDraftFormula
+        ? perfScore(substitutionReviewDraftFormula.ingredients || [])
+        : { longevity: 0, sillage: 0, projection: 0 },
+    [substitutionReviewDraftFormula]
+  );
+  const substitutionReviewBaseBatchReport = useMemo(
+    () =>
+      substitutionReviewSourceFormula
+        ? buildBatchPlannerReport({
+            ingredients: substitutionReviewSourceFormula.ingredients || [],
+            targetBatchG: batchPlannerTargetG,
+            inventory,
+            pricesState,
+            supplierOverrides: substitutionReviewSourceOverrides,
+            basketMode,
+            db: DB,
+            pricing: PRICING,
+          })
+        : null,
+    [
+      batchPlannerTargetG,
+      basketMode,
+      inventory,
+      pricesState,
+      substitutionReviewSourceFormula,
+      substitutionReviewSourceOverrides,
+    ]
+  );
+  const substitutionReviewDraftBatchReport = useMemo(
+    () =>
+      substitutionReviewDraftFormula
+        ? buildBatchPlannerReport({
+            ingredients: substitutionReviewDraftFormula.ingredients || [],
+            targetBatchG: batchPlannerTargetG,
+            inventory,
+            pricesState,
+            supplierOverrides: substitutionReviewSourceOverrides,
+            basketMode,
+            db: DB,
+            pricing: PRICING,
+          })
+        : null,
+    [
+      batchPlannerTargetG,
+      basketMode,
+      inventory,
+      pricesState,
+      substitutionReviewDraftFormula,
+      substitutionReviewSourceOverrides,
+    ]
+  );
+  const substitutionReviewBaseBasket =
+    substitutionReviewComparison?.leftBaskets?.[basketMode] || null;
+  const substitutionReviewDraftBasket =
+    substitutionReviewComparison?.rightBaskets?.[basketMode] || null;
+  const substitutionReviewBaseCritiqueReport = useMemo(
+    () =>
+      substitutionReviewSourceFormula && substitutionReviewComparison
+        ? buildFormulaCritiqueReport({
+            formula: substitutionReviewSourceFormula,
+            chemistry: substitutionReviewBaseChem,
+            performance: substitutionReviewBasePerformance,
+            performanceModel:
+              substitutionReviewComparison.leftPerformanceModel || null,
+            basket: substitutionReviewBaseBasket,
+            cheapestBasket:
+              substitutionReviewComparison.leftBaskets?.cheapest || null,
+            basketModeMeta: selectedBasketModeMeta,
+            ifraRows: substitutionReviewBaseIfraRows,
+            lens: critiqueLens,
+            db: DB,
+          })
+        : null,
+    [
+      critiqueLens,
+      selectedBasketModeMeta,
+      substitutionReviewBaseBasket,
+      substitutionReviewBaseChem,
+      substitutionReviewBaseIfraRows,
+      substitutionReviewBasePerformance,
+      substitutionReviewComparison,
+      substitutionReviewSourceFormula,
+    ]
+  );
+  const substitutionReviewDraftCritiqueReport = useMemo(
+    () =>
+      substitutionReviewDraftFormula && substitutionReviewComparison
+        ? buildFormulaCritiqueReport({
+            formula: substitutionReviewDraftFormula,
+            chemistry: substitutionReviewDraftChem,
+            performance: substitutionReviewDraftPerformance,
+            performanceModel:
+              substitutionReviewComparison.rightPerformanceModel || null,
+            basket: substitutionReviewDraftBasket,
+            cheapestBasket:
+              substitutionReviewComparison.rightBaskets?.cheapest || null,
+            basketModeMeta: selectedBasketModeMeta,
+            ifraRows: substitutionReviewDraftIfraRows,
+            lens: critiqueLens,
+            db: DB,
+          })
+        : null,
+    [
+      critiqueLens,
+      selectedBasketModeMeta,
+      substitutionReviewComparison,
+      substitutionReviewDraftBasket,
+      substitutionReviewDraftChem,
+      substitutionReviewDraftFormula,
+      substitutionReviewDraftIfraRows,
+      substitutionReviewDraftPerformance,
+    ]
+  );
+  const substitutionReviewBaseReadiness = useMemo(
+    () =>
+      substitutionReviewSourceFormula && substitutionReviewComparison
+        ? buildLaunchReadinessSummary({
+            formula: substitutionReviewSourceFormula,
+            basket: substitutionReviewBaseBasket,
+            batchReport: substitutionReviewBaseBatchReport,
+            ifraRows: substitutionReviewBaseIfraRows,
+            finishedProductGuidance: substitutionReviewBaseFinishedGuidance,
+            performanceModel:
+              substitutionReviewComparison.leftPerformanceModel || null,
+            critiqueReport: substitutionReviewBaseCritiqueReport,
+            targetBatchG: batchPlannerTargetG,
+          })
+        : null,
+    [
+      batchPlannerTargetG,
+      substitutionReviewBaseBatchReport,
+      substitutionReviewBaseBasket,
+      substitutionReviewBaseCritiqueReport,
+      substitutionReviewBaseFinishedGuidance,
+      substitutionReviewBaseIfraRows,
+      substitutionReviewComparison,
+      substitutionReviewSourceFormula,
+    ]
+  );
+  const substitutionReviewDraftReadiness = useMemo(
+    () =>
+      substitutionReviewDraftFormula && substitutionReviewComparison
+        ? buildLaunchReadinessSummary({
+            formula: substitutionReviewDraftFormula,
+            basket: substitutionReviewDraftBasket,
+            batchReport: substitutionReviewDraftBatchReport,
+            ifraRows: substitutionReviewDraftIfraRows,
+            finishedProductGuidance: substitutionReviewDraftFinishedGuidance,
+            performanceModel:
+              substitutionReviewComparison.rightPerformanceModel || null,
+            critiqueReport: substitutionReviewDraftCritiqueReport,
+            targetBatchG: batchPlannerTargetG,
+          })
+        : null,
+    [
+      batchPlannerTargetG,
+      substitutionReviewComparison,
+      substitutionReviewDraftBatchReport,
+      substitutionReviewDraftBasket,
+      substitutionReviewDraftCritiqueReport,
+      substitutionReviewDraftFinishedGuidance,
+      substitutionReviewDraftFormula,
+      substitutionReviewDraftIfraRows,
+    ]
+  );
+  const substitutionReviewBaseTrustSummary = useMemo(
+    () =>
+      buildFounderTrustSummary({
+        basket: substitutionReviewBaseBasket,
+        launchReadiness: substitutionReviewBaseReadiness,
+        expectedLineCount:
+          substitutionReviewSourceFormula?.ingredients?.length || null,
+      }),
+    [
+      substitutionReviewBaseBasket,
+      substitutionReviewBaseReadiness,
+      substitutionReviewSourceFormula,
+    ]
+  );
+  const substitutionReviewDraftTrustSummary = useMemo(
+    () =>
+      buildFounderTrustSummary({
+        basket: substitutionReviewDraftBasket,
+        launchReadiness: substitutionReviewDraftReadiness,
+        expectedLineCount:
+          substitutionReviewDraftFormula?.ingredients?.length || null,
+      }),
+    [
+      substitutionReviewDraftBasket,
+      substitutionReviewDraftFormula,
+      substitutionReviewDraftReadiness,
+    ]
+  );
+  const substitutionReviewCaveats = useMemo(() => {
+    if (!substitutionReviewState) return [];
+    return Array.from(
+      new Set(
+        [
+          substitutionReviewState.candidateReason,
+          substitutionReviewState.previewSummary,
+          substitutionReviewDraftTrustSummary?.missingSignals?.[0],
+          substitutionReviewDraftTrustSummary?.uncertainSignals?.[0],
+          substitutionReviewDraftReadiness?.blockers?.[0],
+          substitutionReviewDraftReadiness?.cautions?.[0],
+          substitutionReviewDraftCritiqueReport?.uncertainty?.[0],
+        ].filter(Boolean)
+      )
+    ).slice(0, 5);
+  }, [
+    substitutionReviewDraftCritiqueReport,
+    substitutionReviewDraftReadiness,
+    substitutionReviewDraftTrustSummary,
+    substitutionReviewState,
+  ]);
+  const founderDashboardItems = useMemo(
+    () =>
+      !founderInsightsEnabled
+        ? []
+        : formulas.map((entry) => {
+        const supplierOverrides =
+          formulaSupplierOverrides[entry.formulaKey] || {};
+        const basketStrategies = buildSupplierBasketStrategies(
+          entry.ingredients || [],
+          pricesState,
+          supplierOverrides,
+          { db: DB, pricing: PRICING }
+        );
+        const selectedBasket =
+          basketStrategies[basketMode] || basketStrategies.cheapest;
+        const chemistry = computeChemistry(entry.ingredients || []);
+        const performance = perfScore(entry.ingredients || []);
+        const performanceModel = buildPerformanceModelSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            chemistry,
+            performance,
+            computeChemistry,
+            perfScore,
+          }
+        );
+        const ifraRows = getFormulaIfraRows(
+          entry.ingredients || [],
+          ifraCategory
+        );
+        const finishedProductGuidance = buildFinishedProductIfraGuidance({
+          items: entry.ingredients || [],
+          category: ifraCategory,
+          fragranceLoadPercent: selectedFragranceType.pct,
+        });
+        const batchReport = buildBatchPlannerReport({
+          ingredients: entry.ingredients || [],
+          targetBatchG: batchPlannerTargetG,
+          inventory,
+          pricesState,
+          supplierOverrides,
+          basketMode,
+          db: DB,
+          pricing: PRICING,
+        });
+        const critiqueReport = buildFormulaCritiqueReport({
+          formula: entry,
+          chemistry,
+          performance,
+          performanceModel,
+          basket: selectedBasket,
+          cheapestBasket: basketStrategies.cheapest || null,
+          basketModeMeta: selectedBasketModeMeta,
+          ifraRows,
+          lens: critiqueLens,
+          db: DB,
+        });
+        const launchReadiness = buildLaunchReadinessSummary({
+          formula: entry,
+          basket: selectedBasket,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performanceModel,
+          critiqueReport,
+          targetBatchG: batchPlannerTargetG,
+        });
+        const trustSummary = buildFounderTrustSummary({
+          basket: selectedBasket,
+          launchReadiness,
+          expectedLineCount: Array.isArray(entry.ingredients)
+            ? entry.ingredients.length
+            : null,
+        });
+        return {
+          formula: entry,
+          displayLabel: getFormulaDisplayLabel(entry, {
+            includeVersion: true,
+          }),
+          selectedBasket,
+          basketStrategies,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performanceModel,
+          critiqueReport,
+          launchReadiness,
+          trustSummary,
+        };
+      }),
+    [
+      founderInsightsEnabled,
+      basketMode,
+      batchPlannerTargetG,
+      critiqueLens,
+      formulas,
+      formulaSupplierOverrides,
+      ifraCategory,
+      inventory,
+      pricesState,
+      selectedBasketModeMeta,
+      selectedFragranceType,
+    ]
+  );
+  const founderDashboardSummary = useMemo(
+    () => buildFounderDashboardSummary(founderDashboardItems),
+    [founderDashboardItems]
+  );
+  const skuEconomicsSummary = useMemo(
+    () =>
+      buildSkuEconomicsDashboardSummary(founderDashboardItems, {
+        fillVolumeMl: skuFillVolumeMl,
+        fragranceLoadPercent: selectedFragranceType.pct,
+        packagingCost: skuPackagingCost,
+        laborCost: skuLaborCost,
+        retailPrice: skuRetailPrice,
+        diluentMaterialName,
+        diluentBasket: selectedDiluentBasket,
+      }),
+    [
+      diluentMaterialName,
+      founderDashboardItems,
+      selectedDiluentBasket,
+      selectedFragranceType,
+      skuFillVolumeMl,
+      skuLaborCost,
+      skuPackagingCost,
+      skuRetailPrice,
+    ]
+  );
+  const launchRunPlannerSummary = useMemo(
+    () =>
+      buildLaunchRunPlannerSummary({
+        founderItems: founderDashboardItems,
+        economicsItems: skuEconomicsSummary.items,
+        selectedUnitsByFormula: launchPlanUnitsByFormula,
+        inventory,
+        pricesState,
+        basketMode,
+        fillVolumeMl: skuFillVolumeMl,
+        fragranceLoadPercent: selectedFragranceType.pct,
+        packagingCost: skuPackagingCost,
+        laborCost: skuLaborCost,
+        retailPrice: skuRetailPrice,
+        diluentMaterialName,
+        formulaSupplierOverridesByFormula: formulaSupplierOverrides,
+        db: DB,
+        pricing: PRICING,
+      }),
+    [
+      basketMode,
+      diluentMaterialName,
+      founderDashboardItems,
+      formulaSupplierOverrides,
+      inventory,
+      launchPlanUnitsByFormula,
+      pricesState,
+      selectedFragranceType,
+      skuEconomicsSummary,
+      skuFillVolumeMl,
+      skuLaborCost,
+      skuPackagingCost,
+      skuRetailPrice,
+    ]
+  );
+  const founderComparedScenarioSnapshots = useMemo(() => {
+    if (!founderInsightsEnabled) return [];
+    if (!founderComparedScenarioIds.length) return [];
+    const savedScenarioById = new Map(
+      savedFounderScenarios.map((scenario) => [scenario.id, scenario])
+    );
+    return founderComparedScenarioIds
+      .map((scenarioId) => savedScenarioById.get(scenarioId) || null)
+      .filter(Boolean)
+      .map((scenario) => ({
+        scenario,
+        snapshot: buildFounderScenarioSnapshot(scenario.inputs),
+      }));
+  }, [
+    buildFounderScenarioSnapshot,
+    founderInsightsEnabled,
+    founderComparedScenarioIds,
+    savedFounderScenarios,
+  ]);
+  const launchRecommendation = useMemo(
+    () =>
+      buildCapitalConstrainedLaunchRecommendation({
+        founderItems: founderInsightsEnabled ? founderDashboardItems : [],
+        economicsItems: founderInsightsEnabled ? skuEconomicsSummary.items : [],
+        selectedUnitsByFormula: founderInsightsEnabled
+          ? launchPlanUnitsByFormula
+          : {},
+        inventory: founderInsightsEnabled ? inventory : {},
+        pricesState: founderInsightsEnabled ? pricesState : {},
+        basketMode,
+        fillVolumeMl: skuFillVolumeMl,
+        fragranceLoadPercent: selectedFragranceType.pct,
+        packagingCost: skuPackagingCost,
+        laborCost: skuLaborCost,
+        retailPrice: skuRetailPrice,
+        diluentMaterialName,
+        formulaSupplierOverridesByFormula: founderInsightsEnabled
+          ? formulaSupplierOverrides
+          : {},
+        budget: launchRecommendationBudget,
+        skuLimit:
+          launchRecommendationSkuLimit > 0 ? launchRecommendationSkuLimit : null,
+        emphasisMode: launchRecommendationEmphasis,
+        defaultUnitsPerFormula: 24,
+        db: DB,
+        pricing: PRICING,
+      }),
+    [
+      basketMode,
+      diluentMaterialName,
+      founderInsightsEnabled,
+      founderDashboardItems,
+      formulaSupplierOverrides,
+      inventory,
+      launchPlanUnitsByFormula,
+      launchRecommendationBudget,
+      launchRecommendationEmphasis,
+      launchRecommendationSkuLimit,
+      pricesState,
+      selectedFragranceType,
+      skuEconomicsSummary,
+      skuFillVolumeMl,
+      skuLaborCost,
+      skuPackagingCost,
+      skuRetailPrice,
+    ]
+  );
+  const loadLaunchRecommendationIntoPlanner = useCallback(() => {
+    if (!launchRecommendation.selectedCandidates.length) {
+      setLaunchRecommendationStatus(
+        "No recommendation is currently eligible to load into the planner."
+      );
+      return;
+    }
+    setLaunchPlanUnitsByFormula(launchRecommendation.recommendedUnitsByFormula);
+    setActiveFounderScenarioId(null);
+    setFounderScenarioName(
+      `${launchRecommendation.emphasisMeta.label} Budget Mix`
+    );
+    setMainTab("founder");
+    setLaunchRecommendationStatus(
+      "Loaded the recommended mix into the Founder launch planner."
+    );
+  }, [launchRecommendation]);
+  const saveLaunchRecommendationAsScenario = useCallback(() => {
+    if (!launchRecommendation.selectedCandidates.length) {
+      setLaunchRecommendationStatus(
+        "No recommendation is currently eligible to save as a scenario."
+      );
+      return;
+    }
+    const recommendedScenario = createFounderLaunchScenarioRecord({
+      name: `${launchRecommendation.emphasisMeta.label} Launch Mix $${launchRecommendation.budget.toFixed(
+        0
+      )}`,
+      inputs: buildFounderScenarioInputState({
+        ...currentFounderScenarioInputs,
+        launchPlanUnitsByFormula: launchRecommendation.recommendedUnitsByFormula,
+      }),
+    });
+    setSavedFounderScenarios((prev) =>
+      sortFounderScenarioRecords([...prev, recommendedScenario])
+    );
+    setActiveFounderScenarioId(recommendedScenario.id);
+    setFounderScenarioName(recommendedScenario.name);
+    setLaunchPlanUnitsByFormula(launchRecommendation.recommendedUnitsByFormula);
+    setLaunchRecommendationStatus(
+      `Saved "${recommendedScenario.name}" as a founder scenario.`
+    );
+  }, [
+    currentFounderScenarioInputs,
+    launchRecommendation,
+    sortFounderScenarioRecords,
+  ]);
   const totalBuildG = buildItems.reduce((s, i) => s + i.g, 0);
   const totalBuildCost = selectedBuildBasket?.totalCost || 0;
   const allIngredients = Object.keys(DB);
@@ -59471,15 +60745,22 @@ export default function App() {
             chemistry: computeChemistry(targetFormula.ingredients),
             performance: score,
             performanceModel: buildPerformanceModelSummary(
-              targetFormula.ingredients
+              targetFormula.ingredients,
+              {
+                db: DB,
+                computeChemistry,
+                perfScore,
+              }
             ),
             basket: selectedFormulaBasket,
             cheapestBasket: formulaBasketStrategies.cheapest || null,
             basketModeMeta: selectedBasketModeMeta,
             ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
             lens: critiqueLens,
+            db: DB,
           }),
         performance: score,
+        db: DB,
       });
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -59504,6 +60785,16 @@ export default function App() {
     }
     setCritiqueLoading(false);
   };
+  const openFormulaFromDashboard = useCallback(
+    (formulaKey, nextSubTab = "formula") => {
+      const nextIndex = formulaIndexByKey.get(formulaKey);
+      if (nextIndex == null) return;
+      setSelFrag(nextIndex);
+      setMainTab("formulas");
+      setSubTab(nextSubTab);
+    },
+    [formulaIndexByKey]
+  );
 
   const mainTabStyle = (k) => ({
     padding: "8px 18px",
@@ -59652,6 +60943,96 @@ export default function App() {
       color: "#7DD3FC",
     },
   };
+  const renderTrustLevelBadge = (trustSummary) => {
+    const meta = trustSummary?.levelMeta || FOUNDER_TRUST_LEVEL_META.mixed;
+    return (
+      <span
+        style={{
+          background: meta.bg,
+          border: `1px solid ${meta.border}`,
+          borderRadius: 999,
+          padding: "3px 9px",
+          fontSize: 8,
+          fontWeight: 700,
+          color: meta.color,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}
+      >
+        {meta.label}
+      </span>
+    );
+  };
+  const renderSubstitutionTrustCard = (
+    title,
+    trustSummary,
+    { accent = "#34D399" } = {}
+  ) => (
+    <div
+      style={{
+        background: "#060E1E",
+        border: "1px solid #1E3A52",
+        borderRadius: 12,
+        padding: 12,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 9,
+            color: accent,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+          }}
+        >
+          {title}
+        </div>
+        {renderTrustLevelBadge(trustSummary)}
+      </div>
+      <div
+        style={{
+          marginTop: 6,
+          fontSize: 8.8,
+          color: "#CBD5E1",
+          lineHeight: 1.55,
+        }}
+      >
+        {trustSummary?.supportLabel || "No trust read available."}
+      </div>
+      <div
+        style={{
+          marginTop: 4,
+          fontSize: 8.4,
+          color: "#64748B",
+          lineHeight: 1.55,
+        }}
+      >
+        {trustSummary?.breakdownLabel || "No trust breakdown available."}
+      </div>
+      {(trustSummary?.missingSignals?.[0] || trustSummary?.uncertainSignals?.[0]) && (
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 8.4,
+            color: "#94A3B8",
+            lineHeight: 1.55,
+          }}
+        >
+          {trustSummary?.missingSignals?.[0] ||
+            trustSummary?.uncertainSignals?.[0]}
+        </div>
+      )}
+    </div>
+  );
   const formatIfraPercent = (value) => {
     if (!Number.isFinite(value)) return "—";
     const digits = Math.abs(value) >= 1 ? 2 : 3;
@@ -60925,9 +62306,11 @@ export default function App() {
                   basketStatusMeta[line.status] || basketStatusMeta.inferred;
                 const supplierUrl =
                   line.supplier &&
-                  getLivePricingForIngredient(line.ingredientName, pricesState)[
-                    line.supplier
-                  ]?.url;
+                  getLivePricingForIngredient(
+                    line.ingredientName,
+                    pricesState,
+                    PRICING
+                  )[line.supplier]?.url;
                 const noteParts = [
                   line.forcedByOverride ? "Supplier override applied." : null,
                   line.missingReason || null,
@@ -61417,6 +62800,4081 @@ export default function App() {
       )}
     </div>
   );
+
+  const founderDashboardContent = useMemo(() => {
+    if (!founderInsightsEnabled) return null;
+    const dashboardItems = founderDashboardSummary.sortedItems;
+    const currentContextLabel = `${selectedBasketModeMeta.label} basket · ${batchPlannerTargetG.toFixed(
+      0
+    )}g batch target · ${IFRA_CATEGORY_LABELS[ifraCategory]} · ${
+      selectedFragranceType.label
+    }`;
+    const currentScenarioFormulaCount = Object.keys(
+      currentFounderScenarioInputs.launchPlanUnitsByFormula || {}
+    ).length;
+    const currentScenarioUnits = Object.values(
+      currentFounderScenarioInputs.launchPlanUnitsByFormula || {}
+    ).reduce((sum, units) => sum + (Number(units) || 0), 0);
+    const comparedScenarioIdSet = new Set(founderComparedScenarioIds);
+    const getScenarioSelectionSummary = (scenarioInputs = {}) => {
+      const normalizedScenario = buildFounderScenarioInputState(scenarioInputs);
+      const selectedFormulaCount = Object.keys(
+        normalizedScenario.launchPlanUnitsByFormula || {}
+      ).length;
+      const totalUnits = Object.values(
+        normalizedScenario.launchPlanUnitsByFormula || {}
+      ).reduce((sum, units) => sum + (Number(units) || 0), 0);
+      const scenarioFragranceType =
+        FRAGRANCE_TYPE_PRESETS[normalizedScenario.dilType] ||
+        FRAGRANCE_TYPE_PRESETS.EDP;
+      const scenarioBasketMeta =
+        SUPPLIER_BASKET_MODE_META[normalizedScenario.basketMode] ||
+        SUPPLIER_BASKET_MODE_META.cheapest;
+      return {
+        selectedFormulaCount,
+        totalUnits,
+        scenarioFragranceType,
+        scenarioBasketMeta,
+        ifraLabel:
+          IFRA_CATEGORY_LABELS[normalizedScenario.ifraCategory] ||
+          normalizedScenario.ifraCategory,
+        batchTargetG: normalizedScenario.batchPlannerTargetG,
+        diluentLabel: normalizedScenario.dilAlcohol ? "Alcohol" : "Carrier",
+      };
+    };
+    const getScenarioPrimaryCaveat = (launchPlannerSnapshot) => {
+      const capitalCaveat = launchPlannerSnapshot?.capitalCaveats?.[0];
+      if (capitalCaveat) return capitalCaveat;
+      const blockedItem = (launchPlannerSnapshot?.selectedItems || []).find(
+        (item) => item.launchReadiness?.blockers?.length
+      );
+      if (blockedItem) return blockedItem.launchReadiness.blockers[0];
+      const cautionItem = (launchPlannerSnapshot?.selectedItems || []).find(
+        (item) => item.launchReadiness?.cautions?.length
+      );
+      if (cautionItem) return cautionItem.launchReadiness.cautions[0];
+      return "No major caveat surfaced under the current runtime assumptions.";
+    };
+    const recommendationSummary = launchRecommendation.summary;
+    const recommendationPlan = launchRecommendation.recommendedLaunchPlan;
+    const recommendationCaveat =
+      getScenarioPrimaryCaveat(recommendationPlan) ||
+      "No major caveat surfaced under the current runtime assumptions.";
+    const dashboardTrustSummary = founderDashboardSummary.trustSummary;
+    const skuTrustSummary = skuEconomicsSummary.trustSummary;
+    const launchPlannerTrustSummary = launchRunPlannerSummary.trustSummary;
+    const recommendationTrustSummary = launchRecommendation.trustSummary;
+    const founderTrustWarnings = [
+      ["Founder dashboard", dashboardTrustSummary],
+      ["SKU economics", skuTrustSummary],
+      ["Launch planner", launchPlannerTrustSummary],
+      ["Recommender", recommendationTrustSummary],
+    ]
+      .filter(([, trustSummary]) =>
+        ["sparse", "blocked"].includes(trustSummary?.level)
+      )
+      .map(([label, trustSummary]) => ({
+        label,
+        trustSummary,
+        driver:
+          trustSummary?.missingSignals?.[0] ||
+          trustSummary?.uncertainSignals?.[0] ||
+          trustSummary?.blockerSignals?.[0] ||
+          trustSummary?.blockerSupportLine ||
+          "Sparse support is driving part of this founder read.",
+      }));
+    const getTrustDriver = (trustSummary) =>
+      trustSummary?.missingSignals?.[0] ||
+      trustSummary?.uncertainSignals?.[0] ||
+      trustSummary?.blockerSignals?.[0] ||
+      trustSummary?.blockerSupportLine ||
+      "No major trust gap surfaced in the current runtime.";
+    const renderTrustBadge = (trustSummary) => {
+      const meta = trustSummary?.levelMeta || FOUNDER_TRUST_LEVEL_META.mixed;
+      return (
+        <span
+          style={{
+            background: meta.bg,
+            border: `1px solid ${meta.border}`,
+            borderRadius: 999,
+            padding: "2px 8px",
+            fontSize: 7.9,
+            fontWeight: 700,
+            color: meta.color,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {meta.label}
+        </span>
+      );
+    };
+    const renderTrustSummaryPanel = (
+      trustSummary,
+      { title = "Trust / Evidence Context", accent = "#7DD3FC", footnote = "" } = {}
+    ) => (
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 8.5,
+                color: accent,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 8.8,
+                color: "#CBD5E1",
+                lineHeight: 1.55,
+              }}
+            >
+              {trustSummary?.headline ||
+                "No trust summary is available for the current runtime slice."}
+            </div>
+          </div>
+          {renderTrustBadge(trustSummary)}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+            gap: 8,
+          }}
+        >
+          {[
+            ["Coverage", trustSummary?.supportLabel || "—", "#7DD3FC"],
+            ["Breakdown", trustSummary?.breakdownLabel || "—", "#CBD5E1"],
+          ].map(([label, value, color]) => (
+            <div
+              key={`${title}-${label}`}
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                {label}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: label === "Coverage" ? 13 : 8.4,
+                  fontWeight: 700,
+                  color,
+                  lineHeight: 1.45,
+                }}
+              >
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 8.5,
+            color: "#94A3B8",
+            lineHeight: 1.55,
+          }}
+        >
+          {getTrustDriver(trustSummary)}
+        </div>
+        {footnote ? (
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 8.2,
+              color: "#64748B",
+              lineHeight: 1.55,
+            }}
+          >
+            {footnote}
+          </div>
+        ) : null}
+      </div>
+    );
+    const renderFormulaTypeLabel = (entry) =>
+      entry?.isLocked
+        ? "Locked Version"
+        : entry?.parentVersionId
+        ? "Draft Version"
+        : entry?.isSeeded
+        ? "Seeded"
+        : "Saved Draft";
+    const economicsContext = skuEconomicsSummary.context;
+    const modeledEconomicsCount = skuEconomicsSummary.summary.modeledCount;
+    const selectedDiluentLine = selectedDiluentBasket?.lines?.[0] || null;
+    const skuEconomicsByFormulaKey = new Map(
+      skuEconomicsSummary.items.map((item) => [item.formula.formulaKey, item])
+    );
+    const launchPlannerByFormulaKey = new Map(
+      launchRunPlannerSummary.selectedItems.map((item) => [item.formula.formulaKey, item])
+    );
+    const launchPlannerIngredientByName = new Map(
+      launchRunPlannerSummary.ingredientLines.map((line) => [line.name, line])
+    );
+
+    return (
+      <div style={{ display: "grid", gap: 14 }}>
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  margin: 0,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#7DD3FC",
+                }}
+              >
+                🚀 Founder Dashboard
+              </h2>
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Launch readiness is heuristic only. This view reuses the
+                current formula library, supplier basket costing, batch planner,
+                critique/performance signals, and finished-product IFRA context
+                instead of inventing a separate business system.
+              </p>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                minWidth: 320,
+                flex: "1 1 320px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Current Dashboard Context
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 9,
+                      color: "#CBD5E1",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {currentContextLabel}
+                  </div>
+                </div>
+                <span
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 999,
+                    padding: "3px 10px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#7DD3FC",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Explainable Heuristic
+                </span>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(170px,0.9fr) minmax(220px,1.1fr)",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Shared Batch Target
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <input
+                      type="number"
+                      min={1}
+                      step={10}
+                      value={batchPlannerTargetG}
+                      onChange={(e) =>
+                        setBatchPlannerTargetG(parseFloat(e.target.value) || 0)
+                      }
+                      style={{
+                        flex: 1,
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        color: "#22D3EE",
+                        padding: "8px 10px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        outline: "none",
+                      }}
+                    />
+                    <span style={{ fontSize: 10, color: "#64748B" }}>g</span>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Shared Basket Mode
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {SUPPLIER_BASKET_MODE_ORDER.map((mode) => {
+                      const meta = SUPPLIER_BASKET_MODE_META[mode];
+                      const isActive = basketMode === mode;
+                      return (
+                        <button
+                          key={`founder-mode-${mode}`}
+                          type="button"
+                          onClick={() => setBasketMode(mode)}
+                          style={{
+                            background: isActive ? meta.color : "#0A1628",
+                            border: `1px solid ${
+                              isActive ? meta.color : "#1E3A52"
+                            }`,
+                            borderRadius: 999,
+                            color: isActive ? "#060E1E" : "#94A3B8",
+                            padding: "5px 10px",
+                            fontSize: 8.8,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {meta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#A78BFA",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Saved Scenarios / Launch Mix Compare
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.9,
+                  color: "#64748B",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Save the current Founder launch mix and shared assumptions, then
+                reload or compare scenarios against the current live pricing,
+                inventory, and readiness math. These are founder heuristics, not
+                ERP planning records.
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              {[
+                `${currentScenarioFormulaCount} selected formula${
+                  currentScenarioFormulaCount === 1 ? "" : "s"
+                }`,
+                `${currentScenarioUnits} total units`,
+                `${savedFounderScenarios.length} saved scenario${
+                  savedFounderScenarios.length === 1 ? "" : "s"
+                }`,
+                "Compare up to 3",
+              ].map((tag) => (
+                <span
+                  key={`founder-scenario-tag-${tag}`}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#C4B5FD",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "minmax(280px,0.95fr) minmax(0,1.45fr)",
+              gap: 12,
+              alignItems: "start",
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Current Scenario Workspace
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#94A3B8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Try names like Lean Launch, Best-Margin Launch, or Broad
+                  Launch. Updating the loaded scenario also handles renaming it.
+                </div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontSize: 8.4,
+                    color: "#64748B",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Stored in each scenario record: formulas + units, basket
+                  mode, fragrance/load context, IFRA category, batch target,
+                  diluent mode, and shared SKU pricing inputs. Live formulas,
+                  pricing, inventory, and readiness math are still recomputed at
+                  compare/export time.
+                </div>
+              </div>
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                    marginBottom: 6,
+                  }}
+                >
+                  Scenario Name
+                </div>
+                <input
+                  type="text"
+                  value={founderScenarioName}
+                  onChange={(e) => setFounderScenarioName(e.target.value)}
+                  placeholder="Launch Scenario"
+                  style={{
+                    width: "100%",
+                    background: "#0A1628",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#E2E8F0",
+                    padding: "9px 10px",
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    outline: "none",
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 8,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Current Mix
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: "#C4B5FD",
+                    }}
+                  >
+                    {currentScenarioUnits}
+                  </div>
+                  <div style={{ fontSize: 8.5, color: "#94A3B8" }}>
+                    units across {currentScenarioFormulaCount} selected formula
+                    {currentScenarioFormulaCount === 1 ? "" : "s"}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 8,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Loaded Scenario
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: activeFounderScenario ? "#E2E8F0" : "#94A3B8",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {activeFounderScenario
+                      ? activeFounderScenario.name
+                      : "No saved scenario loaded"}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.3,
+                      color: currentFounderScenarioIsDirty
+                        ? "#FCD34D"
+                        : "#64748B",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {activeFounderScenario
+                      ? currentFounderScenarioIsDirty
+                        ? "Current Founder inputs differ from the loaded saved scenario."
+                        : "Current Founder inputs match the loaded saved scenario."
+                      : "Save the current mix to make it reloadable after refresh."}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => saveCurrentFounderScenario()}
+                  style={{
+                    background: "#0E4D6E",
+                    border: "1px solid #22D3EE40",
+                    borderRadius: 8,
+                    color: "#7DD3FC",
+                    padding: "7px 10px",
+                    fontSize: 8.8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {activeFounderScenario ? "Update Loaded / Rename" : "Save New"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => duplicateFounderScenario()}
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#CBD5E1",
+                    padding: "7px 10px",
+                    fontSize: 8.8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Duplicate Current
+                </button>
+                {activeFounderScenario && (
+                  <button
+                    type="button"
+                    onClick={clearActiveFounderScenario}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Clear Active
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyFounderScenarioBrief({
+                      name:
+                        String(founderScenarioName || "").trim() ||
+                        "Launch Scenario",
+                      inputs: currentFounderScenarioInputs,
+                    })
+                  }
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#CBD5E1",
+                    padding: "7px 10px",
+                    fontSize: 8.8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Copy Current Brief
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadFounderScenarioBrief({
+                      name:
+                        String(founderScenarioName || "").trim() ||
+                        "Launch Scenario",
+                      inputs: currentFounderScenarioInputs,
+                    })
+                  }
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#CBD5E1",
+                    padding: "7px 10px",
+                    fontSize: 8.8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Download Current Brief
+                </button>
+              </div>
+              {founderScenarioExportStatus && (
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {founderScenarioExportStatus}
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 10,
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Saved Launch Scenarios
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Compare toggles use the current runtime math, so pricing,
+                    inventory, and readiness changes flow through automatically.
+                  </div>
+                </div>
+                <div style={{ fontSize: 8.5, color: "#64748B" }}>
+                  Load, compare, duplicate, or delete saved mixes
+                </div>
+              </div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {savedFounderScenarios.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#94A3B8",
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    No saved launch scenarios yet. Save the current Founder mix
+                    to create your first reloadable scenario.
+                  </div>
+                ) : (
+                  savedFounderScenarios.map((scenario) => {
+                    const selectionSummary = getScenarioSelectionSummary(
+                      scenario.inputs
+                    );
+                    const isActive = activeFounderScenarioId === scenario.id;
+                    const isCompared = comparedScenarioIdSet.has(scenario.id);
+                    return (
+                      <div
+                        key={`founder-scenario-${scenario.id}`}
+                        style={{
+                          background: isActive ? "#071826" : "#08111E",
+                          border: `1px solid ${
+                            isActive ? "#7C3AED" : "#1E3A52"
+                          }`,
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            gap: 10,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 6,
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 10.5,
+                                  fontWeight: 700,
+                                  color: "#E2E8F0",
+                                }}
+                              >
+                                {scenario.name}
+                              </div>
+                              {isActive && (
+                                <span
+                                  style={{
+                                    background: "#2E1065",
+                                    border: "1px solid #7C3AED",
+                                    borderRadius: 999,
+                                    padding: "2px 8px",
+                                    fontSize: 7.8,
+                                    fontWeight: 700,
+                                    color: "#DDD6FE",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.08em",
+                                  }}
+                                >
+                                  Loaded
+                                </span>
+                              )}
+                              {isCompared && (
+                                <span
+                                  style={{
+                                    background: "#052E16",
+                                    border: "1px solid #166534",
+                                    borderRadius: 999,
+                                    padding: "2px 8px",
+                                    fontSize: 7.8,
+                                    fontWeight: 700,
+                                    color: "#86EFAC",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.08em",
+                                  }}
+                                >
+                                  Comparing
+                                </span>
+                              )}
+                            </div>
+                            <div
+                              style={{
+                                marginTop: 4,
+                                fontSize: 8.5,
+                                color: "#64748B",
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              Updated{" "}
+                              {formatFormulaDateLabel(scenario.updatedAt) ||
+                                "just now"}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              flexWrap: "wrap",
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            {[
+                              selectionSummary.scenarioBasketMeta.label,
+                              selectionSummary.scenarioFragranceType.label,
+                              selectionSummary.ifraLabel,
+                              `${selectionSummary.batchTargetG.toFixed(0)}g target`,
+                              selectionSummary.diluentLabel,
+                              `${selectionSummary.selectedFormulaCount} formula${
+                                selectionSummary.selectedFormulaCount === 1
+                                  ? ""
+                                  : "s"
+                              }`,
+                              `${selectionSummary.totalUnits} units`,
+                            ].map((tag) => (
+                              <span
+                                key={`${scenario.id}-${tag}`}
+                                style={{
+                                  background: "#0A1628",
+                                  border: "1px solid #1E3A52",
+                                  borderRadius: 999,
+                                  padding: "3px 9px",
+                                  fontSize: 7.8,
+                                  fontWeight: 700,
+                                  color: "#C4B5FD",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            marginTop: 10,
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => loadFounderScenario(scenario)}
+                            style={{
+                              background: "#0E4D6E",
+                              border: "1px solid #22D3EE40",
+                              borderRadius: 8,
+                              color: "#7DD3FC",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Load
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleFounderScenarioCompare(scenario.id)}
+                            style={{
+                              background: isCompared ? "#052E16" : "#060E1E",
+                              border: `1px solid ${
+                                isCompared ? "#166534" : "#1E3A52"
+                              }`,
+                              borderRadius: 8,
+                              color: isCompared ? "#86EFAC" : "#CBD5E1",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            {isCompared ? "Remove From Compare" : "Compare"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => duplicateFounderScenario(scenario)}
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: "#CBD5E1",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Duplicate
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => copyFounderScenarioBrief(scenario)}
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: "#CBD5E1",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Copy Brief
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadFounderScenarioBrief(scenario)}
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: "#CBD5E1",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Download Brief
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteFounderScenario(scenario)}
+                            style={{
+                              background: "#2A0C0C",
+                              border: "1px solid #991B1B",
+                              borderRadius: 8,
+                              color: "#FCA5A5",
+                              padding: "6px 10px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Launch Mix Scenario Compare
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Saved scenarios re-run through the current launch planner and
+                  SKU economics logic before comparison.
+                </div>
+              </div>
+              <div style={{ fontSize: 8.5, color: "#64748B" }}>
+                {founderComparedScenarioSnapshots.length}/3 selected for compare
+              </div>
+            </div>
+            {founderComparedScenarioSnapshots.length < 2 ? (
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.65,
+                }}
+              >
+                Select at least two saved scenarios to compare lean, margin-led,
+                or broader launch mixes side by side.
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    fontSize: 10,
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                      {[
+                        "Scenario",
+                        "Units / Mix",
+                        "Context",
+                        "Trust",
+                        "Launch Cash",
+                        "Est. COGS",
+                        "Revenue",
+                        "Gross Profit / Margin",
+                        "Inventory Shortages",
+                        "Major Caveat",
+                        "Top Capital Driver",
+                      ].map((heading) => (
+                        <th
+                          key={`founder-scenario-compare-${heading}`}
+                          style={{
+                            padding: "6px 8px",
+                            textAlign: "left",
+                            color: "#475569",
+                            fontWeight: 700,
+                            fontSize: 8.5,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.07em",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {heading}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {founderComparedScenarioSnapshots.map(
+                      ({ scenario, snapshot }) => {
+                        const launchSummary = snapshot.launchRunPlannerSummary;
+                        const launchMetrics = launchSummary.summary;
+                        const scenarioTrustSummary = launchSummary.trustSummary;
+                        const topCapitalDriver =
+                          launchSummary.topCapitalIngredients[0] || null;
+                        const comparisonCaveat =
+                          getScenarioPrimaryCaveat(launchSummary);
+                        return (
+                          <tr
+                            key={`founder-scenario-compare-row-${scenario.id}`}
+                            style={{ borderBottom: "1px solid #0A1628" }}
+                          >
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#E2E8F0",
+                                fontWeight: 700,
+                                minWidth: 160,
+                              }}
+                            >
+                              <div>{scenario.name}</div>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 8.2,
+                                  color: "#64748B",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Updated{" "}
+                                {formatFormulaDateLabel(scenario.updatedAt) ||
+                                  "recently"}
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#CBD5E1",
+                                lineHeight: 1.55,
+                                minWidth: 130,
+                              }}
+                            >
+                              <div style={{ fontWeight: 700 }}>
+                                {launchMetrics.totalUnits} units
+                              </div>
+                              <div style={{ fontSize: 8.3, color: "#64748B" }}>
+                                {launchMetrics.selectedFormulaCount} selected
+                                formula
+                                {launchMetrics.selectedFormulaCount === 1
+                                  ? ""
+                                  : "s"}
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#94A3B8",
+                                lineHeight: 1.55,
+                                minWidth: 160,
+                              }}
+                            >
+                              {snapshot.selectedBasketModeMeta.label} basket
+                              <br />
+                              {snapshot.selectedFragranceType.label}
+                              <br />
+                              {IFRA_CATEGORY_LABELS[
+                                snapshot.normalizedScenario.ifraCategory
+                              ] || snapshot.normalizedScenario.ifraCategory}
+                              <br />
+                              {snapshot.diluentMaterialName}
+                              <br />
+                              {snapshot.normalizedScenario.batchPlannerTargetG.toFixed(
+                                0
+                              )}
+                              g target
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                minWidth: 170,
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              <div>{renderTrustBadge(scenarioTrustSummary)}</div>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 8.2,
+                                  color: "#94A3B8",
+                                }}
+                              >
+                                {scenarioTrustSummary?.supportLabel || "—"}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 8.2,
+                                  color: "#64748B",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {getTrustDriver(scenarioTrustSummary)}
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color:
+                                  launchMetrics.launchCashRequirement > 0
+                                    ? "#F59E0B"
+                                    : "#34D399",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              ${launchMetrics.launchCashRequirement.toFixed(2)}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: launchMetrics.isPartialEconomics
+                                  ? "#FCA5A5"
+                                  : "#34D399",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              ${launchMetrics.estimatedTotalCogs.toFixed(2)}
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 8.2,
+                                  color: "#64748B",
+                                  fontWeight: 500,
+                                  fontFamily: "inherit",
+                                }}
+                              >
+                                {launchMetrics.isPartialEconomics
+                                  ? "Partial economics"
+                                  : "Modeled from current SKU assumptions"}
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#7DD3FC",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              ${launchMetrics.estimatedGrossRevenue.toFixed(2)}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color:
+                                  launchMetrics.estimatedGrossProfit >= 0
+                                    ? "#34D399"
+                                    : "#FCA5A5",
+                                minWidth: 150,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontWeight: 700,
+                                  fontFamily: "monospace",
+                                }}
+                              >
+                                ${launchMetrics.estimatedGrossProfit.toFixed(2)}
+                              </div>
+                              <div
+                                style={{ fontSize: 8.2, color: "#64748B" }}
+                              >
+                                {launchMetrics.estimatedGrossMarginPercent.toFixed(
+                                  1
+                                )}
+                                % gross margin
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color:
+                                  launchMetrics.shortageIngredientCount > 0
+                                    ? "#FCA5A5"
+                                    : "#86EFAC",
+                                minWidth: 160,
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              <div style={{ fontWeight: 700 }}>
+                                {launchMetrics.shortageIngredientCount} shortage
+                                ingredient
+                                {launchMetrics.shortageIngredientCount === 1
+                                  ? ""
+                                  : "s"}
+                              </div>
+                              <div style={{ fontSize: 8.2, color: "#64748B" }}>
+                                {launchMetrics.totalRawMaterialShortageG.toFixed(
+                                  1
+                                )}
+                                g short
+                              </div>
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: "#94A3B8",
+                                lineHeight: 1.55,
+                                minWidth: 250,
+                              }}
+                            >
+                              {comparisonCaveat}
+                            </td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                color: topCapitalDriver ? "#FCD34D" : "#94A3B8",
+                                lineHeight: 1.55,
+                                minWidth: 170,
+                              }}
+                            >
+                              {topCapitalDriver
+                                ? `${topCapitalDriver.ingredientName} · $${topCapitalDriver.lineCost.toFixed(
+                                    2
+                                  )}`
+                                : "No capital gap driver surfaced"}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Capital-Constrained Launch Recommender
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.9,
+                  color: "#64748B",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Heuristic founder guidance only. This recommender reuses the
+                current readiness, SKU economics, launch cash, and shortage
+                signals, then builds a budget-fitting mix with explicit
+                inclusion and exclusion reasons. It is not an optimizer or a
+                guaranteed best answer.
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {[
+                `${launchRecommendation.emphasisMeta.label} mode`,
+                `$${launchRecommendationBudget.toFixed(0)} budget`,
+                launchRecommendationSkuLimit > 0
+                  ? `${launchRecommendationSkuLimit} SKU limit`
+                  : "No SKU limit",
+                "24u fallback if no current plan units",
+              ].map((tag) => (
+                <span
+                  key={`launch-rec-tag-${tag}`}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#FCD34D",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                Launch Budget
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 10, color: "#64748B" }}>$</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={50}
+                  value={launchRecommendationBudget}
+                  onChange={(e) =>
+                    setLaunchRecommendationBudget(
+                      Math.max(0, parseFloat(e.target.value) || 0)
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    background: "#0A1628",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#22D3EE",
+                    padding: "8px 10px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    outline: "none",
+                  }}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                Target SKU Count
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={launchRecommendationSkuLimit}
+                  onChange={(e) =>
+                    setLaunchRecommendationSkuLimit(
+                      Math.max(0, Math.round(parseFloat(e.target.value) || 0))
+                    )
+                  }
+                  style={{
+                    flex: 1,
+                    background: "#0A1628",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#22D3EE",
+                    padding: "8px 10px",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    outline: "none",
+                  }}
+                />
+                <span style={{ fontSize: 8.7, color: "#64748B" }}>
+                  0 = no cap
+                </span>
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+                gridColumn: "span 2",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                Emphasis Mode
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {Object.entries(FOUNDER_RECOMMENDER_EMPHASIS_META).map(
+                  ([mode, meta]) => {
+                    const isActive = launchRecommendationEmphasis === mode;
+                    return (
+                      <button
+                        key={`launch-rec-mode-${mode}`}
+                        type="button"
+                        onClick={() => setLaunchRecommendationEmphasis(mode)}
+                        style={{
+                          background: isActive ? "#92400E" : "#0A1628",
+                          border: `1px solid ${
+                            isActive ? "#F59E0B" : "#1E3A52"
+                          }`,
+                          borderRadius: 999,
+                          color: isActive ? "#FEF3C7" : "#CBD5E1",
+                          padding: "6px 10px",
+                          fontSize: 8.6,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                        title={meta.description}
+                      >
+                        {meta.label}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              {
+                label: "Recommended SKUs",
+                value: recommendationSummary.recommendedFormulaCount,
+                meta: `${recommendationSummary.totalUnits} total units`,
+                color: "#7DD3FC",
+              },
+              {
+                label: "Launch Cash",
+                value: `$${recommendationSummary.launchCashNeed.toFixed(2)}`,
+                meta: `$${launchRecommendation.remainingBudget.toFixed(
+                  2
+                )} budget remaining`,
+                color: recommendationSummary.launchCashNeed <= launchRecommendationBudget
+                  ? "#34D399"
+                  : "#F59E0B",
+              },
+              {
+                label: "Gross Profit",
+                value: `$${recommendationSummary.estimatedGrossProfit.toFixed(2)}`,
+                meta: `${recommendationSummary.estimatedGrossMarginPercent.toFixed(
+                  1
+                )}% estimated margin`,
+                color:
+                  recommendationSummary.estimatedGrossProfit >= 0
+                    ? "#34D399"
+                    : "#F87171",
+              },
+              {
+                label: "Next Unlock Capital",
+                value:
+                  launchRecommendation.additionalCapitalToUnlockNext > 0
+                    ? `$${launchRecommendation.additionalCapitalToUnlockNext.toFixed(
+                        2
+                      )}`
+                    : "—",
+                meta: launchRecommendation.nextUnlockCandidate
+                  ? launchRecommendation.nextUnlockCandidate.displayLabel
+                  : "No higher-priority over-budget option remains",
+                color: "#FCD34D",
+              },
+            ].map((card) => (
+              <div
+                key={`launch-rec-card-${card.label}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "10px 14px",
+                }}
+              >
+                <div style={{ fontSize: 19, fontWeight: 800, color: card.color }}>
+                  {card.value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 9,
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {card.label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {card.meta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1.35fr) minmax(280px,0.95fr)",
+              gap: 12,
+              alignItems: "start",
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 10,
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 9.5,
+                      fontWeight: 700,
+                      color: "#E2E8F0",
+                    }}
+                  >
+                    Recommended Launch Mix
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Uses current launch-plan units where they exist; otherwise
+                    falls back to 24 units per formula.
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={loadLaunchRecommendationIntoPlanner}
+                    disabled={!launchRecommendation.selectedCandidates.length}
+                    style={{
+                      background: launchRecommendation.selectedCandidates.length
+                        ? "#0E4D6E"
+                        : "#0A1628",
+                      border: `1px solid ${
+                        launchRecommendation.selectedCandidates.length
+                          ? "#22D3EE40"
+                          : "#1E3A52"
+                      }`,
+                      borderRadius: 8,
+                      color: launchRecommendation.selectedCandidates.length
+                        ? "#7DD3FC"
+                        : "#64748B",
+                      padding: "6px 10px",
+                      fontSize: 8.5,
+                      fontWeight: 700,
+                      cursor: launchRecommendation.selectedCandidates.length
+                        ? "pointer"
+                        : "not-allowed",
+                    }}
+                  >
+                    Load Recommended Mix
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveLaunchRecommendationAsScenario}
+                    disabled={!launchRecommendation.selectedCandidates.length}
+                    style={{
+                      background: launchRecommendation.selectedCandidates.length
+                        ? "#052E16"
+                        : "#0A1628",
+                      border: `1px solid ${
+                        launchRecommendation.selectedCandidates.length
+                          ? "#166534"
+                          : "#1E3A52"
+                      }`,
+                      borderRadius: 8,
+                      color: launchRecommendation.selectedCandidates.length
+                        ? "#86EFAC"
+                        : "#64748B",
+                      padding: "6px 10px",
+                      fontSize: 8.5,
+                      fontWeight: 700,
+                      cursor: launchRecommendation.selectedCandidates.length
+                        ? "pointer"
+                        : "not-allowed",
+                    }}
+                  >
+                    Save As Scenario
+                  </button>
+                </div>
+              </div>
+              {launchRecommendation.selectedCandidates.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: "#94A3B8",
+                    lineHeight: 1.65,
+                  }}
+                >
+                  No formula mix fits the current recommendation rules yet. Try
+                  raising the budget, lowering the SKU cap, or switching to a
+                  different emphasis mode. Sparse pricing or compliance support
+                  can also suppress otherwise promising mixes.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {launchRecommendation.selectedCandidates.map((candidate) => (
+                    <div
+                      key={`launch-rec-include-${candidate.formulaKey}`}
+                      style={{
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 10.5,
+                                fontWeight: 700,
+                                color: "#E2E8F0",
+                              }}
+                            >
+                              {candidate.displayLabel}
+                            </div>
+                            <span
+                              style={{
+                                background: "#0A1628",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#94A3B8",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                              }}
+                            >
+                              {renderFormulaTypeLabel(candidate.formula)}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 5,
+                              fontSize: 8.5,
+                              color: "#64748B",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {candidate.recommendedUnits} units · $
+                            {candidate.launchCashNeed.toFixed(2)} launch cash ·{" "}
+                            {candidate.marginPercent.toFixed(0)}% gross margin ·{" "}
+                            {candidate.readinessScore.toFixed(0)} readiness
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 6,
+                              display: "flex",
+                              gap: 6,
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            {renderTrustBadge(candidate.trustSummary)}
+                            <span
+                              style={{
+                                fontSize: 8.2,
+                                color: "#94A3B8",
+                                lineHeight: 1.45,
+                              }}
+                            >
+                              {candidate.trustSummary?.supportLabel || "—"}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 800,
+                            color: "#FCD34D",
+                          }}
+                        >
+                          {candidate.totalScore.toFixed(0)}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 8,
+                          display: "grid",
+                          gap: 4,
+                          fontSize: 8.8,
+                          color: "#CBD5E1",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {(candidate.inclusionReasons || []).map((reason) => (
+                          <div key={`${candidate.formulaKey}-${reason}`}>
+                            • {reason}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {launchRecommendationStatus && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    fontSize: 8.6,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {launchRecommendationStatus}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gap: 12 }}>
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                  }}
+                >
+                  Recommendation Why
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.8,
+                    color: "#CBD5E1",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {launchRecommendation.selectedCandidates.length > 0
+                    ? recommendationCaveat
+                    : "No mix fit the current heuristic yet."}
+                </div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  This mix is being ranked under{" "}
+                  <strong style={{ color: "#FCD34D" }}>
+                    {launchRecommendation.emphasisMeta.label}
+                  </strong>{" "}
+                  mode. Stronger readiness, margin, capital efficiency, and
+                  lower launch cash all shift selection order.
+                </div>
+              </div>
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                  }}
+                >
+                  Excluded Formulas
+                </div>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {launchRecommendation.excludedCandidates.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 8.9,
+                        color: "#86EFAC",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      No tracked formula was excluded by the current heuristic.
+                    </div>
+                  ) : (
+                    launchRecommendation.excludedCandidates
+                      .slice(0, 6)
+                      .map((candidate) => (
+                        <div
+                          key={`launch-rec-exclude-${candidate.formulaKey}`}
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "9px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9.2,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {candidate.displayLabel}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 8.4,
+                              color: "#94A3B8",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {candidate.exclusionReason}
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 10,
+          }}
+        >
+          {[
+            {
+              label: "Tracked Formulas",
+              value: founderDashboardSummary.summary.formulaCount,
+              meta: `${founderDashboardSummary.summary.seededCount} seeded · ${founderDashboardSummary.summary.customCount} custom/versioned`,
+              color: "#7DD3FC",
+            },
+            {
+              label: "Near Launch-Ready",
+              value: founderDashboardSummary.summary.nearReadyCount,
+              meta: "No hard blockers in the current heuristic",
+              color: "#34D399",
+            },
+            {
+              label: "Blocked",
+              value: founderDashboardSummary.summary.blockedCount,
+              meta: "Inventory, pricing, or compliance blockers",
+              color: "#F87171",
+            },
+            {
+              label: "Pricing Blockers",
+              value: founderDashboardSummary.blockedByPricing.length,
+              meta: `${selectedBasketModeMeta.label} mode`,
+              color: "#F59E0B",
+            },
+            {
+              label: "Sparse Trust",
+              value: founderDashboardSummary.summary.trustSparseCount,
+              meta: dashboardTrustSummary.supportLabel,
+              color: dashboardTrustSummary.levelMeta.color,
+            },
+            {
+              label: "Inventory Blockers",
+              value: founderDashboardSummary.blockedByInventory.length,
+              meta: `${batchPlannerTargetG.toFixed(0)}g target`,
+              color: "#A78BFA",
+            },
+          ].map((card) => (
+            <div
+              key={card.label}
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: "10px 14px",
+              }}
+            >
+              <div style={{ fontSize: 19, fontWeight: 800, color: card.color }}>
+                {card.value}
+              </div>
+              <div
+                style={{
+                  marginTop: 3,
+                  fontSize: 9,
+                  color: "#CBD5E1",
+                  fontWeight: 700,
+                }}
+              >
+                {card.label}
+              </div>
+              <div
+                style={{
+                  marginTop: 3,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.55,
+                }}
+              >
+                {card.meta}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#34D399",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                SKU Economics / COGS / Margin
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.9,
+                  color: "#64748B",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Founder-oriented only. This reuses the active supplier basket
+                mode, current fragrance-load context, and the current alcohol or
+                carrier setting to estimate per-SKU liquid cost, rough COGS, and
+                gross margin. It is not accounting-grade.
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              {[
+                `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
+                `${selectedBasketModeMeta.label} basket`,
+                `${economicsContext.fillVolumeMl.toFixed(0)}mL SKU`,
+                selectedDiluentLine?.mappingConfidence
+                  ? `${diluentMaterialName} ${selectedDiluentLine.mappingConfidence}`
+                  : diluentMaterialName,
+              ].map((tag) => (
+                <span
+                  key={`sku-context-${tag}`}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#7DD3FC",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              {
+                label: "SKU Fill",
+                value: skuFillVolumeMl,
+                setter: setSkuFillVolumeMl,
+                step: 5,
+                min: 1,
+                suffix: "mL",
+              },
+              {
+                label: "Retail Price",
+                value: skuRetailPrice,
+                setter: setSkuRetailPrice,
+                step: 1,
+                min: 0,
+                prefix: "$",
+              },
+              {
+                label: "Packaging",
+                value: skuPackagingCost,
+                setter: setSkuPackagingCost,
+                step: 0.25,
+                min: 0,
+                prefix: "$",
+              },
+              {
+                label: "Labor Buffer",
+                value: skuLaborCost,
+                setter: setSkuLaborCost,
+                step: 0.25,
+                min: 0,
+                prefix: "$",
+              },
+            ].map((field) => (
+              <div
+                key={field.label}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                    marginBottom: 8,
+                  }}
+                >
+                  {field.label}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  {field.prefix && (
+                    <span style={{ fontSize: 10, color: "#64748B" }}>
+                      {field.prefix}
+                    </span>
+                  )}
+                  <input
+                    type="number"
+                    min={field.min}
+                    step={field.step}
+                    value={field.value}
+                    onChange={(e) =>
+                      field.setter(parseFloat(e.target.value) || 0)
+                    }
+                    style={{
+                      flex: 1,
+                      background: "#0A1628",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#22D3EE",
+                      padding: "8px 10px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      outline: "none",
+                    }}
+                  />
+                  {field.suffix && (
+                    <span style={{ fontSize: 10, color: "#64748B" }}>
+                      {field.suffix}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 8,
+                }}
+              >
+                Diluent Context
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {[
+                  {
+                    value: true,
+                    label: "Alcohol",
+                    meta: "Deluxe Perfumer's Alcohol",
+                  },
+                  {
+                    value: false,
+                    label: "Carrier",
+                    meta: "DPG",
+                  },
+                ].map((option) => {
+                  const isActive = dilAlcohol === option.value;
+                  return (
+                    <button
+                      key={`sku-diluent-${option.label}`}
+                      type="button"
+                      onClick={() => setDilAlcohol(option.value)}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        background: isActive ? "#0E4D6E" : "#0A1628",
+                        border: `1px solid ${
+                          isActive ? "#22D3EE" : "#1E3A52"
+                        }`,
+                        borderRadius: 8,
+                        color: isActive ? "#7DD3FC" : "#94A3B8",
+                        padding: "7px 10px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      <div style={{ fontSize: 10, fontWeight: 700 }}>
+                        {option.label}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 2,
+                          fontSize: 8.2,
+                          color: isActive ? "#BAE6FD" : "#64748B",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {option.meta}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 8.7,
+              color: "#64748B",
+              lineHeight: 1.6,
+            }}
+          >
+            Current SKU liquid model: {economicsContext.fragranceOilG.toFixed(1)}g
+            fragrance oil + {economicsContext.diluentG.toFixed(1)}g {diluentMaterialName}.
+            Finished-liquid math assumes roughly 1mL ≈ 1g for a quick founder
+            estimate.
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            {renderTrustSummaryPanel(skuTrustSummary, {
+              title: "SKU Economics Trust / Evidence",
+              accent: "#34D399",
+              footnote:
+                "Per-SKU COGS and margin stay heuristic consumed-cost estimates, so thin support should be treated as directionally useful rather than final.",
+            })}
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              {
+                label: "Modeled Formulas",
+                value: modeledEconomicsCount,
+                meta: `${skuEconomicsSummary.summary.blockedCount} blocked by missing cost data`,
+                color: "#7DD3FC",
+              },
+              {
+                label: "Avg Est. COGS",
+                value: `$${skuEconomicsSummary.summary.averageCogs.toFixed(2)}`,
+                meta: "Liquid + packaging + labor buffer",
+                color: "#34D399",
+              },
+              {
+                label: "Best Margin",
+                value: `${skuEconomicsSummary.summary.bestMarginPercent.toFixed(0)}%`,
+                meta: "Gross margin at the current retail input",
+                color: SKU_ECONOMICS_STATUS_META.strong.color,
+              },
+              {
+                label: "Thin / Blocked",
+                value:
+                  skuEconomicsSummary.summary.thinCount +
+                  skuEconomicsSummary.summary.blockedCount,
+                meta: "Economically thin or still unmodelable",
+                color: SKU_ECONOMICS_STATUS_META.thin.color,
+              },
+              {
+                label: "Diluent Cost / SKU",
+                value: economicsContext.hasDiluentPricing
+                  ? `$${economicsContext.diluentCostPerSku.toFixed(2)}`
+                  : "—",
+                meta: economicsContext.hasDiluentPricing
+                  ? `${diluentMaterialName} under ${selectedBasketModeMeta.label.toLowerCase()} mode`
+                  : `${diluentMaterialName} pricing still missing`,
+                color: economicsContext.hasDiluentPricing
+                  ? "#A78BFA"
+                  : SKU_ECONOMICS_STATUS_META.blocked.color,
+              },
+            ].map((card) => (
+              <div
+                key={card.label}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "10px 14px",
+                }}
+              >
+                <div style={{ fontSize: 19, fontWeight: 800, color: card.color }}>
+                  {card.value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 9,
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {card.label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {card.meta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 12,
+            }}
+          >
+            {[
+              [
+                "Strongest Economics",
+                skuEconomicsSummary.strongItems,
+                SKU_ECONOMICS_STATUS_META.strong.color,
+                "Highest gross margins in the current modeled SKU scenario.",
+              ],
+              [
+                "Weakest Economics",
+                skuEconomicsSummary.poorItems,
+                SKU_ECONOMICS_STATUS_META.thin.color,
+                "Thin margins or blocked cost models needing cleanup first.",
+              ],
+              [
+                "Top Per-SKU Cost Drivers",
+                skuEconomicsSummary.topCostDrivers,
+                "#34D399",
+                "Aggregated from the current per-SKU ingredient cost model.",
+              ],
+            ].map(([title, items, color, subtitle]) => (
+              <div
+                key={title}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9.2,
+                    fontWeight: 700,
+                    color,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {title}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.7,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {subtitle}
+                </div>
+                <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                  {items.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#94A3B8",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      No formulas currently surface in this bucket.
+                    </div>
+                  ) : title === "Top Per-SKU Cost Drivers" ? (
+                    items.map((row) => (
+                      <div
+                        key={`sku-driver-${row.ingredientName}`}
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9.6,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {row.ingredientName}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.8,
+                              color: "#34D399",
+                              fontWeight: 700,
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            ${row.totalPerSkuCost.toFixed(2)}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          Appears in {row.formulaCount} formula
+                          {row.formulaCount === 1 ? "" : "s"} in the current
+                          SKU model.
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    items.map((item) => (
+                      <button
+                        key={`sku-bucket-${title}-${item.formula.formulaKey}`}
+                        type="button"
+                        onClick={() =>
+                          openFormulaFromDashboard(item.formula.formulaKey, "cost")
+                        }
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                          textAlign: "left",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9.6,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {item.displayLabel}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.8,
+                              color: item.statusMeta.color,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {item.statusMeta.label}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.6,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {item.status === "blocked"
+                            ? item.pricingBlockers[0]
+                            : `COGS $${item.estimatedCogs.toFixed(
+                                2
+                              )} · margin ${item.grossMarginPercent.toFixed(0)}%`}
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  SKU Economics by Formula
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Per-formula COGS and margin view under the current founder
+                  scenario. Cost lines are consumed-cost heuristics derived from
+                  the active supplier basket, not purchase-order totals.
+                </div>
+              </div>
+              <div style={{ fontSize: 9, color: "#64748B" }}>
+                Retail ${economicsContext.retailPrice.toFixed(2)} · pack/labor $
+                {(
+                  economicsContext.packagingCost + economicsContext.laborCost
+                ).toFixed(2)}
+              </div>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  fontSize: 10,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                    {[
+                      "Formula",
+                      "Type",
+                      "Oil Cost",
+                      "Diluent",
+                      "Pack+Labor",
+                      "Est. COGS",
+                      "Gross Margin",
+                      "Top Driver",
+                      "Ops Constraint",
+                      "Trust",
+                      "Action",
+                    ].map((heading) => (
+                      <th
+                        key={`sku-head-${heading}`}
+                        style={{
+                          padding: "6px 8px",
+                          textAlign: "left",
+                          color: "#475569",
+                          fontWeight: 700,
+                          fontSize: 8.5,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {skuEconomicsSummary.items.map((item) => (
+                    <tr
+                      key={`sku-row-${item.formula.formulaKey}`}
+                      style={{ borderBottom: "1px solid #0A1628" }}
+                    >
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#E2E8F0",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.displayLabel}
+                      </td>
+                      <td style={{ padding: "6px 8px", color: "#94A3B8" }}>
+                        {renderFormulaTypeLabel(item.formula)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#7DD3FC",
+                          fontFamily: "monospace",
+                          fontWeight: 700,
+                        }}
+                      >
+                        ${item.fragranceOilCostPerSku.toFixed(2)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color:
+                            item.status === "blocked" &&
+                            item.pricingBlockers.some((message) =>
+                              message.includes(diluentMaterialName)
+                            )
+                              ? "#FCA5A5"
+                              : "#A78BFA",
+                          fontFamily: "monospace",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {economicsContext.hasDiluentPricing
+                          ? `$${item.diluentCostPerSku.toFixed(2)}`
+                          : "—"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#CBD5E1",
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        ${item.packagingAndLaborCost.toFixed(2)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color:
+                            item.status === "blocked"
+                              ? "#FCA5A5"
+                              : "#34D399",
+                          fontFamily: "monospace",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.status === "blocked"
+                          ? "Blocked"
+                          : `$${item.estimatedCogs.toFixed(2)}`}
+                      </td>
+                      <td style={{ padding: "6px 8px" }}>
+                        <div
+                          style={{
+                            color: item.statusMeta.color,
+                            fontWeight: 700,
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {item.status === "blocked"
+                            ? item.statusMeta.label
+                            : `${item.grossMarginPercent.toFixed(0)}%`}
+                        </div>
+                        <div style={{ fontSize: 8.3, color: "#64748B" }}>
+                          {item.status === "blocked"
+                            ? item.pricingBlockers[0]
+                            : `$${item.grossProfit.toFixed(2)} gross profit`}
+                        </div>
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#94A3B8",
+                          lineHeight: 1.5,
+                          minWidth: 150,
+                        }}
+                      >
+                        {item.topCostDriver
+                          ? `${item.topCostDriver.ingredientName} · $${item.topCostDriver.perSkuCost.toFixed(
+                              2
+                            )}`
+                          : "No resolved cost driver"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color:
+                            item.opsConstraint === "No major ops blocker surfaced."
+                              ? "#94A3B8"
+                              : "#FCD34D",
+                          lineHeight: 1.55,
+                          minWidth: 240,
+                        }}
+                      >
+                        {item.opsConstraint}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          minWidth: 170,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div>{renderTrustBadge(item.trustSummary)}</div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.2,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          {item.trustSummary?.supportLabel || "—"}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.1,
+                            color: "#64748B",
+                          }}
+                        >
+                          {getTrustDriver(item.trustSummary)}
+                        </div>
+                      </td>
+                      <td style={{ padding: "6px 8px" }}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openFormulaFromDashboard(item.formula.formulaKey, "cost")
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "5px 9px",
+                            fontSize: 8.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Open Cost
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,1.45fr) minmax(320px,0.9fr)",
+            gap: 12,
+            alignItems: "start",
+          }}
+        >
+          <div
+            style={{
+              background: CARD,
+              borderRadius: 14,
+              border: `1px solid ${BORDER}`,
+              padding: 14,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Formulas Nearest Production-Ready
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 9,
+                    color: "#64748B",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Sorted by the current heuristic score, then filtered away
+                  from hard blockers first.
+                </div>
+              </div>
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              {(founderDashboardSummary.nearestProductionReady.length
+                ? founderDashboardSummary.nearestProductionReady
+                : dashboardItems.slice(0, 5)
+              ).map((item) => {
+                const readiness = item.launchReadiness;
+                const statusMeta =
+                  LAUNCH_READINESS_STATUS_META[readiness.status] ||
+                  LAUNCH_READINESS_STATUS_META.early;
+                return (
+                  <div
+                    key={`near-ready-${item.formula.formulaKey}`}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: "12px 14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 12,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 800,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {item.displayLabel}
+                          </div>
+                          <span
+                            style={{
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              color: "#94A3B8",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {renderFormulaTypeLabel(item.formula)}
+                          </span>
+                          <span
+                            style={{
+                              background: statusMeta.bg,
+                              border: `1px solid ${statusMeta.border}`,
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              color: statusMeta.color,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {statusMeta.label}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 7,
+                            fontSize: 9,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {readiness.launchNote}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right", minWidth: 150 }}>
+                        <div
+                          style={{
+                            fontSize: 22,
+                            fontWeight: 800,
+                            color: statusMeta.color,
+                          }}
+                        >
+                          {readiness.totalScore.toFixed(0)}
+                        </div>
+                        <div style={{ fontSize: 8.8, color: "#64748B" }}>
+                          heuristic readiness score
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))",
+                        gap: 8,
+                        marginTop: 10,
+                      }}
+                    >
+                      {[
+                        [
+                          "Completeness",
+                          readiness.subscores.completeness,
+                          "#7DD3FC",
+                        ],
+                        [
+                          "Pricing",
+                          readiness.subscores.pricingCoverage,
+                          "#34D399",
+                        ],
+                        [
+                          "Inventory",
+                          readiness.subscores.inventoryMakeability,
+                          "#A78BFA",
+                        ],
+                        [
+                          "Critique/Compliance",
+                          readiness.subscores.critiqueCompliance,
+                          "#F59E0B",
+                        ],
+                        [
+                          "Finished Product",
+                          readiness.subscores.finishedProduct,
+                          "#22D3EE",
+                        ],
+                      ].map(([label, value, color]) => (
+                        <div
+                          key={`${item.formula.formulaKey}-${label}`}
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "8px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {label}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 15,
+                              fontWeight: 800,
+                              color,
+                            }}
+                          >
+                            {Number(value).toFixed(0)}/20
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                        gap: 10,
+                        marginTop: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background:
+                            readiness.blockers.length > 0 ? "#2A0C0C" : "#071826",
+                          border: `1px solid ${
+                            readiness.blockers.length > 0 ? "#991B1B" : "#1E3A52"
+                          }`,
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color:
+                              readiness.blockers.length > 0
+                                ? "#FCA5A5"
+                                : "#7DD3FC",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                            marginBottom: 5,
+                          }}
+                        >
+                          Major Blockers
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.8,
+                            color: "#CBD5E1",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {readiness.blockers.length > 0
+                            ? readiness.blockers.join(" ")
+                            : "No hard blocker is active in the current heuristic."}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#FCD34D",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                            marginBottom: 5,
+                          }}
+                        >
+                          Ops Snapshot
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.8,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {readiness.spendLeader
+                            ? `Top spend line: ${readiness.spendLeader.ingredientName} at $${readiness.spendLeader.lineCost.toFixed(
+                                2
+                              )}. `
+                            : "No spend line resolved yet. "}
+                          {readiness.bottleneck
+                            ? readiness.bottleneck.shortageG > 0
+                              ? `Main inventory blocker: ${readiness.bottleneck.name} short ${readiness.bottleneck.shortageG.toFixed(
+                                  1
+                                )}g.`
+                              : `Current production cap is being constrained by ${readiness.bottleneck.name}.`
+                            : `No single bottleneck stands out at ${batchPlannerTargetG.toFixed(
+                                0
+                              )}g.`}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            marginBottom: 5,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#34D399",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Trust Snapshot
+                          </div>
+                          {renderTrustBadge(item.trustSummary)}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.8,
+                            color: "#CBD5E1",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {item.trustSummary?.supportLabel || "—"}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.4,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {getTrustDriver(item.trustSummary)}
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        marginTop: 10,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openFormulaFromDashboard(item.formula.formulaKey, "formula")
+                        }
+                        style={{
+                          background: "#0E4D6E",
+                          border: "1px solid #22D3EE40",
+                          borderRadius: 8,
+                          color: "#7DD3FC",
+                          padding: "6px 10px",
+                          fontSize: 8.8,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Open Formula
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openFormulaFromDashboard(item.formula.formulaKey, "cost")
+                        }
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          color: "#CBD5E1",
+                          padding: "6px 10px",
+                          fontSize: 8.8,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Open Cost
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openFormulaFromDashboard(
+                            item.formula.formulaKey,
+                            "critique"
+                          )
+                        }
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          color: "#CBD5E1",
+                          padding: "6px 10px",
+                          fontSize: 8.8,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Open Critique
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            <div
+              style={{
+                background: CARD,
+                borderRadius: 14,
+                border: `1px solid ${BORDER}`,
+                padding: 14,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: 8,
+                }}
+              >
+                Top Bottleneck Ingredients
+              </div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {founderDashboardSummary.topBottleneckIngredients.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 9.2,
+                      color: "#86EFAC",
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    No major bottleneck ingredient stands out across the current
+                    library at this batch target.
+                  </div>
+                ) : (
+                  founderDashboardSummary.topBottleneckIngredients.map((row) => (
+                    <div
+                      key={`founder-bottleneck-${row.name}`}
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "9px 10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          {row.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#F87171",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {row.blockingFormulaCount} blocked formula
+                          {row.blockingFormulaCount === 1 ? "" : "s"}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 8.8,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {row.totalShortageG > 0
+                          ? `${row.totalShortageG.toFixed(
+                              1
+                            )}g combined shortage across the tracked blockers.`
+                          : `No direct shortage right now, but this ingredient is still constraining output.`}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div
+              style={{
+                background: CARD,
+                borderRadius: 14,
+                border: `1px solid ${BORDER}`,
+                padding: 14,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: 8,
+                }}
+              >
+                Top Estimated-Spend Ingredients
+              </div>
+              <div style={{ display: "grid", gap: 8 }}>
+                {founderDashboardSummary.topSpendIngredients.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 9.2,
+                      color: "#94A3B8",
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    Spend rollup appears here once supplier basket lines resolve.
+                  </div>
+                ) : (
+                  founderDashboardSummary.topSpendIngredients.map((row) => (
+                    <div
+                      key={`founder-spend-${row.ingredientName}`}
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "9px 10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          {row.ingredientName}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "#34D399",
+                            fontWeight: 700,
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          ${row.totalLineCost.toFixed(2)}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 8.8,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Appears in {row.formulaCount} formula
+                        {row.formulaCount === 1 ? "" : "s"} under the current{" "}
+                        {selectedBasketModeMeta.label.toLowerCase()} basket mode.
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+            gap: 12,
+          }}
+        >
+          {[
+            [
+              "Blocked by Compliance",
+              founderDashboardSummary.blockedByCompliance,
+              "#F87171",
+              "Concentrate IFRA fails or finished-product offenders in the current context.",
+              "compliance",
+            ],
+            [
+              "Blocked by Missing Inventory",
+              founderDashboardSummary.blockedByInventory,
+              "#A78BFA",
+              `${batchPlannerTargetG.toFixed(0)}g target cannot currently be fulfilled from stock.`,
+              "inventory",
+            ],
+            [
+              "Blocked by Missing Supplier Pricing",
+              founderDashboardSummary.blockedByPricing,
+              "#F59E0B",
+              "The current shared basket mode still has missing price coverage.",
+              "pricing",
+            ],
+          ].map(([title, items, color, subtitle, kind]) => (
+            <div
+              key={title}
+              style={{
+                background: CARD,
+                borderRadius: 14,
+                border: `1px solid ${BORDER}`,
+                padding: 14,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {title}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                }}
+              >
+                {subtitle}
+              </div>
+              <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                {items.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 9.2,
+                      color: "#86EFAC",
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    No formulas currently surface in this blocker bucket.
+                  </div>
+                ) : (
+                  items.map((item) => (
+                    <button
+                      key={`${kind}-${item.formula.formulaKey}`}
+                      type="button"
+                      onClick={() =>
+                        openFormulaFromDashboard(
+                          item.formula.formulaKey,
+                          kind === "pricing"
+                            ? "cost"
+                            : kind === "compliance"
+                            ? "critique"
+                            : "formula"
+                        )
+                      }
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "9px 10px",
+                        textAlign: "left",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 9.5,
+                          fontWeight: 700,
+                          color: "#E2E8F0",
+                        }}
+                      >
+                        {item.displayLabel}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 8.6,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {(item.launchReadiness.blockers[0] ||
+                          item.launchReadiness.cautions[0] ||
+                          item.launchReadiness.launchNote)}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Launch-Readiness Summary by Formula
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                }}
+              >
+                A compact rollup of score, blockers, basket cost, and inventory
+                cap across the current formula library.
+              </div>
+            </div>
+            <div style={{ fontSize: 9, color: "#64748B" }}>
+              Sorted by heuristic readiness score
+            </div>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                fontSize: 10,
+                borderCollapse: "collapse",
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                  {[
+                    "Formula",
+                    "Type",
+                    "Score",
+                    "Status",
+                    "Major Blocker",
+                    "Basket Total",
+                    "Max Batch",
+                    "Trust",
+                    "Action",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      style={{
+                        padding: "6px 8px",
+                        textAlign: "left",
+                        color: "#475569",
+                        fontWeight: 700,
+                        fontSize: 8.5,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dashboardItems.map((item) => {
+                  const readiness = item.launchReadiness;
+                  const statusMeta =
+                    LAUNCH_READINESS_STATUS_META[readiness.status] ||
+                    LAUNCH_READINESS_STATUS_META.early;
+                  return (
+                    <tr
+                      key={`founder-row-${item.formula.formulaKey}`}
+                      style={{ borderBottom: "1px solid #0A1628" }}
+                    >
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#E2E8F0",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.displayLabel}
+                      </td>
+                      <td style={{ padding: "6px 8px", color: "#94A3B8" }}>
+                        {renderFormulaTypeLabel(item.formula)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: statusMeta.color,
+                          fontWeight: 800,
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {readiness.totalScore.toFixed(0)}
+                      </td>
+                      <td style={{ padding: "6px 8px" }}>
+                        <span
+                          style={{
+                            background: statusMeta.bg,
+                            border: `1px solid ${statusMeta.border}`,
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: statusMeta.color,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {statusMeta.label}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color:
+                            readiness.blockers.length > 0
+                              ? "#FCA5A5"
+                              : "#94A3B8",
+                          lineHeight: 1.55,
+                          minWidth: 240,
+                        }}
+                      >
+                        {readiness.blockers[0] ||
+                          readiness.cautions[0] ||
+                          "No major blocker surfaced."}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color: "#34D399",
+                          fontWeight: 700,
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        ${readiness.pricing.totalCost.toFixed(2)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          color:
+                            readiness.inventory.canFulfill
+                              ? "#34D399"
+                              : "#F59E0B",
+                          fontWeight: 700,
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {readiness.inventory.maxProducibleG.toFixed(1)}g
+                      </td>
+                      <td
+                        style={{
+                          padding: "6px 8px",
+                          minWidth: 165,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div>{renderTrustBadge(item.trustSummary)}</div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.2,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          {item.trustSummary?.supportLabel || "—"}
+                        </div>
+                      </td>
+                      <td style={{ padding: "6px 8px" }}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openFormulaFromDashboard(item.formula.formulaKey)
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "5px 9px",
+                            fontSize: 8.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Open
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }, [
+    activeFounderScenario,
+    batchPlannerTargetG,
+    basketMode,
+    clearActiveFounderScenario,
+    currentFounderScenarioInputs,
+    currentFounderScenarioIsDirty,
+    copyFounderScenarioBrief,
+    deleteFounderScenario,
+    downloadFounderScenarioBrief,
+    dilAlcohol,
+    diluentMaterialName,
+    duplicateFounderScenario,
+    formula,
+    founderInsightsEnabled,
+    founderComparedScenarioIds,
+    founderComparedScenarioSnapshots,
+    founderDashboardSummary,
+    founderScenarioExportStatus,
+    founderScenarioName,
+    ifraCategory,
+    launchRecommendation,
+    launchRecommendationBudget,
+    launchRecommendationEmphasis,
+    launchRecommendationSkuLimit,
+    launchRecommendationStatus,
+    launchPlanUnitsByFormula,
+    launchRunPlannerSummary,
+    loadLaunchRecommendationIntoPlanner,
+    loadFounderScenario,
+    openFormulaFromDashboard,
+    saveCurrentFounderScenario,
+    saveLaunchRecommendationAsScenario,
+    savedFounderScenarios,
+    selectedBasketModeMeta,
+    selectedDiluentBasket,
+    selectedFragranceType,
+    skuEconomicsSummary,
+    skuFillVolumeMl,
+    skuLaborCost,
+    skuPackagingCost,
+    skuRetailPrice,
+    toggleFounderScenarioCompare,
+  ]);
 
   const inventoryTabContent = useMemo(() => {
     // Collect all unique ingredients across all formulas
@@ -62571,15 +68029,6 @@ export default function App() {
                               ...prev,
                               [ing.name]: { ...(prev[ing.name] || {}), qty: v },
                             }));
-                            try {
-                              localStorage.setItem(
-                                "bb_inventory",
-                                JSON.stringify({
-                                  ...inventory,
-                                  [ing.name]: { qty: v },
-                                })
-                              );
-                            } catch {}
                           }}
                           style={{
                             background: "#060E1E",
@@ -62764,6 +68213,7 @@ export default function App() {
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[
+              ["founder", "🚀 Founder"],
               ["formulas", "📋 Formulas"],
               ["build", "🧪 Build"],
               ["catalog", "🌿 Catalog"],
@@ -62785,6 +68235,11 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1400, margin: "0 auto", padding: "16px" }}>
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* FOUNDER TAB */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {mainTab === "founder" && founderDashboardContent}
+
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* FORMULAS TAB */}
         {/* ═══════════════════════════════════════════════════════════ */}
@@ -62842,7 +68297,7 @@ export default function App() {
                     }}
                   >
                     {f.versionLabel}
-                    {f.parentVersionId ? " · derived" : f.isSeeded ? " · seeded" : " · saved"}
+                    {` · ${getFormulaVersionStatusText(f)}`}
                   </div>
                 </button>
               ))}
@@ -62917,13 +68372,16 @@ export default function App() {
                         },
                         formula.isLocked
                           ? {
-                              label: "Locked",
+                              label: "Locked Version",
                               color: "#F59E0B",
                               border: "#F59E0B30",
                             }
                           : {
-                              label: formula.isSeeded ? "Seeded" : "Editable",
-                              color: formula.isSeeded ? "#A78BFA" : "#34D399",
+                              label: formulaVersionStatusLabel,
+                              color:
+                                formulaVersionStatusLabel === "Seeded Baseline"
+                                  ? "#A78BFA"
+                                  : "#34D399",
                               border: formula.isSeeded
                                 ? "#A78BFA30"
                                 : "#34D39930",
@@ -63017,7 +68475,7 @@ export default function App() {
                           letterSpacing: "0.05em",
                         }}
                       >
-                        CLONE {nextFormulaVersionLabel}
+                        CLONE TO {nextFormulaVersionLabel} DRAFT
                       </button>
                       <button
                         onClick={lockFormulaVersion}
@@ -68066,7 +73524,7 @@ export default function App() {
                     value={apiKey}
                     onChange={(e) => {
                       setApiKey(e.target.value);
-                      localStorage.setItem("bb_api_key", e.target.value);
+                      writeTextStorage(APP_STORAGE_KEYS.apiKey, e.target.value);
                     }}
                     style={{
                       flex: 1,
@@ -71999,8 +77457,711 @@ export default function App() {
         <IngredientDetailPanel
           name={detailName}
           onClose={() => setDetailName(null)}
+          onSelectMaterial={setDetailName}
+          onStartSubstitutionReview={startSubstitutionReview}
+          pricesState={pricesState}
+          inventory={inventory}
+          formulas={formulas}
+          currentFormula={formula}
+          currentFormulaSupplierOverrides={currentFormulaSupplierOverrides}
+          buildItems={buildItems}
+          buildName={buildName}
+          basketMode={basketMode}
+          ifraCategory={ifraCategory}
+          selectedFragranceType={selectedFragranceType}
+          batchPlannerReport={batchPlannerReport}
         />
       )}
+
+      {substitutionReviewState &&
+        substitutionReviewSourceFormula &&
+        substitutionReviewDraftFormula && (
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "#000c",
+              zIndex: 240,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 20,
+            }}
+            onClick={() => closeSubstitutionReview()}
+          >
+            <div
+              style={{
+                background: CARD,
+                borderRadius: 16,
+                border: `1px solid ${BORDER}`,
+                width: "100%",
+                maxWidth: 1120,
+                maxHeight: "90vh",
+                overflowY: "auto",
+                padding: 20,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 999,
+                        padding: "3px 10px",
+                        fontSize: 8,
+                        fontWeight: 700,
+                        color: "#7DD3FC",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      Guided Substitution Review
+                    </span>
+                    <span
+                      style={{
+                        background: "#120C26",
+                        border: "1px solid #4338CA",
+                        borderRadius: 999,
+                        padding: "3px 10px",
+                        fontSize: 8,
+                        fontWeight: 700,
+                        color: "#C4B5FD",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      {substitutionReviewState.categoryTitle || "Heuristic suggestion"}
+                    </span>
+                    <span
+                      style={{
+                        background: "#2A1806",
+                        border: "1px solid #92400E",
+                        borderRadius: 999,
+                        padding: "3px 10px",
+                        fontSize: 8,
+                        fontWeight: 700,
+                        color: "#FCD34D",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      Preview only until saved
+                    </span>
+                  </div>
+                  <h2
+                    style={{
+                      margin: 0,
+                      fontSize: 20,
+                      fontWeight: 800,
+                      color: "#E2E8F0",
+                    }}
+                  >
+                    {getFormulaDisplayLabel(substitutionReviewSourceFormula, {
+                      includeVersion: true,
+                    })}{" "}
+                    → {substitutionReviewDraftVersionLabel} draft
+                  </h2>
+                  <div
+                    style={{
+                      marginTop: 6,
+                      fontSize: 10,
+                      color: "#94A3B8",
+                      lineHeight: 1.6,
+                      maxWidth: 820,
+                    }}
+                  >
+                    Review the swap from{" "}
+                    <strong style={{ color: "#CBD5E1" }}>
+                      {substitutionReviewState.originalIngredientName}
+                    </strong>{" "}
+                    to{" "}
+                    <strong style={{ color: "#CBD5E1" }}>
+                      {substitutionReviewState.candidateName}
+                    </strong>{" "}
+                    using the app&apos;s current compare, cost, performance, critique,
+                    finished-product IFRA, and trust signals. This does not mutate the
+                    original formula unless you save a new version draft.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => closeSubstitutionReview()}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#475569",
+                    fontSize: 22,
+                    cursor: "pointer",
+                    lineHeight: 1,
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 14,
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                  fontSize: 8.9,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                }}
+              >
+                {substitutionReviewState.candidateReason}
+                {substitutionReviewState.previewSummary
+                  ? ` ${substitutionReviewState.previewSummary}`
+                  : ""}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                  gap: 10,
+                }}
+              >
+                {[
+                  {
+                    label: "Swap Cost Delta",
+                    value: `${substitutionReviewComparison?.costDelta >= 0 ? "+" : ""}$${(
+                      substitutionReviewComparison?.costDelta || 0
+                    ).toFixed(2)}`,
+                    meta: `$${(substitutionReviewBaseBasket?.totalCost || 0).toFixed(
+                      2
+                    )} → $${(substitutionReviewDraftBasket?.totalCost || 0).toFixed(
+                      2
+                    )} under ${selectedBasketModeMeta.label.toLowerCase()} mode`,
+                    color:
+                      (substitutionReviewComparison?.costDelta || 0) <= 0
+                        ? "#34D399"
+                        : "#F59E0B",
+                  },
+                  {
+                    label: "Performance Delta",
+                    value: `${(
+                      (substitutionReviewComparison?.performanceDelta?.projection || 0) +
+                      (substitutionReviewComparison?.performanceDelta?.longevity || 0)
+                    ) >= 0
+                      ? "+"
+                      : ""}${(
+                      (substitutionReviewComparison?.performanceDelta?.projection || 0) +
+                      (substitutionReviewComparison?.performanceDelta?.longevity || 0)
+                    ).toFixed(1)}`,
+                    meta:
+                      substitutionReviewComparison?.performanceNarrative?.[0] ||
+                      "No major modeled performance shift surfaced.",
+                    color: "#7DD3FC",
+                  },
+                  {
+                    label: "Cat 4 Delta",
+                    value: `${substitutionReviewBaseIfraRows.filter((row) => row.status === "fail").length}→${
+                      substitutionReviewDraftIfraRows.filter((row) => row.status === "fail").length
+                    } fails`,
+                    meta: `${substitutionReviewBaseIfraRows.filter((row) => row.status === "warn").length}→${
+                      substitutionReviewDraftIfraRows.filter((row) => row.status === "warn").length
+                    } warns`,
+                    color:
+                      substitutionReviewDraftIfraRows.filter((row) => row.status === "fail")
+                        .length <=
+                      substitutionReviewBaseIfraRows.filter((row) => row.status === "fail")
+                        .length
+                        ? "#34D399"
+                        : "#F87171",
+                  },
+                  {
+                    label: "Draft Trust",
+                    value: substitutionReviewDraftTrustSummary.levelMeta.label,
+                    meta: substitutionReviewDraftTrustSummary.supportLabel,
+                    color: substitutionReviewDraftTrustSummary.levelMeta.color,
+                  },
+                ].map((card) => (
+                  <div
+                    key={`sub-review-card-${card.label}`}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: "10px 14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: card.color,
+                      }}
+                    >
+                      {card.value}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 3,
+                        fontSize: 9,
+                        color: "#CBD5E1",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {card.label}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 3,
+                        fontSize: 8.5,
+                        color: "#64748B",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      {card.meta}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,1.15fr) minmax(300px,0.85fr)",
+                  gap: 12,
+                  alignItems: "start",
+                }}
+              >
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Swap Diff Preview
+                    </div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {(substitutionReviewComparison?.diffRows || []).map((row) => (
+                        <div
+                          key={`sub-review-diff-${row.key}`}
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "9px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              flexWrap: "wrap",
+                              alignItems: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                color: "#E2E8F0",
+                              }}
+                            >
+                              {row.displayName}
+                            </div>
+                            <span
+                              style={{
+                                background:
+                                  row.status === "added"
+                                    ? "#052E16"
+                                    : row.status === "removed"
+                                    ? "#450A0A"
+                                    : "#071826",
+                                border: `1px solid ${
+                                  row.status === "added"
+                                    ? "#166534"
+                                    : row.status === "removed"
+                                    ? "#991B1B"
+                                    : "#1E3A52"
+                                }`,
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 8,
+                                fontWeight: 700,
+                                color:
+                                  row.status === "added"
+                                    ? "#86EFAC"
+                                    : row.status === "removed"
+                                    ? "#FCA5A5"
+                                    : "#7DD3FC",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                              }}
+                            >
+                              {row.status}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 8.7,
+                              color: "#94A3B8",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {row.leftGrams.toFixed(1)}g → {row.rightGrams.toFixed(1)}g
+                            {" · "}
+                            {row.leftNotes} → {row.rightNotes}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    {renderPerformanceModelCard(
+                      substitutionReviewComparison?.leftPerformanceModel,
+                      {
+                        title: `Current Estimate — ${getFormulaDisplayLabel(
+                          substitutionReviewSourceFormula,
+                          { includeVersion: true }
+                        )}`,
+                        compact: true,
+                      }
+                    )}
+                    {renderPerformanceModelCard(
+                      substitutionReviewComparison?.rightPerformanceModel,
+                      {
+                        title: `Draft Estimate — ${getFormulaDisplayLabel(
+                          substitutionReviewDraftFormula,
+                          { includeVersion: true }
+                        )}`,
+                        compact: true,
+                      }
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    {renderSubstitutionTrustCard(
+                      `Current Trust — ${getFormulaDisplayLabel(
+                        substitutionReviewSourceFormula,
+                        { includeVersion: true }
+                      )}`,
+                      substitutionReviewBaseTrustSummary,
+                      { accent: "#7DD3FC" }
+                    )}
+                    {renderSubstitutionTrustCard(
+                      `Draft Trust — ${getFormulaDisplayLabel(
+                        substitutionReviewDraftFormula,
+                        { includeVersion: true }
+                      )}`,
+                      substitutionReviewDraftTrustSummary,
+                      { accent: "#34D399" }
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Compliance / Critique Delta
+                    </div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                          fontSize: 8.8,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Finished-product guidance:{" "}
+                        <strong style={{ color: "#CBD5E1" }}>
+                          {finishedProductIfraStatusMeta[
+                            substitutionReviewBaseFinishedGuidance?.overallStatus
+                          ]?.label ||
+                            substitutionReviewBaseFinishedGuidance?.overallStatus ||
+                            "—"}
+                        </strong>
+                        {" → "}
+                        <strong style={{ color: "#CBD5E1" }}>
+                          {finishedProductIfraStatusMeta[
+                            substitutionReviewDraftFinishedGuidance?.overallStatus
+                          ]?.label ||
+                            substitutionReviewDraftFinishedGuidance?.overallStatus ||
+                            "—"}
+                        </strong>
+                      </div>
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                          fontSize: 8.8,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {substitutionReviewDraftCritiqueReport?.suggestedChanges?.[0] ||
+                          substitutionReviewDraftCritiqueReport?.weaknesses?.[0] ||
+                          "No major critique shift surfaced."}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Draft Revision Note
+                    </div>
+                    <textarea
+                      value={substitutionReviewState.revisionNote || ""}
+                      onChange={(e) =>
+                        setSubstitutionReviewState((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                revisionNote: e.target.value,
+                              }
+                            : prev
+                        )
+                      }
+                      style={{
+                        width: "100%",
+                        minHeight: 110,
+                        boxSizing: "border-box",
+                        resize: "vertical",
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        color: "#CBD5E1",
+                        padding: 12,
+                        fontSize: 10,
+                        lineHeight: 1.6,
+                        outline: "none",
+                      }}
+                    />
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 8.4,
+                        color: "#64748B",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      Saving creates a new unlocked formula version draft and opens the
+                      existing compare view against the original.
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 6,
+                        fontSize: 8.2,
+                        color: "#FCD34D",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      Closing or refreshing before save discards this unsaved review
+                      draft.
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Caveats
+                    </div>
+                    <div style={{ display: "grid", gap: 8 }}>
+                      {substitutionReviewCaveats.length === 0 ? (
+                        <div
+                          style={{
+                            fontSize: 8.8,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          No major extra caveat surfaced beyond the app&apos;s normal
+                          estimate-only substitution warning.
+                        </div>
+                      ) : (
+                        substitutionReviewCaveats.map((message, index) => (
+                          <div
+                            key={`sub-review-caveat-${index}`}
+                            style={{
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 10,
+                              padding: "8px 10px",
+                              fontSize: 8.8,
+                              color: "#94A3B8",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {message}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      flexWrap: "wrap",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (closeSubstitutionReview()) {
+                          setDetailName(substitutionReviewState.candidateName);
+                        }
+                      }}
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        color: "#CBD5E1",
+                        padding: "7px 10px",
+                        fontSize: 8.8,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      View Candidate Dossier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => closeSubstitutionReview()}
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        color: "#CBD5E1",
+                        padding: "7px 10px",
+                        fontSize: 8.8,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveSubstitutionReviewDraft}
+                      style={{
+                        background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                        border: "1px solid #22D3EE40",
+                        borderRadius: 8,
+                        color: "#7DD3FC",
+                        padding: "7px 12px",
+                        fontSize: 8.8,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Save {substitutionReviewDraftVersionLabel} Draft + Open Compare
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* FOOTER */}
       <div
