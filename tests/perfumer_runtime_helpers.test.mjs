@@ -1,16 +1,40 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { buildIngredientTruthCompletenessReport } from "../src/lib/ifra_combined_package.js";
 import {
   buildCapitalConstrainedLaunchRecommendation,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderTrustSummary,
   buildLaunchRunPlannerSummary,
+  buildMaterialTruthGapPrioritization,
   buildSubstitutionReviewDraftFormula,
   createFounderLaunchScenarioRecord,
   normalizeFounderLaunchScenarioRecord,
 } from "../src/lib/perfumer_runtime_helpers.js";
+
+test("ingredient truth completeness surfaces canonical and supplier support from current registries", () => {
+  const report = buildIngredientTruthCompletenessReport("Ylang-Ylang Extra Oil, Org");
+
+  assert.equal(report.canonicalMaterialKey, "ylang_ylang_extra_oil");
+  assert.equal(report.dimensionByKey.identity.status, "confirmed");
+  assert.ok(report.supplierVariantCount > 0);
+  assert.ok(["inferred", "confirmed"].includes(report.dimensionByKey.pricing.status));
+});
+
+test("ingredient truth completeness flags sparse pricing and identity gaps when support is weak", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Sparse Material", {
+    record: {
+      note: "top",
+    },
+    livePricing: {},
+  });
+
+  assert.ok(["partial", "sparse"].includes(report.level));
+  assert.ok(report.missingSignals.length >= 1);
+  assert.equal(report.dimensionByKey.pricing.status, "missing");
+});
 
 test("buildFounderTrustSummary marks well-supported baskets as supported", () => {
   const trustSummary = buildFounderTrustSummary({
@@ -52,12 +76,99 @@ test("buildFounderTrustSummary flags sparse support when missing data drives the
       cautions: [],
     },
     expectedLineCount: 1,
+    extraTrustCounts: {
+      totalConsideredCount: 1,
+      confirmedCount: 0,
+      inferredCount: 0,
+      uncertainCount: 1,
+      missingCount: 0,
+    },
+    extraUncertainSignals: [
+      "Ingredient truth is still partial for one material in the current formula.",
+    ],
   });
 
   assert.ok(["sparse", "blocked"].includes(trustSummary.level));
   assert.equal(trustSummary.missingCount, 1);
   assert.ok(trustSummary.missingSignals.length >= 1);
   assert.equal(trustSummary.blockerDependsOnMissing, true);
+  assert.ok(trustSummary.uncertainSignals.length >= 1);
+});
+
+test("material truth prioritization ranks weak materials by usage, spend, and founder relevance", () => {
+  const prioritization = buildMaterialTruthGapPrioritization([
+    {
+      name: "Sparse Workhorse",
+      truthLevel: "sparse",
+      formulaCount: 5,
+      appearanceCount: 5,
+      totalLineCost: 24,
+      founderCriticalCount: 3,
+      nearReadyCount: 2,
+      blockedFormulaCount: 1,
+      pricingGapCount: 2,
+      uncertainPricingCount: 1,
+      inventoryBlockerCount: 1,
+      pricingStatus: "missing",
+      technicalStatus: "uncertain",
+      ifraStatus: "uncertain",
+      evidenceStatus: "uncertain",
+      identityStatus: "confirmed",
+      regulatoryStatus: "uncertain",
+      primaryGap: "No live supplier pricing rows are attached yet.",
+    },
+    {
+      name: "Expensive Partial",
+      truthLevel: "partial",
+      formulaCount: 2,
+      appearanceCount: 2,
+      totalLineCost: 96,
+      founderCriticalCount: 1,
+      nearReadyCount: 1,
+      blockedFormulaCount: 0,
+      pricingGapCount: 0,
+      uncertainPricingCount: 1,
+      inventoryBlockerCount: 0,
+      pricingStatus: "inferred",
+      technicalStatus: "confirmed",
+      ifraStatus: "confirmed",
+      evidenceStatus: "inferred",
+      identityStatus: "confirmed",
+      regulatoryStatus: "confirmed",
+      primaryGap: "Supplier variants exist, but live-priced size options are still missing.",
+    },
+    {
+      name: "Well Supported Material",
+      truthLevel: "strong",
+      formulaCount: 4,
+      appearanceCount: 4,
+      totalLineCost: 40,
+      founderCriticalCount: 2,
+      nearReadyCount: 2,
+      blockedFormulaCount: 0,
+      pricingGapCount: 0,
+      uncertainPricingCount: 0,
+      inventoryBlockerCount: 0,
+      pricingStatus: "confirmed",
+      technicalStatus: "confirmed",
+      ifraStatus: "confirmed",
+      evidenceStatus: "confirmed",
+      identityStatus: "confirmed",
+      regulatoryStatus: "confirmed",
+    },
+  ]);
+
+  assert.equal(prioritization.summary.weakMaterialCount, 2);
+  assert.equal(prioritization.mostUsedWeakMaterials[0].name, "Sparse Workhorse");
+  assert.equal(prioritization.highestSpendWeakMaterials[0].name, "Expensive Partial");
+  assert.equal(
+    prioritization.founderCriticalWeakMaterials[0].name,
+    "Sparse Workhorse"
+  );
+  assert.equal(
+    prioritization.strongestBackfillCandidates[0].name,
+    "Sparse Workhorse"
+  );
 });
 
 test("launch planner and recommender expose trust summaries from live launch math", () => {

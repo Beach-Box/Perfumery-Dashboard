@@ -2628,6 +2628,234 @@ export function buildFounderDashboardSummary(items = []) {
   };
 }
 
+function getMaterialTruthGapPriorityScore(row = {}) {
+  const formulaCount = toFiniteNumber(row.formulaCount);
+  const appearanceCount = toFiniteNumber(row.appearanceCount);
+  const totalLineCost = toFiniteNumber(row.totalLineCost);
+  const founderCriticalCount = toFiniteNumber(row.founderCriticalCount);
+  const nearReadyCount = toFiniteNumber(row.nearReadyCount);
+  const blockedFormulaCount = toFiniteNumber(row.blockedFormulaCount);
+  const pricingGapCount = toFiniteNumber(row.pricingGapCount);
+  const uncertainPricingCount = toFiniteNumber(row.uncertainPricingCount);
+  const inventoryBlockerCount = toFiniteNumber(row.inventoryBlockerCount);
+
+  const truthWeight =
+    row.truthLevel === "sparse" ? 10 : row.truthLevel === "partial" ? 5 : 0;
+  const usageWeight = formulaCount * 2.5 + Math.min(4, appearanceCount * 0.5);
+  const spendWeight = Math.min(12, totalLineCost / 12);
+  const founderWeight =
+    founderCriticalCount * 3 +
+    nearReadyCount * 2 +
+    blockedFormulaCount * 1.5 +
+    inventoryBlockerCount * 1.5;
+  const pricingWeight =
+    pricingGapCount * 3 +
+    uncertainPricingCount * 1.5 +
+    (row.pricingStatus === "missing"
+      ? 4
+      : row.pricingStatus === "uncertain"
+      ? 2
+      : row.pricingStatus === "inferred"
+      ? 1
+      : 0);
+  const technicalWeight =
+    row.technicalStatus === "confirmed"
+      ? 0
+      : row.technicalStatus === "inferred"
+      ? 1
+      : row.technicalStatus === "uncertain"
+      ? 2
+      : 3;
+  const complianceWeight =
+    (row.ifraStatus === "confirmed"
+      ? 0
+      : row.ifraStatus === "inferred"
+      ? 1
+      : row.ifraStatus === "uncertain"
+      ? 2
+      : 3) +
+    (row.regulatoryStatus === "confirmed"
+      ? 0
+      : row.regulatoryStatus === "inferred"
+      ? 1
+      : row.regulatoryStatus === "uncertain"
+      ? 2
+      : 3);
+  const evidenceWeight =
+    row.evidenceStatus === "confirmed"
+      ? 0
+      : row.evidenceStatus === "inferred"
+      ? 1
+      : 2;
+
+  return Number(
+    (
+      truthWeight +
+      usageWeight +
+      spendWeight +
+      founderWeight +
+      pricingWeight +
+      technicalWeight +
+      complianceWeight +
+      evidenceWeight
+    ).toFixed(2)
+  );
+}
+
+function buildMaterialBackfillFocus(row = {}) {
+  if (row.pricingStatus === "missing" || toFiniteNumber(row.pricingGapCount) > 0) {
+    return "Backfill supplier sizes and live pricing first.";
+  }
+  if (
+    row.identityStatus === "missing" ||
+    row.regulatoryStatus === "missing" ||
+    row.regulatoryStatus === "uncertain"
+  ) {
+    return "Tighten canonical identity plus CAS / INCI support.";
+  }
+  if (
+    row.technicalStatus === "uncertain" ||
+    row.technicalStatus === "missing"
+  ) {
+    return "Backfill MW / xLogP / VP / ODT support for stronger performance reads.";
+  }
+  if (row.ifraStatus !== "confirmed") {
+    return "Tighten structured IFRA / restriction support.";
+  }
+  if (row.evidenceStatus !== "confirmed") {
+    return "Attach source documents or evidence candidates.";
+  }
+  return "Review the current missing-data driver before deeper analysis.";
+}
+
+function buildMaterialGapReason(row = {}) {
+  const parts = [];
+  if (toFiniteNumber(row.formulaCount) > 0) {
+    parts.push(
+      `Used in ${row.formulaCount} formula${
+        row.formulaCount === 1 ? "" : "s"
+      }`
+    );
+  }
+  if (toFiniteNumber(row.totalLineCost) > 0.009) {
+    parts.push(`~$${toFiniteNumber(row.totalLineCost).toFixed(2)} basket spend`);
+  }
+  if (toFiniteNumber(row.founderCriticalCount) > 0) {
+    parts.push(
+      `${row.founderCriticalCount} founder-critical formula${
+        row.founderCriticalCount === 1 ? "" : "s"
+      }`
+    );
+  }
+  if (toFiniteNumber(row.pricingGapCount) > 0) {
+    parts.push(
+      `${row.pricingGapCount} pricing gap hit${
+        row.pricingGapCount === 1 ? "" : "s"
+      }`
+    );
+  }
+  if (row.truthLevel === "sparse") parts.push("Sparse truth");
+  else if (row.truthLevel === "partial") parts.push("Partial truth");
+  return parts.join(" · ");
+}
+
+function sortMaterialRows(rows = [], comparator) {
+  return [...rows].sort((a, b) => {
+    const primary = comparator(a, b);
+    if (primary !== 0) return primary;
+    if (b.priorityScore !== a.priorityScore) {
+      return b.priorityScore - a.priorityScore;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
+}
+
+export function buildMaterialTruthGapPrioritization(rows = []) {
+  const normalizedRows = (rows || [])
+    .filter((row) => row?.name)
+    .map((row) => {
+      const priorityScore = getMaterialTruthGapPriorityScore(row);
+      const backfillFocus =
+        row.backfillFocus || buildMaterialBackfillFocus(row);
+      return {
+        ...row,
+        priorityScore,
+        backfillFocus,
+        priorityReason: buildMaterialGapReason(row),
+      };
+    });
+
+  const weakRows = normalizedRows.filter(
+    (row) =>
+      row.truthLevel !== "strong" ||
+      toFiniteNumber(row.pricingGapCount) > 0 ||
+      row.pricingStatus === "missing" ||
+      row.technicalStatus !== "confirmed" ||
+      row.ifraStatus !== "confirmed"
+  );
+
+  const mostUsedWeakMaterials = sortMaterialRows(
+    weakRows,
+    (a, b) =>
+      toFiniteNumber(b.formulaCount) - toFiniteNumber(a.formulaCount) ||
+      toFiniteNumber(b.appearanceCount) - toFiniteNumber(a.appearanceCount)
+  ).slice(0, 6);
+
+  const highestSpendWeakMaterials = sortMaterialRows(
+    weakRows.filter(
+      (row) =>
+        toFiniteNumber(row.totalLineCost) > 0 ||
+        toFiniteNumber(row.pricingGapCount) > 0
+    ),
+    (a, b) =>
+      toFiniteNumber(b.totalLineCost) - toFiniteNumber(a.totalLineCost) ||
+      toFiniteNumber(b.formulaCount) - toFiniteNumber(a.formulaCount)
+  ).slice(0, 6);
+
+  const founderCriticalWeakMaterials = sortMaterialRows(
+    weakRows.filter(
+      (row) =>
+        toFiniteNumber(row.founderCriticalCount) > 0 ||
+        toFiniteNumber(row.nearReadyCount) > 0
+    ),
+    (a, b) =>
+      toFiniteNumber(b.founderCriticalCount) -
+        toFiniteNumber(a.founderCriticalCount) ||
+      toFiniteNumber(b.nearReadyCount) - toFiniteNumber(a.nearReadyCount) ||
+      toFiniteNumber(b.totalLineCost) - toFiniteNumber(a.totalLineCost)
+  ).slice(0, 6);
+
+  const strongestBackfillCandidates = sortMaterialRows(
+    weakRows,
+    (a, b) => b.priorityScore - a.priorityScore
+  ).slice(0, 6);
+
+  return {
+    rows: normalizedRows,
+    weakRows,
+    mostUsedWeakMaterials,
+    highestSpendWeakMaterials,
+    founderCriticalWeakMaterials,
+    strongestBackfillCandidates,
+    summary: {
+      materialCount: normalizedRows.length,
+      weakMaterialCount: weakRows.length,
+      sparseMaterialCount: weakRows.filter((row) => row.truthLevel === "sparse")
+        .length,
+      pricingGapMaterialCount: weakRows.filter(
+        (row) =>
+          toFiniteNumber(row.pricingGapCount) > 0 ||
+          row.pricingStatus === "missing"
+      ).length,
+      founderCriticalWeakCount: weakRows.filter(
+        (row) => toFiniteNumber(row.founderCriticalCount) > 0
+      ).length,
+      topPriorityMaterialName:
+        strongestBackfillCandidates[0]?.name || null,
+    },
+  };
+}
+
 export const SKU_ECONOMICS_STATUS_META = {
   strong: {
     label: "Strong",
@@ -2937,6 +3165,7 @@ export function buildFounderTrustSummary({
   economics = null,
   launchPlan = null,
   expectedLineCount = null,
+  extraTrustCounts = null,
   extraMissingSignals = [],
   extraUncertainSignals = [],
   extraBlockerSignals = [],
@@ -2984,6 +3213,8 @@ export function buildFounderTrustSummary({
     collectEconomicsTrustSignals(acc, economics);
     collectLaunchPlanTrustSignals(acc, launchPlan);
   }
+
+  mergeTrustCounts(acc, extraTrustCounts);
 
   (extraMissingSignals || []).forEach((message) =>
     addTrustSignal(acc.missingSignals, message)

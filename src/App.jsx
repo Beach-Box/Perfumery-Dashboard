@@ -34,6 +34,7 @@ import {
   SOURCE_DOCUMENT_INTAKE_TARGETS,
   SOURCE_DOCUMENT_REGISTRY,
   SUPPLIER_PRODUCT_REGISTRY,
+  buildIngredientTruthCompletenessReport,
   buildFinishedProductIfraGuidance,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
@@ -78,6 +79,7 @@ import {
   buildFounderTrustSummary,
   buildLaunchRunPlannerSummary,
   buildMaterialBehaviorSignals,
+  buildMaterialTruthGapPrioritization,
   buildSubstitutionReviewDraftFormula,
   buildMaterialSubstitutionSuggestions,
   buildAiCritiquePrompt,
@@ -54436,6 +54438,19 @@ const FRAGRANCE_TYPE_PRESETS = {
   EDC: { pct: 7.5, label: "Eau de Cologne", range: "5–10%" },
   Mist: { pct: 3.5, label: "Body Mist", range: "2–5%" },
 };
+const EMPTY_BATCH_PLANNER_REPORT = {
+  lines: [],
+  blockingMaterials: [],
+  constrainingMaterials: [],
+  shortageBasket: null,
+  sourceTotalG: 0,
+  targetBatchG: 0,
+  maxProducibleG: 0,
+  coveragePercent: 0,
+  shortageCount: 0,
+  shortageTotalG: 0,
+  canFulfill: true,
+};
 const SHOW_DEV_ERROR_HINT = Boolean(import.meta.env?.DEV);
 
 // ─────────────────────────────────────────────────────────────
@@ -54806,6 +54821,27 @@ class IngredientDetailErrorBoundary extends Component {
   }
 }
 
+const MATERIAL_COMPLETENESS_LEVEL_META = {
+  strong: {
+    label: "Strong Truth",
+    color: "#34D399",
+    bg: "#052E16",
+    border: "#166534",
+  },
+  partial: {
+    label: "Partial Truth",
+    color: "#7DD3FC",
+    bg: "#071826",
+    border: "#1E3A52",
+  },
+  sparse: {
+    label: "Sparse Truth",
+    color: "#F59E0B",
+    bg: "#251404",
+    border: "#B45309",
+  },
+};
+
 function IngredientDetailPanel({
   name,
   onClose,
@@ -54854,6 +54890,14 @@ function IngredientDetailPanel({
   const behaviorSignals = useMemo(
     () => buildMaterialBehaviorSignals(name, { db: DB }),
     [name]
+  );
+  const materialCompletenessReport = useMemo(
+    () =>
+      buildIngredientTruthCompletenessReport(name, {
+        record: d,
+        livePricing,
+      }),
+    [d, livePricing, name]
   );
 
   const formulasUsingMaterial = useMemo(
@@ -55220,6 +55264,7 @@ function IngredientDetailPanel({
 
     if (
       !syntheticTrustLine &&
+      !materialCompletenessReport?.ingredientTrustCounts &&
       !extraMissingSignals.length &&
       !extraUncertainSignals.length &&
       !extraBlockerSignals.length
@@ -55246,8 +55291,15 @@ function IngredientDetailPanel({
             }
           : null,
       expectedLineCount: syntheticTrustLine ? 1 : null,
-      extraMissingSignals,
-      extraUncertainSignals,
+      extraTrustCounts: materialCompletenessReport?.ingredientTrustCounts || null,
+      extraMissingSignals: [
+        ...(materialCompletenessReport?.missingSignals || []),
+        ...extraMissingSignals,
+      ],
+      extraUncertainSignals: [
+        ...(materialCompletenessReport?.uncertainSignals || []),
+        ...extraUncertainSignals,
+      ],
       extraBlockerSignals,
     });
   }, [
@@ -55258,6 +55310,7 @@ function IngredientDetailPanel({
     canonicalMaterialKey,
     evidenceCandidates.length,
     livePricingEntries.length,
+    materialCompletenessReport,
     sourceDocuments.length,
   ]);
   const materialTrustDriver = materialTrustSummary
@@ -55266,7 +55319,14 @@ function IngredientDetailPanel({
       materialTrustSummary.blockerSignals?.[0] ||
       materialTrustSummary.blockerSupportLine ||
       "No major dossier trust gap surfaced."
-    : "No active formula/build trust read is attached yet. This dossier falls back to identity, pricing, and evidence context only.";
+    : materialCompletenessReport?.primaryGap ||
+      "No active formula/build trust read is attached yet. This dossier falls back to identity, pricing, and evidence context only.";
+  const materialCompletenessMeta =
+    MATERIAL_COMPLETENESS_LEVEL_META[materialCompletenessReport?.level] ||
+    MATERIAL_COMPLETENESS_LEVEL_META.partial;
+  const materialCompletenessDriver =
+    materialCompletenessReport?.primaryGap ||
+    "The current dossier can lean on canonical, pricing, and technical context without surfacing a major truth gap.";
 
   const substitutionCategoryMeta = {
     cheaper: {
@@ -55492,6 +55552,177 @@ function IngredientDetailPanel({
               </div>
             </div>
           ))}
+        </div>
+
+        <div
+          style={{
+            background: "#060E1E",
+            borderRadius: 12,
+            border: `1px solid ${BORDER}`,
+            padding: 12,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Catalog Truth / Completeness
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#CBD5E1",
+                  lineHeight: 1.55,
+                }}
+              >
+                {materialCompletenessReport?.headline ||
+                  "Ingredient truth has not been summarized yet for this dossier."}
+              </div>
+            </div>
+            <span
+              style={{
+                background: materialCompletenessMeta.bg,
+                border: `1px solid ${materialCompletenessMeta.border}`,
+                borderRadius: 999,
+                padding: "2px 8px",
+                fontSize: 7.9,
+                fontWeight: 700,
+                color: materialCompletenessMeta.color,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {materialCompletenessMeta.label}
+            </span>
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+              gap: 8,
+            }}
+          >
+            {[
+              [
+                "Coverage",
+                materialCompletenessReport?.supportLabel || "No completeness read",
+                "#7DD3FC",
+              ],
+              [
+                "Breakdown",
+                materialCompletenessReport?.breakdownLabel ||
+                  "Waiting on stronger catalog support",
+                "#CBD5E1",
+              ],
+              [
+                "Supplier / Pricing",
+                `${materialCompletenessReport?.supplierVariantCount || 0} variant${
+                  materialCompletenessReport?.supplierVariantCount === 1 ? "" : "s"
+                } · ${
+                  materialCompletenessReport?.livePricingSupplierCount || 0
+                } live-priced`,
+                "#34D399",
+              ],
+              [
+                "Technical / IFRA",
+                `${materialCompletenessReport?.technicalFieldCount || 0}/${
+                  materialCompletenessReport?.technicalFieldTotal || 6
+                } tech fields · ${
+                  materialCompletenessReport?.dimensionByKey?.ifra?.status ===
+                  "confirmed"
+                    ? "IFRA linked"
+                    : materialCompletenessReport?.dimensionByKey?.ifra?.status ===
+                      "inferred"
+                    ? "IFRA partial"
+                    : materialCompletenessReport?.dimensionByKey?.ifra?.status ===
+                      "uncertain"
+                    ? "IFRA uncertain"
+                    : "IFRA missing"
+                }`,
+                "#A78BFA",
+              ],
+            ].map(([label, value, color]) => (
+              <div
+                key={`material-completeness-${label}`}
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 7.8,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  {label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: label === "Coverage" ? 13 : 8.4,
+                    fontWeight: 700,
+                    color,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 8.5,
+              color: "#94A3B8",
+              lineHeight: 1.55,
+            }}
+          >
+            {materialCompletenessDriver}
+          </div>
+          {materialCompletenessReport?.level !== "strong" ? (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 8.2,
+                color:
+                  materialCompletenessReport?.level === "sparse"
+                    ? "#FCA5A5"
+                    : "#FCD34D",
+                lineHeight: 1.55,
+              }}
+            >
+              Ingredient-driven cost, substitution, and founder planning reads stay
+              estimate-grade when catalog truth is partial. Tighten pricing,
+              canonical identity, or technical support before treating this as a
+              strong source of truth.
+            </div>
+          ) : null}
         </div>
 
         <div
@@ -59066,6 +59297,10 @@ export default function App() {
     [founderProductContext]
   );
   const founderInsightsEnabled = mainTab === "founder";
+  const compareInsightsEnabled =
+    mainTab === "formulas" && subTab === "compare";
+  const batchPlannerInsightsEnabled =
+    mainTab === "inventory" || detailName != null;
   const parentFormula =
     formula?.parentVersionId
       ? formulaByKey.get(formula.parentVersionId) || null
@@ -59162,19 +59397,27 @@ export default function App() {
   });
   const formulaComparison = useMemo(
     () =>
-      buildFormulaComparison(
-        compareLeftFormula,
-        compareRightFormula,
-        {
-          pricesState,
-          formulaSupplierOverrides,
-          computeChemistry,
-          perfScore,
-          db: DB,
-          pricing: PRICING,
-        }
-      ),
-    [compareLeftFormula, compareRightFormula, pricesState, formulaSupplierOverrides]
+      !compareInsightsEnabled
+        ? null
+        : buildFormulaComparison(
+            compareLeftFormula,
+            compareRightFormula,
+            {
+              pricesState,
+              formulaSupplierOverrides,
+              computeChemistry,
+              perfScore,
+              db: DB,
+              pricing: PRICING,
+            }
+          ),
+    [
+      compareInsightsEnabled,
+      compareLeftFormula,
+      compareRightFormula,
+      pricesState,
+      formulaSupplierOverrides,
+    ]
   );
   const formulaBasketStrategies = useMemo(
     () =>
@@ -59199,6 +59442,7 @@ export default function App() {
   const selectedBuildBasket =
     buildBasketStrategies[basketMode] || buildBasketStrategies.cheapest;
   const batchPlannerSources = useMemo(() => {
+    if (!batchPlannerInsightsEnabled) return [];
     const sources = formulas.map((entry) => {
       const sourceTotalG = (entry.ingredients || []).reduce(
         (sum, ingredient) => sum + (Number(ingredient?.g) || 0),
@@ -59236,7 +59480,13 @@ export default function App() {
       });
     }
     return sources;
-  }, [buildItems, buildName, formulas, formulaSupplierOverrides]);
+  }, [
+    batchPlannerInsightsEnabled,
+    buildItems,
+    buildName,
+    formulas,
+    formulaSupplierOverrides,
+  ]);
   const preferredBatchPlannerSourceKey = formula?.formulaKey
     ? `formula:${formula.formulaKey}`
     : batchPlannerSources[0]?.key || null;
@@ -59249,17 +59499,20 @@ export default function App() {
     null;
   const batchPlannerReport = useMemo(
     () =>
-      buildBatchPlannerReport({
-        ingredients: selectedBatchPlannerSource?.ingredients || [],
-        targetBatchG: batchPlannerTargetG,
-        inventory,
-        pricesState,
-        supplierOverrides: selectedBatchPlannerSource?.supplierOverrides || {},
-        basketMode,
-        db: DB,
-        pricing: PRICING,
-      }),
+      !batchPlannerInsightsEnabled || !selectedBatchPlannerSource
+        ? EMPTY_BATCH_PLANNER_REPORT
+        : buildBatchPlannerReport({
+            ingredients: selectedBatchPlannerSource?.ingredients || [],
+            targetBatchG: batchPlannerTargetG,
+            inventory,
+            pricesState,
+            supplierOverrides: selectedBatchPlannerSource?.supplierOverrides || {},
+            basketMode,
+            db: DB,
+            pricing: PRICING,
+          }),
     [
+      batchPlannerInsightsEnabled,
       selectedBatchPlannerSource,
       batchPlannerTargetG,
       inventory,
@@ -61085,12 +61338,74 @@ export default function App() {
           critiqueReport,
           targetBatchG: batchPlannerTargetG,
         });
+        const ingredientTruthReports = (entry.ingredients || []).map((ingredient) =>
+          buildIngredientTruthCompletenessReport(ingredient.name, {
+            record: DB[ingredient.name] || null,
+            livePricing: getLivePricingForIngredient(
+              ingredient.name,
+              pricesState,
+              PRICING
+            ),
+          })
+        );
+        const ingredientTruthRollup = ingredientTruthReports.reduce(
+          (acc, report) => {
+            if (!report) return acc;
+            acc.totalConsideredCount += 1;
+            if (report.level === "strong") {
+              acc.confirmedCount += 1;
+            } else if (report.level === "partial") {
+              if (
+                report.missingSignals?.length > 0 ||
+                report.dimensionByKey?.pricing?.status === "missing" ||
+                report.dimensionByKey?.identity?.status === "missing"
+              ) {
+                acc.uncertainCount += 1;
+              } else {
+                acc.inferredCount += 1;
+              }
+            } else {
+              acc.missingCount += 1;
+            }
+            if (report.missingSignals?.[0]) {
+              acc.missingSignals.push(`${ingredient.name}: ${report.missingSignals[0]}`);
+            }
+            if (report.uncertainSignals?.[0]) {
+              acc.uncertainSignals.push(
+                `${ingredient.name}: ${report.uncertainSignals[0]}`
+              );
+            }
+            return acc;
+          },
+          {
+            totalConsideredCount: 0,
+            confirmedCount: 0,
+            inferredCount: 0,
+            uncertainCount: 0,
+            missingCount: 0,
+            missingSignals: [],
+            uncertainSignals: [],
+          }
+        );
         const trustSummary = buildFounderTrustSummary({
           basket: selectedBasket,
           launchReadiness,
           expectedLineCount: Array.isArray(entry.ingredients)
             ? entry.ingredients.length
             : null,
+          extraTrustCounts: {
+            totalConsideredCount: ingredientTruthRollup.totalConsideredCount,
+            confirmedCount: ingredientTruthRollup.confirmedCount,
+            inferredCount: ingredientTruthRollup.inferredCount,
+            uncertainCount: ingredientTruthRollup.uncertainCount,
+            missingCount: ingredientTruthRollup.missingCount,
+          },
+          extraMissingSignals: Array.from(
+            new Set(ingredientTruthRollup.missingSignals)
+          ).slice(0, 3),
+          extraUncertainSignals: Array.from(
+            new Set(ingredientTruthRollup.uncertainSignals)
+          ).slice(0, 3),
         });
         return {
           formula: entry,
@@ -61105,6 +61420,8 @@ export default function App() {
           performanceModel,
           critiqueReport,
           launchReadiness,
+          ingredientTruthReports,
+          ingredientTruthRollup,
           trustSummary,
         };
       }),
@@ -61126,6 +61443,110 @@ export default function App() {
     () => buildFounderDashboardSummary(founderDashboardItems),
     [founderDashboardItems]
   );
+  const materialTruthGapSummary = useMemo(() => {
+    if (!founderInsightsEnabled) {
+      return buildMaterialTruthGapPrioritization([]);
+    }
+
+    const materialMap = new Map();
+
+    founderDashboardItems.forEach((item) => {
+      const basketLineByName = new Map(
+        (item.selectedBasket?.lines || []).map((line) => [line.ingredientName, line])
+      );
+      const truthReportByName = new Map(
+        (item.ingredientTruthReports || []).map((report) => [report.name, report])
+      );
+      const isFounderCritical =
+        item.launchReadiness?.status === "near_ready" ||
+        item.launchReadiness?.status === "needs_cleanup";
+      const blockingMaterialNames = new Set(
+        (item.batchReport?.blockingMaterials || []).map((line) => line.name)
+      );
+
+      (item.formula?.ingredients || []).forEach((ingredient) => {
+        const materialName = ingredient.name;
+        if (!materialName) return;
+
+        const truthReport =
+          truthReportByName.get(materialName) ||
+          buildIngredientTruthCompletenessReport(materialName, {
+            record: DB[materialName] || null,
+            livePricing: getLivePricingForIngredient(
+              materialName,
+              pricesState,
+              PRICING
+            ),
+          });
+        if (!truthReport) return;
+
+        const basketLine = basketLineByName.get(materialName) || null;
+        const existing = materialMap.get(materialName) || {
+          name: materialName,
+          truthLevel: truthReport.level,
+          supportLabel: truthReport.supportLabel,
+          breakdownLabel: truthReport.breakdownLabel,
+          primaryGap: truthReport.primaryGap,
+          missingSignals: truthReport.missingSignals || [],
+          uncertainSignals: truthReport.uncertainSignals || [],
+          pricingStatus: truthReport.dimensionByKey?.pricing?.status || "missing",
+          technicalStatus:
+            truthReport.dimensionByKey?.technical?.status || "uncertain",
+          ifraStatus: truthReport.dimensionByKey?.ifra?.status || "uncertain",
+          evidenceStatus:
+            truthReport.dimensionByKey?.evidence?.status || "uncertain",
+          identityStatus:
+            truthReport.dimensionByKey?.identity?.status || "missing",
+          regulatoryStatus:
+            truthReport.dimensionByKey?.regulatory?.status || "uncertain",
+          formulaCount: 0,
+          appearanceCount: 0,
+          totalLineCost: 0,
+          totalFormulaG: 0,
+          founderCriticalCount: 0,
+          nearReadyCount: 0,
+          blockedFormulaCount: 0,
+          pricingGapCount: 0,
+          uncertainPricingCount: 0,
+          inventoryBlockerCount: 0,
+          formulas: [],
+        };
+
+        existing.formulaCount += 1;
+        existing.appearanceCount += 1;
+        existing.totalFormulaG += Number(ingredient.g) || 0;
+        existing.totalLineCost += Number(basketLine?.lineCost) || 0;
+        if (isFounderCritical) existing.founderCriticalCount += 1;
+        if (item.launchReadiness?.status === "near_ready") existing.nearReadyCount += 1;
+        if (item.launchReadiness?.status === "blocked") existing.blockedFormulaCount += 1;
+        if (blockingMaterialNames.has(materialName)) existing.inventoryBlockerCount += 1;
+
+        if (
+          !basketLine ||
+          basketLine.status === "missing" ||
+          basketLine.mappingConfidence === "missing" ||
+          truthReport.dimensionByKey?.pricing?.status === "missing"
+        ) {
+          existing.pricingGapCount += 1;
+        } else if (
+          basketLine.status === "uncertain" ||
+          basketLine.mappingConfidence === "uncertain" ||
+          truthReport.dimensionByKey?.pricing?.status === "uncertain" ||
+          truthReport.dimensionByKey?.pricing?.status === "inferred"
+        ) {
+          existing.uncertainPricingCount += 1;
+        }
+
+        if (!existing.formulas.includes(item.displayLabel)) {
+          existing.formulas = [...existing.formulas, item.displayLabel];
+        }
+
+        materialMap.set(materialName, existing);
+      });
+    });
+
+    return buildMaterialTruthGapPrioritization(Array.from(materialMap.values()));
+  }, [founderDashboardItems, founderInsightsEnabled, pricesState]);
   const skuEconomicsSummary = useMemo(
     () =>
       buildSkuEconomicsDashboardSummary(founderDashboardItems, {
@@ -63727,6 +64148,7 @@ export default function App() {
     const skuTrustSummary = skuEconomicsSummary.trustSummary;
     const launchPlannerTrustSummary = launchRunPlannerSummary.trustSummary;
     const recommendationTrustSummary = launchRecommendation.trustSummary;
+    const materialPrioritySummary = materialTruthGapSummary.summary;
     const founderTrustWarnings = [
       ["Founder dashboard", dashboardTrustSummary],
       ["SKU economics", skuTrustSummary],
@@ -63890,6 +64312,103 @@ export default function App() {
         ) : null}
       </div>
     );
+    const renderMaterialPriorityRow = (row) => {
+      const truthMeta =
+        MATERIAL_COMPLETENESS_LEVEL_META[row?.truthLevel] ||
+        MATERIAL_COMPLETENESS_LEVEL_META.partial;
+      return (
+        <button
+          key={`material-priority-${row.name}`}
+          type="button"
+          onClick={() => setDetailName(row.name)}
+          style={{
+            background: "#071826",
+            border: "1px solid #1E3A52",
+            borderRadius: 10,
+            padding: "9px 10px",
+            textAlign: "left",
+            cursor: "pointer",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 8,
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 700,
+                color: "#E2E8F0",
+              }}
+            >
+              {row.name}
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+              <span
+                style={{
+                  background: truthMeta.bg,
+                  border: `1px solid ${truthMeta.border}`,
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                  fontSize: 7.6,
+                  fontWeight: 700,
+                  color: truthMeta.color,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {truthMeta.label}
+              </span>
+              <span
+                style={{
+                  fontSize: 8.2,
+                  color: "#FCD34D",
+                  fontWeight: 700,
+                  fontFamily: "monospace",
+                }}
+              >
+                {row.priorityScore.toFixed(0)}
+              </span>
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 8.5,
+              color: "#94A3B8",
+              lineHeight: 1.55,
+            }}
+          >
+            {row.priorityReason || row.supportLabel || "No priority reason surfaced."}
+          </div>
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 8.4,
+              color: "#CBD5E1",
+              lineHeight: 1.55,
+            }}
+          >
+            {row.primaryGap || row.backfillFocus}
+          </div>
+          <div
+            style={{
+              marginTop: 5,
+              fontSize: 8,
+              color: "#64748B",
+              lineHeight: 1.45,
+            }}
+          >
+            {row.backfillFocus}
+          </div>
+        </button>
+      );
+    };
     const renderFormulaTypeLabel = (entry) =>
       entry?.isLocked
         ? "Locked Version"
@@ -68092,6 +68611,225 @@ export default function App() {
                 )}
               </div>
             </div>
+
+            <div
+              style={{
+                background: CARD,
+                borderRadius: 14,
+                border: `1px solid ${BORDER}`,
+                padding: 14,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#A78BFA",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    Top Materials Truth / Gap Prioritization
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#64748B",
+                      lineHeight: 1.6,
+                      maxWidth: 620,
+                    }}
+                  >
+                    Ranks current materials by truth weakness plus how much they
+                    matter to saved formulas, current basket spend, and
+                    founder-critical launch reads. Open any row to jump into the
+                    dossier and backfill next.
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                    textAlign: "right",
+                  }}
+                >
+                  {materialPrioritySummary.topPriorityMaterialName
+                    ? `Top next backfill: ${materialPrioritySummary.topPriorityMaterialName}`
+                    : "No weak high-impact material is standing out yet."}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {[
+                  [
+                    "Weak Materials",
+                    materialPrioritySummary.weakMaterialCount,
+                    `${materialPrioritySummary.materialCount} tracked`,
+                    "#7DD3FC",
+                  ],
+                  [
+                    "Sparse Truth",
+                    materialPrioritySummary.sparseMaterialCount,
+                    "Need stronger identity/pricing/tech support",
+                    "#F87171",
+                  ],
+                  [
+                    "Pricing Gaps",
+                    materialPrioritySummary.pricingGapMaterialCount,
+                    `${selectedBasketModeMeta.label} basket mode`,
+                    "#F59E0B",
+                  ],
+                  [
+                    "Founder-Critical Weak",
+                    materialPrioritySummary.founderCriticalWeakCount,
+                    "Closer-to-launch formulas with weak truth",
+                    "#A78BFA",
+                  ],
+                ].map(([label, value, meta, color]) => (
+                  <div
+                    key={`material-priority-metric-${label}`}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 10,
+                      padding: "9px 10px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color,
+                      }}
+                    >
+                      {value}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 3,
+                        fontSize: 8.5,
+                        color: "#CBD5E1",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 3,
+                        fontSize: 8.1,
+                        color: "#64748B",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {meta}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  marginTop: 12,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                  gap: 10,
+                }}
+              >
+                {[
+                  [
+                    "Most-Used Weak Materials",
+                    materialTruthGapSummary.mostUsedWeakMaterials,
+                    "#7DD3FC",
+                    "Strong candidates when the same weak material keeps showing up across saved formulas.",
+                  ],
+                  [
+                    "Highest-Spend Weak Materials",
+                    materialTruthGapSummary.highestSpendWeakMaterials,
+                    "#34D399",
+                    "Best next targets when thin truth is shaping current cost-driver reads.",
+                  ],
+                  [
+                    "Weakest Truth in Founder-Critical Materials",
+                    materialTruthGapSummary.founderCriticalWeakMaterials,
+                    "#F59E0B",
+                    "These weak materials matter most because they sit in launch-relevant formulas right now.",
+                  ],
+                  [
+                    "Strongest Manual Backfill Targets",
+                    materialTruthGapSummary.strongestBackfillCandidates,
+                    "#A78BFA",
+                    "A heuristic blend of usage, spend, pricing gaps, and truth weakness.",
+                  ],
+                ].map(([title, rows, color, subtitle]) => (
+                  <div
+                    key={`material-priority-group-${title}`}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 8.6,
+                        color,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {title}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        fontSize: 8.2,
+                        color: "#64748B",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      {subtitle}
+                    </div>
+                    <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                      {rows.length === 0 ? (
+                        <div
+                          style={{
+                            fontSize: 8.9,
+                            color: "#86EFAC",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          No material stands out in this priority bucket under the
+                          current runtime snapshot.
+                        </div>
+                      ) : (
+                        rows.slice(0, 3).map((row) => renderMaterialPriorityRow(row))
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -68476,6 +69214,7 @@ export default function App() {
     launchRunPlannerSummary,
     loadLaunchRecommendationIntoPlanner,
     loadFounderScenario,
+    materialTruthGapSummary,
     openFormulaFromDashboard,
     scrollToFounderLaunchPlanner,
     saveCurrentFounderScenario,
@@ -68483,6 +69222,7 @@ export default function App() {
     savedFounderScenarios,
     selectedBasketModeMeta,
     selectedDiluentBasket,
+    setDetailName,
     setLaunchPlanUnits,
     skuEconomicsSummary,
     skuLaborCost,
