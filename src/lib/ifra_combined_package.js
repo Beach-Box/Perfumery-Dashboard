@@ -1,5 +1,7 @@
 import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
 import materialNormalization from "../data/material_normalization.json" with { type: "json" };
+import evidenceCandidateRegistry from "../data/evidence_candidate_registry.json" with { type: "json" };
+import sourceDocumentRegistry from "../data/source_document_registry.json" with { type: "json" };
 import supplierImportReviewQueue from "../data/supplier_import_review_queue.json" with { type: "json" };
 import supplierProductRegistry from "../data/supplier_product_registry.json" with { type: "json" };
 
@@ -1068,6 +1070,17 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
 export const MATERIAL_NORMALIZATION = materialNormalization;
+export const SOURCE_DOCUMENT_REGISTRY_METADATA =
+  sourceDocumentRegistry.metadata;
+export const SOURCE_DOCUMENT_REGISTRY =
+  sourceDocumentRegistry.documents || {};
+export const SOURCE_DOCUMENT_INTAKE_TARGETS =
+  sourceDocumentRegistry.intakeTargets || {};
+export const EVIDENCE_CANDIDATE_REGISTRY_METADATA =
+  evidenceCandidateRegistry.metadata;
+export const EVIDENCE_CANDIDATES = evidenceCandidateRegistry.candidates || {};
+export const EVIDENCE_CANDIDATE_TARGETS =
+  evidenceCandidateRegistry.candidateTargets || {};
 export const SUPPLIER_PRODUCT_REGISTRY_METADATA =
   supplierProductRegistry.metadata;
 export const SUPPLIER_PRODUCT_REGISTRY =
@@ -1135,6 +1148,26 @@ const SUPPLIER_PRODUCT_KEYS_BY_CANONICAL_KEY = Object.entries(
   return acc;
 }, {});
 
+const SOURCE_DOCUMENT_KEYS_BY_CANONICAL_KEY = Object.entries(
+  SOURCE_DOCUMENT_REGISTRY
+).reduce((acc, [sourceDocumentKey, record]) => {
+  const canonicalMaterialKey = record?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(sourceDocumentKey);
+  return acc;
+}, {});
+
+const EVIDENCE_CANDIDATE_KEYS_BY_CANONICAL_KEY = Object.entries(
+  EVIDENCE_CANDIDATES
+).reduce((acc, [evidenceCandidateKey, record]) => {
+  const canonicalMaterialKey = record?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(evidenceCandidateKey);
+  return acc;
+}, {});
+
 export function getSupplierRegistrySupplierKey(supplierNameOrKey) {
   if (!supplierNameOrKey) return null;
   if (
@@ -1187,6 +1220,53 @@ export function getSupplierProductsForCanonicalMaterialKey(
   return keys
     .map((key) => getSupplierProductRecord(key))
     .filter(Boolean);
+}
+
+export function getSourceDocumentRecord(sourceDocumentKey) {
+  const record = SOURCE_DOCUMENT_REGISTRY[sourceDocumentKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getSourceDocumentsForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys = SOURCE_DOCUMENT_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => ({
+      sourceDocumentKey: key,
+      ...getSourceDocumentRecord(key),
+    }))
+    .filter(Boolean);
+}
+
+export function getEvidenceCandidateRecord(evidenceCandidateKey) {
+  const record = EVIDENCE_CANDIDATES[evidenceCandidateKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getEvidenceCandidatesForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys =
+    EVIDENCE_CANDIDATE_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => ({
+      evidenceCandidateKey: key,
+      ...getEvidenceCandidateRecord(key),
+    }))
+    .filter(Boolean);
+}
+
+export function getPendingEvidenceCandidateTargets() {
+  return Object.entries(EVIDENCE_CANDIDATE_TARGETS)
+    .filter(([, target]) => {
+      const status = String(target?.reviewStatus || "").trim().toLowerCase();
+      return !status || status.startsWith("awaiting") || status.startsWith("pending");
+    })
+    .map(([targetKey, target]) => ({
+      targetKey,
+      ...cloneJsonValue(target),
+    }));
 }
 
 export function getPendingSupplierImportItems() {
@@ -1408,6 +1488,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     canonicalName: "Peru Balsam Resinoid",
     note: "base",
     type: "ABS",
+    inci: "Myroxylon Pereirae Oil/Extract",
     scentClass: "Amber",
     scentSummary: "Peru balsam resinoid",
     scentDesc:
@@ -1435,6 +1516,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     canonicalName: "Benzoin Siam Resinoid",
     note: "base",
     type: "ABS",
+    cas: "9000-72-0",
     scentClass: "Amber",
     scentSummary: "Benzoin Siam resinoid",
     scentDesc:

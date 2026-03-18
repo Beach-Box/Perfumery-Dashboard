@@ -21,14 +21,20 @@ import {
   ReferenceArea,
 } from "recharts";
 import {
+  EVIDENCE_CANDIDATES,
+  EVIDENCE_CANDIDATE_TARGETS,
   MATERIAL_NORMALIZATION,
+  SOURCE_DOCUMENT_INTAKE_TARGETS,
+  SOURCE_DOCUMENT_REGISTRY,
   SUPPLIER_PRODUCT_REGISTRY,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
+  getEvidenceCandidatesForCanonicalMaterialKey,
   getMaterialNormalizationEntry,
   getIfraMaterialRecord,
   getIfraUiState,
   getPendingSupplierImportItems,
+  getSourceDocumentsForCanonicalMaterialKey,
   getSupplierProductRecord,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
@@ -54948,6 +54954,80 @@ function ScoreBar({ label, value, max = 10, color }) {
 
 const SUPPLIER_IMPORT_LOCAL_REVIEW_STORAGE_KEY =
   "bb_supplier_import_local_review_v1";
+const EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY =
+  "bb_evidence_candidate_review_v1";
+
+function normalizeEvidenceCandidateReviewStatus(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (normalized === "approved_for_promotion") {
+    return "approved_for_promotion";
+  }
+  if (normalized === "rejected") {
+    return "rejected";
+  }
+  return "pending_review";
+}
+
+function buildEvidenceCandidateSourceSnapshot(candidate) {
+  return {
+    evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
+    sourceDocumentKey: candidate?.sourceDocumentKey || null,
+    canonicalMaterialKey: candidate?.canonicalMaterialKey || null,
+    relatedCatalogNames: Array.isArray(candidate?.relatedCatalogNames)
+      ? [...candidate.relatedCatalogNames]
+      : [],
+    candidateFieldName: candidate?.candidateFieldName || null,
+    candidateValue: Object.prototype.hasOwnProperty.call(
+      candidate || {},
+      "candidateValue"
+    )
+      ? candidate.candidateValue
+      : null,
+    confidence: candidate?.confidence || null,
+    supplier: candidate?.supplier || null,
+    sourceType: candidate?.sourceType || null,
+    sourceReviewStatus: candidate?.sourceReviewStatus || "pending_review",
+    notes: Array.isArray(candidate?.notes) ? [...candidate.notes] : [],
+  };
+}
+
+function getApprovedEvidenceCandidateRecords(localReviewState) {
+  return Object.entries(localReviewState || {})
+    .filter(([, record]) => record?.decision === "approved")
+    .map(([evidenceCandidateKey, record]) => {
+      const sourceSnapshot = record?.sourceSnapshot || null;
+      return {
+        evidenceCandidateKey,
+        approvalStatus: record?.reviewStatus || "approved_for_promotion",
+        reviewedAt: record?.reviewedAt || null,
+        sourceSnapshot,
+        promotionCandidate: sourceSnapshot
+          ? {
+              ...sourceSnapshot,
+              reviewStatus: record?.reviewStatus || "approved_for_promotion",
+            }
+          : null,
+      };
+    })
+    .sort((a, b) => a.evidenceCandidateKey.localeCompare(b.evidenceCandidateKey));
+}
+
+function buildApprovedEvidenceCandidateExportPayload(localReviewState) {
+  const approvedEvidenceCandidates =
+    getApprovedEvidenceCandidateRecords(localReviewState);
+
+  return {
+    metadata: {
+      version: 1,
+      source: "browser_local_evidence_candidate_review",
+      exportedAt: new Date().toISOString(),
+      approvedCandidateCount: approvedEvidenceCandidates.length,
+      note:
+        "Portable approved evidence candidates only. First-pass promotion supports only low-risk helper seed fields: cas, inci, scentDesc, and isUVCB. IFRA, rep, note-role, and live catalog changes remain manual.",
+    },
+    approvedEvidenceCandidates,
+  };
+}
 
 function buildSupplierImportSourceSnapshot(item) {
   return {
@@ -55814,6 +55894,208 @@ function buildSupplierCoverageGapReport() {
   };
 }
 
+const SOURCE_DOCUMENT_PRIORITY_WEIGHT = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
+  const evidenceCandidates = Object.entries(EVIDENCE_CANDIDATES)
+    .map(([evidenceCandidateKey, record]) => {
+      const sourceReviewStatus = normalizeEvidenceCandidateReviewStatus(
+        record?.reviewStatus
+      );
+      const localReview = localReviewState[evidenceCandidateKey] || null;
+      const reviewStatus =
+        localReview?.reviewStatus || sourceReviewStatus || "pending_review";
+
+      return {
+        evidenceCandidateKey,
+        canonicalMaterialKey: record?.canonicalMaterialKey || null,
+        relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
+          ? [...record.relatedCatalogNames]
+          : [],
+        sourceDocumentKey: record?.sourceDocumentKey || null,
+        sourceType: record?.sourceType || null,
+        supplier: record?.supplier || null,
+        candidateFieldName: record?.candidateFieldName || null,
+        candidateValue: Object.prototype.hasOwnProperty.call(record || {}, "candidateValue")
+          ? record.candidateValue
+          : null,
+        confidence: record?.confidence || null,
+        sourceReviewStatus,
+        reviewStatus,
+        localDecision: localReview?.decision || null,
+        reviewedAt: localReview?.reviewedAt || null,
+        notes: Array.isArray(record?.notes) ? [...record.notes] : [],
+        family: classifySupplierCoverageFamily(
+          record?.canonicalMaterialKey,
+          record?.relatedCatalogNames,
+          record?.supplier
+        ),
+      };
+    })
+    .sort((a, b) =>
+      (a.canonicalMaterialKey || a.evidenceCandidateKey).localeCompare(
+        b.canonicalMaterialKey || b.evidenceCandidateKey
+      )
+    );
+
+  const sourceDocuments = Object.entries(SOURCE_DOCUMENT_REGISTRY)
+    .map(([sourceDocumentKey, record]) => {
+      const canonicalMaterialKey = record?.canonicalMaterialKey || null;
+      const linkedCandidateCount = evidenceCandidates.filter(
+        (candidate) => candidate.sourceDocumentKey === sourceDocumentKey
+      ).length;
+      return {
+        sourceDocumentKey,
+        sourceType: record?.sourceType || null,
+        sourceIdentifier: record?.sourceIdentifier || null,
+        sourcePath: record?.sourcePath || null,
+        supplier: record?.supplier || null,
+        canonicalMaterialKey,
+        relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
+          ? [...record.relatedCatalogNames]
+          : [],
+        documentStatus: record?.documentStatus || null,
+        reviewStatus: record?.reviewStatus || null,
+        linkedCandidateCount,
+        notes: Array.isArray(record?.notes) ? [...record.notes] : [],
+        family: classifySupplierCoverageFamily(
+          canonicalMaterialKey,
+          record?.relatedCatalogNames,
+          record?.supplier
+        ),
+      };
+    })
+    .sort((a, b) =>
+      (a.canonicalMaterialKey || a.sourceDocumentKey).localeCompare(
+        b.canonicalMaterialKey || b.sourceDocumentKey
+      )
+    );
+
+  const intakeTargets = Object.entries(SOURCE_DOCUMENT_INTAKE_TARGETS)
+    .map(([targetKey, target]) => {
+      const canonicalMaterialKey = target?.canonicalMaterialKey || targetKey;
+      const canonicalHelperSource = canonicalMaterialKey
+        ? getCanonicalMaterialSource(canonicalMaterialKey)
+        : null;
+      const canonicalOwnerCatalogName = canonicalMaterialKey
+        ? CANONICAL_NORMALIZATION_NAME_BY_KEY[canonicalMaterialKey] || null
+        : null;
+      const ifraMaterialHint = canonicalOwnerCatalogName
+        ? getIfraMaterialRecord(canonicalOwnerCatalogName)
+        : null;
+      const linkedDocuments =
+        getSourceDocumentsForCanonicalMaterialKey(canonicalMaterialKey);
+      const linkedEvidenceCandidates =
+        getEvidenceCandidatesForCanonicalMaterialKey(canonicalMaterialKey);
+      const requestedFields = Array.isArray(target?.requestedFields)
+        ? [...target.requestedFields]
+        : [];
+      const currentCoverage = {
+        cas: Boolean(canonicalHelperSource?.cas),
+        inci: Boolean(canonicalHelperSource?.inci),
+        note: Boolean(canonicalHelperSource?.note),
+        scentDesc: Boolean(canonicalHelperSource?.scentDesc),
+        rep: Boolean(canonicalHelperSource?.rep),
+        isUVCB: typeof canonicalHelperSource?.isUVCB === "boolean",
+        ifraMaterialHint: Boolean(ifraMaterialHint),
+      };
+      const stillMissingFields = requestedFields.filter(
+        (field) => !currentCoverage[field]
+      );
+
+      return {
+        targetKey,
+        canonicalMaterialKey,
+        relatedCatalogNames: Array.isArray(target?.relatedCatalogNames)
+          ? [...target.relatedCatalogNames]
+          : [],
+        relatedSuppliers: Array.isArray(target?.relatedSuppliers)
+          ? [...target.relatedSuppliers]
+          : [],
+        requestedSourceTypes: Array.isArray(target?.requestedSourceTypes)
+          ? [...target.requestedSourceTypes]
+          : [],
+        requestedFields,
+        currentCoverage,
+        stillMissingFields,
+        priority: target?.priority || "medium",
+        reviewStatus: target?.reviewStatus || "awaiting_source_document",
+        linkedDocumentCount: linkedDocuments.length,
+        linkedEvidenceCandidateCount: linkedEvidenceCandidates.length,
+        notes: Array.isArray(target?.notes) ? [...target.notes] : [],
+        family: classifySupplierCoverageFamily(
+          canonicalMaterialKey,
+          target?.relatedCatalogNames,
+          target?.relatedSuppliers
+        ),
+      };
+    })
+    .sort((a, b) => {
+      const priorityDelta =
+        (SOURCE_DOCUMENT_PRIORITY_WEIGHT[b.priority] || 0) -
+        (SOURCE_DOCUMENT_PRIORITY_WEIGHT[a.priority] || 0);
+      if (priorityDelta !== 0) return priorityDelta;
+      return a.canonicalMaterialKey.localeCompare(b.canonicalMaterialKey);
+    });
+
+  const countsByFamily = intakeTargets.reduce((acc, target) => {
+    const family = target.family || "Other";
+    if (!acc[family]) {
+      acc[family] = {
+        family,
+        targetCount: 0,
+        linkedDocumentCount: 0,
+        linkedEvidenceCandidateCount: 0,
+      };
+    }
+    acc[family].targetCount += 1;
+    acc[family].linkedDocumentCount += target.linkedDocumentCount;
+    acc[family].linkedEvidenceCandidateCount +=
+      target.linkedEvidenceCandidateCount;
+    return acc;
+  }, {});
+
+  return {
+    metadata: {
+      version: 1,
+      generatedAt: new Date().toISOString(),
+      note:
+        "Read-only source-document and evidence-candidate review payload. No helper chemistry, IFRA linkage, or live catalog data is applied automatically.",
+    },
+    summary: {
+      sourceDocumentCount: sourceDocuments.length,
+      evidenceCandidateCount: evidenceCandidates.length,
+      pendingReviewCandidateCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "pending_review"
+      ).length,
+      approvedForPromotionCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "approved_for_promotion"
+      ).length,
+      rejectedCandidateCount: evidenceCandidates.filter(
+        (candidate) => candidate.reviewStatus === "rejected"
+      ).length,
+      intakeTargetCount: intakeTargets.length,
+      awaitingDocumentTargetCount: intakeTargets.filter(
+        (target) => target.linkedDocumentCount === 0
+      ).length,
+      awaitingEvidenceCandidateCount: intakeTargets.filter(
+        (target) => target.linkedEvidenceCandidateCount === 0
+      ).length,
+      countsByFamily: Object.values(countsByFamily).sort((a, b) =>
+        a.family.localeCompare(b.family)
+      ),
+    },
+    intakeTargets,
+    sourceDocuments,
+    evidenceCandidates,
+    candidateTargets: EVIDENCE_CANDIDATE_TARGETS,
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -55886,13 +56168,28 @@ export default function App() {
         return {};
       }
     });
+  const [evidenceCandidateLocalReviewState, setEvidenceCandidateLocalReviewState] =
+    useState(() => {
+      try {
+        const s = localStorage.getItem(
+          EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY
+        );
+        return s ? JSON.parse(s) : {};
+      } catch {
+        return {};
+      }
+    });
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
+    useState("");
+  const [approvedEvidenceCandidateExportStatus, setApprovedEvidenceCandidateExportStatus] =
     useState("");
   const [supplierCatalogDraftExportStatus, setSupplierCatalogDraftExportStatus] =
     useState("");
   const [supplierPriceDraftExportStatus, setSupplierPriceDraftExportStatus] =
     useState("");
   const [supplierCoverageAuditExportStatus, setSupplierCoverageAuditExportStatus] =
+    useState("");
+  const [sourceDocumentEvidenceExportStatus, setSourceDocumentEvidenceExportStatus] =
     useState("");
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
@@ -55945,10 +56242,34 @@ export default function App() {
       );
     } catch (e) {}
   }, [supplierImportLocalReviewState]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        EVIDENCE_CANDIDATE_LOCAL_REVIEW_STORAGE_KEY,
+        JSON.stringify(evidenceCandidateLocalReviewState)
+      );
+    } catch (e) {}
+  }, [evidenceCandidateLocalReviewState]);
   const approvedSupplierDraftRecords = useMemo(
     () =>
       getApprovedSupplierImportDraftRecords(supplierImportLocalReviewState),
     [supplierImportLocalReviewState]
+  );
+  const approvedEvidenceCandidateRecords = useMemo(
+    () =>
+      getApprovedEvidenceCandidateRecords(evidenceCandidateLocalReviewState),
+    [evidenceCandidateLocalReviewState]
+  );
+  const approvedEvidenceCandidateExportPayload = useMemo(
+    () =>
+      buildApprovedEvidenceCandidateExportPayload(
+        evidenceCandidateLocalReviewState
+      ),
+    [evidenceCandidateLocalReviewState]
+  );
+  const approvedEvidenceCandidateExportJson = useMemo(
+    () => JSON.stringify(approvedEvidenceCandidateExportPayload, null, 2),
+    [approvedEvidenceCandidateExportPayload]
   );
   const approvedSupplierDraftExportPayload = useMemo(
     () =>
@@ -56009,6 +56330,17 @@ export default function App() {
     () => JSON.stringify(supplierCoverageGapReport, null, 2),
     [supplierCoverageGapReport]
   );
+  const sourceDocumentEvidenceReviewPayload = useMemo(
+    () =>
+      buildSourceDocumentEvidenceReviewPayload(
+        evidenceCandidateLocalReviewState
+      ),
+    [evidenceCandidateLocalReviewState]
+  );
+  const sourceDocumentEvidenceReviewJson = useMemo(
+    () => JSON.stringify(sourceDocumentEvidenceReviewPayload, null, 2),
+    [sourceDocumentEvidenceReviewPayload]
+  );
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
       type: "application/json",
@@ -56041,6 +56373,46 @@ export default function App() {
       setSupplierDraftExportStatus("Copy failed.");
     }
   }, [approvedSupplierDraftExportJson, approvedSupplierDraftRecords.length]);
+  const exportApprovedEvidenceCandidates = useCallback(() => {
+    const blob = new Blob([approvedEvidenceCandidateExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_approved_evidence_candidates.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setApprovedEvidenceCandidateExportStatus(
+      `Exported ${approvedEvidenceCandidateRecords.length} approved evidence candidate${
+        approvedEvidenceCandidateRecords.length === 1 ? "" : "s"
+      }.`
+    );
+  }, [
+    approvedEvidenceCandidateExportJson,
+    approvedEvidenceCandidateRecords.length,
+  ]);
+  const copyApprovedEvidenceCandidates = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setApprovedEvidenceCandidateExportStatus(
+        "Copy unavailable in this browser."
+      );
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(approvedEvidenceCandidateExportJson);
+      setApprovedEvidenceCandidateExportStatus(
+        `Copied ${approvedEvidenceCandidateRecords.length} approved evidence candidate${
+          approvedEvidenceCandidateRecords.length === 1 ? "" : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setApprovedEvidenceCandidateExportStatus("Copy failed.");
+    }
+  }, [
+    approvedEvidenceCandidateExportJson,
+    approvedEvidenceCandidateRecords.length,
+  ]);
   const exportGeneratedSupplierCatalogRowDrafts = useCallback(() => {
     const blob = new Blob([generatedSupplierCatalogRowDraftExportJson], {
       type: "application/json",
@@ -56155,6 +56527,44 @@ export default function App() {
       setSupplierCoverageAuditExportStatus("Copy failed.");
     }
   }, [supplierCoverageGapReport, supplierCoverageGapReportJson]);
+  const exportSourceDocumentEvidenceReview = useCallback(() => {
+    const blob = new Blob([sourceDocumentEvidenceReviewJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_source_document_evidence_review.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSourceDocumentEvidenceExportStatus(
+      `Exported ${sourceDocumentEvidenceReviewPayload.summary.intakeTargetCount} evidence intake target${
+        sourceDocumentEvidenceReviewPayload.summary.intakeTargetCount === 1
+          ? ""
+          : "s"
+      }.`
+    );
+  }, [sourceDocumentEvidenceReviewJson, sourceDocumentEvidenceReviewPayload]);
+  const copySourceDocumentEvidenceReview = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSourceDocumentEvidenceExportStatus(
+        "Copy unavailable in this browser."
+      );
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(sourceDocumentEvidenceReviewJson);
+      setSourceDocumentEvidenceExportStatus(
+        `Copied ${sourceDocumentEvidenceReviewPayload.summary.intakeTargetCount} evidence intake target${
+          sourceDocumentEvidenceReviewPayload.summary.intakeTargetCount === 1
+            ? ""
+            : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSourceDocumentEvidenceExportStatus("Copy failed.");
+    }
+  }, [sourceDocumentEvidenceReviewJson, sourceDocumentEvidenceReviewPayload]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -61308,6 +61718,23 @@ Be specific, reference ingredient names, keep it under 300 words.`;
             const pendingSupplierImportCount = supplierImportQueueRows.filter(
               (item) => item.canReview
             ).length;
+            const evidenceCandidateReviewRows = [
+              ...sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+            ].sort((a, b) => {
+              const order = {
+                pending_review: 0,
+                approved_for_promotion: 1,
+                rejected: 2,
+              };
+              const statusDelta =
+                (order[a.reviewStatus] ?? 99) - (order[b.reviewStatus] ?? 99);
+              if (statusDelta !== 0) return statusDelta;
+              return (
+                (a.canonicalMaterialKey || a.evidenceCandidateKey).localeCompare(
+                  b.canonicalMaterialKey || b.evidenceCandidateKey
+                )
+              );
+            });
 
             const approveSupplierImport = (item) => {
               if (!item?.canReview) return;
@@ -61324,6 +61751,43 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                   normalizationEntryDraft: draft.normalizationEntryDraft,
                 },
               }));
+            };
+
+            const approveEvidenceCandidate = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              const reviewedAt = new Date().toISOString();
+              setEvidenceCandidateLocalReviewState((prev) => ({
+                ...prev,
+                [candidate.evidenceCandidateKey]: {
+                  decision: "approved",
+                  reviewStatus: "approved_for_promotion",
+                  reviewedAt,
+                  sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+                },
+              }));
+            };
+
+            const rejectEvidenceCandidate = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              const reviewedAt = new Date().toISOString();
+              setEvidenceCandidateLocalReviewState((prev) => ({
+                ...prev,
+                [candidate.evidenceCandidateKey]: {
+                  decision: "rejected",
+                  reviewStatus: "rejected",
+                  reviewedAt,
+                  sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+                },
+              }));
+            };
+
+            const clearEvidenceCandidateReview = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              setEvidenceCandidateLocalReviewState((prev) => {
+                const next = { ...prev };
+                delete next[candidate.evidenceCandidateKey];
+                return next;
+              });
             };
 
             const rejectSupplierImport = (item) => {
@@ -62302,6 +62766,862 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     <textarea
                       readOnly
                       value={supplierCoverageGapReportJson}
+                      spellCheck={false}
+                      style={{
+                        width: "100%",
+                        minHeight: 160,
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                        color: "#CBD5E1",
+                        padding: "10px 12px",
+                        fontSize: 8.5,
+                        lineHeight: 1.6,
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                        resize: "vertical",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#C4B5FD",
+                          }}
+                        >
+                          📚 Source Document Evidence Review
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                          }}
+                        >
+                          Review-only registry for trusted source documents and
+                          extracted evidence candidates. Nothing here writes
+                          helper chemistry, IFRA linkage, or live catalog data.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .awaitingDocumentTargetCount > 0
+                              ? "#1E1435"
+                              : "#0A2E1A",
+                          border: `1px solid ${
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .awaitingDocumentTargetCount > 0
+                              ? "#6D28D9"
+                              : "#166534"
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .awaitingDocumentTargetCount > 0
+                              ? "#DDD6FE"
+                              : "#86EFAC",
+                          padding: "4px 10px",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {sourceDocumentEvidenceReviewPayload.summary
+                          .awaitingDocumentTargetCount > 0
+                          ? `${sourceDocumentEvidenceReviewPayload.summary.awaitingDocumentTargetCount} targets need docs`
+                          : "document coverage seeded"}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <button
+                        onClick={exportSourceDocumentEvidenceReview}
+                        style={{
+                          background: "#1E1435",
+                          border: "1px solid #6D28D9",
+                          borderRadius: 8,
+                          color: "#DDD6FE",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📤 Export Evidence JSON
+                      </button>
+                      <button
+                        onClick={copySourceDocumentEvidenceReview}
+                        style={{
+                          background: "#0A1628",
+                          border: "1px solid #1D4ED8",
+                          borderRadius: 8,
+                          color: "#93C5FD",
+                          padding: "6px 12px",
+                          fontSize: 9,
+                          cursor: "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        📋 Copy JSON
+                      </button>
+                      {sourceDocumentEvidenceExportStatus && (
+                        <span
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          {sourceDocumentEvidenceExportStatus}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(160px, 1fr))",
+                        gap: 8,
+                        marginBottom: 10,
+                      }}
+                    >
+                      {[
+                        {
+                          label: "Intake Targets",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .intakeTargetCount,
+                          color: "#DDD6FE",
+                        },
+                        {
+                          label: "Ingested Documents",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .sourceDocumentCount,
+                          color: "#93C5FD",
+                        },
+                        {
+                          label: "Evidence Candidates",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .evidenceCandidateCount,
+                          color: "#FDE68A",
+                        },
+                        {
+                          label: "Approved for Promotion",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .approvedForPromotionCount,
+                          color: "#86EFAC",
+                        },
+                        {
+                          label: "Targets Awaiting Docs",
+                          value:
+                            sourceDocumentEvidenceReviewPayload.summary
+                              .awaitingDocumentTargetCount,
+                          color: "#F9A8D4",
+                        },
+                      ].map((item) => (
+                        <div
+                          key={item.label}
+                          style={{
+                            background: "#020810",
+                            border: "1px solid #1E293B",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 7.5,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 3,
+                            }}
+                          >
+                            {item.label}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              color: item.color,
+                            }}
+                          >
+                            {item.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div
+                      style={{
+                        marginBottom: 10,
+                        padding: "10px 12px",
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#FDE68A",
+                            }}
+                          >
+                            Evidence Candidate Review Queue
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#64748B",
+                              marginTop: 3,
+                            }}
+                          >
+                            Mark candidates as `pending_review`,
+                            `approved_for_promotion`, or `rejected`. Approval
+                            only creates portable promotion JSON.
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                          }}
+                        >
+                          <button
+                            onClick={exportApprovedEvidenceCandidates}
+                            style={{
+                              background: "#0A2E1A",
+                              border: "1px solid #166534",
+                              borderRadius: 8,
+                              color: "#86EFAC",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📤 Export Approved Candidates
+                          </button>
+                          <button
+                            onClick={copyApprovedEvidenceCandidates}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1D4ED8",
+                              borderRadius: 8,
+                              color: "#93C5FD",
+                              padding: "6px 12px",
+                              fontSize: 9,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            📋 Copy JSON
+                          </button>
+                          {approvedEvidenceCandidateExportStatus && (
+                            <span
+                              style={{
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                              }}
+                            >
+                              {approvedEvidenceCandidateExportStatus}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {evidenceCandidateReviewRows.length > 0 ? (
+                        <>
+                          <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                            <table
+                              style={{
+                                width: "100%",
+                                fontSize: 8.5,
+                                borderCollapse: "collapse",
+                              }}
+                            >
+                              <thead>
+                                <tr
+                                  style={{
+                                    borderBottom: "1px solid #1E293B",
+                                  }}
+                                >
+                                  {[
+                                    "Candidate",
+                                    "Value",
+                                    "Source",
+                                    "Confidence",
+                                    "Status",
+                                    "Actions",
+                                  ].map((label) => (
+                                    <th
+                                      key={label}
+                                      style={{
+                                        textAlign: "left",
+                                        padding: "7px 8px",
+                                        color: "#64748B",
+                                        fontSize: 8,
+                                        fontWeight: 700,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {label}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {evidenceCandidateReviewRows.map(
+                                  (candidate, idx) => (
+                                    <tr
+                                      key={candidate.evidenceCandidateKey}
+                                      style={{
+                                        borderBottom:
+                                          idx ===
+                                          evidenceCandidateReviewRows.length - 1
+                                            ? "none"
+                                            : "1px solid #0F172A",
+                                      }}
+                                    >
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#E2E8F0",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        <div style={{ fontWeight: 700 }}>
+                                          {candidate.canonicalMaterialKey}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#FDE68A",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                          }}
+                                        >
+                                          {candidate.candidateFieldName}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                            fontFamily:
+                                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                          }}
+                                        >
+                                          {candidate.evidenceCandidateKey}
+                                        </div>
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        {typeof candidate.candidateValue ===
+                                        "boolean"
+                                          ? String(candidate.candidateValue)
+                                          : candidate.candidateValue || "—"}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 220,
+                                          lineHeight: 1.6,
+                                        }}
+                                      >
+                                        <div>
+                                          {candidate.supplier || "Unknown supplier"} ·{" "}
+                                          {candidate.sourceType || "unknown"}
+                                        </div>
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 3,
+                                          }}
+                                        >
+                                          {candidate.sourceDocumentKey}
+                                        </div>
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          color: "#CBD5E1",
+                                          minWidth: 90,
+                                        }}
+                                      >
+                                        {candidate.confidence || "—"}
+                                      </td>
+                                      <td style={{ padding: "8px", minWidth: 160 }}>
+                                        <span
+                                          style={{
+                                            background:
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#0A2E1A"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#2A0F14"
+                                                : "#2A1A00",
+                                            border: `1px solid ${
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#166534"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#7F1D1D"
+                                                : "#78350F"
+                                            }`,
+                                            borderRadius: 999,
+                                            color:
+                                              candidate.reviewStatus ===
+                                              "approved_for_promotion"
+                                                ? "#86EFAC"
+                                                : candidate.reviewStatus ===
+                                                  "rejected"
+                                                ? "#FCA5A5"
+                                                : "#F59E0B",
+                                            padding: "2px 8px",
+                                            fontSize: 8,
+                                            fontWeight: 700,
+                                            whiteSpace: "nowrap",
+                                          }}
+                                        >
+                                          {candidate.reviewStatus}
+                                        </span>
+                                        {candidate.reviewedAt && (
+                                          <div
+                                            style={{
+                                              marginTop: 4,
+                                              fontSize: 7.5,
+                                              color: "#475569",
+                                              whiteSpace: "nowrap",
+                                            }}
+                                          >
+                                            {new Date(
+                                              candidate.reviewedAt
+                                            ).toLocaleString()}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td
+                                        style={{
+                                          padding: "8px",
+                                          minWidth: 180,
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: 6,
+                                            flexWrap: "wrap",
+                                          }}
+                                        >
+                                          <button
+                                            onClick={() =>
+                                              approveEvidenceCandidate(candidate)
+                                            }
+                                            style={{
+                                              background: "#0A2E1A",
+                                              border: "1px solid #166534",
+                                              borderRadius: 6,
+                                              color: "#86EFAC",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Approve
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              rejectEvidenceCandidate(candidate)
+                                            }
+                                            style={{
+                                              background: "#2A0F14",
+                                              border: "1px solid #7F1D1D",
+                                              borderRadius: 6,
+                                              color: "#FCA5A5",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Reject
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              clearEvidenceCandidateReview(
+                                                candidate
+                                              )
+                                            }
+                                            style={{
+                                              background: "#0A1628",
+                                              border: `1px solid ${BORDER}`,
+                                              borderRadius: 6,
+                                              color: "#94A3B8",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Reset
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <textarea
+                            readOnly
+                            value={approvedEvidenceCandidateExportJson}
+                            spellCheck={false}
+                            style={{
+                              width: "100%",
+                              minHeight: 140,
+                              background: "#020810",
+                              border: "1px solid #1E293B",
+                              borderRadius: 8,
+                              color: "#CBD5E1",
+                              padding: "10px 12px",
+                              fontSize: 8.5,
+                              lineHeight: 1.6,
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              resize: "vertical",
+                              boxSizing: "border-box",
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          No evidence candidates are stored yet. Generate them
+                          from ingested source documents first, then review and
+                          export approved low-risk candidates here.
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        color: "#E2E8F0",
+                        marginBottom: 6,
+                      }}
+                    >
+                      Priority Evidence Intake Targets
+                    </div>
+                    <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                      <table
+                        style={{
+                          width: "100%",
+                          fontSize: 8.5,
+                          borderCollapse: "collapse",
+                        }}
+                      >
+                        <thead>
+                          <tr
+                            style={{
+                              borderBottom: "1px solid #1E293B",
+                            }}
+                          >
+                            {[
+                              "Canonical Target",
+                              "Family / Priority",
+                              "Requested Sources",
+                              "Still Missing Fields",
+                              "Linked Docs / Candidates",
+                              "Notes",
+                            ].map((label) => (
+                              <th
+                                key={label}
+                                style={{
+                                  textAlign: "left",
+                                  padding: "7px 8px",
+                                  color: "#64748B",
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {label}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sourceDocumentEvidenceReviewPayload.intakeTargets.map(
+                            (target, idx) => (
+                              <tr
+                                key={target.targetKey}
+                                style={{
+                                  borderBottom:
+                                    idx ===
+                                    sourceDocumentEvidenceReviewPayload
+                                      .intakeTargets.length -
+                                      1
+                                      ? "none"
+                                      : "1px solid #0F172A",
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#E2E8F0",
+                                    minWidth: 180,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 700 }}>
+                                    {target.canonicalMaterialKey}
+                                  </div>
+                                  <div
+                                    style={{
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      marginTop: 3,
+                                    }}
+                                  >
+                                    {(target.relatedCatalogNames || []).join(
+                                      " · "
+                                    ) || "No linked catalog rows"}
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#CBD5E1",
+                                    minWidth: 120,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <div>{target.family}</div>
+                                  <div
+                                    style={{
+                                      color: "#C4B5FD",
+                                      fontSize: 7.5,
+                                      marginTop: 3,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {target.priority}
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#CBD5E1",
+                                    minWidth: 180,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  {target.requestedSourceTypes.join(" · ")}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#FDE68A",
+                                    minWidth: 180,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  {target.stillMissingFields.join(", ")}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#CBD5E1",
+                                    minWidth: 120,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <div>
+                                    Docs: {target.linkedDocumentCount}
+                                  </div>
+                                  <div
+                                    style={{
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      marginTop: 3,
+                                    }}
+                                  >
+                                    Candidates:{" "}
+                                    {target.linkedEvidenceCandidateCount}
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#94A3B8",
+                                    minWidth: 260,
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  {target.notes.slice(0, 2).join(" ")}
+                                </td>
+                              </tr>
+                            )
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 8,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#020810",
+                          border: "1px solid #1E293B",
+                          borderRadius: 8,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: "#93C5FD",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Ingested Source Documents
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          {sourceDocumentEvidenceReviewPayload.sourceDocuments
+                            .length > 0
+                            ? `${sourceDocumentEvidenceReviewPayload.sourceDocuments.length} trusted document record${
+                                sourceDocumentEvidenceReviewPayload
+                                  .sourceDocuments.length === 1
+                                  ? ""
+                                  : "s"
+                              } currently ingested.`
+                            : "No trusted source documents are ingested yet. Add SDS, TDS, COA, spec sheet, or supplier PDF records here first."}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background: "#020810",
+                          border: "1px solid #1E293B",
+                          borderRadius: 8,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: "#FDE68A",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Extracted Evidence Candidates
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          {sourceDocumentEvidenceReviewPayload.evidenceCandidates
+                            .length > 0
+                            ? `${sourceDocumentEvidenceReviewPayload.evidenceCandidates.length} reviewable evidence candidate${
+                                sourceDocumentEvidenceReviewPayload
+                                  .evidenceCandidates.length === 1
+                                  ? ""
+                                  : "s"
+                              } captured.`
+                            : "No extracted evidence candidates are stored yet. Candidate facts should land here before any helper chemistry or IFRA enrichment is promoted."}
+                        </div>
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      value={sourceDocumentEvidenceReviewJson}
                       spellCheck={false}
                       style={{
                         width: "100%",

@@ -1,0 +1,533 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Registry for trusted source documents used in chemistry and identity enrichment review. Documents are review-only until evidence candidates are manually promoted.",
+    "acceptedSourceTypes": [
+      "sds",
+      "tds",
+      "coa",
+      "spec_sheet",
+      "unknown_pdf",
+      "supplier_pdf",
+      "other"
+    ],
+    "reviewStatuses": [
+      "awaiting_source_document",
+      "ingested_pending_extraction",
+      "extracted_pending_review",
+      "reviewed_ready_for_manual_promotion",
+      "rejected"
+    ]
+  },
+  "documents": {
+    "benzoin_siam_absolute:other:repo_live_catalog_row_benzoin_siam_absolute": {
+      "canonicalMaterialKey": "benzoin_siam_absolute",
+      "documentStatus": "local_registry_snapshot",
+      "notes": [
+        "Trusted local repo source based on the current live catalog row text.",
+        "Safe first-pass use is limited to scentDesc review; broader chemistry and IFRA remain manual."
+      ],
+      "relatedCatalogNames": [
+        "Benzoin Siam Absolute"
+      ],
+      "reviewStatus": "reviewed_ready_for_manual_promotion",
+      "sourceIdentifier": "repo_live_catalog_row_benzoin_siam_absolute",
+      "sourcePath": "src/App.jsx",
+      "sourceType": "other",
+      "supplier": "Local Repo"
+    },
+    "benzoin_siam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds400_592695_m_0067632_en_gb_pdf": {
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "High-value evidence target because the canonical helper seed is still structurally seeded for chemistry/identity.",
+        "Treat discovered documents as review-only until evidence candidates are manually reviewed.",
+        "Discovered from product page: https://fraterworks.com/products/benzoin-siam-resinoid-50-tec",
+        "Matched anchor text: SDS",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/SDS400_592695_M_0067632_EN_GB.pdf?v=1729879234",
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds400_592695_m_0067632_en_gb_pdf.pdf",
+      "sourceType": "sds",
+      "supplier": "Fraterworks"
+    },
+    "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf": {
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "High-value evidence target because the canonical helper seed is still structurally seeded for chemistry/identity.",
+        "Treat discovered documents as review-only until evidence candidates are manually reviewed.",
+        "Discovered from product page: https://fraterworks.com/products/benzoin-siam-resinoid-50-tec",
+        "Matched anchor text: IFRA 51",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/M0067632_PDS.pdf?v=1729879234",
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_regall_frg_592695_m_0067632_emea_en_gb_pdf": {
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "High-value evidence target because the canonical helper seed is still structurally seeded for chemistry/identity.",
+        "Treat discovered documents as review-only until evidence candidates are manually reviewed.",
+        "Discovered from product page: https://fraterworks.com/products/benzoin-siam-resinoid-50-tec",
+        "Matched anchor text: EU Allergens",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/REGALL_FRG_592695_M_0067632_EMEA_EN_GB.pdf?v=1729879234",
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_regall_frg_592695_m_0067632_emea_en_gb_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "peru_balsam_oil:other:repo_live_catalog_row_balsam_peru_eo": {
+      "canonicalMaterialKey": "peru_balsam_oil",
+      "documentStatus": "local_registry_snapshot",
+      "notes": [
+        "Trusted local repo source based on the current live catalog row text.",
+        "Safe first-pass use is limited to scentDesc review; broader chemistry and IFRA remain manual."
+      ],
+      "relatedCatalogNames": [
+        "Balsam Peru EO"
+      ],
+      "reviewStatus": "reviewed_ready_for_manual_promotion",
+      "sourceIdentifier": "repo_live_catalog_row_balsam_peru_eo",
+      "sourcePath": "src/App.jsx",
+      "sourceType": "other",
+      "supplier": "Local Repo"
+    },
+    "peru_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds_peru_balsam_resinoid_extra_r7210_pdf": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "Vendor-style resinoid row is intentionally kept distinct from Peru balsam oil.",
+        "Best near-term target for trusted document discovery because the canonical resinoid identity still lacks deeper source-backed chemistry.",
+        "Discovered from product page: https://fraterworks.com/products/peru-balsam-resinoid",
+        "Matched anchor text: Download SDS",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/SDS_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf?v=1706290628",
+      "sourcePath": null,
+      "sourceType": "sds",
+      "supplier": "Fraterworks"
+    },
+    "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "Vendor-style resinoid row is intentionally kept distinct from Peru balsam oil.",
+        "Best near-term target for trusted document discovery because the canonical resinoid identity still lacks deeper source-backed chemistry.",
+        "Discovered from product page: https://fraterworks.com/products/peru-balsam-resinoid",
+        "Matched anchor text: EU Allergens",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/82ALL_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf?v=1706004430",
+      "sourcePath": null,
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifra51_peru_balsam_resinoid_extra_r7210_pdf": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "Vendor-style resinoid row is intentionally kept distinct from Peru balsam oil.",
+        "Best near-term target for trusted document discovery because the canonical resinoid identity still lacks deeper source-backed chemistry.",
+        "Discovered from product page: https://fraterworks.com/products/peru-balsam-resinoid",
+        "Matched anchor text: IFRA 51",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/IFRA51_PERU_BALSAM_RESINOID_EXTRA_R7210.pdf?v=1706004426",
+      "sourcePath": null,
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "Vendor-style resinoid row is intentionally kept distinct from Peru balsam oil.",
+        "Best near-term target for trusted document discovery because the canonical resinoid identity still lacks deeper source-backed chemistry.",
+        "Discovered from product page: https://fraterworks.com/products/peru-balsam-resinoid",
+        "Matched anchor text: NZ Supplement",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Peru_Balsam_Signature_Resinoid.pdf?v=1727916100",
+      "sourcePath": null,
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "poplar_bud_absolute:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_fiche_securite_f1952_pdf": {
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, while the canonical target remains structurally seeded.",
+        "Use discovered PDFs only as review input; do not auto-promote chemistry or IFRA.",
+        "Discovered from product page: https://fraterworks.com/products/poplar-bud-absolute",
+        "Matched anchor text: Download SDS",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/fiche-securite-F1952.pdf?v=1710525597",
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_fiche_securite_f1952_pdf.pdf",
+      "sourceType": "sds",
+      "supplier": "Fraterworks"
+    },
+    "poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifr_bl51_f1952_pdf": {
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, while the canonical target remains structurally seeded.",
+        "Use discovered PDFs only as review input; do not auto-promote chemistry or IFRA.",
+        "Discovered from product page: https://fraterworks.com/products/poplar-bud-absolute",
+        "Matched anchor text: IFRA 51",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/IFR-BL51-F1952.pdf?v=1710749988",
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifr_bl51_f1952_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_poplar_buds_absolute_50_tec_2_pdf": {
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, while the canonical target remains structurally seeded.",
+        "Use discovered PDFs only as review input; do not auto-promote chemistry or IFRA.",
+        "Discovered from product page: https://fraterworks.com/products/poplar-bud-absolute",
+        "Matched anchor text: NZ Supplement",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Poplar_Buds_Absolute_50_TEC_2.pdf?v=1727923257",
+      "sourcePath": "downloads/source_documents/poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_poplar_buds_absolute_50_tec_2_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "tolu_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_sds_pdf": {
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, so discovered documents should be reviewed before promoting canonical chemistry fields.",
+        "Prefer SDS, TDS, COA, or spec PDFs if present.",
+        "Discovered from product page: https://fraterworks.com/products/tolu-balsam-resinoid",
+        "Matched anchor text: SDS",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_SDS.pdf?v=1707689850",
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_sds_pdf.pdf",
+      "sourceType": "sds",
+      "supplier": "Fraterworks"
+    },
+    "tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_allergens_pdf": {
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, so discovered documents should be reviewed before promoting canonical chemistry fields.",
+        "Prefer SDS, TDS, COA, or spec PDFs if present.",
+        "Discovered from product page: https://fraterworks.com/products/tolu-balsam-resinoid",
+        "Matched anchor text: EU Allergens",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_ALLERGENS.pdf?v=1707689850",
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_allergens_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    },
+    "tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_ifra_pdf": {
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "documentStatus": "discovered_remote_document",
+      "notes": [
+        "Current live supplier-owned product URL from repo PRICING.",
+        "The live row is a diluted-stock representation, so discovered documents should be reviewed before promoting canonical chemistry fields.",
+        "Prefer SDS, TDS, COA, or spec PDFs if present.",
+        "Discovered from product page: https://fraterworks.com/products/tolu-balsam-resinoid",
+        "Matched anchor text: IFRA 49",
+        "Local PDF download is intentionally not versioned in git; use sourceIdentifier to re-download when needed."
+      ],
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_IFRA.pdf?v=1707689850",
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_ifra_pdf.pdf",
+      "sourceType": "unknown_pdf",
+      "supplier": "Fraterworks"
+    }
+  },
+  "intakeTargets": {
+    "benzoin_siam_resinoid": {
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "linkedSourceDocumentKeys": [
+        "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+        "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_regall_frg_592695_m_0067632_emea_en_gb_pdf",
+        "benzoin_siam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds400_592695_m_0067632_en_gb_pdf"
+      ],
+      "notes": [
+        "Current helper coverage is structural only for the canonical resinoid identity.",
+        "Prefer a supplier SDS, TDS, or manufacturer spec before promoting CAS or INCI."
+      ],
+      "priority": "high",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "ingested_pending_extraction"
+    },
+    "peru_balsam_resinoid": {
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "linkedSourceDocumentKeys": [
+        "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf",
+        "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifra51_peru_balsam_resinoid_extra_r7210_pdf",
+        "peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
+        "peru_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds_peru_balsam_resinoid_extra_r7210_pdf"
+      ],
+      "notes": [
+        "Keep the vendor-style resinoid distinct from Peru balsam oil.",
+        "Leave chemistry blank unless a trusted document clearly supports the canonical resinoid identity."
+      ],
+      "priority": "high",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "ingested_pending_extraction"
+    },
+    "poplar_bud_absolute": {
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "linkedSourceDocumentKeys": [
+        "poplar_bud_absolute:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_fiche_securite_f1952_pdf",
+        "poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifr_bl51_f1952_pdf",
+        "poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_poplar_buds_absolute_50_tec_2_pdf"
+      ],
+      "notes": [
+        "Current canonical seed is derived from the live diluted-stock row only.",
+        "Do not promote IFRA linkage without a trusted standard source."
+      ],
+      "priority": "high",
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "ingested_pending_extraction"
+    },
+    "tolu_balsam_resinoid": {
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "linkedSourceDocumentKeys": [
+        "tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_allergens_pdf",
+        "tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_ifra_pdf",
+        "tolu_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_sds_pdf"
+      ],
+      "notes": [
+        "Current canonical seed is structural/source-seeded only.",
+        "Prefer a trusted supplier or manufacturer document before promoting chemistry."
+      ],
+      "priority": "high",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "relatedSuppliers": [
+        "Fraterworks"
+      ],
+      "requestedFields": [
+        "cas",
+        "inci",
+        "rep",
+        "scentDesc",
+        "isUVCB",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "sds",
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "ingested_pending_extraction"
+    },
+    "ylang_ylang_fine_oil": {
+      "canonicalMaterialKey": "ylang_ylang_fine_oil",
+      "notes": [
+        "CAS and INCI are already covered conservatively through the shared Ylang oil family treatment.",
+        "The next safe evidence gap is note-role and stronger identity description for the Fine grade."
+      ],
+      "priority": "medium",
+      "relatedCatalogNames": [
+        "Ylang-Ylang Fine Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "awaiting_source_document"
+    },
+    "ylang_ylang_i_oil": {
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "notes": [
+        "Keep fractional grade identity distinct from Extra, Complete, and III.",
+        "Do not guess note-role or IFRA material linkage from family similarity alone."
+      ],
+      "priority": "medium",
+      "relatedCatalogNames": [
+        "Ylang-Ylang I Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "awaiting_source_document"
+    },
+    "ylang_ylang_ii_oil": {
+      "canonicalMaterialKey": "ylang_ylang_ii_oil",
+      "notes": [
+        "CAS and INCI already inherit from the shared Ylang oil family coverage.",
+        "A trusted supplier spec or PDF is still needed before promoting deeper chemistry or IFRA hints."
+      ],
+      "priority": "medium",
+      "relatedCatalogNames": [
+        "Ylang-Ylang II Oil, Org"
+      ],
+      "relatedSuppliers": [
+        "Eden Botanicals"
+      ],
+      "requestedFields": [
+        "note",
+        "rep",
+        "scentDesc",
+        "ifraMaterialHint"
+      ],
+      "requestedSourceTypes": [
+        "tds",
+        "spec_sheet",
+        "supplier_pdf"
+      ],
+      "reviewStatus": "awaiting_source_document"
+    }
+  }
+}
