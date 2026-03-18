@@ -72,6 +72,7 @@ import {
 } from "./lib/formula_runtime_helpers";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildMaterialBackfillWorkbench,
   buildFounderProductContextState,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
@@ -59143,6 +59144,8 @@ export default function App() {
     useState(3);
   const [launchRecommendationEmphasis, setLaunchRecommendationEmphasis] =
     useState("balanced");
+  const [backfillWorkbenchTargets, setBackfillWorkbenchTargets] = useState([]);
+  const [backfillWorkbenchSearch, setBackfillWorkbenchSearch] = useState("");
   const [savedFounderScenarios, setSavedFounderScenarios] = useState(() =>
     readJsonStorage(APP_STORAGE_KEYS.founderLaunchScenarios, [])
       .map((record) => normalizeFounderLaunchScenarioRecord(record))
@@ -60423,6 +60426,70 @@ export default function App() {
     approvedEvidenceCandidateExportJson,
     approvedEvidenceCandidateRecords.length,
   ]);
+  const approveEvidenceWorkbenchCandidate = useCallback((candidate) => {
+    if (!candidate?.evidenceCandidateKey) return;
+    const reviewedAt = new Date().toISOString();
+    setEvidenceCandidateLocalReviewState((prev) => ({
+      ...prev,
+      [candidate.evidenceCandidateKey]: {
+        decision: "approved",
+        reviewStatus: "approved_for_promotion",
+        reviewedAt,
+        sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+      },
+    }));
+  }, []);
+  const rejectEvidenceWorkbenchCandidate = useCallback((candidate) => {
+    if (!candidate?.evidenceCandidateKey) return;
+    const reviewedAt = new Date().toISOString();
+    setEvidenceCandidateLocalReviewState((prev) => ({
+      ...prev,
+      [candidate.evidenceCandidateKey]: {
+        decision: "rejected",
+        reviewStatus: "rejected",
+        reviewedAt,
+        sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+      },
+    }));
+  }, []);
+  const deferEvidenceWorkbenchCandidate = useCallback((candidate) => {
+    if (!candidate?.evidenceCandidateKey) return;
+    const reviewedAt = new Date().toISOString();
+    setEvidenceCandidateLocalReviewState((prev) => ({
+      ...prev,
+      [candidate.evidenceCandidateKey]: {
+        decision: "deferred",
+        reviewStatus: "pending_review",
+        reviewedAt,
+        sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+      },
+    }));
+  }, []);
+  const clearEvidenceWorkbenchCandidateReview = useCallback((candidate) => {
+    if (!candidate?.evidenceCandidateKey) return;
+    setEvidenceCandidateLocalReviewState((prev) => {
+      const next = { ...prev };
+      delete next[candidate.evidenceCandidateKey];
+      return next;
+    });
+  }, []);
+  const toggleBackfillWorkbenchTarget = useCallback((materialName) => {
+    const normalizedName = String(materialName || "").trim();
+    if (!normalizedName) return;
+    setBackfillWorkbenchTargets((prev) => {
+      if (prev.includes(normalizedName)) {
+        return prev.filter((name) => name !== normalizedName);
+      }
+      return [...prev, normalizedName].slice(-4);
+    });
+  }, []);
+  const removeBackfillWorkbenchTarget = useCallback((materialName) => {
+    const normalizedName = String(materialName || "").trim();
+    if (!normalizedName) return;
+    setBackfillWorkbenchTargets((prev) =>
+      prev.filter((name) => name !== normalizedName)
+    );
+  }, []);
   const exportGeneratedSupplierCatalogRowDrafts = useCallback(() => {
     const blob = new Blob([generatedSupplierCatalogRowDraftExportJson], {
       type: "application/json",
@@ -61368,11 +61435,11 @@ export default function App() {
               acc.missingCount += 1;
             }
             if (report.missingSignals?.[0]) {
-              acc.missingSignals.push(`${ingredient.name}: ${report.missingSignals[0]}`);
+              acc.missingSignals.push(`${report.name}: ${report.missingSignals[0]}`);
             }
             if (report.uncertainSignals?.[0]) {
               acc.uncertainSignals.push(
-                `${ingredient.name}: ${report.uncertainSignals[0]}`
+                `${report.name}: ${report.uncertainSignals[0]}`
               );
             }
             return acc;
@@ -61483,6 +61550,7 @@ export default function App() {
         const basketLine = basketLineByName.get(materialName) || null;
         const existing = materialMap.get(materialName) || {
           name: materialName,
+          canonicalMaterialKey: truthReport.canonicalMaterialKey || null,
           truthLevel: truthReport.level,
           supportLabel: truthReport.supportLabel,
           breakdownLabel: truthReport.breakdownLabel,
@@ -61509,6 +61577,15 @@ export default function App() {
           pricingGapCount: 0,
           uncertainPricingCount: 0,
           inventoryBlockerCount: 0,
+          supplierVariantCount: truthReport.supplierVariantCount || 0,
+          livePricingSupplierCount: truthReport.livePricingSupplierCount || 0,
+          livePricingPackCount: truthReport.livePricingPackCount || 0,
+          sourceDocumentCount: Array.isArray(truthReport.sourceDocuments)
+            ? truthReport.sourceDocuments.length
+            : 0,
+          evidenceCandidateCount: Array.isArray(truthReport.evidenceCandidates)
+            ? truthReport.evidenceCandidates.length
+            : 0,
           formulas: [],
         };
 
@@ -61547,6 +61624,98 @@ export default function App() {
 
     return buildMaterialTruthGapPrioritization(Array.from(materialMap.values()));
   }, [founderDashboardItems, founderInsightsEnabled, pricesState]);
+  const materialBackfillWorkbench = useMemo(() => {
+    if (!founderInsightsEnabled) {
+      return buildMaterialBackfillWorkbench();
+    }
+
+    const materialContextByName = Object.fromEntries(
+      materialTruthGapSummary.rows.map((row) => {
+        const truthReport = buildIngredientTruthCompletenessReport(row.name, {
+          record: DB[row.name] || null,
+          livePricing: getLivePricingForIngredient(
+            row.name,
+            pricesState,
+            PRICING
+          ),
+        });
+
+        return [
+          row.name,
+          {
+            truthReport,
+            canonicalMaterialKey: truthReport.canonicalMaterialKey || null,
+            relatedCatalogNames: Array.from(
+              new Set(
+                [
+                  row.name,
+                  truthReport.canonicalCatalogName,
+                  ...(Array.isArray(truthReport.sourceDocuments)
+                    ? truthReport.sourceDocuments.flatMap((record) =>
+                        Array.isArray(record?.relatedCatalogNames)
+                          ? record.relatedCatalogNames
+                          : []
+                      )
+                    : []),
+                ].filter(Boolean)
+              )
+            ),
+            supplierVariantCount: truthReport.supplierVariantCount || 0,
+            livePricingSupplierCount: truthReport.livePricingSupplierCount || 0,
+            livePricingPackCount: truthReport.livePricingPackCount || 0,
+            sourceDocumentCount: Array.isArray(truthReport.sourceDocuments)
+              ? truthReport.sourceDocuments.length
+              : 0,
+            evidenceCandidateCount: Array.isArray(truthReport.evidenceCandidates)
+              ? truthReport.evidenceCandidates.length
+              : 0,
+            supplierProducts: Array.isArray(truthReport.supplierProducts)
+              ? truthReport.supplierProducts
+              : [],
+          },
+        ];
+      })
+    );
+
+    return buildMaterialBackfillWorkbench({
+      targetNames: backfillWorkbenchTargets,
+      prioritizationRows: materialTruthGapSummary.rows,
+      evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+      intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
+      materialContextByName,
+    });
+  }, [
+    backfillWorkbenchTargets,
+    founderInsightsEnabled,
+    materialTruthGapSummary,
+    pricesState,
+    sourceDocumentEvidenceReviewPayload,
+  ]);
+  useEffect(() => {
+    if (!founderInsightsEnabled) return;
+    const validNames = new Set(
+      materialTruthGapSummary.rows.map((row) => row.name)
+    );
+    setBackfillWorkbenchTargets((prev) => {
+      const next = prev.filter((name) => validNames.has(name));
+      if (next.length === 0) {
+        const fallbackName =
+          materialTruthGapSummary.strongestBackfillCandidates[0]?.name ||
+          materialTruthGapSummary.mostUsedWeakMaterials[0]?.name ||
+          "";
+        if (fallbackName) {
+          return [fallbackName];
+        }
+      }
+      if (
+        next.length === prev.length &&
+        next.every((name, index) => name === prev[index])
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [founderInsightsEnabled, materialTruthGapSummary]);
   const skuEconomicsSummary = useMemo(
     () =>
       buildSkuEconomicsDashboardSummary(founderDashboardItems, {
@@ -64408,6 +64577,64 @@ export default function App() {
           </div>
         </button>
       );
+    };
+    const backfillSelectedTargetSet = new Set(backfillWorkbenchTargets);
+    const normalizedBackfillSearch = String(
+      backfillWorkbenchSearch || ""
+    ).trim();
+    const backfillAvailableTargets = (
+      normalizedBackfillSearch
+        ? materialTruthGapSummary.weakRows.filter((row) => {
+            const haystack = [
+              row.name,
+              row.canonicalMaterialKey,
+              row.primaryGap,
+              row.backfillFocus,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+            return haystack.includes(normalizedBackfillSearch.toLowerCase());
+          })
+        : materialBackfillWorkbench.availableTargets
+    ).slice(0, 10);
+    const getWorkbenchReviewStatusMeta = (candidate) => {
+      if (candidate?.reviewStatus === "approved_for_promotion") {
+        return {
+          label: "Approved",
+          color: "#86EFAC",
+          bg: "#0A2E1A",
+          border: "#166534",
+        };
+      }
+      if (candidate?.reviewStatus === "rejected") {
+        return {
+          label: "Rejected",
+          color: "#FCA5A5",
+          bg: "#2A0F14",
+          border: "#7F1D1D",
+        };
+      }
+      if (candidate?.reviewStatus === "deferred_locally") {
+        return {
+          label: "Deferred",
+          color: "#93C5FD",
+          bg: "#0A1628",
+          border: "#1D4ED8",
+        };
+      }
+      return {
+        label: "Pending",
+        color: "#FDE68A",
+        bg: "#2A1A00",
+        border: "#78350F",
+      };
+    };
+    const getWorkbenchConfidenceColor = (confidence) => {
+      if (confidence === "high") return "#34D399";
+      if (confidence === "medium") return "#FDE68A";
+      if (confidence === "low") return "#FCA5A5";
+      return "#94A3B8";
     };
     const renderFormulaTypeLabel = (entry) =>
       entry?.isLocked
@@ -68835,6 +69062,1024 @@ export default function App() {
 
         <div
           style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#C4B5FD",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Data Backfill Workbench
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                  maxWidth: 720,
+                }}
+              >
+                Search prioritized weak materials, stage evidence-backed field
+                updates, review confidence and conflicts, then push approved
+                low-risk candidates into the existing promotion JSON path.
+                Supplier, pricing, technical, and IFRA gaps remain review-first
+                and manual when the current apply flow does not support blind
+                promotion.
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gap: 6,
+                justifyItems: "end",
+                minWidth: 240,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.3,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                  textAlign: "right",
+                }}
+              >
+                {materialBackfillWorkbench.summary.targetCount} target
+                {materialBackfillWorkbench.summary.targetCount === 1 ? "" : "s"}{" "}
+                staged ·{" "}
+                {materialBackfillWorkbench.summary.promotableCandidateCount}{" "}
+                promotable candidate
+                {materialBackfillWorkbench.summary.promotableCandidateCount === 1
+                  ? ""
+                  : "s"}{" "}
+                · {materialBackfillWorkbench.summary.conflictCount} conflict
+                {materialBackfillWorkbench.summary.conflictCount === 1 ? "" : "s"}
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={exportApprovedEvidenceCandidates}
+                  style={{
+                    background: "#0A2E1A",
+                    border: "1px solid #166534",
+                    borderRadius: 8,
+                    color: "#86EFAC",
+                    padding: "6px 10px",
+                    fontSize: 8.4,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Export Approved JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={copyApprovedEvidenceCandidates}
+                  style={{
+                    background: "#0A1628",
+                    border: "1px solid #1D4ED8",
+                    borderRadius: 8,
+                    color: "#93C5FD",
+                    padding: "6px 10px",
+                    fontSize: 8.4,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Copy Approved JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMainTab("suppliers")}
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#CBD5E1",
+                    padding: "6px 10px",
+                    fontSize: 8.4,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Open Review Queue
+                </button>
+              </div>
+              {approvedEvidenceCandidateExportStatus ? (
+                <div
+                  style={{
+                    fontSize: 8.2,
+                    color: "#64748B",
+                    lineHeight: 1.45,
+                    textAlign: "right",
+                  }}
+                >
+                  {approvedEvidenceCandidateExportStatus}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#FDE68A",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Search + Stage Targets
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBackfillWorkbenchTargets([])}
+                  style={{
+                    background: "#0A1628",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#94A3B8",
+                    padding: "5px 9px",
+                    fontSize: 8.2,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear Targets
+                </button>
+              </div>
+              <input
+                value={backfillWorkbenchSearch}
+                onChange={(event) => setBackfillWorkbenchSearch(event.target.value)}
+                placeholder="Search weak materials by name, canonical key, or gap…"
+                style={{
+                  width: "100%",
+                  marginTop: 8,
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  color: "#E2E8F0",
+                  padding: "8px 10px",
+                  fontSize: 9,
+                  outline: "none",
+                }}
+              />
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                {backfillAvailableTargets.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 8.8,
+                      color: "#94A3B8",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    No prioritized weak material matches the current search.
+                  </div>
+                ) : (
+                  backfillAvailableTargets.map((row) => {
+                    const isSelected = backfillSelectedTargetSet.has(row.name);
+                    const truthMeta =
+                      MATERIAL_COMPLETENESS_LEVEL_META[row.truthLevel] ||
+                      MATERIAL_COMPLETENESS_LEVEL_META.partial;
+                    return (
+                      <button
+                        key={`backfill-target-chip-${row.name}`}
+                        type="button"
+                        onClick={() => toggleBackfillWorkbenchTarget(row.name)}
+                        style={{
+                          background: isSelected ? "#0A2540" : "#071826",
+                          border: `1px solid ${
+                            isSelected ? "#1D4ED8" : "#1E3A52"
+                          }`,
+                          borderRadius: 999,
+                          color: isSelected ? "#BAE6FD" : "#CBD5E1",
+                          padding: "5px 10px",
+                          fontSize: 8.4,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "flex",
+                          gap: 6,
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>{row.name}</span>
+                        <span
+                          style={{
+                            background: truthMeta.bg,
+                            border: `1px solid ${truthMeta.border}`,
+                            borderRadius: 999,
+                            padding: "1px 6px",
+                            fontSize: 7.4,
+                            color: truthMeta.color,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {truthMeta.label}
+                        </span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {materialBackfillWorkbench.targets.length === 0 ? (
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.7,
+                }}
+              >
+                Add one or more prioritized materials above to review current
+                evidence candidates, missing next fields, supplier/pricing gaps,
+                and the existing promotion/apply path.
+              </div>
+            ) : (
+              materialBackfillWorkbench.targets.map((target) => {
+                const truthMeta =
+                  MATERIAL_COMPLETENESS_LEVEL_META[
+                    target.truthReport?.level || target.priorityRow?.truthLevel
+                  ] || MATERIAL_COMPLETENESS_LEVEL_META.partial;
+                return (
+                  <div
+                    key={`backfill-workbench-target-${target.name}`}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 12,
+                      padding: 12,
+                      display: "grid",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {target.name}
+                          </div>
+                          <span
+                            style={{
+                              background: truthMeta.bg,
+                              border: `1px solid ${truthMeta.border}`,
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 7.5,
+                              fontWeight: 700,
+                              color: truthMeta.color,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {truthMeta.label}
+                          </span>
+                          {target.canonicalMaterialKey ? (
+                            <span
+                              style={{
+                                fontSize: 7.8,
+                                color: "#94A3B8",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {target.canonicalMaterialKey}
+                            </span>
+                          ) : null}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {target.primaryGap ||
+                            target.priorityRow?.backfillFocus ||
+                            "No primary gap surfaced yet."}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setDetailName(target.name)}
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "5px 9px",
+                            fontSize: 8.2,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Open Dossier
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeBackfillWorkbenchTarget(target.name)}
+                          style={{
+                            background: "#2A0F14",
+                            border: "1px solid #7F1D1D",
+                            borderRadius: 8,
+                            color: "#FCA5A5",
+                            padding: "5px 9px",
+                            fontSize: 8.2,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+                        gap: 8,
+                      }}
+                    >
+                      {[
+                        [
+                          "Supplier Variants",
+                          target.supplierVariantCount,
+                          target.supplierVariantCount > 0
+                            ? "Mapped variants attached"
+                            : "No mapped supplier products yet",
+                          "#7DD3FC",
+                        ],
+                        [
+                          "Live Pack Sizes",
+                          target.livePricingPackCount,
+                          target.livePricingSupplierCount > 0
+                            ? `${target.livePricingSupplierCount} supplier${
+                                target.livePricingSupplierCount === 1 ? "" : "s"
+                              } priced`
+                            : "Pricing still sparse",
+                          "#34D399",
+                        ],
+                        [
+                          "Source Docs",
+                          target.sourceDocumentCount,
+                          "Trusted document records",
+                          "#A78BFA",
+                        ],
+                        [
+                          "Evidence Candidates",
+                          target.evidenceCandidateCount,
+                          `${
+                            target.intakeTarget?.stillMissingFields?.length || 0
+                          } missing next fields`,
+                          "#F59E0B",
+                        ],
+                      ].map(([label, value, meta, color]) => (
+                        <div
+                          key={`${target.name}-${label}`}
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 10,
+                            padding: "8px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 7.8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            {label}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 14,
+                              fontWeight: 800,
+                              color,
+                            }}
+                          >
+                            {value}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 3,
+                              fontSize: 8,
+                              color: "#94A3B8",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {meta}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {target.conflictSummary.length > 0 ? (
+                      <div
+                        style={{
+                          background: "#2A1A00",
+                          border: "1px solid #78350F",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8.4,
+                            color: "#FDE68A",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Conflict Context
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            display: "grid",
+                            gap: 5,
+                          }}
+                        >
+                          {target.conflictSummary.map((conflict) => (
+                            <div
+                              key={`${target.name}-conflict-${conflict.fieldKey}`}
+                              style={{
+                                fontSize: 8.5,
+                                color: "#FDE68A",
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              {conflict.fieldLabel}: {conflict.values.join(" vs ")}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {target.supplierProducts.length > 0 ? (
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "9px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8.2,
+                            color: "#7DD3FC",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Supplier / Pricing Search Context
+                        </div>
+                        <div style={{ display: "grid", gap: 5, marginTop: 6 }}>
+                          {target.supplierProducts.slice(0, 3).map((product) => (
+                            <div
+                              key={`${target.name}-${product.supplierProductKey || product.productTitle}`}
+                              style={{
+                                fontSize: 8.4,
+                                color: "#CBD5E1",
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              {(product.supplierDisplayName || "Unknown supplier") +
+                                " · " +
+                                (product.productTitle || "Untitled product")}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0,1.4fr) minmax(280px,0.9fr)",
+                        gap: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#86EFAC",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Staged Evidence Candidates
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.2,
+                            color: "#64748B",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          Approve to add the candidate to the existing portable
+                          promotion JSON. Defer keeps it pending locally without
+                          exporting it.
+                        </div>
+                        <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                          {target.stagedCandidates.length === 0 ? (
+                            <div
+                              style={{
+                                fontSize: 8.8,
+                                color: "#94A3B8",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              No evidence candidates are staged yet for this
+                              material. Use the missing-field guidance at right
+                              to decide which document/support path to backfill
+                              next.
+                            </div>
+                          ) : (
+                            target.stagedCandidates.map((candidate) => {
+                              const statusMeta =
+                                getWorkbenchReviewStatusMeta(candidate);
+                              return (
+                                <div
+                                  key={candidate.evidenceCandidateKey}
+                                  style={{
+                                    background: "#060E1E",
+                                    border: "1px solid #1E3A52",
+                                    borderRadius: 10,
+                                    padding: "9px 10px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                      gap: 8,
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        fontSize: 9,
+                                        fontWeight: 700,
+                                        color: "#E2E8F0",
+                                      }}
+                                    >
+                                      {candidate.fieldLabel}
+                                    </div>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: 6,
+                                        flexWrap: "wrap",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          background: statusMeta.bg,
+                                          border: `1px solid ${statusMeta.border}`,
+                                          borderRadius: 999,
+                                          padding: "2px 8px",
+                                          fontSize: 7.6,
+                                          fontWeight: 700,
+                                          color: statusMeta.color,
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.08em",
+                                        }}
+                                      >
+                                        {statusMeta.label}
+                                      </span>
+                                      <span
+                                        style={{
+                                          background:
+                                            candidate.applyPath === "promotion_json"
+                                              ? "#0A2E1A"
+                                              : "#0A1628",
+                                          border: `1px solid ${
+                                            candidate.applyPath === "promotion_json"
+                                              ? "#166534"
+                                              : "#1E3A52"
+                                          }`,
+                                          borderRadius: 999,
+                                          padding: "2px 8px",
+                                          fontSize: 7.5,
+                                          fontWeight: 700,
+                                          color:
+                                            candidate.applyPath === "promotion_json"
+                                              ? "#86EFAC"
+                                              : "#CBD5E1",
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.08em",
+                                        }}
+                                      >
+                                        {candidate.applyPathLabel}
+                                      </span>
+                                      <span
+                                        style={{
+                                          fontSize: 7.8,
+                                          color: getWorkbenchConfidenceColor(
+                                            candidate.confidence
+                                          ),
+                                          fontWeight: 700,
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.08em",
+                                        }}
+                                      >
+                                        {candidate.confidence || "unknown"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 5,
+                                      fontSize: 8.8,
+                                      color: "#CBD5E1",
+                                      lineHeight: 1.55,
+                                    }}
+                                  >
+                                    {candidate.displayValue}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8,
+                                      color: "#94A3B8",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    {(candidate.supplier || "Unknown supplier") +
+                                      " · " +
+                                      (candidate.sourceType || "unknown source")}
+                                    {candidate.sourceDocumentKey
+                                      ? ` · ${candidate.sourceDocumentKey}`
+                                      : ""}
+                                  </div>
+                                  {candidate.hasConflict ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 8,
+                                        color: "#FDE68A",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      Conflict: {candidate.conflictValues.join(" vs ")}
+                                    </div>
+                                  ) : null}
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8,
+                                      color: "#64748B",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    {candidate.guidance}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 8,
+                                      display: "flex",
+                                      gap: 6,
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        approveEvidenceWorkbenchCandidate(candidate)
+                                      }
+                                      style={{
+                                        background: "#0A2E1A",
+                                        border: "1px solid #166534",
+                                        borderRadius: 6,
+                                        color: "#86EFAC",
+                                        padding: "4px 8px",
+                                        fontSize: 8.1,
+                                        fontWeight: 700,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        deferEvidenceWorkbenchCandidate(candidate)
+                                      }
+                                      style={{
+                                        background: "#0A1628",
+                                        border: "1px solid #1D4ED8",
+                                        borderRadius: 6,
+                                        color: "#93C5FD",
+                                        padding: "4px 8px",
+                                        fontSize: 8.1,
+                                        fontWeight: 700,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      Defer
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        rejectEvidenceWorkbenchCandidate(candidate)
+                                      }
+                                      style={{
+                                        background: "#2A0F14",
+                                        border: "1px solid #7F1D1D",
+                                        borderRadius: 6,
+                                        color: "#FCA5A5",
+                                        padding: "4px 8px",
+                                        fontSize: 8.1,
+                                        fontWeight: 700,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      Reject
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        clearEvidenceWorkbenchCandidateReview(
+                                          candidate
+                                        )
+                                      }
+                                      style={{
+                                        background: "#071826",
+                                        border: "1px solid #1E3A52",
+                                        borderRadius: 6,
+                                        color: "#94A3B8",
+                                        padding: "4px 8px",
+                                        fontSize: 8.1,
+                                        fontWeight: 700,
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      Reset
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          display: "grid",
+                          gap: 10,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#FDE68A",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Missing Next Fields
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 5,
+                              fontSize: 8.6,
+                              color: "#CBD5E1",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {target.intakeTarget?.stillMissingFields?.length > 0
+                              ? target.intakeTarget.stillMissingFields.join(", ")
+                              : "No intake-target field list is attached yet."}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 8,
+                              color: "#64748B",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            Preferred source types:{" "}
+                            {target.intakeTarget?.requestedSourceTypes?.length > 0
+                              ? target.intakeTarget.requestedSourceTypes.join(", ")
+                              : "No source preference is stored yet."}
+                          </div>
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#A78BFA",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Manual Review Follow-Up
+                          </div>
+                          <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+                            {target.manualFollowUpRows.length === 0 ? (
+                              <div
+                                style={{
+                                  fontSize: 8.8,
+                                  color: "#86EFAC",
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                No additional manual-only follow-up is standing
+                                out for this target right now.
+                              </div>
+                            ) : (
+                              target.manualFollowUpRows.map((row) => (
+                                <div
+                                  key={`${target.name}-manual-${row.fieldKey}`}
+                                  style={{
+                                    background: "#060E1E",
+                                    border: "1px solid #1E3A52",
+                                    borderRadius: 10,
+                                    padding: "8px 9px",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      gap: 8,
+                                      alignItems: "center",
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        fontSize: 8.8,
+                                        color: "#E2E8F0",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {row.fieldLabel}
+                                    </div>
+                                    <span
+                                      style={{
+                                        background: "#0A1628",
+                                        border: "1px solid #1E3A52",
+                                        borderRadius: 999,
+                                        padding: "2px 8px",
+                                        fontSize: 7.4,
+                                        fontWeight: 700,
+                                        color: "#CBD5E1",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                      }}
+                                    >
+                                      Manual
+                                    </span>
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8.3,
+                                      color: "#94A3B8",
+                                      lineHeight: 1.55,
+                                    }}
+                                  >
+                                    {row.reason || row.guidance}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 7.9,
+                                      color: "#64748B",
+                                      lineHeight: 1.5,
+                                    }}
+                                  >
+                                    {row.guidance}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
             display: "grid",
             gridTemplateColumns: "repeat(3,minmax(0,1fr))",
             gap: 12,
@@ -69179,15 +70424,22 @@ export default function App() {
     );
   }, [
     activeFounderScenario,
+    approveEvidenceWorkbenchCandidate,
     adjustLaunchPlanUnits,
+    approvedEvidenceCandidateExportStatus,
+    backfillWorkbenchSearch,
+    backfillWorkbenchTargets,
     batchPlannerTargetG,
     basketMode,
+    clearEvidenceWorkbenchCandidateReview,
     clearLaunchPlanUnitDraft,
     commitLaunchPlanUnitDraft,
     clearActiveFounderScenario,
     currentFounderScenarioInputs,
     currentFounderScenarioIsDirty,
     copyFounderScenarioBrief,
+    copyApprovedEvidenceCandidates,
+    deferEvidenceWorkbenchCandidate,
     deleteFounderScenario,
     downloadFounderScenarioBrief,
     diluentMaterialName,
@@ -69214,8 +70466,11 @@ export default function App() {
     launchRunPlannerSummary,
     loadLaunchRecommendationIntoPlanner,
     loadFounderScenario,
+    materialBackfillWorkbench,
     materialTruthGapSummary,
     openFormulaFromDashboard,
+    rejectEvidenceWorkbenchCandidate,
+    removeBackfillWorkbenchTarget,
     scrollToFounderLaunchPlanner,
     saveCurrentFounderScenario,
     saveLaunchRecommendationAsScenario,
@@ -69224,6 +70479,8 @@ export default function App() {
     selectedDiluentBasket,
     setDetailName,
     setLaunchPlanUnits,
+    toggleBackfillWorkbenchTarget,
+    exportApprovedEvidenceCandidates,
     skuEconomicsSummary,
     skuLaborCost,
     skuPackagingCost,
