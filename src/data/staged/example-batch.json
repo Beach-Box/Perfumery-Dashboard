@@ -1,0 +1,48 @@
+{
+  "batch_id": "intake-example-2026-03-18",
+  "created_at": "2026-03-18T00:00:00Z",
+  "apply_path": "mixed",
+  "source_agent": "example — not for production apply",
+  "notes": "Demonstrates the staged candidate format. Delete or move to approved/ to process.",
+  "candidates": [
+    {
+      "canonical_key": "Veramoss",
+      "material_name": "Veramoss",
+      "field": "VP",
+      "current_value": null,
+      "proposed_value": 0.00001,
+      "confidence": "likely",
+      "source_type": "official_supplier_page",
+      "source_ref": "Vigon Veramoss product/SDS page",
+      "conflict_note": null,
+      "apply_path": "manual-review-only",
+      "reviewer_notes": "VP not confirmed from primary spec sheet — needs verification"
+    },
+    {
+      "canonical_key": "Cetalox",
+      "material_name": "Cetalox",
+      "field": "scentSummary",
+      "current_value": null,
+      "proposed_value": "Dry, woody-ambergris with crystalline depth; classic ambroxide character",
+      "confidence": "confirmed",
+      "source_type": "official_supplier_page",
+      "source_ref": "Givaudan Cetalox product page",
+      "conflict_note": null,
+      "apply_path": "promotion-safe",
+      "reviewer_notes": ""
+    },
+    {
+      "canonical_key": "Habanolide",
+      "material_name": "Habanolide",
+      "field": "cas",
+      "current_value": "3687-18-1",
+      "proposed_value": "3687-18-1",
+      "confidence": "confirmed",
+      "source_type": "official_pdf_sds_tds",
+      "source_ref": "Firmenich Habanolide SDS",
+      "conflict_note": null,
+      "apply_path": "promotion-safe",
+      "reviewer_notes": "Confirms existing value — no change needed"
+    }
+  ]
+}

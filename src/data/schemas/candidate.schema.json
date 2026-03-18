@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ingredient Data Candidate Batch",
+  "description": "Schema for staged and approved data intake candidate batches.",
+  "type": "object",
+  "required": ["batch_id", "created_at", "apply_path", "candidates"],
+  "properties": {
+    "batch_id": {
+      "type": "string",
+      "description": "Unique ID for this batch, e.g. intake-2026-03-18-001"
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp"
+    },
+    "apply_path": {
+      "enum": ["promotion-safe", "manual-review-only", "mixed"],
+      "description": "Overall batch apply path. Use 'mixed' when candidates differ."
+    },
+    "source_agent": {
+      "type": "string",
+      "description": "Name of the agent or process that produced this batch"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Free-text notes about this batch"
+    },
+    "candidates": {
+      "type": "array",
+      "description": "List of proposed field updates",
+      "items": {
+        "type": "object",
+        "required": [
+          "canonical_key",
+          "field",
+          "proposed_value",
+          "confidence",
+          "source_type",
+          "source_ref",
+          "apply_path"
+        ],
+        "properties": {
+          "canonical_key": {
+            "type": "string",
+            "description": "Exact key as it appears in RAW_DB in src/App.js"
+          },
+          "material_name": {
+            "type": "string",
+            "description": "Human-readable material name"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field name from FIELDS array in src/App.js",
+            "enum": [
+              "MW", "xLogP", "TPSA", "HBD", "HBA", "VP", "ODT", "n",
+              "note", "type", "ifra", "supplier", "char", "rep",
+              "densityGmL", "cas", "inci", "scentClass",
+              "scentSummary", "scentDesc", "ifraLimit", "densityGmL2",
+              "dilutionFactor", "isUVCB", "descriptorTags",
+              "odorThreshold_ngL", "vpConfidence", "isIsomerMix", "ifraLimits"
+            ]
+          },
+          "current_value": {
+            "description": "Current value in DB at time of intake (for reference/diff display). May be null if not read."
+          },
+          "proposed_value": {
+            "description": "New value to apply. Must be the correct JS type for the field."
+          },
+          "confidence": {
+            "enum": ["confirmed", "likely", "conflicting", "missing"],
+            "description": "Confidence in the proposed value"
+          },
+          "source_type": {
+            "enum": [
+              "official_supplier_page",
+              "official_pdf_sds_tds",
+              "approved_evidence_record",
+              "repo_source_doc",
+              "inferred"
+            ]
+          },
+          "source_ref": {
+            "type": "string",
+            "description": "URL or document title supporting the proposed value"
+          },
+          "conflict_note": {
+            "type": ["string", "null"],
+            "description": "Description of any conflict between sources"
+          },
+          "apply_path": {
+            "enum": ["promotion-safe", "manual-review-only", "insufficient-support"],
+            "description": "Whether this candidate can be auto-applied or needs human review"
+          },
+          "reviewer_notes": {
+            "type": "string",
+            "description": "Notes added during human review"
+          }
+        }
+      }
+    }
+  }
+}
