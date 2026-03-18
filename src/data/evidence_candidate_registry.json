@@ -17,7 +17,8 @@
       "candidate_reviewed",
       "ready_for_manual_promotion",
       "promoted",
-      "rejected"
+      "rejected",
+      "promoted_candidate_present"
     ]
   },
   "candidates": {
@@ -36,6 +37,30 @@
       "notes": [
         "Source-backed from the current live catalog row text in src/App.jsx.",
         "Prepared as a low-risk scentDesc-only evidence candidate."
+      ]
+    },
+    "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf": {
+      "sourceDocumentKey": "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "supplier": "Fraterworks",
+      "sourceType": "unknown_pdf",
+      "candidateFieldName": "cas",
+      "candidateValue": "9000-72-0",
+      "confidence": "medium",
+      "reviewStatus": "promoted",
+      "notes": [
+        "Document-backed from the downloaded M0067632_PDS.pdf file in the source-document registry.",
+        "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'Benzoin resinoid on carrier'.",
+        "Prepared from the product CAS line in the PDS, which lists product CAS 9000-72-0 separately from the carrier Triethyl Citrate CAS 77-93-0."
+      ],
+      "promotedAt": "2026-03-18T00:09:25.279Z",
+      "promotedFieldName": "cas",
+      "promotedCanonicalMaterialKey": "benzoin_siam_resinoid",
+      "promotionNotes": [
+        "Promotion state synced from an already-matching helper canonical seed value via scripts/promote_evidence_candidates.mjs."
       ]
     },
     "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf": {
@@ -73,7 +98,7 @@
         "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'PERU BALSAM RESINOID EXTRA'.",
         "Prepared from the ingredient identity cue 'MYROXYLON PEREIRAE OIL/EXTRACT' in the product-specific Fraterworks allergen document."
       ],
-      "promotedAt": "2026-03-17T23:46:27.532Z",
+      "promotedAt": "2026-03-18T00:10:17.612Z",
       "promotedFieldName": "inci",
       "promotedCanonicalMaterialKey": "peru_balsam_resinoid",
       "promotionNotes": [
@@ -101,7 +126,13 @@
   "candidateTargets": {
     "benzoin_siam_resinoid": {
       "canonicalMaterialKey": "benzoin_siam_resinoid",
-      "reviewStatus": "awaiting_source_document",
+      "reviewStatus": "promoted_candidate_present",
+      "linkedEvidenceCandidateKeys": [
+        "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf"
+      ],
+      "linkedSourceDocumentKeys": [
+        "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf"
+      ],
       "relatedCatalogNames": [
         "Benzoin Siam Resinoid 50% TEC"
       ],
@@ -114,13 +145,17 @@
         "ifraMaterialHint"
       ],
       "notes": [
-        "No trusted document-backed evidence candidates have been captured yet.",
-        "Promote only after a linked document is reviewed."
+        "At least one evidence candidate has been promoted into the helper canonical seed layer.",
+        "Additional target fields may still require separate document review and promotion."
+      ],
+      "lastPromotedAt": "2026-03-18T00:09:25.279Z",
+      "linkedPromotedEvidenceCandidateKeys": [
+        "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf"
       ]
     },
     "peru_balsam_resinoid": {
       "canonicalMaterialKey": "peru_balsam_resinoid",
-      "reviewStatus": "candidate_pending_review",
+      "reviewStatus": "promoted_candidate_present",
       "linkedEvidenceCandidateKeys": [
         "peru_balsam_resinoid:cas:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_peru_balsam_signature_resinoid_pdf",
         "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf"
@@ -144,7 +179,12 @@
         "Treat this as a separate resinoid identity, not a synonym for Peru balsam oil.",
         "Keep unresolved fields blank until a trusted document exists.",
         "The earlier CCID-style CAS candidate has been rejected because it looked more like Peru balsam oil evidence than resinoid-specific evidence.",
-        "One replacement document-backed INCI candidate is staged from the product-specific 82ALL supplier document."
+        "At least one evidence candidate has been promoted into the helper canonical seed layer.",
+        "Additional target fields may still require separate document review and promotion."
+      ],
+      "lastPromotedAt": "2026-03-18T00:10:17.612Z",
+      "linkedPromotedEvidenceCandidateKeys": [
+        "peru_balsam_resinoid:inci:peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_82all_peru_balsam_resinoid_extra_r7210_pdf"
       ]
     },
     "poplar_bud_absolute": {

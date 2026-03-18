@@ -1516,6 +1516,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     canonicalName: "Benzoin Siam Resinoid",
     note: "base",
     type: "ABS",
+    cas: "9000-72-0",
     scentClass: "Amber",
     scentSummary: "Benzoin Siam resinoid",
     scentDesc:

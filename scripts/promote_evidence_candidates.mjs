@@ -37,6 +37,10 @@ const FIELD_ORDER = [
   "isUVCB",
   "descriptorTags",
 ];
+const TARGET_PROMOTED_NOTE =
+  "At least one evidence candidate has been promoted into the helper canonical seed layer.";
+const TARGET_FOLLOWUP_NOTE =
+  "Additional target fields may still require separate document review and promotion.";
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -175,6 +179,22 @@ function normalizeApprovedEvidenceCandidates(payload) {
     : [];
 }
 
+function candidateTargetNeedsNoteCleanup(targetRecord) {
+  if (!Array.isArray(targetRecord?.notes)) {
+    return true;
+  }
+  if (
+    !targetRecord.notes.includes(TARGET_PROMOTED_NOTE) ||
+    !targetRecord.notes.includes(TARGET_FOLLOWUP_NOTE)
+  ) {
+    return true;
+  }
+  return targetRecord.notes.some(
+    (note) =>
+      /staged/i.test(String(note)) || /promote only after/i.test(String(note))
+  );
+}
+
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -258,6 +278,7 @@ function buildPreflight(payload, helperSourceText, evidenceRegistry) {
   const canonicalSourceObject = extractCanonicalSourceObject(helperSourceText);
   const helperCanonicalSeeds = canonicalSourceObject.parsedValue || {};
   const evidenceCandidates = evidenceRegistry?.candidates || {};
+  const candidateTargetRegistry = evidenceRegistry?.candidateTargets || {};
   const approvedRecords = normalizeApprovedEvidenceCandidates(payload);
 
   const reviewedCandidates = approvedRecords.length;
@@ -400,11 +421,19 @@ function buildPreflight(payload, helperSourceText, evidenceRegistry) {
     const currentFieldValue = existingSeed?.[item.candidateFieldName];
     if (valuesMatch(item.candidateFieldName, currentFieldValue, item.candidateValue)) {
       const registryRecord = item.evidenceRegistryRecord || {};
+      const targetRecord = candidateTargetRegistry[item.canonicalMaterialKey] || null;
       const alreadyPromoted =
         registryRecord.reviewStatus === "promoted" &&
         registryRecord.promotedCanonicalMaterialKey === item.canonicalMaterialKey &&
         registryRecord.promotedFieldName === item.candidateFieldName;
-      if (alreadyPromoted) {
+      const targetAlreadySynced =
+        targetRecord?.reviewStatus === "promoted_candidate_present" &&
+        Array.isArray(targetRecord?.linkedPromotedEvidenceCandidateKeys) &&
+        targetRecord.linkedPromotedEvidenceCandidateKeys.includes(
+          item.evidenceCandidateKey
+        ) &&
+        !candidateTargetNeedsNoteCleanup(targetRecord);
+      if (alreadyPromoted && targetAlreadySynced) {
         skippedItems.push({
           evidenceCandidateKey: item.evidenceCandidateKey,
           canonicalMaterialKey: item.canonicalMaterialKey,
@@ -517,12 +546,18 @@ function ensureMetadataReviewStatuses(registryData) {
   if (!registryData.metadata.reviewStatuses.includes("promoted")) {
     registryData.metadata.reviewStatuses.push("promoted");
   }
+  if (
+    !registryData.metadata.reviewStatuses.includes("promoted_candidate_present")
+  ) {
+    registryData.metadata.reviewStatuses.push("promoted_candidate_present");
+  }
 }
 
 function syncEvidenceRegistryPromotionState(registryData, appliedItems, promotedAt) {
   const nextRegistryData = structuredClone(registryData);
   ensureMetadataReviewStatuses(nextRegistryData);
   const candidates = nextRegistryData.candidates || {};
+  const candidateTargets = nextRegistryData.candidateTargets || {};
 
   appliedItems.forEach((item) => {
     const record = candidates[item.evidenceCandidateKey];
@@ -538,6 +573,40 @@ function syncEvidenceRegistryPromotionState(registryData, appliedItems, promoted
         ? "Promotion state synced from an already-matching helper canonical seed value via scripts/promote_evidence_candidates.mjs."
         : "Promoted into the helper canonical seed layer via scripts/promote_evidence_candidates.mjs.",
     ];
+
+    const targetRecord = candidateTargets[item.canonicalMaterialKey];
+    if (!targetRecord || typeof targetRecord !== "object") {
+      return;
+    }
+
+    targetRecord.reviewStatus = "promoted_candidate_present";
+    targetRecord.lastPromotedAt = promotedAt;
+
+    const linkedPromotedEvidenceCandidateKeys = Array.isArray(
+      targetRecord.linkedPromotedEvidenceCandidateKeys
+    )
+      ? [...targetRecord.linkedPromotedEvidenceCandidateKeys]
+      : [];
+    if (!linkedPromotedEvidenceCandidateKeys.includes(item.evidenceCandidateKey)) {
+      linkedPromotedEvidenceCandidateKeys.push(item.evidenceCandidateKey);
+    }
+    targetRecord.linkedPromotedEvidenceCandidateKeys =
+      linkedPromotedEvidenceCandidateKeys;
+
+    const filteredNotes = Array.isArray(targetRecord.notes)
+      ? targetRecord.notes.filter(
+          (note) =>
+            !/staged/i.test(String(note)) &&
+            !/promote only after/i.test(String(note))
+        )
+      : [];
+    if (!filteredNotes.includes(TARGET_PROMOTED_NOTE)) {
+      filteredNotes.push(TARGET_PROMOTED_NOTE);
+    }
+    if (!filteredNotes.includes(TARGET_FOLLOWUP_NOTE)) {
+      filteredNotes.push(TARGET_FOLLOWUP_NOTE);
+    }
+    targetRecord.notes = filteredNotes;
   });
 
   return nextRegistryData;
