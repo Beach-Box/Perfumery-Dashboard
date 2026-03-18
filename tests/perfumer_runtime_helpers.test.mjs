@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { buildIngredientTruthCompletenessReport } from "../src/lib/ifra_combined_package.js";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildMaterialBackfillWorkbench,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderTrustSummary,
@@ -168,6 +169,114 @@ test("material truth prioritization ranks weak materials by usage, spend, and fo
   assert.equal(
     prioritization.strongestBackfillCandidates[0].name,
     "Sparse Workhorse"
+  );
+});
+
+test("material backfill workbench stages promotable candidates, manual follow-up, and conflicts", () => {
+  const workbench = buildMaterialBackfillWorkbench({
+    targetNames: ["Sparse Workhorse"],
+    prioritizationRows: [
+      {
+        name: "Sparse Workhorse",
+        truthLevel: "sparse",
+        priorityScore: 88,
+        primaryGap: "No live priced pack-size options are attached yet.",
+      },
+    ],
+    evidenceCandidates: [
+      {
+        evidenceCandidateKey: "sparse:cas:a",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-1",
+        confidence: "medium",
+        sourceType: "sds",
+        supplier: "Supplier A",
+        reviewStatus: "pending_review",
+      },
+      {
+        evidenceCandidateKey: "sparse:cas:b",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-2",
+        confidence: "low",
+        sourceType: "supplier_pdf",
+        supplier: "Supplier B",
+        reviewStatus: "pending_review",
+      },
+      {
+        evidenceCandidateKey: "sparse:scentdesc",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "scentDesc",
+        candidateValue: "Warm resinous floral note.",
+        confidence: "high",
+        sourceType: "tds",
+        supplier: "Supplier A",
+        reviewStatus: "approved_for_promotion",
+      },
+      {
+        evidenceCandidateKey: "sparse:ifra-hint",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "ifraMaterialHint",
+        candidateValue: "Possible balsam family link",
+        confidence: "medium",
+        sourceType: "other",
+        supplier: "Local Repo",
+        reviewStatus: "pending_review",
+      },
+    ],
+    intakeTargets: [
+      {
+        canonicalMaterialKey: "sparse_workhorse",
+        relatedCatalogNames: ["Sparse Workhorse"],
+        stillMissingFields: ["cas", "inci", "ifraMaterialHint"],
+        requestedSourceTypes: ["sds", "tds"],
+        notes: ["Prefer trusted SDS before promoting CAS."],
+      },
+    ],
+    materialContextByName: {
+      "Sparse Workhorse": {
+        canonicalMaterialKey: "sparse_workhorse",
+        supplierVariantCount: 0,
+        livePricingSupplierCount: 0,
+        livePricingPackCount: 0,
+        sourceDocumentCount: 0,
+        evidenceCandidateCount: 4,
+        supplierProducts: [],
+        truthReport: {
+          name: "Sparse Workhorse",
+          primaryGap: "No live priced pack-size options are attached yet.",
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            supplier: { status: "uncertain" },
+            pricing: { status: "missing" },
+            technical: { status: "uncertain" },
+            ifra: { status: "uncertain" },
+            evidence: { status: "uncertain" },
+          },
+          uncertainSignals: [
+            "Technical behavior support is still sparse (MW / xLogP / VP / ODT / TPSA).",
+            "Structured IFRA restriction support is still partial in the current helper path.",
+            "Source-document and evidence-candidate support is still light for this material.",
+          ],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+    },
+  });
+
+  assert.equal(workbench.summary.targetCount, 1);
+  assert.equal(workbench.summary.promotableCandidateCount, 3);
+  assert.equal(workbench.targets[0].conflictSummary[0].fieldKey, "cas");
+  assert.ok(
+    workbench.targets[0].manualFollowUpRows.some(
+      (row) => row.fieldKey === "pricing"
+    )
+  );
+  assert.ok(
+    workbench.targets[0].manualCandidates.some(
+      (candidate) => candidate.fieldKey === "ifraMaterialHint"
+    )
   );
 });
 

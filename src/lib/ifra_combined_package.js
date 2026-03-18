@@ -3335,6 +3335,403 @@ export const IFRA_CATEGORY_LABELS = {
   cat11a: "Cat 11a — Rinse-off Body",
 };
 
+function hasCompletenessValue(value) {
+  if (value == null) return false;
+  if (Array.isArray(value)) return value.length > 0;
+  if (typeof value === "string") return value.trim() !== "";
+  if (typeof value === "object") return Object.keys(value).length > 0;
+  return true;
+}
+
+function countCompletenessValues(values = []) {
+  return values.filter((value) => hasCompletenessValue(value)).length;
+}
+
+function buildIngredientTruthLevel({
+  totalConsideredCount,
+  confirmedCount,
+  inferredCount,
+  uncertainCount,
+  missingCount,
+}) {
+  const safeTotal = Math.max(0, Number(totalConsideredCount) || 0);
+  const safeConfirmed = Math.max(0, Number(confirmedCount) || 0);
+  const safeInferred = Math.max(0, Number(inferredCount) || 0);
+  const safeUncertain = Math.max(0, Number(uncertainCount) || 0);
+  const safeMissing = Math.max(0, Number(missingCount) || 0);
+  const resolvedCount = safeConfirmed + safeInferred;
+  const confirmedCoveragePercent =
+    safeTotal > 0 ? (safeConfirmed / safeTotal) * 100 : 0;
+  const resolvedCoveragePercent =
+    safeTotal > 0 ? (resolvedCount / safeTotal) * 100 : 0;
+
+  let level = "strong";
+  if (safeTotal === 0 || safeMissing >= 3 || resolvedCoveragePercent < 50) {
+    level = "sparse";
+  } else if (
+    safeMissing > 0 ||
+    safeUncertain > 0 ||
+    resolvedCoveragePercent < 85
+  ) {
+    level = "partial";
+  }
+
+  const levelLabel =
+    level === "strong"
+      ? "Strong"
+      : level === "partial"
+      ? "Partial"
+      : "Sparse";
+  const headline =
+    level === "strong"
+      ? "Identity, pricing, and technical support look strong enough for most ingredient-driven reads."
+      : level === "partial"
+      ? "This material is still usable, but some pricing, IFRA, or technical support remains partial."
+      : "Major truth gaps still make costing, substitution, or compliance reads provisional for this material.";
+  const ingredientTrustCounts =
+    level === "strong"
+      ? {
+          totalConsideredCount: 1,
+          confirmedCount: 1,
+          inferredCount: 0,
+          uncertainCount: 0,
+          missingCount: 0,
+        }
+      : level === "partial"
+      ? {
+          totalConsideredCount: 1,
+          confirmedCount: 0,
+          inferredCount: safeMissing === 0 && safeUncertain === 0 ? 1 : 0,
+          uncertainCount: safeMissing === 0 && safeUncertain === 0 ? 0 : 1,
+          missingCount: 0,
+        }
+      : {
+          totalConsideredCount: 1,
+          confirmedCount: 0,
+          inferredCount: 0,
+          uncertainCount: 0,
+          missingCount: 1,
+        };
+
+  return {
+    level,
+    levelLabel,
+    headline,
+    totalConsideredCount: safeTotal,
+    confirmedCount: safeConfirmed,
+    inferredCount: safeInferred,
+    uncertainCount: safeUncertain,
+    missingCount: safeMissing,
+    resolvedCount,
+    confirmedCoveragePercent: Number(confirmedCoveragePercent.toFixed(1)),
+    resolvedCoveragePercent: Number(resolvedCoveragePercent.toFixed(1)),
+    supportLabel: `${resolvedCoveragePercent.toFixed(
+      0
+    )}% covered · ${confirmedCoveragePercent.toFixed(0)}% strong`,
+    breakdownLabel: `${Math.round(safeConfirmed)} strong · ${Math.round(
+      safeInferred
+    )} partial · ${Math.round(safeUncertain)} uncertain · ${Math.round(
+      safeMissing
+    )} missing`,
+    ingredientTrustCounts,
+  };
+}
+
+export function buildIngredientTruthCompletenessReport(
+  name,
+  { record = null, livePricing = null } = {}
+) {
+  const safeRecord = record && typeof record === "object" ? record : {};
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const resolvedIdentity = resolveIngredientIdentity(name);
+  const canonicalMaterialKey =
+    normalizationEntry?.canonicalMaterialKey ||
+    resolvedIdentity?.normalizationEntry?.canonicalMaterialKey ||
+    resolvedIdentity?.canonicalMaterialKey ||
+    safeRecord?.canonicalMaterialKey ||
+    null;
+  const canonicalCatalogName = getCanonicalCatalogName(name);
+  const canonicalSource = canonicalMaterialKey
+    ? getCanonicalMaterialSource(canonicalMaterialKey)
+    : null;
+  const sourceDocuments = canonicalMaterialKey
+    ? getSourceDocumentsForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const evidenceCandidates = canonicalMaterialKey
+    ? getEvidenceCandidatesForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const catalogSupplierProducts = getSupplierProductsForCatalogName(name);
+  const canonicalSupplierProducts = canonicalMaterialKey
+    ? getSupplierProductsForCanonicalMaterialKey(canonicalMaterialKey)
+    : [];
+  const supplierProducts = Array.from(
+    new Map(
+      [...catalogSupplierProducts, ...canonicalSupplierProducts].map((record) => [
+        record?.supplierProductKey ||
+          `${record?.supplierDisplayName || "supplier"}:${
+            record?.productTitle || "product"
+          }`,
+        record,
+      ])
+    ).values()
+  );
+  const livePricingEntries = Object.entries(livePricing || {});
+  const livePricingSupplierCount = livePricingEntries.filter(
+    ([, supplierData]) =>
+      countCompletenessValues([
+        ...(Array.isArray(supplierData?.S) ? supplierData.S : []),
+        ...(Array.isArray(supplierData?.P) ? supplierData.P : []),
+        supplierData?.price,
+      ]) > 0
+  ).length;
+  const livePricingPackCount = livePricingEntries.reduce((sum, [, supplierData]) => {
+    const sizeCount = Array.isArray(supplierData?.S)
+      ? supplierData.S.filter(
+          (value) => Number.isFinite(Number(value)) && Number(value) > 0
+        ).length
+      : 0;
+    return sum + sizeCount;
+  }, 0);
+  const catalogSupplierCount = new Set(
+    supplierProducts.map((record) => record?.supplierDisplayName).filter(Boolean)
+  ).size;
+  const ifraMaterial = getIfraMaterialRecord(name);
+  const ifraUiState = getIfraUiState(name);
+
+  const identityFieldCount = countCompletenessValues([
+    safeRecord?.cas || canonicalSource?.cas,
+    safeRecord?.inci || canonicalSource?.inci,
+    safeRecord?.rep || canonicalSource?.rep,
+    safeRecord?.type || canonicalSource?.type,
+  ]);
+  const hasStrongLocalIdentity =
+    hasCompletenessValue(name) &&
+    hasCompletenessValue(safeRecord?.type || canonicalSource?.type) &&
+    identityFieldCount >= 2;
+  const identityStatus = canonicalMaterialKey || hasStrongLocalIdentity
+    ? "confirmed"
+    : resolvedIdentity || normalizationEntry || identityFieldCount > 0
+    ? "inferred"
+    : "missing";
+
+  const regulatoryFieldCount = countCompletenessValues([
+    safeRecord?.cas || canonicalSource?.cas,
+    safeRecord?.inci || canonicalSource?.inci,
+  ]);
+  const regulatoryStatus =
+    regulatoryFieldCount >= 2
+      ? "confirmed"
+      : regulatoryFieldCount === 1
+      ? "inferred"
+      : identityStatus === "missing"
+      ? "missing"
+      : "uncertain";
+
+  const descriptiveFieldCount = countCompletenessValues([
+    safeRecord?.note || canonicalSource?.note,
+    safeRecord?.type || canonicalSource?.type,
+    safeRecord?.scentClass || canonicalSource?.scentClass,
+    safeRecord?.scentSummary ||
+      safeRecord?.scentDesc ||
+      safeRecord?.char ||
+      canonicalSource?.scentSummary ||
+      canonicalSource?.scentDesc,
+    safeRecord?.descriptorTags || canonicalSource?.descriptorTags,
+    safeRecord?.dilutionFactor,
+  ]);
+  const descriptiveStatus =
+    descriptiveFieldCount >= 4
+      ? "confirmed"
+      : descriptiveFieldCount >= 2
+      ? "inferred"
+      : descriptiveFieldCount >= 1
+      ? "uncertain"
+      : "missing";
+
+  const supplierStatus =
+    supplierProducts.length > 0
+      ? "confirmed"
+      : hasCompletenessValue(safeRecord?.supplier) ||
+        normalizationEntry?.entryKind === "supplier_product" ||
+        normalizationEntry?.entryKind === "diluted_stock" ||
+        canonicalMaterialKey
+      ? "inferred"
+      : "uncertain";
+
+  const pricingStatus =
+    livePricingSupplierCount > 0
+      ? "confirmed"
+      : livePricingEntries.length > 0
+      ? "uncertain"
+      : supplierProducts.length > 0
+      ? "inferred"
+      : "missing";
+
+  const technicalFieldCount = countCompletenessValues([
+    safeRecord?.MW,
+    safeRecord?.xLogP,
+    safeRecord?.VP,
+    safeRecord?.ODT,
+    safeRecord?.TPSA,
+    safeRecord?.odorThreshold_ngL,
+  ]);
+  const technicalStatus =
+    technicalFieldCount >= 4
+      ? "confirmed"
+      : technicalFieldCount >= 2
+      ? "inferred"
+      : technicalFieldCount >= 1
+      ? "uncertain"
+      : "uncertain";
+
+  const ifraStatus =
+    ifraUiState === "listed" && ifraMaterial
+      ? resolvedIdentity?.inheritedViaCanonicalMaterialKey
+        ? "inferred"
+        : "confirmed"
+      : ifraUiState === "functional_solvent"
+      ? "confirmed"
+      : ifraUiState === "not_found_in_uploaded_pdf"
+      ? "uncertain"
+      : canonicalMaterialKey || resolvedIdentity || hasStrongLocalIdentity
+      ? "uncertain"
+      : "missing";
+
+  const evidenceStatus =
+    sourceDocuments.length > 0
+      ? "confirmed"
+      : evidenceCandidates.length > 0
+      ? "inferred"
+      : "uncertain";
+
+  const dimensions = [
+    { key: "identity", label: "Canonical Identity", status: identityStatus },
+    { key: "regulatory", label: "CAS / INCI", status: regulatoryStatus },
+    { key: "descriptive", label: "Scent / Note", status: descriptiveStatus },
+    { key: "supplier", label: "Supplier Variants", status: supplierStatus },
+    { key: "pricing", label: "Live Pricing", status: pricingStatus },
+    { key: "technical", label: "Technical Signals", status: technicalStatus },
+    { key: "ifra", label: "IFRA Support", status: ifraStatus },
+    { key: "evidence", label: "Evidence Support", status: evidenceStatus },
+  ];
+  const counts = dimensions.reduce(
+    (acc, dimension) => {
+      acc.totalConsideredCount += 1;
+      acc[`${dimension.status}Count`] += 1;
+      return acc;
+    },
+    {
+      totalConsideredCount: 0,
+      confirmedCount: 0,
+      inferredCount: 0,
+      uncertainCount: 0,
+      missingCount: 0,
+    }
+  );
+  const summary = buildIngredientTruthLevel(counts);
+  const missingSignals = [];
+  const uncertainSignals = [];
+  const addSignal = (target, message) => {
+    if (!message || target.includes(message)) return;
+    target.push(message);
+  };
+
+  if (identityStatus === "missing") {
+    addSignal(
+      missingSignals,
+      "Canonical or source-backed identity is still too weak for strong downstream reads."
+    );
+  }
+  if (pricingStatus === "missing") {
+    addSignal(
+      missingSignals,
+      "No live supplier pricing or registry-backed supplier variant is attached yet."
+    );
+  } else if (pricingStatus === "inferred") {
+    addSignal(
+      uncertainSignals,
+      "Supplier variants exist, but live-priced size options are still missing."
+    );
+  } else if (pricingStatus === "uncertain") {
+    addSignal(
+      uncertainSignals,
+      "Pricing rows exist, but usable pack-size or price support is still incomplete."
+    );
+  }
+  if (regulatoryStatus !== "confirmed") {
+    addSignal(
+      uncertainSignals,
+      "CAS / INCI support is still partial in the current catalog and canonical records."
+    );
+  }
+  if (descriptiveStatus === "missing") {
+    addSignal(
+      missingSignals,
+      "No useful scent, note-role, or material-type description is attached yet."
+    );
+  } else if (descriptiveStatus === "uncertain") {
+    addSignal(
+      uncertainSignals,
+      "Scent and note-role description is still light for this material."
+    );
+  }
+  if (supplierStatus === "uncertain") {
+    addSignal(
+      uncertainSignals,
+      "Supplier-variant registry coverage is still light for this material."
+    );
+  }
+  if (technicalFieldCount < 4) {
+    addSignal(
+      uncertainSignals,
+      technicalFieldCount > 0
+        ? "Technical behavior support is partial (MW / xLogP / VP / ODT / TPSA)."
+        : "Technical behavior support is still sparse (MW / xLogP / VP / ODT / TPSA)."
+    );
+  }
+  if (ifraStatus !== "confirmed") {
+    addSignal(
+      uncertainSignals,
+      "Structured IFRA restriction support is still partial in the current helper path."
+    );
+  }
+  if (evidenceStatus !== "confirmed") {
+    addSignal(
+      uncertainSignals,
+      "Source-document and evidence-candidate support is still light for this material."
+    );
+  }
+
+  return {
+    name,
+    canonicalMaterialKey,
+    canonicalCatalogName,
+    normalizationEntry,
+    resolvedIdentity,
+    canonicalSource,
+    sourceDocuments,
+    evidenceCandidates,
+    catalogSupplierProducts,
+    canonicalSupplierProducts,
+    supplierProducts,
+    supplierVariantCount: supplierProducts.length,
+    catalogSupplierCount,
+    livePricingEntries,
+    livePricingSupplierCount,
+    livePricingPackCount,
+    technicalFieldCount,
+    technicalFieldTotal: 6,
+    dimensions,
+    dimensionByKey: Object.fromEntries(
+      dimensions.map((dimension) => [dimension.key, dimension])
+    ),
+    missingSignals,
+    uncertainSignals,
+    primaryGap: missingSignals[0] || uncertainSignals[0] || null,
+    ...summary,
+  };
+}
+
 export function buildFinishedProductIfraGuidance({
   items = [],
   category = "cat4",
