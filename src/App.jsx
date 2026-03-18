@@ -1,4 +1,11 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import {
+  Component,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import {
   BarChart,
   Bar,
@@ -54426,6 +54433,7 @@ const FRAGRANCE_TYPE_PRESETS = {
   EDC: { pct: 7.5, label: "Eau de Cologne", range: "5–10%" },
   Mist: { pct: 3.5, label: "Body Mist", range: "2–5%" },
 };
+const SHOW_DEV_ERROR_HINT = Boolean(import.meta.env?.DEV);
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENTS
@@ -54605,6 +54613,196 @@ function getFinishedProductStatusRank(status) {
   return ranks[status] ?? 4;
 }
 
+class IngredientDetailErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Ingredient detail panel failed to render.", error, info);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (
+      this.state.error &&
+      prevProps.resetKey !== this.props.resetKey
+    ) {
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    const { children, onClose, materialName } = this.props;
+    const { error } = this.state;
+    if (!error) return children;
+
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "#000c",
+          zIndex: 200,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}
+        onClick={onClose}
+      >
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 16,
+            border: `1px solid ${BORDER}`,
+            width: "100%",
+            maxWidth: 560,
+            padding: 22,
+          }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  background: "#2A1806",
+                  border: "1px solid #92400E",
+                  borderRadius: 999,
+                  padding: "3px 10px",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  display: "inline-flex",
+                }}
+              >
+                Detail Panel Unavailable
+              </div>
+              <h2
+                style={{
+                  margin: "10px 0 0",
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#E2E8F0",
+                }}
+              >
+                {materialName || "Ingredient detail"} failed to load
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#475569",
+                fontSize: 22,
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              fontSize: 10,
+              color: "#94A3B8",
+              lineHeight: 1.7,
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: 14,
+            }}
+          >
+            The ingredient detail panel hit a local runtime error. The rest of the
+            app is still available. Try closing and reopening this dossier.
+          </div>
+
+          {SHOW_DEV_ERROR_HINT && (
+            <div
+              style={{
+                marginTop: 10,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: 8.8,
+                color: "#CBD5E1",
+                lineHeight: 1.6,
+                fontFamily: "'IBM Plex Mono', 'SF Mono', monospace",
+                wordBreak: "break-word",
+              }}
+            >
+              {error?.name || "Error"}
+              {error?.message ? `: ${error.message}` : ""}
+            </div>
+          )}
+
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
+              marginTop: 14,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => this.setState({ error: null })}
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 8,
+                color: "#CBD5E1",
+                padding: "7px 10px",
+                fontSize: 8.8,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Retry Panel
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                border: "1px solid #22D3EE40",
+                borderRadius: 8,
+                color: "#7DD3FC",
+                padding: "7px 10px",
+                fontSize: 8.8,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Close Detail
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
 function IngredientDetailPanel({
   name,
   onClose,
@@ -54724,6 +54922,19 @@ function IngredientDetailPanel({
         : null,
     [activeContext, ifraCategory, selectedFragranceType]
   );
+  const activeContextFinishedStatusLabel =
+    {
+      offender: "Offender",
+      offender_with_missing: "Offender + Gaps",
+      warning: "Tight Headroom",
+      warning_with_missing: "Tight Headroom + Gaps",
+      appears_compliant: "Appears Within Limit",
+      appears_compliant_with_missing: "Within Checked Limits + Gaps",
+      blocked_missing: "Blocked by Missing Data",
+      no_restricted_rows: "No Restricted Rows Hit",
+    }[activeContextFinishedGuidance?.overallStatus] ||
+    activeContextFinishedGuidance?.overallStatus ||
+    "Status unavailable";
   const batchPlannerLine =
     batchPlannerReport?.lines?.find((line) => line.name === name) || null;
 
@@ -54961,6 +55172,98 @@ function IngredientDetailPanel({
           : "#64748B",
     },
   ];
+  const materialTrustSummary = useMemo(() => {
+    const syntheticTrustLine = activeContextBasketLine
+      ? activeContextBasketLine
+      : livePricingEntries.length > 0
+      ? {
+          mappingConfidence:
+            canonicalMaterialKey || sourceDocuments.length || evidenceCandidates.length
+              ? "inferred"
+              : "uncertain",
+        }
+      : canonicalMaterialKey || sourceDocuments.length || evidenceCandidates.length
+      ? {
+          mappingConfidence: "inferred",
+        }
+      : null;
+
+    const extraMissingSignals = [];
+    const extraUncertainSignals = [];
+    const extraBlockerSignals = [];
+
+    if (!livePricingEntries.length) {
+      extraMissingSignals.push(
+        "No live supplier pricing rows are attached to this material yet."
+      );
+    }
+    if (!canonicalMaterialKey) {
+      extraUncertainSignals.push(
+        "Canonical identity is still unresolved for this material."
+      );
+    }
+    if (!sourceDocuments.length && !evidenceCandidates.length) {
+      extraUncertainSignals.push(
+        "No linked source documents or evidence candidates are attached yet."
+      );
+    }
+    if (batchPlannerLine?.isBlocked) {
+      extraBlockerSignals.push(
+        `Blocking the current batch-plan target by ${batchPlannerLine.shortageG.toFixed(
+          1
+        )}g.`
+      );
+    }
+
+    if (
+      !syntheticTrustLine &&
+      !extraMissingSignals.length &&
+      !extraUncertainSignals.length &&
+      !extraBlockerSignals.length
+    ) {
+      return null;
+    }
+
+    return buildFounderTrustSummary({
+      basket: syntheticTrustLine ? { lines: [syntheticTrustLine] } : null,
+      launchReadiness:
+        activeContext || batchPlannerLine
+          ? {
+              pricing: {
+                missingCount: livePricingEntries.length > 0 ? 0 : 1,
+                uncertainCount:
+                  activeContextBasketLine?.mappingConfidence === "uncertain" ? 1 : 0,
+              },
+              compliance: {
+                finishedProductStatus:
+                  activeContextFinishedGuidance?.overallStatus || null,
+              },
+              blockers: batchPlannerLine?.isBlocked ? extraBlockerSignals : [],
+              cautions: [],
+            }
+          : null,
+      expectedLineCount: syntheticTrustLine ? 1 : null,
+      extraMissingSignals,
+      extraUncertainSignals,
+      extraBlockerSignals,
+    });
+  }, [
+    activeContext,
+    activeContextBasketLine,
+    activeContextFinishedGuidance,
+    batchPlannerLine,
+    canonicalMaterialKey,
+    evidenceCandidates.length,
+    livePricingEntries.length,
+    sourceDocuments.length,
+  ]);
+  const materialTrustDriver = materialTrustSummary
+    ? materialTrustSummary.missingSignals?.[0] ||
+      materialTrustSummary.uncertainSignals?.[0] ||
+      materialTrustSummary.blockerSignals?.[0] ||
+      materialTrustSummary.blockerSupportLine ||
+      "No major dossier trust gap surfaced."
+    : "No active formula/build trust read is attached yet. This dossier falls back to identity, pricing, and evidence context only.";
 
   const substitutionCategoryMeta = {
     cheaper: {
@@ -55188,6 +55491,150 @@ function IngredientDetailPanel({
           ))}
         </div>
 
+        <div
+          style={{
+            background: "#060E1E",
+            borderRadius: 12,
+            border: `1px solid ${BORDER}`,
+            padding: 12,
+            marginBottom: 18,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#34D399",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Material Trust / Evidence Context
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#CBD5E1",
+                  lineHeight: 1.55,
+                }}
+              >
+                {materialTrustSummary?.headline ||
+                  "No active formula/build trust read is attached yet. This dossier falls back to identity, evidence, and pricing context only."}
+              </div>
+            </div>
+            <span
+              style={{
+                background: materialTrustSummary?.levelMeta?.bg || "#071826",
+                border: `1px solid ${
+                  materialTrustSummary?.levelMeta?.border || "#1E3A52"
+                }`,
+                borderRadius: 999,
+                padding: "2px 8px",
+                fontSize: 7.9,
+                fontWeight: 700,
+                color: materialTrustSummary?.levelMeta?.color || "#94A3B8",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {materialTrustSummary?.levelMeta?.label || "Context Needed"}
+            </span>
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+              gap: 8,
+            }}
+          >
+            {[
+              [
+                "Coverage",
+                materialTrustSummary?.supportLabel || "No trust read available",
+                "#7DD3FC",
+              ],
+              [
+                "Breakdown",
+                materialTrustSummary?.breakdownLabel ||
+                  "Waiting on stronger pricing/evidence context",
+                "#CBD5E1",
+              ],
+            ].map(([label, value, color]) => (
+              <div
+                key={`material-trust-${label}`}
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 7.8,
+                    color: "#64748B",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  {label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: label === "Coverage" ? 13 : 8.4,
+                    fontWeight: 700,
+                    color,
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 8.5,
+              color: "#94A3B8",
+              lineHeight: 1.55,
+            }}
+          >
+            {materialTrustDriver}
+          </div>
+          {materialTrustSummary?.dataSparse ? (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 8.2,
+                color: "#FCD34D",
+                lineHeight: 1.55,
+              }}
+            >
+              Sparse trust means the dossier can still guide review, but swap and
+              sourcing conclusions should stay provisional until pricing or evidence
+              coverage improves.
+            </div>
+          ) : null}
+        </div>
+
+        {false ? (
+          <>
         {renderTrustSummaryPanel(dashboardTrustSummary, {
           title: "Founder Trust / Evidence Context",
           accent: "#34D399",
@@ -55275,11 +55722,13 @@ function IngredientDetailPanel({
         )}
 
         <div
+          ref={founderLaunchPlannerRef}
           style={{
-            background: CARD,
+            background: "linear-gradient(180deg,#07131F 0%, #0A1628 100%)",
             borderRadius: 14,
-            border: `1px solid ${BORDER}`,
+            border: "1px solid #F59E0B40",
             padding: 14,
+            boxShadow: "0 0 0 1px #0A1628 inset",
           }}
         >
           <div
@@ -55317,6 +55766,25 @@ function IngredientDetailPanel({
                 launch-readiness signals to estimate launch-run COGS, revenue,
                 buy-list gaps, and rough capital needs.
               </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#2A1806",
+                  border: "1px solid #92400E",
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Start Here To Assign Launch Units
+              </div>
             </div>
             <div
               style={{
@@ -55330,13 +55798,14 @@ function IngredientDetailPanel({
                 type="button"
                 onClick={() => {
                   if (!formula?.formulaKey) return;
-                  setLaunchPlanUnitsByFormula((prev) => ({
-                    ...prev,
-                    [formula.formulaKey]: Math.max(
+                  clearLaunchPlanUnitDraft(formula.formulaKey);
+                  setLaunchPlanUnits(
+                    formula.formulaKey,
+                    Math.max(
                       100,
-                      Math.round(Number(prev[formula.formulaKey]) || 0)
-                    ),
-                  }));
+                      Math.round(Number(launchPlanUnitsByFormula[formula.formulaKey]) || 0)
+                    )
+                  );
                 }}
                 style={{
                   background: "#0A1628",
@@ -55353,7 +55822,10 @@ function IngredientDetailPanel({
               </button>
               <button
                 type="button"
-                onClick={() => setLaunchPlanUnitsByFormula({})}
+                onClick={() => {
+                  setLaunchPlanUnitsByFormula({});
+                  setLaunchPlanUnitDrafts({});
+                }}
                 style={{
                   background: "#2A0C0C",
                   border: "1px solid #991B1B",
@@ -55475,6 +55947,19 @@ function IngredientDetailPanel({
                   Non-zero unit counts are included in the proposed launch run.
                 </div>
               </div>
+              <div
+                style={{
+                  fontSize: 8.4,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                  textAlign: "right",
+                  maxWidth: 340,
+                }}
+              >
+                Unit planning stays available for every formula here. Readiness,
+                pricing, and inventory blockers still surface in the caveat and
+                launch-summary views instead of hiding the controls.
+              </div>
               <div style={{ fontSize: 9, color: "#64748B" }}>
                 {launchRunPlannerSummary.summary.selectedFormulaCount} selected ·{" "}
                 {launchRunPlannerSummary.summary.totalUnits} total units
@@ -55544,17 +56029,15 @@ function IngredientDetailPanel({
                           <input
                             type="checkbox"
                             checked={isIncluded}
-                            onChange={(e) =>
-                              setLaunchPlanUnitsByFormula((prev) => ({
-                                ...prev,
-                                [item.formula.formulaKey]: e.target.checked
-                                  ? Math.max(
-                                      100,
-                                      Math.round(Number(prev[item.formula.formulaKey]) || 0)
-                                    )
-                                  : 0,
-                              }))
-                            }
+                            onChange={(e) => {
+                              clearLaunchPlanUnitDraft(item.formula.formulaKey);
+                              setLaunchPlanUnits(
+                                item.formula.formulaKey,
+                                e.target.checked
+                                  ? Math.max(100, units || 0)
+                                  : 0
+                              );
+                            }}
                           />
                         </td>
                         <td
@@ -55587,31 +56070,106 @@ function IngredientDetailPanel({
                           </span>
                         </td>
                         <td style={{ padding: "6px 8px", minWidth: 88 }}>
-                          <input
-                            type="number"
-                            min={0}
-                            step={1}
-                            value={units > 0 ? units : ""}
-                            onChange={(e) =>
-                              setLaunchPlanUnitsByFormula((prev) => ({
-                                ...prev,
-                                [item.formula.formulaKey]:
-                                  Math.max(0, Math.round(parseFloat(e.target.value) || 0)),
-                              }))
-                            }
-                            placeholder="0"
+                          <div
                             style={{
-                              width: 72,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
                               background: "#0A1628",
-                              border: "1px solid #1E3A52",
-                              borderRadius: 8,
-                              color: isIncluded ? "#22D3EE" : "#94A3B8",
-                              padding: "6px 8px",
-                              fontSize: 10,
-                              fontWeight: 700,
-                              outline: "none",
+                              border: `1px solid ${
+                                isIncluded ? "#22D3EE40" : "#1E3A52"
+                              }`,
+                              borderRadius: 10,
+                              padding: "4px 6px",
                             }}
-                          />
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                adjustLaunchPlanUnits(item.formula.formulaKey, -10)
+                              }
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 6,
+                                color: "#CBD5E1",
+                                width: 22,
+                                height: 22,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                              }}
+                              aria-label={`Decrease launch units for ${item.displayLabel}`}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min={0}
+                              step={1}
+                              value={
+                                launchPlanUnitDrafts[item.formula.formulaKey] ??
+                                (units > 0 ? String(units) : "")
+                              }
+                              onChange={(e) =>
+                                updateLaunchPlanUnitDraft(
+                                  item.formula.formulaKey,
+                                  e.target.value
+                                )
+                              }
+                              onBlur={() =>
+                                commitLaunchPlanUnitDraft(item.formula.formulaKey)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  commitLaunchPlanUnitDraft(
+                                    item.formula.formulaKey
+                                  );
+                                  e.currentTarget.blur();
+                                } else if (e.key === "Escape") {
+                                  clearLaunchPlanUnitDraft(
+                                    item.formula.formulaKey
+                                  );
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              placeholder="0"
+                              style={{
+                                width: 72,
+                                background: "transparent",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 8,
+                                color: isIncluded ? "#22D3EE" : "#94A3B8",
+                                padding: "6px 8px",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                outline: "none",
+                                textAlign: "center",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                adjustLaunchPlanUnits(item.formula.formulaKey, 10)
+                              }
+                              style={{
+                                background: "#0E4D6E",
+                                border: "1px solid #22D3EE40",
+                                borderRadius: 6,
+                                color: "#7DD3FC",
+                                width: 22,
+                                height: 22,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                              }}
+                              aria-label={`Increase launch units for ${item.displayLabel}`}
+                            >
+                              +
+                            </button>
+                          </div>
                         </td>
                         <td
                           style={{
@@ -56192,6 +56750,9 @@ function IngredientDetailPanel({
             </div>
           </div>
         </div>
+
+          </>
+        ) : null}
 
         <div
           style={{
@@ -56872,11 +57433,7 @@ function IngredientDetailPanel({
                   2
                 )}`}
               {activeContextFinishedGuidance &&
-                ` · finished-product status ${
-                  finishedProductIfraStatusMeta[
-                    activeContextFinishedGuidance.overallStatus
-                  ]?.label || activeContextFinishedGuidance.overallStatus
-                }`}
+                ` · finished-product status ${activeContextFinishedStatusLabel}`}
             </div>
           )}
           {activeContext?.kind === "build" && (
@@ -58298,6 +58855,8 @@ export default function App() {
   const [subTab, setSubTab] = useState("formula");
   const [ifraCategory, setIfraCategory] = useState("cat4");
   const [buildItems, setBuildItems] = useState([]);
+  const [buildGramDrafts, setBuildGramDrafts] = useState({});
+  const [formulaGramDrafts, setFormulaGramDrafts] = useState({});
   const [buildSearch, setBuildSearch] = useState("");
   const [catSearch, setCatSearch] = useState("");
   const [catSupplier, setCatSupplier] = useState("All");
@@ -58313,6 +58872,7 @@ export default function App() {
     readTextStorage(APP_STORAGE_KEYS.apiKey, "")
   );
   const apiKeyRef = useRef(apiKey);
+  const founderLaunchPlannerRef = useRef(null);
   useEffect(() => {
     apiKeyRef.current = apiKey;
   }, [apiKey]);
@@ -58337,6 +58897,7 @@ export default function App() {
   const [skuPackagingCost, setSkuPackagingCost] = useState(4.5);
   const [skuLaborCost, setSkuLaborCost] = useState(1.5);
   const [launchPlanUnitsByFormula, setLaunchPlanUnitsByFormula] = useState({});
+  const [launchPlanUnitDrafts, setLaunchPlanUnitDrafts] = useState({});
   const [launchRecommendationBudget, setLaunchRecommendationBudget] =
     useState(2500);
   const [launchRecommendationSkuLimit, setLaunchRecommendationSkuLimit] =
@@ -59177,6 +59738,48 @@ export default function App() {
     }
   }, [formulas, pendingFormulaSelectionKey, selFrag]);
   useEffect(() => {
+    const buildItemNames = new Set(buildItems.map((item) => item.name));
+    setBuildGramDrafts((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([name]) => buildItemNames.has(name))
+      );
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      if (
+        prevKeys.length === nextKeys.length &&
+        prevKeys.every((name) => prev[name] === next[name])
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [buildItems]);
+  useEffect(() => {
+    const validFormulaDraftKeys = new Set(
+      formulas.flatMap((entry) =>
+        entry.ingredients.map((ingredient, index) =>
+          buildFormulaGramDraftKey(entry.formulaKey, index, ingredient.name)
+        )
+      )
+    );
+    setFormulaGramDrafts((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([draftKey]) =>
+          validFormulaDraftKeys.has(draftKey)
+        )
+      );
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      if (
+        prevKeys.length === nextKeys.length &&
+        prevKeys.every((draftKey) => prev[draftKey] === next[draftKey])
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [formulas]);
+  useEffect(() => {
     if (!batchPlannerSources.length) return;
     const hasSelectedSource = batchPlannerSources.some(
       (source) => source.key === batchPlannerSourceKey
@@ -59238,10 +59841,95 @@ export default function App() {
       }
       return next;
     });
+    setLaunchPlanUnitDrafts((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([formulaKey]) => availableKeys.has(formulaKey))
+      );
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+      if (
+        prevKeys.length === nextKeys.length &&
+        prevKeys.every((formulaKey) => prev[formulaKey] === next[formulaKey])
+      ) {
+        return prev;
+      }
+      return next;
+    });
   }, [formulas]);
   useEffect(() => {
     writeJsonStorage(APP_STORAGE_KEYS.inventory, inventory);
   }, [inventory]);
+  const setInventoryQtyValue = useCallback((name, nextValue) => {
+    const qty = Math.max(0, Number(nextValue) || 0);
+    setInventory((prev) => ({
+      ...prev,
+      [name]: { ...(prev[name] || {}), qty },
+    }));
+  }, []);
+  const adjustInventoryQty = useCallback(
+    (name, delta) => {
+      const currentQty = Number(inventory?.[name]?.qty) || 0;
+      setInventoryQtyValue(
+        name,
+        Math.max(0, Math.round((currentQty + delta) * 1000) / 1000)
+      );
+    },
+    [inventory, setInventoryQtyValue]
+  );
+  const setLaunchPlanUnits = useCallback((formulaKey, nextUnits) => {
+    setLaunchPlanUnitsByFormula((prev) => ({
+      ...prev,
+      [formulaKey]: Math.max(0, Math.round(Number(nextUnits) || 0)),
+    }));
+  }, []);
+  const updateLaunchPlanUnitDraft = useCallback(
+    (formulaKey, rawValue) => {
+      setLaunchPlanUnitDrafts((prev) => ({
+        ...prev,
+        [formulaKey]: rawValue,
+      }));
+      if (String(rawValue).trim() === "") return;
+      const parsed = parseFloat(rawValue);
+      if (!Number.isNaN(parsed) && parsed >= 0) {
+        setLaunchPlanUnits(formulaKey, parsed);
+      }
+    },
+    [setLaunchPlanUnits]
+  );
+  const clearLaunchPlanUnitDraft = useCallback((formulaKey) => {
+    setLaunchPlanUnitDrafts((prev) => {
+      if (!(formulaKey in prev)) return prev;
+      const next = { ...prev };
+      delete next[formulaKey];
+      return next;
+    });
+  }, []);
+  const commitLaunchPlanUnitDraft = useCallback(
+    (formulaKey) => {
+      const rawValue = launchPlanUnitDrafts[formulaKey];
+      if (rawValue == null) return;
+      const parsed = parseFloat(rawValue);
+      if (!Number.isNaN(parsed) && parsed >= 0) {
+        setLaunchPlanUnits(formulaKey, parsed);
+      }
+      clearLaunchPlanUnitDraft(formulaKey);
+    },
+    [clearLaunchPlanUnitDraft, launchPlanUnitDrafts, setLaunchPlanUnits]
+  );
+  const adjustLaunchPlanUnits = useCallback(
+    (formulaKey, delta) => {
+      const currentUnits = Number(launchPlanUnitsByFormula[formulaKey]) || 0;
+      setLaunchPlanUnits(formulaKey, currentUnits + delta);
+      clearLaunchPlanUnitDraft(formulaKey);
+    },
+    [clearLaunchPlanUnitDraft, launchPlanUnitsByFormula, setLaunchPlanUnits]
+  );
+  const scrollToFounderLaunchPlanner = useCallback(() => {
+    founderLaunchPlannerRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
   useEffect(() => {
     writeJsonStorage(
       APP_STORAGE_KEYS.founderLaunchScenarios,
@@ -59714,6 +60402,10 @@ export default function App() {
     },
     []
   );
+  const continueEditingFormulaVersion = useCallback(() => {
+    if (!formula || formula.isLocked) return;
+    setSubTab("edit");
+  }, [formula]);
   const lockFormulaVersion = useCallback(() => {
     if (!formula || formula.isLocked) return;
     if (
@@ -59733,6 +60425,58 @@ export default function App() {
       updatedAt: new Date().toISOString(),
     });
   }, [formula, saveFormulaRecord]);
+  const unlockFormulaVersion = useCallback(() => {
+    if (!formula?.isLocked) return;
+    if (formula.sourceType === "seeded") {
+      alert("Seeded baseline formulas stay locked to protect the baseline.");
+      return;
+    }
+    if (
+      !confirm(
+        `Unlock ${getFormulaDisplayLabel(formula, {
+          includeVersion: true,
+        })}?`
+      )
+    ) {
+      return;
+    }
+    saveFormulaRecord({
+      ...formula,
+      isLocked: false,
+      updatedAt: new Date().toISOString(),
+    });
+    setSubTab("edit");
+  }, [formula, saveFormulaRecord]);
+  const deleteFormulaVersion = useCallback(() => {
+    if (!formula) return;
+    if (formula.isSeeded) {
+      alert("Seeded baseline formulas cannot be deleted.");
+      return;
+    }
+    if (
+      !confirm(
+        `Delete ${getFormulaDisplayLabel(formula, {
+          includeVersion: true,
+        })}? This removes this saved version from the formula library.`
+      )
+    ) {
+      return;
+    }
+    const fallbackFormulaKey =
+      formula.parentVersionId ||
+      formula.parentFormulaKey ||
+      formulas.find((entry) => entry.formulaKey !== formula.formulaKey)
+        ?.formulaKey ||
+      null;
+    setSavedBuilds((prev) => removeFormulaRecord(prev, formula.formulaKey));
+    if (critiqueFormula === formula.formulaKey) {
+      setCritiqueFormula(fallbackFormulaKey);
+    }
+    if (fallbackFormulaKey) {
+      setPendingFormulaSelectionKey(fallbackFormulaKey);
+    }
+    setSubTab("formula");
+  }, [critiqueFormula, formula, formulas]);
   const resetFormulaToSeed = useCallback(() => {
     if (!formula?.isSeeded) {
       alert("Only seeded formulas can be reset to their original seed.");
@@ -59740,6 +60484,11 @@ export default function App() {
     }
     setSavedBuilds((prev) => removeFormulaRecord(prev, formula.formulaKey));
   }, [formula]);
+  const canContinueEditingFormula = Boolean(formula && !formula.isLocked);
+  const canUnlockFormula = Boolean(
+    formula?.isLocked && formula?.sourceType !== "seeded"
+  );
+  const canDeleteFormula = Boolean(formula && !formula.isSeeded);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -60605,17 +61354,82 @@ export default function App() {
   };
   const removeBuildItem = (name) =>
     setBuildItems((prev) => prev.filter((i) => i.name !== name));
-  const updateBuildG = (name, v) => {
-    const val = parseFloat(v);
-    if (!isNaN(val) && val > 0)
+  const updateBuildG = useCallback((name, nextValue) => {
+    const val = parseFloat(nextValue);
+    if (!isNaN(val) && val > 0) {
       setBuildItems((prev) =>
         prev.map((i) => (i.name === name ? { ...i, g: val } : i))
       );
-  };
+    }
+  }, []);
+  const updateBuildGramDraft = useCallback((name, rawValue) => {
+    setBuildGramDrafts((prev) => ({
+      ...prev,
+      [name]: rawValue,
+    }));
+    if (String(rawValue).trim() === "") return;
+    const parsed = parseFloat(rawValue);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      updateBuildG(name, parsed);
+    }
+  }, [updateBuildG]);
+  const clearBuildGramDraft = useCallback((name) => {
+    setBuildGramDrafts((prev) => {
+      if (!(name in prev)) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  }, []);
+  const commitBuildGramDraft = useCallback(
+    (name) => {
+      const rawValue = buildGramDrafts[name];
+      if (rawValue == null) return;
+      const parsed = parseFloat(rawValue);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        updateBuildG(name, parsed);
+      }
+      clearBuildGramDraft(name);
+    },
+    [buildGramDrafts, clearBuildGramDraft, updateBuildG]
+  );
   const updateBuildNote = (name, note) =>
     setBuildItems((prev) =>
       prev.map((i) => (i.name === name ? { ...i, note } : i))
     );
+  const buildFormulaGramDraftKey = (formulaKey, index, ingredientName) =>
+    `${formulaKey || "formula"}:${index}:${ingredientName || "ingredient"}`;
+  const updateFormulaGramDraft = useCallback((draftKey, rawValue, onCommit) => {
+    setFormulaGramDrafts((prev) => ({
+      ...prev,
+      [draftKey]: rawValue,
+    }));
+    if (String(rawValue).trim() === "") return;
+    const parsed = parseFloat(rawValue);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      onCommit(parsed);
+    }
+  }, []);
+  const clearFormulaGramDraft = useCallback((draftKey) => {
+    setFormulaGramDrafts((prev) => {
+      if (!(draftKey in prev)) return prev;
+      const next = { ...prev };
+      delete next[draftKey];
+      return next;
+    });
+  }, []);
+  const commitFormulaGramDraft = useCallback(
+    (draftKey, onCommit) => {
+      const rawValue = formulaGramDrafts[draftKey];
+      if (rawValue == null) return;
+      const parsed = parseFloat(rawValue);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        onCommit(parsed);
+      }
+      clearFormulaGramDraft(draftKey);
+    },
+    [clearFormulaGramDraft, formulaGramDrafts]
+  );
 
   // AI price refresh — ONLY updates sizes, NEVER overwrites existing URLs
   // targetSup: if provided, only refresh that specific supplier row (keyed as "ing|sup")
@@ -63262,6 +64076,675 @@ export default function App() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: "linear-gradient(135deg,#251404,#422006)",
+            border: "1px solid #F59E0B40",
+            borderRadius: 14,
+            padding: 14,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: "#FCD34D",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Launch Planner Shortcut
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 8.9,
+                color: "#FDE68A",
+                lineHeight: 1.6,
+                maxWidth: 760,
+              }}
+            >
+              Start here when you want to assign units per formula. Blocked
+              formulas still stay plan-able; their pricing, inventory, and
+              compliance issues remain visible as caveats below.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={scrollToFounderLaunchPlanner}
+            style={{
+              background: "#0E4D6E",
+              border: "1px solid #22D3EE40",
+              borderRadius: 10,
+              color: "#7DD3FC",
+              padding: "8px 12px",
+              fontSize: 9,
+              fontWeight: 700,
+              cursor: "pointer",
+              letterSpacing: "0.05em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            JUMP TO LAUNCH PLANNER ↓
+          </button>
+        </div>
+
+        <div
+          ref={founderLaunchPlannerRef}
+          style={{
+            background: "linear-gradient(180deg,#07131F 0%, #0A1628 100%)",
+            borderRadius: 14,
+            border: "1px solid #F59E0B40",
+            padding: 14,
+            boxShadow: "0 0 0 1px #0A1628 inset",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 14,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 360px" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#F59E0B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Launch Run Planner / Capital Requirement
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.9,
+                  color: "#64748B",
+                  lineHeight: 1.65,
+                  maxWidth: 760,
+                }}
+              >
+                Founder-oriented only. Select formulas and planned units, then
+                the app reuses current SKU economics, basket mode, inventory,
+                and launch-readiness signals to estimate launch-run COGS,
+                revenue, buy-list gaps, and rough capital needs.
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#2A1806",
+                  border: "1px solid #92400E",
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Start Here To Assign Launch Units
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (!formula?.formulaKey) return;
+                  clearLaunchPlanUnitDraft(formula.formulaKey);
+                  setLaunchPlanUnits(
+                    formula.formulaKey,
+                    Math.max(
+                      100,
+                      Math.round(
+                        Number(launchPlanUnitsByFormula[formula.formulaKey]) || 0
+                      )
+                    )
+                  );
+                }}
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  color: "#CBD5E1",
+                  padding: "7px 10px",
+                  fontSize: 8.8,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Add Current Formula (100)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLaunchPlanUnitsByFormula({});
+                  setLaunchPlanUnitDrafts({});
+                }}
+                style={{
+                  background: "#2A0C0C",
+                  border: "1px solid #991B1B",
+                  borderRadius: 8,
+                  color: "#FCA5A5",
+                  padding: "7px 10px",
+                  fontSize: 8.8,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Clear Plan
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              `${selectedFragranceType.label} · ${selectedFragranceType.pct}% load`,
+              `${skuFillVolumeMl.toFixed(0)}mL fill`,
+              `${selectedBasketModeMeta.label} basket`,
+              `${launchRunPlannerSummary.context.diluentMaterialName} diluent`,
+              `Retail $${skuRetailPrice.toFixed(2)}`,
+            ].map((tag) => (
+              <div
+                key={`launch-context-live-${tag}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                  fontSize: 8.6,
+                  color: "#7DD3FC",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {tag}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            {renderTrustSummaryPanel(launchPlannerTrustSummary, {
+              title: "Launch Planner Trust / Evidence",
+              accent: "#F59E0B",
+              footnote:
+                "This combines selected-formula basket support with shortage buy-list confidence under the active launch mix.",
+            })}
+          </div>
+
+          {launchRunPlannerSummary.summary.selectedFormulaCount === 0 && (
+            <div
+              style={{
+                marginTop: 12,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.65,
+              }}
+            >
+              No formulas are in the launch mix yet. Enter units for one or more
+              formulas, or use{" "}
+              <strong style={{ color: "#CBD5E1" }}>
+                Add Current Formula (100)
+              </strong>
+              , to turn the launch planner into a live capital, shortage, and
+              buy-list read.
+            </div>
+          )}
+
+          <div
+            style={{
+              marginTop: 12,
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: "#475569",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Planned SKU Mix
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Non-zero unit counts are included in the proposed launch run.
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: 8.4,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                  textAlign: "right",
+                  maxWidth: 340,
+                }}
+              >
+                Unit planning stays available for every formula here. Readiness,
+                pricing, and inventory blockers still surface in the caveat and
+                launch-summary views instead of hiding the controls.
+              </div>
+              <div style={{ fontSize: 9, color: "#64748B" }}>
+                {launchRunPlannerSummary.summary.selectedFormulaCount} selected ·{" "}
+                {launchRunPlannerSummary.summary.totalUnits} total units
+              </div>
+            </div>
+            <div style={{ overflowX: "auto", maxHeight: 320, overflowY: "auto" }}>
+              <table
+                style={{
+                  width: "100%",
+                  fontSize: 10,
+                  borderCollapse: "collapse",
+                }}
+              >
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                    {[
+                      "Include",
+                      "Formula",
+                      "Type",
+                      "Readiness",
+                      "Units",
+                      "Per-SKU COGS",
+                      "Launch COGS",
+                      "Key Caveat",
+                    ].map((heading) => (
+                      <th
+                        key={`launch-plan-live-head-${heading}`}
+                        style={{
+                          padding: "6px 8px",
+                          textAlign: "left",
+                          color: "#475569",
+                          fontWeight: 700,
+                          fontSize: 8.5,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardItems.map((item) => {
+                    const units = Math.max(
+                      0,
+                      Math.round(
+                        Number(launchPlanUnitsByFormula[item.formula.formulaKey]) || 0
+                      )
+                    );
+                    const isIncluded = units > 0;
+                    const readinessMeta =
+                      LAUNCH_READINESS_STATUS_META[item.launchReadiness.status] ||
+                      LAUNCH_READINESS_STATUS_META.early;
+                    const economics =
+                      skuEconomicsByFormulaKey.get(item.formula.formulaKey) || null;
+                    const selectedPlanItem =
+                      launchPlannerByFormulaKey.get(item.formula.formulaKey) || null;
+                    return (
+                      <tr
+                        key={`launch-plan-live-row-${item.formula.formulaKey}`}
+                        style={{
+                          borderBottom: "1px solid #0A1628",
+                          background: isIncluded ? "#071826" : "transparent",
+                        }}
+                      >
+                        <td style={{ padding: "6px 8px" }}>
+                          <input
+                            type="checkbox"
+                            checked={isIncluded}
+                            onChange={(e) => {
+                              clearLaunchPlanUnitDraft(item.formula.formulaKey);
+                              setLaunchPlanUnits(
+                                item.formula.formulaKey,
+                                e.target.checked
+                                  ? Math.max(100, units || 0)
+                                  : 0
+                              );
+                            }}
+                          />
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color: "#E2E8F0",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {item.displayLabel}
+                        </td>
+                        <td style={{ padding: "6px 8px", color: "#94A3B8" }}>
+                          {renderFormulaTypeLabel(item.formula)}
+                        </td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <span
+                            style={{
+                              background: readinessMeta.bg,
+                              border: `1px solid ${readinessMeta.border}`,
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 8,
+                              fontWeight: 700,
+                              color: readinessMeta.color,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {readinessMeta.label}
+                          </span>
+                        </td>
+                        <td style={{ padding: "6px 8px", minWidth: 88 }}>
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              background: "#0A1628",
+                              border: `1px solid ${
+                                isIncluded ? "#22D3EE40" : "#1E3A52"
+                              }`,
+                              borderRadius: 10,
+                              padding: "4px 6px",
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() =>
+                                adjustLaunchPlanUnits(item.formula.formulaKey, -10)
+                              }
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 6,
+                                color: "#CBD5E1",
+                                width: 22,
+                                height: 22,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                              }}
+                              aria-label={`Decrease launch units for ${item.displayLabel}`}
+                            >
+                              −
+                            </button>
+                            <input
+                              type="number"
+                              min={0}
+                              step={1}
+                              value={
+                                launchPlanUnitDrafts[item.formula.formulaKey] ??
+                                (units > 0 ? String(units) : "")
+                              }
+                              onChange={(e) =>
+                                updateLaunchPlanUnitDraft(
+                                  item.formula.formulaKey,
+                                  e.target.value
+                                )
+                              }
+                              onBlur={() =>
+                                commitLaunchPlanUnitDraft(item.formula.formulaKey)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  commitLaunchPlanUnitDraft(
+                                    item.formula.formulaKey
+                                  );
+                                  e.currentTarget.blur();
+                                } else if (e.key === "Escape") {
+                                  clearLaunchPlanUnitDraft(
+                                    item.formula.formulaKey
+                                  );
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              placeholder="0"
+                              style={{
+                                width: 72,
+                                background: "transparent",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 8,
+                                color: isIncluded ? "#22D3EE" : "#94A3B8",
+                                padding: "6px 8px",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                outline: "none",
+                                textAlign: "center",
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                adjustLaunchPlanUnits(item.formula.formulaKey, 10)
+                              }
+                              style={{
+                                background: "#0E4D6E",
+                                border: "1px solid #22D3EE40",
+                                borderRadius: 6,
+                                color: "#7DD3FC",
+                                width: 22,
+                                height: 22,
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                              }}
+                              aria-label={`Increase launch units for ${item.displayLabel}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              economics?.status === "blocked"
+                                ? "#FCA5A5"
+                                : "#7DD3FC",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {!economics
+                            ? "—"
+                            : economics.status === "blocked"
+                            ? "Blocked"
+                            : `$${economics.estimatedCogs.toFixed(2)}`}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              !selectedPlanItem || !selectedPlanItem.economics
+                                ? "#64748B"
+                                : selectedPlanItem.economics.status === "blocked"
+                                ? "#FCA5A5"
+                                : "#34D399",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {!isIncluded
+                            ? "—"
+                            : !selectedPlanItem?.economics
+                            ? "Partial"
+                            : selectedPlanItem.economics.status === "blocked"
+                            ? "Blocked"
+                            : `$${(
+                                selectedPlanItem.economics.estimatedCogs * units
+                              ).toFixed(2)}`}
+                        </td>
+                        <td
+                          style={{
+                            padding: "6px 8px",
+                            color:
+                              item.launchReadiness.blockers.length > 0
+                                ? "#FCA5A5"
+                                : "#94A3B8",
+                            lineHeight: 1.55,
+                            minWidth: 240,
+                          }}
+                        >
+                          {(economics?.pricingBlockers?.[0] &&
+                            economics.status === "blocked" &&
+                            economics.pricingBlockers[0]) ||
+                            item.launchReadiness.blockers[0] ||
+                            economics?.cautions?.[0] ||
+                            item.launchReadiness.cautions[0] ||
+                            item.launchReadiness.launchNote}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              {
+                label: "Selected Formulas",
+                value: launchRunPlannerSummary.summary.selectedFormulaCount,
+                meta: `${launchRunPlannerSummary.summary.totalUnits} total units planned`,
+                color: "#7DD3FC",
+              },
+              {
+                label: "Raw Materials",
+                value: `${launchRunPlannerSummary.summary.totalRawMaterialRequiredG.toFixed(
+                  0
+                )}g`,
+                meta: `${launchRunPlannerSummary.summary.totalRawMaterialCoveredG.toFixed(
+                  0
+                )}g covered · ${launchRunPlannerSummary.summary.totalRawMaterialShortageG.toFixed(
+                  0
+                )}g shortage`,
+                color:
+                  launchRunPlannerSummary.summary.totalRawMaterialShortageG > 0
+                    ? "#F59E0B"
+                    : "#34D399",
+              },
+              {
+                label: "Est. Launch COGS",
+                value: `$${launchRunPlannerSummary.summary.estimatedTotalCogs.toFixed(
+                  2
+                )}`,
+                meta: launchRunPlannerSummary.summary.isPartialEconomics
+                  ? "Partial: blocked formulas excluded from modeled COGS"
+                  : "Modeled from current per-SKU economics",
+                color: "#34D399",
+              },
+              {
+                label: "Launch Cash Need",
+                value: `$${launchRunPlannerSummary.summary.launchCashRequirement.toFixed(
+                  2
+                )}`,
+                meta: "Gap buy list + packaging/labor cash",
+                color: "#F472B6",
+              },
+            ].map((card) => (
+              <div
+                key={`launch-live-summary-${card.label}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "10px 14px",
+                }}
+              >
+                <div style={{ fontSize: 19, fontWeight: 800, color: card.color }}>
+                  {card.value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 9,
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {card.label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.8,
+                    color: "#64748B",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {card.meta}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -66835,8 +68318,11 @@ export default function App() {
     );
   }, [
     activeFounderScenario,
+    adjustLaunchPlanUnits,
     batchPlannerTargetG,
     basketMode,
+    clearLaunchPlanUnitDraft,
+    commitLaunchPlanUnitDraft,
     clearActiveFounderScenario,
     currentFounderScenarioInputs,
     currentFounderScenarioIsDirty,
@@ -66859,23 +68345,27 @@ export default function App() {
     launchRecommendationEmphasis,
     launchRecommendationSkuLimit,
     launchRecommendationStatus,
+    launchPlanUnitDrafts,
     launchPlanUnitsByFormula,
     launchRunPlannerSummary,
     loadLaunchRecommendationIntoPlanner,
     loadFounderScenario,
     openFormulaFromDashboard,
+    scrollToFounderLaunchPlanner,
     saveCurrentFounderScenario,
     saveLaunchRecommendationAsScenario,
     savedFounderScenarios,
     selectedBasketModeMeta,
     selectedDiluentBasket,
     selectedFragranceType,
+    setLaunchPlanUnits,
     skuEconomicsSummary,
     skuFillVolumeMl,
     skuLaborCost,
     skuPackagingCost,
     skuRetailPrice,
     toggleFounderScenarioCompare,
+    updateLaunchPlanUnitDraft,
   ]);
 
   const inventoryTabContent = useMemo(() => {
@@ -68019,31 +69509,86 @@ export default function App() {
                         </span>
                       </td>
                       <td style={{ padding: "5px 8px", textAlign: "right" }}>
-                        <input
-                          type="number"
-                          min={0}
-                          step={0.5}
-                          value={inventory[ing.name]?.qty || ""}
-                          placeholder="0"
-                          onChange={(e) => {
-                            const v = parseFloat(e.target.value) || 0;
-                            setInventory((prev) => ({
-                              ...prev,
-                              [ing.name]: { ...(prev[ing.name] || {}), qty: v },
-                            }));
-                          }}
+                        <div
                           style={{
-                            background: "#060E1E",
-                            border: "1px solid #1E3A52",
-                            borderRadius: 5,
-                            color: "#34D399",
-                            padding: "3px 6px",
-                            fontSize: 10,
-                            width: 75,
-                            textAlign: "right",
-                            outline: "none",
+                            display: "inline-flex",
+                            alignItems: "stretch",
+                            gap: 4,
                           }}
-                        />
+                        >
+                          <input
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            value={inventory[ing.name]?.qty || ""}
+                            placeholder="0"
+                            onChange={(e) =>
+                              setInventoryQtyValue(
+                                ing.name,
+                                parseFloat(e.target.value) || 0
+                              )
+                            }
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 5,
+                              color: "#34D399",
+                              padding: "3px 6px",
+                              fontSize: 10,
+                              width: 75,
+                              textAlign: "right",
+                              outline: "none",
+                            }}
+                          />
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateRows: "1fr 1fr",
+                              gap: 3,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => adjustInventoryQty(ing.name, 0.5)}
+                              style={{
+                                background: "#0E4D6E",
+                                border: "1px solid #22D3EE40",
+                                borderRadius: 5,
+                                color: "#7DD3FC",
+                                width: 22,
+                                height: 16,
+                                fontSize: 9,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                                padding: 0,
+                              }}
+                              aria-label={`Increase ${ing.name} inventory`}
+                            >
+                              ▲
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => adjustInventoryQty(ing.name, -0.5)}
+                              style={{
+                                background: "#0A1628",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 5,
+                                color: "#CBD5E1",
+                                width: 22,
+                                height: 16,
+                                fontSize: 9,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                lineHeight: 1,
+                                padding: 0,
+                              }}
+                              aria-label={`Decrease ${ing.name} inventory`}
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        </div>
                       </td>
                       <td
                         style={{
@@ -68137,6 +69682,7 @@ export default function App() {
       </div>
     );
   }, [
+    adjustInventoryQty,
     batchPlannerReport,
     batchPlannerSources,
     batchPlannerTargetG,
@@ -68150,6 +69696,7 @@ export default function App() {
     renderBatchPlannerPurchaseSummary,
     selectedBatchPlannerSource,
     selectedBasketModeMeta,
+    setInventoryQtyValue,
   ]);
   return (
     <div
@@ -68463,6 +70010,24 @@ export default function App() {
                         flexWrap: "wrap",
                       }}
                     >
+                      {canContinueEditingFormula && subTab !== "edit" && (
+                        <button
+                          onClick={continueEditingFormulaVersion}
+                          style={{
+                            background: "#052E16",
+                            border: "1px solid #166534",
+                            borderRadius: 8,
+                            color: "#86EFAC",
+                            padding: "6px 10px",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          CONTINUE EDITING
+                        </button>
+                      )}
                       <button
                         onClick={() => cloneFormulaVersion(formula)}
                         style={{
@@ -68479,25 +70044,78 @@ export default function App() {
                       >
                         CLONE TO {nextFormulaVersionLabel} DRAFT
                       </button>
-                      <button
-                        onClick={lockFormulaVersion}
-                        disabled={formula.isLocked}
-                        style={{
-                          background: formula.isLocked ? "#0A1628" : "#0A1628",
-                          border: `1px solid ${
-                            formula.isLocked ? "#1E3A52" : "#F59E0B30"
-                          }`,
-                          borderRadius: 8,
-                          color: formula.isLocked ? "#475569" : "#F59E0B",
-                          padding: "6px 10px",
-                          fontSize: 9,
-                          fontWeight: 700,
-                          cursor: formula.isLocked ? "not-allowed" : "pointer",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        {formula.isLocked ? "LOCKED" : "LOCK VERSION"}
-                      </button>
+                      {formula.isLocked ? (
+                        canUnlockFormula ? (
+                          <button
+                            onClick={unlockFormulaVersion}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #34D39940",
+                              borderRadius: 8,
+                              color: "#34D399",
+                              padding: "6px 10px",
+                              fontSize: 9,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            UNLOCK VERSION
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: "#475569",
+                              padding: "6px 10px",
+                              fontSize: 9,
+                              fontWeight: 700,
+                              cursor: "not-allowed",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            LOCKED
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          onClick={lockFormulaVersion}
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #F59E0B30",
+                            borderRadius: 8,
+                            color: "#F59E0B",
+                            padding: "6px 10px",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          LOCK VERSION
+                        </button>
+                      )}
+                      {canDeleteFormula && (
+                        <button
+                          onClick={deleteFormulaVersion}
+                          style={{
+                            background: "#2A0C0C",
+                            border: "1px solid #991B1B",
+                            borderRadius: 8,
+                            color: "#FCA5A5",
+                            padding: "6px 10px",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          DELETE DRAFT
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -70641,9 +72259,53 @@ export default function App() {
                           border: "1px solid #F59E0B30",
                           color: "#FCD34D",
                           fontSize: 9,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
                         }}
                       >
-                        This version is locked. Clone a new version to keep editing.
+                        <span>
+                          This version is locked. Clone a new version to keep
+                          editing.
+                        </span>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {canUnlockFormula && (
+                            <button
+                              type="button"
+                              onClick={unlockFormulaVersion}
+                              style={{
+                                background: "#052E16",
+                                border: "1px solid #166534",
+                                borderRadius: 6,
+                                color: "#86EFAC",
+                                padding: "5px 9px",
+                                fontSize: 8.5,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Unlock
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => cloneFormulaVersion(formula)}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #F59E0B30",
+                              borderRadius: 6,
+                              color: "#FCD34D",
+                              padding: "5px 9px",
+                              fontSize: 8.5,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Clone Draft
+                          </button>
+                        </div>
                       </div>
                     )}
                     <table
@@ -70686,6 +72348,11 @@ export default function App() {
                             0
                           );
                           const pct = ((ing.g / total) * 100).toFixed(1);
+                          const formulaGramDraftKey = buildFormulaGramDraftKey(
+                            formula.formulaKey,
+                            ii,
+                            ing.name
+                          );
                           const NC_ = {
                             top: { bg: "#0E4D3A", text: "#34D399" },
                             mid: { bg: "#2D1B69", text: "#A78BFA" },
@@ -70808,22 +72475,73 @@ export default function App() {
                                     type="number"
                                     min={0}
                                     step={0.5}
-                                    value={ing.g}
+                                    inputMode="decimal"
+                                    value={
+                                      formulaGramDrafts[formulaGramDraftKey] ??
+                                      String(ing.g)
+                                    }
                                     disabled={formula.isLocked}
-                                    onChange={(e) => {
-                                      const v = parseFloat(e.target.value) || 0;
-                                      updateFormulaRecord(
-                                        formula.formulaKey,
-                                        (current) => ({
-                                          ...current,
-                                          ingredients: current.ingredients.map(
-                                            (ing2, i2) =>
-                                              i2 === ii
-                                                ? { ...ing2, g: v }
-                                                : ing2
-                                          ),
-                                        })
-                                      );
+                                    onChange={(e) =>
+                                      updateFormulaGramDraft(
+                                        formulaGramDraftKey,
+                                        e.target.value,
+                                        (v) =>
+                                          updateFormulaRecord(
+                                            formula.formulaKey,
+                                            (current) => ({
+                                              ...current,
+                                              ingredients: current.ingredients.map(
+                                                (ing2, i2) =>
+                                                  i2 === ii
+                                                    ? { ...ing2, g: v }
+                                                    : ing2
+                                              ),
+                                            })
+                                          )
+                                      )
+                                    }
+                                    onBlur={() =>
+                                      commitFormulaGramDraft(
+                                        formulaGramDraftKey,
+                                        (v) =>
+                                          updateFormulaRecord(
+                                            formula.formulaKey,
+                                            (current) => ({
+                                              ...current,
+                                              ingredients: current.ingredients.map(
+                                                (ing2, i2) =>
+                                                  i2 === ii
+                                                    ? { ...ing2, g: v }
+                                                    : ing2
+                                              ),
+                                            })
+                                          )
+                                      )
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        commitFormulaGramDraft(
+                                          formulaGramDraftKey,
+                                          (v) =>
+                                            updateFormulaRecord(
+                                              formula.formulaKey,
+                                              (current) => ({
+                                                ...current,
+                                                ingredients:
+                                                  current.ingredients.map(
+                                                    (ing2, i2) =>
+                                                      i2 === ii
+                                                        ? { ...ing2, g: v }
+                                                        : ing2
+                                                  ),
+                                              })
+                                            )
+                                        );
+                                        e.currentTarget.blur();
+                                      } else if (e.key === "Escape") {
+                                        clearFormulaGramDraft(formulaGramDraftKey);
+                                        e.currentTarget.blur();
+                                      }
                                     }}
                                     style={{
                                       background: "#060E1E",
@@ -71503,10 +73221,21 @@ export default function App() {
                             type="number"
                             min="0.1"
                             step="0.5"
-                            value={item.g}
+                            inputMode="decimal"
+                            value={buildGramDrafts[item.name] ?? String(item.g)}
                             onChange={(e) =>
-                              updateBuildG(item.name, e.target.value)
+                              updateBuildGramDraft(item.name, e.target.value)
                             }
+                            onBlur={() => commitBuildGramDraft(item.name)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                commitBuildGramDraft(item.name);
+                                e.currentTarget.blur();
+                              } else if (e.key === "Escape") {
+                                clearBuildGramDraft(item.name);
+                                e.currentTarget.blur();
+                              }
+                            }}
                             style={{
                               width: 60,
                               background: "#0A1628",
@@ -77456,23 +79185,29 @@ export default function App() {
 
       {/* DETAIL PANEL */}
       {detailName && (
-        <IngredientDetailPanel
-          name={detailName}
+        <IngredientDetailErrorBoundary
+          resetKey={detailName}
+          materialName={detailName}
           onClose={() => setDetailName(null)}
-          onSelectMaterial={setDetailName}
-          onStartSubstitutionReview={startSubstitutionReview}
-          pricesState={pricesState}
-          inventory={inventory}
-          formulas={formulas}
-          currentFormula={formula}
-          currentFormulaSupplierOverrides={currentFormulaSupplierOverrides}
-          buildItems={buildItems}
-          buildName={buildName}
-          basketMode={basketMode}
-          ifraCategory={ifraCategory}
-          selectedFragranceType={selectedFragranceType}
-          batchPlannerReport={batchPlannerReport}
-        />
+        >
+          <IngredientDetailPanel
+            name={detailName}
+            onClose={() => setDetailName(null)}
+            onSelectMaterial={setDetailName}
+            onStartSubstitutionReview={startSubstitutionReview}
+            pricesState={pricesState}
+            inventory={inventory}
+            formulas={formulas}
+            currentFormula={formula}
+            currentFormulaSupplierOverrides={currentFormulaSupplierOverrides}
+            buildItems={buildItems}
+            buildName={buildName}
+            basketMode={basketMode}
+            ifraCategory={ifraCategory}
+            selectedFragranceType={selectedFragranceType}
+            batchPlannerReport={batchPlannerReport}
+          />
+        </IngredientDetailErrorBoundary>
       )}
 
       {substitutionReviewState &&
