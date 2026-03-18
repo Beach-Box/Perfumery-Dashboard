@@ -10,10 +10,37 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REGISTRY_PATH = ROOT / "src" / "data" / "source_document_registry.json"
+DOWNLOADS_SOURCE_DOCUMENTS_DIR = ROOT / "downloads" / "source_documents"
 
 
 def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def resolve_local_source_document_path(source_document_key, source_path):
+    if source_path:
+        explicit_path = (ROOT / source_path).resolve()
+        if explicit_path.exists():
+            return {
+                "resolvedPath": explicit_path,
+                "resolvedSourcePath": source_path,
+                "pathResolution": "explicit_source_path",
+            }
+
+    fallback_relative_path = DOWNLOADS_SOURCE_DOCUMENTS_DIR.relative_to(ROOT) / f"{source_document_key}.pdf"
+    fallback_path = (ROOT / fallback_relative_path).resolve()
+    if fallback_path.exists():
+        return {
+            "resolvedPath": fallback_path,
+            "resolvedSourcePath": str(fallback_relative_path),
+            "pathResolution": "fallback_source_document_key",
+        }
+
+    return {
+        "resolvedPath": None,
+        "resolvedSourcePath": source_path,
+        "pathResolution": "missing_local_file",
+    }
 
 
 def unique_list(values):
@@ -495,7 +522,9 @@ def classify_document_suitability(result, combined_lines):
 
 def inspect_document(source_document_key, record, max_preview_chars):
     source_path = record.get("sourcePath")
-    resolved_path = (ROOT / source_path).resolve() if source_path else None
+    path_resolution = resolve_local_source_document_path(source_document_key, source_path)
+    resolved_path = path_resolution["resolvedPath"]
+    resolved_source_path = path_resolution["resolvedSourcePath"]
     path_exists = bool(resolved_path and resolved_path.exists())
 
     result = {
@@ -506,6 +535,8 @@ def inspect_document(source_document_key, record, max_preview_chars):
         "relatedCatalogNames": record.get("relatedCatalogNames") or [],
         "sourceIdentifier": record.get("sourceIdentifier"),
         "sourcePath": source_path,
+        "resolvedSourcePath": resolved_source_path,
+        "pathResolution": path_resolution["pathResolution"],
         "pathExists": path_exists,
         "metadataTitle": None,
         "extractionMethod": None,
@@ -526,7 +557,10 @@ def inspect_document(source_document_key, record, max_preview_chars):
 
     if not path_exists:
         result["matchAssessment"] = "unreadable_or_insufficient_evidence"
-        result["matchReasons"] = ["Local sourcePath is missing on disk."]
+        if source_path:
+            result["matchReasons"] = ["Configured local sourcePath was not found, and fallback local path was also missing."]
+        else:
+            result["matchReasons"] = ["No configured sourcePath was found, and fallback local path was missing."]
         return result
 
     try:
