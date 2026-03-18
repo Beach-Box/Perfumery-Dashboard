@@ -1,0 +1,59 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Review queue for supplier registry records that should not create catalog rows or normalization mappings until explicitly approved."
+  },
+  "items": {
+    "eden_botanicals:ylang-ylang-complete-fine-organic": {
+      "canonicalMaterialStatus": "structural_seed_added",
+      "guardrails": [
+        "Do not merge into Complete or Extra Superior without explicit evidence.",
+        "Do not invent chemistry or IFRA data during import.",
+        "Keep the new row supplier-first until a canonical source is reviewed."
+      ],
+      "proposedCanonicalMaterialKey": "ylang_ylang_fine_oil",
+      "proposedCatalogName": "Ylang-Ylang Fine Oil, Org",
+      "proposedEntryKind": "supplier_product",
+      "proposedNormalizationAction": "completed_supplier_product_row_and_normalization_entry",
+      "reason": "Distinct Eden fine grade listing not represented by the current catalog rows.",
+      "resolvedAt": "2026-03-17T17:09:26.334Z",
+      "reviewStatus": "catalog_row_created",
+      "reviewType": "new_supplier_product_row",
+      "supplierProductKey": "eden_botanicals:ylang-ylang-complete-fine-organic"
+    },
+    "eden_botanicals:ylang-ylang-i-organic": {
+      "canonicalMaterialStatus": "structural_seed_added",
+      "guardrails": [
+        "Do not invent chemistry or IFRA data during import.",
+        "Keep the new row supplier-first until a canonical source is reviewed.",
+        "Only add helper chemistry if a trusted canonical source is later established."
+      ],
+      "proposedCanonicalMaterialKey": "ylang_ylang_i_oil",
+      "proposedCatalogName": "Ylang-Ylang I Oil, Org",
+      "proposedEntryKind": "supplier_product",
+      "proposedNormalizationAction": "completed_supplier_product_row_and_normalization_entry",
+      "reason": "Distinct fractional grade from Eden with no existing app row.",
+      "resolvedAt": "2026-03-17T17:09:26.334Z",
+      "reviewStatus": "catalog_row_created",
+      "reviewType": "new_supplier_product_row",
+      "supplierProductKey": "eden_botanicals:ylang-ylang-i-organic"
+    },
+    "eden_botanicals:ylang-ylang-ii-organic": {
+      "canonicalMaterialStatus": "structural_seed_added",
+      "guardrails": [
+        "Do not invent chemistry or IFRA data during import.",
+        "Keep the new row supplier-first until a canonical source is reviewed.",
+        "Only add helper chemistry if a trusted canonical source is later established."
+      ],
+      "proposedCanonicalMaterialKey": "ylang_ylang_ii_oil",
+      "proposedCatalogName": "Ylang-Ylang II Oil, Org",
+      "proposedEntryKind": "supplier_product",
+      "proposedNormalizationAction": "completed_supplier_product_row_and_normalization_entry",
+      "reason": "Distinct fractional grade from Eden with no existing app row.",
+      "resolvedAt": "2026-03-17T17:09:26.334Z",
+      "reviewStatus": "catalog_row_created",
+      "reviewType": "new_supplier_product_row",
+      "supplierProductKey": "eden_botanicals:ylang-ylang-ii-organic"
+    }
+  }
+}

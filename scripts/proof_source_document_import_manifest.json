@@ -1,0 +1,49 @@
+{
+  "metadata": {
+    "description": "Proof-of-flow manifest for source-document intake. Replace sourceIdentifier/sourcePath values with real trusted local documents before production use."
+  },
+  "documents": [
+    {
+      "sourceType": "sds",
+      "supplier": "Fraterworks",
+      "sourceIdentifier": "proof_local/benzoin_siam_resinoid_sds_v1.pdf",
+      "canonicalMaterialKey": "benzoin_siam_resinoid",
+      "relatedCatalogNames": [
+        "Benzoin Siam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "notes": [
+        "Proof-of-flow registry intake example for a future trusted SDS.",
+        "Importing this manifest is safe because it only registers a review-only document record."
+      ]
+    },
+    {
+      "sourceType": "sds",
+      "supplier": "Fraterworks",
+      "sourceIdentifier": "proof_local/tolu_balsam_resinoid_sds_v1.pdf",
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "notes": [
+        "Proof-of-flow registry intake example for a future trusted SDS.",
+        "No evidence candidates are created by this import step."
+      ]
+    },
+    {
+      "sourceType": "supplier_pdf",
+      "supplier": "Eden Botanicals",
+      "sourceIdentifier": "proof_local/ylang_ylang_i_organic_supplier_pdf_v1.pdf",
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang I Oil, Org"
+      ],
+      "reviewStatus": "ingested_pending_extraction",
+      "notes": [
+        "Proof-of-flow registry intake example for a future trusted supplier PDF or spec.",
+        "Use a real local document path or document inventory ID when capturing live evidence."
+      ]
+    }
+  ]
+}

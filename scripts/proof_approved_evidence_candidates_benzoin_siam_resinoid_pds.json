@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "version": 1,
+    "source": "repo_proof_setup_benzoin_siam_resinoid_pds",
+    "exportedAt": "2026-03-17T00:00:00.000Z",
+    "approvedCandidateCount": 1,
+    "note": "Tiny proof-run payload for a product-specific Benzoin Siam Resinoid evidence candidate from the downloaded PDS. Promotion remains limited to low-risk helper seed fields."
+  },
+  "approvedEvidenceCandidates": [
+    {
+      "evidenceCandidateKey": "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+      "approvalStatus": "approved_for_promotion",
+      "reviewedAt": "2026-03-17T00:00:00.000Z",
+      "sourceSnapshot": {
+        "evidenceCandidateKey": "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+        "sourceDocumentKey": "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+        "canonicalMaterialKey": "benzoin_siam_resinoid",
+        "relatedCatalogNames": [
+          "Benzoin Siam Resinoid 50% TEC"
+        ],
+        "candidateFieldName": "cas",
+        "candidateValue": "9000-72-0",
+        "confidence": "medium",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "notes": [
+          "Document-backed from the downloaded M0067632_PDS.pdf file in the source-document registry.",
+          "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'Benzoin resinoid on carrier'.",
+          "Prepared from the product CAS line in the PDS, which lists product CAS 9000-72-0 separately from the carrier Triethyl Citrate CAS 77-93-0."
+        ]
+      },
+      "promotionCandidate": {
+        "evidenceCandidateKey": "benzoin_siam_resinoid:cas:benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+        "sourceDocumentKey": "benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf",
+        "canonicalMaterialKey": "benzoin_siam_resinoid",
+        "relatedCatalogNames": [
+          "Benzoin Siam Resinoid 50% TEC"
+        ],
+        "candidateFieldName": "cas",
+        "candidateValue": "9000-72-0",
+        "confidence": "medium",
+        "supplier": "Fraterworks",
+        "sourceType": "unknown_pdf",
+        "sourceReviewStatus": "candidate_pending_review",
+        "reviewStatus": "approved_for_promotion",
+        "notes": [
+          "Document-backed from the downloaded M0067632_PDS.pdf file in the source-document registry.",
+          "Local PDF inspection classified this source as canonical_target_likely_matches and surfaced the product identity 'Benzoin resinoid on carrier'.",
+          "Prepared from the product CAS line in the PDS, which lists product CAS 9000-72-0 separately from the carrier Triethyl Citrate CAS 77-93-0."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Trusted review-only supplier price draft seeds captured from owned supplier product pages. These records are used to populate generated supplierPriceDrafts without mutating live pricing.",
+    "note": "No live supplier pricing is applied automatically from this file."
+  },
+  "drafts": {
+    "eden_botanicals:ylang-ylang-complete-fine-organic": {
+      "supplierDisplayName": "Eden Botanicals",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      "capturedAt": "2026-03-17",
+      "captureMethod": "manual_page_capture",
+      "pricePoints": [
+        [1, "mL", 11.25],
+        [3, "mL", 27],
+        [5, "mL", 43],
+        [15, "mL", 117]
+      ],
+      "notes": [
+        "Captured from the Eden Botanicals product page for Ylang Ylang, Fine - Organic EO.",
+        "Review-only price tuples for supplier draft generation."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-i-organic": {
+      "supplierDisplayName": "Eden Botanicals",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      "capturedAt": "2026-03-17",
+      "captureMethod": "manual_page_capture",
+      "pricePoints": [
+        [1, "mL", 10],
+        [3, "mL", 23.25],
+        [5, "mL", 38],
+        [15, "mL", 104]
+      ],
+      "notes": [
+        "Captured from the Eden Botanicals product page for Ylang Ylang I - Organic EO.",
+        "Review-only price tuples for supplier draft generation."
+      ]
+    },
+    "eden_botanicals:ylang-ylang-ii-organic": {
+      "supplierDisplayName": "Eden Botanicals",
+      "url": "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      "capturedAt": "2026-03-17",
+      "captureMethod": "manual_page_capture",
+      "pricePoints": [
+        [1, "mL", 8.75],
+        [3, "mL", 21],
+        [5, "mL", 33],
+        [15, "mL", 90.75]
+      ],
+      "notes": [
+        "Captured from the Eden Botanicals product page for Ylang Ylang II - Organic EO.",
+        "Review-only price tuples for supplier draft generation."
+      ]
+    }
+  }
+}

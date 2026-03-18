@@ -1,5 +1,9 @@
 import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
 import materialNormalization from "../data/material_normalization.json" with { type: "json" };
+import evidenceCandidateRegistry from "../data/evidence_candidate_registry.json" with { type: "json" };
+import sourceDocumentRegistry from "../data/source_document_registry.json" with { type: "json" };
+import supplierImportReviewQueue from "../data/supplier_import_review_queue.json" with { type: "json" };
+import supplierProductRegistry from "../data/supplier_product_registry.json" with { type: "json" };
 
 // Starter IFRA combined package for Beach Box app integration
 const IFRA_SUPPLEMENTAL_MATERIALS = {
@@ -381,7 +385,11 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
   "tolu balsam resinoid": {
     canonicalName: "Tolu Balsam Resinoid",
     cas: [],
-    synonyms: ["tolu balsam resinoid", "tolu balsam"],
+    synonyms: [
+      "tolu balsam resinoid",
+      "tolu balsam",
+      "tolu balsam resinoid 50% tec",
+    ],
     recommendationType: null,
     status: "not_found_in_uploaded_pdf",
     publicationYear: null,
@@ -400,13 +408,19 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
     },
     notes: [
       "Canonical helper seed for normalization inheritance coverage.",
-      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+      "The current repo represents this material through the live diluted-stock row Tolu Balsam Resinoid 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
     ],
   },
   "poplar bud absolute": {
     canonicalName: "Poplar Bud Absolute",
     cas: [],
-    synonyms: ["poplar bud absolute", "poplar buds absolute", "poplar bud"],
+    synonyms: [
+      "poplar bud absolute",
+      "poplar buds absolute",
+      "poplar bud",
+      "poplar bud absolute 50% tec",
+    ],
     recommendationType: null,
     status: "not_found_in_uploaded_pdf",
     publicationYear: null,
@@ -425,7 +439,38 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
     },
     notes: [
       "Canonical helper seed for normalization inheritance coverage.",
-      "No structured IFRA standard or source-backed canonical chemistry has been promoted yet.",
+      "The current repo represents this material through the live diluted-stock row Poplar Bud Absolute 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
+    ],
+  },
+  "benzoin siam resinoid": {
+    canonicalName: "Benzoin Siam Resinoid",
+    cas: [],
+    synonyms: [
+      "benzoin siam resinoid",
+      "benzoin siam resinoid 50% tec",
+      "benzoin siam resinoid 50",
+    ],
+    recommendationType: null,
+    status: "not_found_in_uploaded_pdf",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "IFRA - 51st Amendment.pdf",
+      pages: [],
+    },
+    notes: [
+      "Canonical helper seed for normalization inheritance coverage.",
+      "The current repo represents this material through the live diluted-stock row Benzoin Siam Resinoid 50% TEC.",
+      "No structured IFRA standard or source-backed canonical CAS/INCI chemistry has been promoted yet.",
     ],
   },
   "agarwood oil": {
@@ -1025,6 +1070,214 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
 export const MATERIAL_NORMALIZATION = materialNormalization;
+export const SOURCE_DOCUMENT_REGISTRY_METADATA =
+  sourceDocumentRegistry.metadata;
+export const SOURCE_DOCUMENT_REGISTRY =
+  sourceDocumentRegistry.documents || {};
+export const SOURCE_DOCUMENT_INTAKE_TARGETS =
+  sourceDocumentRegistry.intakeTargets || {};
+export const EVIDENCE_CANDIDATE_REGISTRY_METADATA =
+  evidenceCandidateRegistry.metadata;
+export const EVIDENCE_CANDIDATES = evidenceCandidateRegistry.candidates || {};
+export const EVIDENCE_CANDIDATE_TARGETS =
+  evidenceCandidateRegistry.candidateTargets || {};
+export const SUPPLIER_PRODUCT_REGISTRY_METADATA =
+  supplierProductRegistry.metadata;
+export const SUPPLIER_PRODUCT_REGISTRY =
+  supplierProductRegistry.products || {};
+export const SUPPLIER_IMPORT_REVIEW_QUEUE_METADATA =
+  supplierImportReviewQueue.metadata;
+export const SUPPLIER_IMPORT_REVIEW_QUEUE =
+  supplierImportReviewQueue.items || {};
+
+function cloneJsonValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneJsonValue(item));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, cloneJsonValue(item)])
+    );
+  }
+  return value;
+}
+
+function normalizeRegistryText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getUrlSlugFromValue(url) {
+  try {
+    const pathname = new URL(String(url || "")).pathname
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\.html?$/i, "")
+      .trim();
+    return pathname || null;
+  } catch {
+    return null;
+  }
+}
+
+const SUPPLIER_KEY_BY_DISPLAY_NAME = Object.fromEntries(
+  Object.entries(SUPPLIER_PRODUCT_REGISTRY_METADATA?.suppliers || {}).map(
+    ([supplierKey, supplier]) => [supplier?.displayName, supplierKey]
+  )
+);
+
+const SUPPLIER_PRODUCT_KEYS_BY_CATALOG_NAME = Object.entries(
+  SUPPLIER_PRODUCT_REGISTRY
+).reduce((acc, [supplierProductKey, record]) => {
+  const catalogName = record?.mappedCatalogName;
+  if (!catalogName) return acc;
+  if (!acc[catalogName]) acc[catalogName] = [];
+  acc[catalogName].push(supplierProductKey);
+  return acc;
+}, {});
+
+const SUPPLIER_PRODUCT_KEYS_BY_CANONICAL_KEY = Object.entries(
+  SUPPLIER_PRODUCT_REGISTRY
+).reduce((acc, [supplierProductKey, record]) => {
+  const canonicalMaterialKey = record?.mappedCanonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(supplierProductKey);
+  return acc;
+}, {});
+
+const SOURCE_DOCUMENT_KEYS_BY_CANONICAL_KEY = Object.entries(
+  SOURCE_DOCUMENT_REGISTRY
+).reduce((acc, [sourceDocumentKey, record]) => {
+  const canonicalMaterialKey = record?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(sourceDocumentKey);
+  return acc;
+}, {});
+
+const EVIDENCE_CANDIDATE_KEYS_BY_CANONICAL_KEY = Object.entries(
+  EVIDENCE_CANDIDATES
+).reduce((acc, [evidenceCandidateKey, record]) => {
+  const canonicalMaterialKey = record?.canonicalMaterialKey;
+  if (!canonicalMaterialKey) return acc;
+  if (!acc[canonicalMaterialKey]) acc[canonicalMaterialKey] = [];
+  acc[canonicalMaterialKey].push(evidenceCandidateKey);
+  return acc;
+}, {});
+
+export function getSupplierRegistrySupplierKey(supplierNameOrKey) {
+  if (!supplierNameOrKey) return null;
+  if (
+    SUPPLIER_PRODUCT_REGISTRY_METADATA?.suppliers?.[supplierNameOrKey]
+  ) {
+    return supplierNameOrKey;
+  }
+
+  return (
+    SUPPLIER_KEY_BY_DISPLAY_NAME[supplierNameOrKey] ||
+    normalizeRegistryText(supplierNameOrKey) ||
+    null
+  );
+}
+
+export function buildSupplierProductKey({
+  supplierKey,
+  supplierName,
+  url,
+  sku,
+}) {
+  const resolvedSupplierKey = getSupplierRegistrySupplierKey(
+    supplierKey || supplierName
+  );
+  if (!resolvedSupplierKey) return null;
+
+  const stableIdentifier = normalizeRegistryText(sku) || getUrlSlugFromValue(url);
+  if (!stableIdentifier) return null;
+
+  return `${resolvedSupplierKey}:${stableIdentifier}`;
+}
+
+export function getSupplierProductRecord(supplierProductKey) {
+  const record = SUPPLIER_PRODUCT_REGISTRY[supplierProductKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getSupplierProductsForCatalogName(catalogName) {
+  const keys = SUPPLIER_PRODUCT_KEYS_BY_CATALOG_NAME[catalogName] || [];
+  return keys
+    .map((key) => getSupplierProductRecord(key))
+    .filter(Boolean);
+}
+
+export function getSupplierProductsForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys =
+    SUPPLIER_PRODUCT_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => getSupplierProductRecord(key))
+    .filter(Boolean);
+}
+
+export function getSourceDocumentRecord(sourceDocumentKey) {
+  const record = SOURCE_DOCUMENT_REGISTRY[sourceDocumentKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getSourceDocumentsForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys = SOURCE_DOCUMENT_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => ({
+      sourceDocumentKey: key,
+      ...getSourceDocumentRecord(key),
+    }))
+    .filter(Boolean);
+}
+
+export function getEvidenceCandidateRecord(evidenceCandidateKey) {
+  const record = EVIDENCE_CANDIDATES[evidenceCandidateKey];
+  return record ? cloneJsonValue(record) : null;
+}
+
+export function getEvidenceCandidatesForCanonicalMaterialKey(
+  canonicalMaterialKey
+) {
+  const keys =
+    EVIDENCE_CANDIDATE_KEYS_BY_CANONICAL_KEY[canonicalMaterialKey] || [];
+  return keys
+    .map((key) => ({
+      evidenceCandidateKey: key,
+      ...getEvidenceCandidateRecord(key),
+    }))
+    .filter(Boolean);
+}
+
+export function getPendingEvidenceCandidateTargets() {
+  return Object.entries(EVIDENCE_CANDIDATE_TARGETS)
+    .filter(([, target]) => {
+      const status = String(target?.reviewStatus || "").trim().toLowerCase();
+      return !status || status.startsWith("awaiting") || status.startsWith("pending");
+    })
+    .map(([targetKey, target]) => ({
+      targetKey,
+      ...cloneJsonValue(target),
+    }));
+}
+
+export function getPendingSupplierImportItems() {
+  return Object.values(SUPPLIER_IMPORT_REVIEW_QUEUE)
+    .filter((item) => {
+      const status = String(item?.reviewStatus || "").trim().toLowerCase();
+      return !status || status.startsWith("pending");
+    })
+    .map((item) => cloneJsonValue(item));
+}
+
 const CANONICAL_ENTRY_NAME_BY_KEY = Object.fromEntries(
   Object.entries(MATERIAL_NORMALIZATION)
     .filter(
@@ -1048,6 +1301,229 @@ export function getCanonicalCatalogName(name) {
 }
 
 const CANONICAL_MATERIAL_SOURCE_DATA = {
+  ylang_ylang_extra_oil: {
+    canonicalMaterialKey: "ylang_ylang_extra_oil",
+    canonicalName: "Ylang-Ylang Extra Oil",
+    note: "mid",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Diffusive creamy ylang extra oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang extra-oil family. Supplier product pages indicate this family is an essential oil, not an absolute.",
+    rep: "Benzyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Creamy", "Ylang"],
+  },
+  ylang_ylang_absolute: {
+    canonicalMaterialKey: "ylang_ylang_absolute",
+    canonicalName: "Ylang-Ylang Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Extract",
+    scentClass: "Floral",
+    scentSummary: "Creamy, exotic banana-floral",
+    scentDesc:
+      "Canonical helper source seed for ylang-ylang absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Benzyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Creamy", "Ylang"],
+  },
+  ylang_ylang_complete_oil: {
+    canonicalMaterialKey: "ylang_ylang_complete_oil",
+    canonicalName: "Ylang-Ylang Complete Oil",
+    note: "mid",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang complete essential oil",
+    scentDesc:
+      "Canonical helper source seed for the complete-distillation ylang family. The repo already treats the ylang essential-oil family as Cananga Odorata Flower Oil, but detailed source-backed IFRA identity has not been promoted yet for this specific grade.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_fine_oil: {
+    canonicalMaterialKey: "ylang_ylang_fine_oil",
+    canonicalName: "Ylang-Ylang Fine Oil",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang fine grade essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang fine-oil grade. Supplier identity is supported, and the repo already treats the ylang essential-oil family as Cananga Odorata Flower Oil, but detailed source-backed IFRA identity has not been promoted yet for this grade.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_i_oil: {
+    canonicalMaterialKey: "ylang_ylang_i_oil",
+    canonicalName: "Ylang-Ylang I Oil",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade I essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade I oil family. Supplier identity is supported, and the repo already treats the ylang essential-oil family as Cananga Odorata Flower Oil, but detailed source-backed IFRA identity has not been promoted yet for this grade.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_ii_oil: {
+    canonicalMaterialKey: "ylang_ylang_ii_oil",
+    canonicalName: "Ylang-Ylang II Oil",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade II essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade II oil family. Supplier identity is supported, and the repo already treats the ylang essential-oil family as Cananga Odorata Flower Oil, but detailed source-backed IFRA identity has not been promoted yet for this grade.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_ylang_iii_oil: {
+    canonicalMaterialKey: "ylang_ylang_iii_oil",
+    canonicalName: "Ylang-Ylang III Oil",
+    note: "mid",
+    type: "EO",
+    cas: "8006-81-3",
+    inci: "Cananga Odorata Flower Oil",
+    scentClass: "Floral",
+    scentSummary: "Ylang-ylang grade III essential oil",
+    scentDesc:
+      "Canonical helper source seed for the ylang grade III oil family. Supplier identity is supported, and the repo already treats the ylang essential-oil family as Cananga Odorata Flower Oil, but detailed source-backed IFRA identity has not been promoted yet for this grade.",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Ylang", "EO"],
+  },
+  ylang_imperiale: {
+    canonicalMaterialKey: "ylang_imperiale",
+    canonicalName: "Ylang Impériale",
+    note: "mid",
+    type: "SYNTH",
+    scentClass: "Floral",
+    scentSummary: "Vendor-style ylang accord/product",
+    scentDesc:
+      "Canonical helper source seed for the Ylang Impériale accord-style row. Treat as a separate vendor product identity, not as a canonical ylang raw material family or IFRA-listed source.",
+    descriptorTags: ["Floral", "Ylang", "Accord"],
+  },
+  neroli_absolute: {
+    canonicalMaterialKey: "neroli_absolute",
+    canonicalName: "Neroli Absolute",
+    note: "top",
+    type: "ABS",
+    cas: "8016-38-4",
+    inci: "Citrus Aurantium Flower Extract",
+    scentClass: "Floral",
+    scentSummary: "Bright, honeyed orange blossom",
+    scentDesc:
+      "Canonical helper source seed for neroli absolute. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but supplier ownership remains intentionally conservative until a clearly matching absolute listing is present.",
+    rep: "Linalool",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Orange Blossom", "Absolute"],
+  },
+  orange_blossom_water_absolute: {
+    canonicalMaterialKey: "orange_blossom_water_absolute",
+    canonicalName: "Orange Blossom Water Absolute",
+    note: "mid",
+    type: "ABS",
+    cas: "68917-75-9",
+    inci: "Citrus Aurantium Flower Water Extract",
+    scentClass: "Floral",
+    scentSummary: "Watery orange blossom with grape facet",
+    scentDesc:
+      "Canonical helper source seed for orange blossom water absolute. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata, but IFRA promotion remains conservative until structured standards coverage is promoted.",
+    rep: "Methyl Anthranilate",
+    isUVCB: true,
+    descriptorTags: ["Floral", "Orange Blossom", "Water Absolute"],
+  },
+  petitgrain_bigarade_eo: {
+    canonicalMaterialKey: "petitgrain_bigarade_eo",
+    canonicalName: "Petitgrain Bigarade EO",
+    note: "top",
+    type: "EO",
+    cas: "8014-17-3",
+    inci: "Citrus Aurantium Leaf/Twig Oil",
+    scentClass: "Citrus",
+    scentSummary: "Green, woody citrus bridge note",
+    scentDesc:
+      "Canonical helper source seed for petitgrain bigarade essential oil. The current catalog already carries source-backed CAS, INCI, and descriptive identity metadata.",
+    rep: "Linalyl Acetate",
+    isUVCB: true,
+    descriptorTags: ["Citrus", "Green", "Petitgrain"],
+  },
+  benzyl_acetate: {
+    canonicalMaterialKey: "benzyl_acetate",
+    canonicalName: "Benzyl Acetate",
+    note: "mid",
+    type: "SYNTH",
+    cas: "140-11-4",
+    inci: "Benzyl Acetate",
+    scentClass: "Floral",
+    scentSummary: "Jasmine-sweet fruity floral",
+    scentDesc:
+      "The current catalog treats benzyl acetate as a jasmine-ylang floral body material with sweet, fruity lift. This seed is source-backed from the live catalog row, but IFRA promotion remains conservative until structured standards coverage is promoted.",
+    rep: "Benzyl Acetate",
+    descriptorTags: ["Floral", "Fruity", "Jasmine"],
+  },
+  peru_balsam_oil: {
+    canonicalMaterialKey: "peru_balsam_oil",
+    canonicalName: "Peru Balsam Oil",
+    note: "base",
+    type: "EO",
+    cas: "8007-00-9",
+    inci: "Myroxylon Pereirae Resin Oil",
+    scentClass: "Oriental",
+    scentSummary: "Resinous cinnamic amber balsam warmth",
+    scentDesc:
+      "Benzyl benzoate and cinnamic esters give this a warm, sweet-resinous, cinnamic amber character. Excellent fixative with a warm balsamic depth. Pairs beautifully with vanilla, musks, and woody notes in oriental bases.",
+    rep: "Benzyl Benzoate",
+    isUVCB: true,
+    descriptorTags: ["Balsamic", "Amber", "Resinous"],
+  },
+  peru_balsam_resinoid: {
+    canonicalMaterialKey: "peru_balsam_resinoid",
+    canonicalName: "Peru Balsam Resinoid",
+    note: "base",
+    type: "ABS",
+    inci: "Myroxylon Pereirae Oil/Extract",
+    scentClass: "Amber",
+    scentSummary: "Peru balsam resinoid",
+    scentDesc:
+      "Canonical helper source seed for Peru balsam resinoid. Supplier identity is supported, but detailed source-backed chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid", "Balsamic"],
+  },
+  benzoin_siam_absolute: {
+    canonicalMaterialKey: "benzoin_siam_absolute",
+    canonicalName: "Benzoin Siam Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "9000-72-0",
+    inci: "Styrax Tonkinensis Resin Extract",
+    scentClass: "Oriental",
+    scentSummary: "Balsamic vanilla-sweet benzoin warmth",
+    scentDesc:
+      "From Styrax tonkinensis resin — sweet, warm balsamic character with benzaldehyde-vanilla facets. One of the great fixatives of perfumery. Adds warmth, roundness, and oriental depth to any accord. Anchors musks and florals beautifully.",
+    rep: "Benzyl Benzoate",
+    isUVCB: true,
+    descriptorTags: ["Balsamic", "Vanilla", "Resin"],
+  },
+  benzoin_siam_resinoid: {
+    canonicalMaterialKey: "benzoin_siam_resinoid",
+    canonicalName: "Benzoin Siam Resinoid",
+    note: "base",
+    type: "ABS",
+    cas: "9000-72-0",
+    scentClass: "Amber",
+    scentSummary: "Benzoin Siam resinoid",
+    scentDesc:
+      "Canonical helper source seed for benzoin Siam resinoid. The current repo represents this material through the live diluted-stock row Benzoin Siam Resinoid 50% TEC by Fraterworks/Mane, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
+    isUVCB: true,
+    descriptorTags: ["Amber", "Resinoid", "Balsamic"],
+  },
   labdanum_absolute: {
     canonicalMaterialKey: "labdanum_absolute",
     canonicalName: "Labdanum Absolute",
@@ -1057,9 +1533,41 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     inci: "Cistus Ladaniferus Resin Extract",
     scentClass: "Oriental",
     scentSummary: "Resinous amber leathery Mediterranean",
+    scentDesc:
+      "The current catalog source row describes labdanum absolute as the classical amber-resin base: warm, leathery, balsamic, and strongly fixative. This canonical seed is promoted from the repo's 10% stock row without inventing new IFRA coverage.",
     rep: "Labdanolic Acid",
     isUVCB: true,
     descriptorTags: ["Resinous", "Amber", "Leather"],
+  },
+  vanilla_absolute: {
+    canonicalMaterialKey: "vanilla_absolute",
+    canonicalName: "Vanilla Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "8006-39-1",
+    inci: "Vanilla Planifolia Fruit Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Silky sweet vanilla warm anchor",
+    scentDesc:
+      "Canonical helper source seed for vanilla absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "Absolute"],
+  },
+  vanilla_bourbon_absolute: {
+    canonicalMaterialKey: "vanilla_bourbon_absolute",
+    canonicalName: "Vanilla Bourbon Absolute",
+    note: "base",
+    type: "ABS",
+    cas: "84650-60-2",
+    inci: "Vanilla Planifolia Bourbon Fruit Extract",
+    scentClass: "Gourmand",
+    scentSummary: "Rich creamy Bourbon vanilla depth",
+    scentDesc:
+      "Canonical helper source seed for vanilla bourbon absolute. Supplier identity is supported, and the current catalog already carries source-backed CAS and INCI metadata.",
+    rep: "Vanillin",
+    isUVCB: true,
+    descriptorTags: ["Vanilla", "Gourmand", "Bourbon"],
   },
   vanilla_co2: {
     canonicalMaterialKey: "vanilla_co2",
@@ -1070,6 +1578,8 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     inci: "Vanilla Planifolia Fruit CO2 Extract",
     scentClass: "Gourmand",
     scentSummary: "Smooth, natural warm vanilla CO2",
+    scentDesc:
+      "The current catalog source row describes vanilla CO2 as a rounded, natural vanilla extract that preserves fuller bean complexity than flat vanillin alone. This canonical seed is promoted from the repo's 10% stock row without inventing new IFRA coverage.",
     rep: "Vanillin",
     isUVCB: true,
     descriptorTags: ["Vanilla", "Gourmand", "CO2"],
@@ -1082,7 +1592,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     scentClass: "Amber",
     scentSummary: "Tolu balsam resinoid",
     scentDesc:
-      "Canonical helper source seed for tolu balsam resinoid. Detailed source-backed chemistry has not been promoted yet.",
+      "Canonical helper source seed for tolu balsam resinoid. The current repo represents this material through the live diluted-stock row Tolu Balsam Resinoid 50% TEC, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
     isUVCB: true,
     descriptorTags: ["Amber", "Resinoid"],
   },
@@ -1094,7 +1604,7 @@ const CANONICAL_MATERIAL_SOURCE_DATA = {
     scentClass: "Aromatic",
     scentSummary: "Poplar bud absolute",
     scentDesc:
-      "Canonical helper source seed for poplar bud absolute. Detailed source-backed chemistry has not been promoted yet.",
+      "Canonical helper source seed for poplar bud absolute. The current repo represents this material through the live diluted-stock row Poplar Bud Absolute 50% TEC by Fraterworks/Biolandes, but source-backed canonical CAS/INCI chemistry and IFRA identity have not been promoted yet.",
     isUVCB: true,
     descriptorTags: ["Aromatic", "Balsamic"],
   },
@@ -1623,25 +2133,21 @@ export const INGREDIENT_IDENTITY_MAP = {
   "Ylang Ylang Extra Absolute": {
     canonicalAppName: "Ylang Ylang Extra Absolute",
     normalizedName: "Ylang Ylang Extra Absolute",
-    matchStrategy: "pdf_text_match_needs_verification",
-    resolvedIfraMaterial: "ylang ylang extra absolute",
+    matchStrategy: "legacy_compatibility_alias",
+    resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: [
-      "Ylang Ylang Extra Absolute",
-      "Ylang Ylang Extra",
-      "Ylang ylang oil",
-      "Ylang ylang",
-    ],
+    aliases: ["Ylang Ylang Extra Absolute", "Ylang-Ylang Extra Absolute"],
     stock: null,
-    dbNoteRole: "top",
-    dbMaterialType: "ABS",
+    dbNoteRole: "mid",
+    dbMaterialType: "EO",
     currentAppIfraFlag: false,
     currentAppIfraText:
-      "The 'Extra' grade absolute (first distillation) is the most complex and expensive. Rich benzyl acetate-driven banana-creamy floral with spicy eugenol facets. Extraordinarily powerful \u2014 use at low percentages for tropical florals.",
-    pdfMatchStatus: "index_match",
-    pdfMatchedAlias: "Ylang Ylang Extra",
-    pdfMatchedPage: 16.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+      "Legacy compatibility alias \u2014 use Ylang-Ylang Extra Oil, Comoros for the extra-oil product or Ylang-Ylang Absolute for the absolute.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Deprecated compatibility alias for a misnamed Ylang row. Do not treat as a standalone supplier product or direct listed IFRA identity.",
   },
   "Benzyl Benzoate": {
     canonicalAppName: "Benzyl Benzoate",
@@ -1856,6 +2362,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedPage: null,
     reviewNote:
       "Helper maps Benzoin Siam Absolute to a canonical identity using app CAS/INCI data. No structured IFRA standard has been promoted into the helper dataset yet.",
+  },
+  "Benzoin Siam Resinoid 50% TEC": {
+    canonicalAppName: "Benzoin Siam Resinoid 50% TEC",
+    normalizedName: "Benzoin Siam Resinoid",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "benzoin siam resinoid",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Benzoin Siam Resinoid 50% TEC",
+      "Benzoin Siam Resinoid",
+      "Benzoin Siam Resinoid 50",
+    ],
+    stock: {
+      activeMaterialName: "Benzoin Siam Resinoid",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "base",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted benzoin Siam resinoid supplier product by Mane. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Benzoin Siam Resinoid helper identity without promoting new IFRA limits.",
   },
   Dihydromyrcenol: {
     canonicalAppName: "Dihydromyrcenol",
@@ -2250,6 +2783,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedPage: null,
     reviewNote: "No PDF match found automatically \u2014 manual review needed",
   },
+  "Poplar Bud Absolute 50% TEC": {
+    canonicalAppName: "Poplar Bud Absolute 50% TEC",
+    normalizedName: "Poplar Bud Absolute",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "poplar bud absolute",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Poplar Bud Absolute 50% TEC",
+      "Poplar Bud Absolute",
+      "Poplar Bud",
+    ],
+    stock: {
+      activeMaterialName: "Poplar Bud Absolute",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "mid",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted poplar bud absolute supplier product by Biolandes. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Poplar Bud Absolute helper identity without promoting new IFRA limits.",
+  },
   "Tobacco Absolute": {
     canonicalAppName: "Tobacco Absolute",
     normalizedName: "Tobacco leaf absolute",
@@ -2297,6 +2857,33 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedAlias: null,
     pdfMatchedPage: null,
     reviewNote: "No PDF match found automatically \u2014 manual review needed",
+  },
+  "Tolu Balsam Resinoid 50% TEC": {
+    canonicalAppName: "Tolu Balsam Resinoid 50% TEC",
+    normalizedName: "Tolu Balsam Resinoid",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "tolu balsam resinoid",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Tolu Balsam Resinoid 50% TEC",
+      "Tolu Balsam Resinoid",
+      "Tolu Balsam",
+    ],
+    stock: {
+      activeMaterialName: "Tolu Balsam Resinoid",
+      activePercent: 50,
+      carrierName: "TEC",
+    },
+    dbNoteRole: "base",
+    dbMaterialType: "ABS",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Current repo stock row for a diluted tolu balsam resinoid supplier product. Canonical chemistry and IFRA limits remain intentionally conservative until stronger source-backed data is promoted.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "Maps the live 50% TEC stock row to a canonical Tolu Balsam Resinoid helper identity without promoting new IFRA limits.",
   },
   "Aldehyde C-11 Undecylenic": {
     canonicalAppName: "Aldehyde C-11 Undecylenic",
