@@ -52,7 +52,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/SDS400_592695_M_0067632_EN_GB.pdf?v=1729879234",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_sds400_592695_m_0067632_en_gb_pdf.pdf",
       "sourceType": "sds",
       "supplier": "Fraterworks"
     },
@@ -72,7 +72,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/M0067632_PDS.pdf?v=1729879234",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_m0067632_pds_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     },
@@ -92,7 +92,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/REGALL_FRG_592695_M_0067632_EMEA_EN_GB.pdf?v=1729879234",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/benzoin_siam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_regall_frg_592695_m_0067632_emea_en_gb_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     },
@@ -268,7 +268,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_SDS.pdf?v=1707689850",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:sds:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_sds_pdf.pdf",
       "sourceType": "sds",
       "supplier": "Fraterworks"
     },
@@ -288,7 +288,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_ALLERGENS.pdf?v=1707689850",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_allergens_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     },
@@ -308,7 +308,7 @@
       ],
       "reviewStatus": "ingested_pending_extraction",
       "sourceIdentifier": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/TOLU_50PCT_IFRA.pdf?v=1707689850",
-      "sourcePath": null,
+      "sourcePath": "downloads/source_documents/tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_ifra_pdf.pdf",
       "sourceType": "unknown_pdf",
       "supplier": "Fraterworks"
     }
