@@ -3326,3 +3326,213 @@ export function computeActiveRestrictedPercent({
   if (!stock || !stock.activePercent) return formulaPercent;
   return formulaPercent * (stock.activePercent / 100);
 }
+
+export const IFRA_CATEGORY_LABELS = {
+  cat4: "Cat 4 — Fine Fragrance",
+  cat5b: "Cat 5b — Face Moisturizer",
+  cat9: "Cat 9 — Body Lotion",
+  cat1: "Cat 1 — Lip Product",
+  cat11a: "Cat 11a — Rinse-off Body",
+};
+
+export function buildFinishedProductIfraGuidance({
+  items = [],
+  category = "cat4",
+  fragranceLoadPercent = 17.5,
+  warningThreshold = 0.8,
+} = {}) {
+  const categoryKey = IFRA_CATEGORY_LABELS[category] ? category : "cat4";
+  const categoryLabel = IFRA_CATEGORY_LABELS[categoryKey];
+  const safeFragranceLoadPercent = Math.max(
+    0,
+    Number(fragranceLoadPercent) || 0
+  );
+  const totalG =
+    items.reduce((sum, item) => sum + (Number(item?.g) || 0), 0) || 1;
+
+  const rows = items
+    .map((item) => {
+      const grams = Number(item?.g) || 0;
+      if (!item?.name || grams <= 0) return null;
+
+      const resolvedIdentity = resolveIngredientIdentity(item.name);
+      const material = getIfraMaterialRecord(item.name);
+      const uiState = getIfraUiState(item.name);
+      const concentratePercent = (grams / totalG) * 100;
+      const finishedProductPercent =
+        concentratePercent * (safeFragranceLoadPercent / 100);
+      const activeRestrictedPercent =
+        computeActiveRestrictedPercent({
+          formulaPercent: finishedProductPercent,
+          ingredientName: item.name,
+        }) ?? finishedProductPercent;
+      const activeRestrictedPercentInConcentrate =
+        computeActiveRestrictedPercent({
+          formulaPercent: concentratePercent,
+          ingredientName: item.name,
+        }) ?? concentratePercent;
+      const limit = material?.limits?.[categoryKey] ?? null;
+
+      let dataState = "confirmed";
+      let status = "ok";
+      let missingReason = null;
+
+      if (uiState === "functional_solvent") {
+        dataState = "not_applicable";
+        status = "ignored";
+      } else if (!resolvedIdentity) {
+        dataState = "missing";
+        status = "blocked";
+        missingReason = "No canonical IFRA identity could be resolved.";
+      } else if (!material || material.status !== "active") {
+        dataState = "missing";
+        status = "blocked";
+        missingReason =
+          uiState === "not_found_in_uploaded_pdf"
+            ? "Resolved material is not active in the current uploaded IFRA dataset."
+            : "No active IFRA material record could be resolved.";
+      } else if (limit == null) {
+        dataState = "missing";
+        status = "blocked";
+        missingReason = `${categoryLabel} limit is missing for this material in the current IFRA dataset.`;
+      } else {
+        dataState = resolvedIdentity.inheritedViaCanonicalMaterialKey
+          ? "inferred"
+          : "confirmed";
+        if (activeRestrictedPercent > limit) status = "offender";
+        else if (activeRestrictedPercent > limit * warningThreshold)
+          status = "warning";
+      }
+
+      const usageRatio =
+        limit != null && limit > 0 ? activeRestrictedPercent / limit : null;
+      const headroomPercent =
+        limit != null ? limit - activeRestrictedPercent : null;
+      const maxFinishedProductLoadPercent =
+        activeRestrictedPercentInConcentrate > 0 && limit != null
+          ? (limit / activeRestrictedPercentInConcentrate) * 100
+          : null;
+      const suggestedIngredientReductionPercent =
+        limit != null && activeRestrictedPercent > 0
+          ? Math.max(0, (1 - limit / activeRestrictedPercent) * 100)
+          : null;
+
+      return {
+        name: item.name,
+        note: item.note || null,
+        grams,
+        concentratePercent,
+        finishedProductPercent,
+        activeRestrictedPercent,
+        activeRestrictedPercentInConcentrate,
+        usesActivePercent:
+          Math.abs(activeRestrictedPercent - finishedProductPercent) > 0.0001,
+        limit,
+        status,
+        dataState,
+        missingReason,
+        usageRatio,
+        headroomPercent,
+        maxFinishedProductLoadPercent,
+        suggestedIngredientReductionPercent,
+        resolvedIdentity,
+        inheritedViaCanonicalMaterialKey:
+          resolvedIdentity?.inheritedViaCanonicalMaterialKey || false,
+        canonicalMaterialKey:
+          resolvedIdentity?.normalizationEntry?.canonicalMaterialKey ||
+          resolvedIdentity?.canonicalMaterialKey ||
+          null,
+        resolvedIfraMaterial: resolvedIdentity?.resolvedIfraMaterial || null,
+        ifraUiState: uiState,
+      };
+    })
+    .filter(Boolean);
+
+  const applicableRows = rows.filter((row) => row.dataState !== "not_applicable");
+  const checkedRows = applicableRows.filter((row) => row.dataState !== "missing");
+  const confirmedRows = checkedRows.filter((row) => row.dataState === "confirmed");
+  const inferredRows = checkedRows.filter((row) => row.dataState === "inferred");
+  const missingRows = applicableRows.filter((row) => row.dataState === "missing");
+  const offenderRows = checkedRows
+    .filter((row) => row.status === "offender")
+    .sort((a, b) => (b.usageRatio || 0) - (a.usageRatio || 0));
+  const warningRows = checkedRows
+    .filter((row) => row.status === "warning")
+    .sort((a, b) => (b.usageRatio || 0) - (a.usageRatio || 0));
+  const limitingRows = checkedRows
+    .filter(
+      (row) =>
+        row.maxFinishedProductLoadPercent != null &&
+        Number.isFinite(row.maxFinishedProductLoadPercent)
+    )
+    .sort(
+      (a, b) =>
+        (a.maxFinishedProductLoadPercent || Number.POSITIVE_INFINITY) -
+        (b.maxFinishedProductLoadPercent || Number.POSITIVE_INFINITY)
+    )
+    .slice(0, 5);
+
+  const overallStatus = offenderRows.length
+    ? missingRows.length
+      ? "offender_with_missing"
+      : "offender"
+    : warningRows.length
+    ? missingRows.length
+      ? "warning_with_missing"
+      : "warning"
+    : missingRows.length
+    ? checkedRows.length
+      ? "appears_compliant_with_missing"
+      : "blocked_missing"
+    : checkedRows.length
+    ? "appears_compliant"
+    : "no_restricted_rows";
+
+  const summary =
+    overallStatus === "offender" || overallStatus === "offender_with_missing"
+      ? `Appears non-compliant for ${categoryLabel} at ${safeFragranceLoadPercent.toFixed(
+          1
+        )}% fragrance load based on the restricted rows the helper can currently evaluate.`
+      : overallStatus === "warning" || overallStatus === "warning_with_missing"
+      ? `Appears within ${categoryLabel} limits at ${safeFragranceLoadPercent.toFixed(
+          1
+        )}% fragrance load, but one or more restricted rows have narrow headroom.`
+      : overallStatus === "appears_compliant_with_missing"
+      ? `No checked restricted row exceeds ${categoryLabel} at ${safeFragranceLoadPercent.toFixed(
+          1
+        )}% fragrance load, but missing IFRA coverage still blocks a confident finished-product conclusion.`
+      : overallStatus === "blocked_missing"
+      ? `Finished-product guidance is blocked because the current IFRA helper coverage cannot evaluate any restricted rows for ${categoryLabel}.`
+      : overallStatus === "no_restricted_rows"
+      ? `No restricted rows were triggered for ${categoryLabel} at ${safeFragranceLoadPercent.toFixed(
+          1
+        )}% fragrance load, but this should not be treated as a blanket safety guarantee.`
+      : `Appears compliant for ${categoryLabel} at ${safeFragranceLoadPercent.toFixed(
+          1
+        )}% fragrance load based on the restricted rows the helper can currently evaluate.`;
+
+  return {
+    category: categoryKey,
+    categoryLabel,
+    fragranceLoadPercent: safeFragranceLoadPercent,
+    warningThreshold,
+    overallStatus,
+    summary,
+    rows: applicableRows,
+    checkedRows,
+    confirmedRows,
+    inferredRows,
+    missingRows,
+    offenderRows,
+    warningRows,
+    limitingRows,
+    counts: {
+      checked: checkedRows.length,
+      confirmed: confirmedRows.length,
+      inferred: inferredRows.length,
+      missing: missingRows.length,
+      offenders: offenderRows.length,
+      warnings: warningRows.length,
+    },
+  };
+}

@@ -27,15 +27,18 @@ import {
   SOURCE_DOCUMENT_INTAKE_TARGETS,
   SOURCE_DOCUMENT_REGISTRY,
   SUPPLIER_PRODUCT_REGISTRY,
+  buildFinishedProductIfraGuidance,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
   getEvidenceCandidatesForCanonicalMaterialKey,
   getMaterialNormalizationEntry,
+  IFRA_CATEGORY_LABELS,
   getIfraMaterialRecord,
   getIfraUiState,
   getPendingSupplierImportItems,
   getSourceDocumentsForCanonicalMaterialKey,
   getSupplierProductRecord,
+  getSupplierProductsForCatalogName,
   resolveIngredientIdentity,
 } from "./lib/ifra_combined_package";
 import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
@@ -54076,6 +54079,340 @@ const FORMULAS_INIT = [
   },
 ];
 
+const FORMULA_STORAGE_KEY = "bb_saved_builds";
+const FORMULA_COMPARE_STORAGE_KEY = "bb_formula_compare_state";
+const CRITIQUE_LENS_STORAGE_KEY = "bb_critique_lens";
+const FORMULA_NOTE_ORDER = {
+  top: 0,
+  mid: 1,
+  base: 2,
+  carrier: 3,
+};
+const FORMULA_VERSION_RE = /^v(\d+)\.(\d+)$/i;
+const FORMULA_COMPARE_DEFAULT_STATE = {
+  leftFormulaKey: null,
+  rightFormulaKey: null,
+};
+const SUPPLIER_BASKET_MODE_META = {
+  cheapest: {
+    label: "Cheapest",
+    title: "Cheapest Basket",
+    color: "#34D399",
+    description: "Lowest immediate line spend per ingredient using current live pricing.",
+  },
+  best_value: {
+    label: "Best Value",
+    title: "Best-Value Basket",
+    color: "#7DD3FC",
+    description:
+      "Prefers the lowest unit-cost pack among reasonably sized purchase tiers, then falls back to cheapest coverage.",
+  },
+  best_quality: {
+    label: "Best Quality",
+    title: "Best-Quality Basket",
+    color: "#F59E0B",
+    description:
+      "Heuristic: favors preferred or registry-backed supplier ownership first, then cheapest coverage within that supplier.",
+  },
+};
+const SUPPLIER_BASKET_MODE_ORDER = Object.keys(SUPPLIER_BASKET_MODE_META);
+const SUPPLIER_BASKET_VALUE_MAX_COVERAGE_MULTIPLE = 3;
+const BATCH_PLANNER_SHORTAGE_TOLERANCE = 0.0001;
+const PERFORMANCE_FIXATIVE_NAMES = [
+  "Benzyl Salicylate",
+  "Hexyl Cinnamic Aldehyde",
+  "Habanolide",
+  "Helvetolide",
+  "Ethylene Brassylate",
+  "Benzoin Siam Absolute",
+  "Labdanum Absolute 10%",
+  "Coumarin",
+  "Benzyl Benzoate",
+  "Oakmoss Absolute",
+];
+const PERFORMANCE_FRESH_CLASSES = new Set([
+  "Citrus",
+  "Green",
+  "Marine",
+  "Aromatic",
+  "Floral",
+]);
+const PERFORMANCE_DENSE_CLASSES = new Set([
+  "Amber",
+  "Woody",
+  "Oriental",
+  "Musk",
+  "Chypre",
+  "Gourmand",
+  "Spice",
+]);
+const SUPPLIER_LINK_NEGATIVE_STATUSES = new Set([
+  "linked_duplicate",
+  "cross_wired_listing",
+  "dead_url",
+  "accord_listing",
+]);
+const CRITIQUE_LENS_META = {
+  perfumer: {
+    label: "Perfumer",
+    color: "#F472B6",
+    description: "Balance, movement, and sensory polish.",
+  },
+  chemist: {
+    label: "Chemist",
+    color: "#7DD3FC",
+    description: "Volatility structure, data confidence, and material behavior.",
+  },
+  cost: {
+    label: "Cost",
+    color: "#34D399",
+    description: "Spend concentration, supplier confidence, and sourcing tradeoffs.",
+  },
+  compliance: {
+    label: "Compliance",
+    color: "#F59E0B",
+    description: "IFRA exposure, restrictions, and reformulation risk.",
+  },
+  brand: {
+    label: "Brand",
+    color: "#A78BFA",
+    description: "Distinctiveness, coherence, and signature story.",
+  },
+};
+const CRITIQUE_LENS_ORDER = Object.keys(CRITIQUE_LENS_META);
+
+function formatHumanList(values = [], maxItems = 3) {
+  const list = values.filter(Boolean).slice(0, maxItems);
+  if (list.length === 0) return "";
+  if (list.length === 1) return list[0];
+  if (list.length === 2) return `${list[0]} and ${list[1]}`;
+  return `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
+}
+
+function pushUniqueItem(items, value) {
+  if (!value || items.includes(value)) return;
+  items.push(value);
+}
+
+function slugifyFormulaName(name = "") {
+  const slug = String(name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "formula";
+}
+
+function buildFormulaKey(name, prefix = "formula") {
+  return [
+    prefix,
+    slugifyFormulaName(name),
+    Date.now().toString(36),
+    Math.random().toString(36).slice(2, 6),
+  ].join("-");
+}
+
+function normalizeFormulaVersionLabel(versionLabel, fallback = "v1.0") {
+  if (typeof versionLabel !== "string") return fallback;
+  const trimmed = versionLabel.trim();
+  return FORMULA_VERSION_RE.test(trimmed) ? trimmed : fallback;
+}
+
+function incrementFormulaVersionLabel(versionLabel) {
+  const match = FORMULA_VERSION_RE.exec(
+    normalizeFormulaVersionLabel(versionLabel)
+  );
+  if (!match) return "v1.1";
+  const major = Number(match[1]) || 1;
+  const minor = Number(match[2]) || 0;
+  return `v${major}.${minor + 1}`;
+}
+
+function sortFormulaIngredients(ingredients = []) {
+  return [...ingredients]
+    .filter((ingredient) => ingredient && ingredient.name)
+    .map((ingredient) => {
+      const name = String(ingredient.name).trim();
+      return {
+        ...ingredient,
+        name,
+        g: Number.isFinite(Number(ingredient.g)) ? Number(ingredient.g) : 0,
+        note: ingredient.note || DB[name]?.note || "mid",
+      };
+    })
+    .sort(
+      (a, b) =>
+        (FORMULA_NOTE_ORDER[a.note] ?? 2) - (FORMULA_NOTE_ORDER[b.note] ?? 2)
+    );
+}
+
+function getFormulaDisplayLabel(formula, { includeVersion = false } = {}) {
+  if (!formula) return "";
+  return includeVersion && formula.versionLabel
+    ? `${formula.name} ${formula.versionLabel}`
+    : formula.name;
+}
+
+function formatFormulaDateLabel(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleDateString();
+}
+
+function createSeedFormulaRecord(formula, index) {
+  const formulaKey =
+    formula.formulaKey || `seed-${slugifyFormulaName(formula.name)}-${index + 1}`;
+  return {
+    ...formula,
+    formulaKey,
+    versionLabel: normalizeFormulaVersionLabel(formula.versionLabel, "v1.0"),
+    parentFormulaKey: formula.parentFormulaKey || null,
+    parentVersionId: formula.parentVersionId || null,
+    isLocked: Boolean(formula.isLocked),
+    revisionNote:
+      typeof formula.revisionNote === "string" ? formula.revisionNote : "",
+    createdAt: formula.createdAt || null,
+    updatedAt: formula.updatedAt || null,
+    ingredients: sortFormulaIngredients(formula.ingredients),
+    isSeeded: true,
+    isCustom: false,
+    sourceType: "seeded",
+    seedSourceKey: formulaKey,
+  };
+}
+
+function createPersistedFormulaRecord(formula, index = 0) {
+  const name =
+    typeof formula?.name === "string" && formula.name.trim()
+      ? formula.name.trim()
+      : `Saved Formula ${index + 1}`;
+  const nowIso = new Date().toISOString();
+  const createdAt = formula?.createdAt || formula?.updatedAt || nowIso;
+  const updatedAt = formula?.updatedAt || createdAt;
+  const formulaKey =
+    formula?.formulaKey || buildFormulaKey(name, "formula");
+  const parentVersionId = formula?.parentVersionId || null;
+  const sourceType =
+    formula?.sourceType ||
+    (parentVersionId
+      ? "version"
+      : formula?.isSeeded
+      ? "seeded_override"
+      : "custom");
+
+  return {
+    ...formula,
+    name,
+    formulaKey,
+    emoji: formula?.emoji || "🧪",
+    tagline: formula?.tagline || "Custom build",
+    desc: formula?.desc || "Created in Build Lab.",
+    ingredients: sortFormulaIngredients(formula?.ingredients || []),
+    versionLabel: normalizeFormulaVersionLabel(formula?.versionLabel, "v1.0"),
+    parentFormulaKey: formula?.parentFormulaKey || null,
+    parentVersionId,
+    isLocked: Boolean(formula?.isLocked),
+    revisionNote:
+      typeof formula?.revisionNote === "string" ? formula.revisionNote : "",
+    createdAt,
+    updatedAt,
+    isSeeded: Boolean(formula?.isSeeded),
+    isCustom:
+      typeof formula?.isCustom === "boolean"
+        ? formula.isCustom
+        : !formula?.isSeeded,
+    sourceType,
+    seedSourceKey: formula?.seedSourceKey || null,
+  };
+}
+
+function readPersistedFormulaRecords() {
+  if (typeof localStorage === "undefined") return [];
+  try {
+    const saved = localStorage.getItem(FORMULA_STORAGE_KEY);
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed)
+      ? parsed.map((record, index) =>
+          createPersistedFormulaRecord(record, index)
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function upsertFormulaRecord(records, formulaRecord) {
+  const normalized = createPersistedFormulaRecord(formulaRecord);
+  const existingIndex = records.findIndex(
+    (record) => record.formulaKey === normalized.formulaKey
+  );
+  if (existingIndex === -1) return [...records, normalized];
+  const next = [...records];
+  next[existingIndex] = normalized;
+  return next;
+}
+
+function removeFormulaRecord(records, formulaKey) {
+  return records.filter((record) => record.formulaKey !== formulaKey);
+}
+
+function buildFormulaLibrary(seedFormulas, persistedRecords) {
+  const seeded = seedFormulas.map((formula, index) =>
+    createSeedFormulaRecord(formula, index)
+  );
+  const seededKeys = new Set(seeded.map((formula) => formula.formulaKey));
+  const persisted = persistedRecords.map((record, index) =>
+    createPersistedFormulaRecord(record, index)
+  );
+  const persistedByKey = new Map(
+    persisted.map((record) => [record.formulaKey, record])
+  );
+
+  const mergedSeeded = seeded.map((seedFormula) => {
+    const override = persistedByKey.get(seedFormula.formulaKey);
+    if (!override) return seedFormula;
+    return {
+      ...seedFormula,
+      ...override,
+      formulaKey: seedFormula.formulaKey,
+      isSeeded: true,
+      sourceType:
+        override.sourceType === "seeded" ? "seeded_override" : override.sourceType,
+      seedSourceKey: seedFormula.seedSourceKey,
+    };
+  });
+
+  const additional = persisted
+    .filter((record) => !seededKeys.has(record.formulaKey))
+    .sort((a, b) => {
+      const createdCompare = String(a.createdAt || "").localeCompare(
+        String(b.createdAt || "")
+      );
+      if (createdCompare !== 0) return createdCompare;
+      return a.name.localeCompare(b.name);
+    });
+
+  return [...mergedSeeded, ...additional];
+}
+
+function readFormulaCompareState() {
+  if (typeof localStorage === "undefined") {
+    return FORMULA_COMPARE_DEFAULT_STATE;
+  }
+  try {
+    const saved = localStorage.getItem(FORMULA_COMPARE_STORAGE_KEY);
+    if (!saved) return FORMULA_COMPARE_DEFAULT_STATE;
+    const parsed = JSON.parse(saved);
+    return {
+      leftFormulaKey: parsed?.leftFormulaKey || null,
+      rightFormulaKey: parsed?.rightFormulaKey || null,
+    };
+  } catch {
+    return FORMULA_COMPARE_DEFAULT_STATE;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // CHEMISTRY ENGINE
 // ─────────────────────────────────────────────────────────────
@@ -54169,6 +54506,517 @@ function getInventoryPlan(name, gNeeded) {
   return { ...best, remaining: Math.max(0, best.grams - gNeeded) };
 }
 
+function getLivePricingForIngredient(name, pricesState) {
+  return pricesState?.[name] || PRICING[name] || {};
+}
+
+function getSupplierMappingAssessment(ingredientName, supplierName, supplierData) {
+  const dbRecord = DB[ingredientName] || {};
+  const registryConfirmed = getSupplierProductsForCatalogName(ingredientName).some(
+    (record) => record?.supplierDisplayName === supplierName
+  );
+  const linkStatus = supplierData?.linkStatus || "primary_listing";
+  const linkNote = supplierData?.linkNote || null;
+  const linkedDuplicateOfCatalogName =
+    supplierData?.linkedDuplicateOfCatalogName || null;
+  let qualityScore = 0;
+  const reasons = [];
+
+  if (dbRecord.supplier === supplierName) {
+    qualityScore += 4;
+    reasons.push("Matches the current live preferred supplier.");
+  }
+  if (registryConfirmed) {
+    qualityScore += 4;
+    reasons.push("Supplier ownership is confirmed in the supplier registry.");
+  }
+  if (linkStatus === "primary_listing") {
+    qualityScore += 3;
+    reasons.push("Normalization marks this as a primary supplier listing.");
+  } else if (linkStatus === "supplier_grade_variant") {
+    qualityScore += 2;
+    reasons.push("Normalization recognizes this supplier grade variant.");
+  } else if (linkStatus === "linked_duplicate") {
+    qualityScore -= 3;
+    reasons.push("Normalization marks this row as a linked duplicate.");
+  } else if (linkStatus === "cross_wired_listing") {
+    qualityScore -= 5;
+    reasons.push("Normalization flags a cross-wired supplier listing.");
+  } else if (linkStatus === "dead_url") {
+    qualityScore -= 4;
+    reasons.push("Normalization flags this supplier URL as dead.");
+  } else if (linkStatus === "accord_listing") {
+    qualityScore -= 2;
+    reasons.push("Normalization treats this supplier row as an accord listing.");
+  }
+  if (supplierData?.url) {
+    qualityScore += 1;
+  }
+
+  let mappingConfidence = "inferred";
+  if (registryConfirmed || linkStatus === "primary_listing") {
+    mappingConfidence = "confirmed";
+  } else if (SUPPLIER_LINK_NEGATIVE_STATUSES.has(linkStatus)) {
+    mappingConfidence = "uncertain";
+  }
+
+  const detailParts = [];
+  if (registryConfirmed) detailParts.push("Registry-backed ownership.");
+  if (dbRecord.supplier === supplierName) {
+    detailParts.push("Matches live preferred supplier.");
+  }
+  if (linkedDuplicateOfCatalogName) {
+    detailParts.push(
+      `Linked duplicate of "${linkedDuplicateOfCatalogName}".`
+    );
+  }
+  if (linkNote) detailParts.push(linkNote);
+
+  return {
+    qualityScore,
+    mappingConfidence,
+    registryConfirmed,
+    linkStatus,
+    linkNote,
+    linkedDuplicateOfCatalogName,
+    confidenceNote: detailParts.join(" "),
+    qualityNote: reasons.join(" "),
+  };
+}
+
+function buildSupplierPurchaseCandidates(ingredient, supplierName, supplierData) {
+  const needG = Number(ingredient.g) || 0;
+  const d = DB[ingredient.name];
+  const density = d?.density || d?.densityGmL || 1.0;
+  if (!Array.isArray(supplierData?.S) || supplierData.S.length === 0) {
+    return [];
+  }
+
+  return supplierData.S
+    .map(([qty, unit, price]) => {
+      const grams = unit === "mL" ? qty * density : qty;
+      if (!Number.isFinite(grams) || grams <= 0 || !Number.isFinite(price)) {
+        return null;
+      }
+      const multi = grams >= needG ? 1 : Math.max(1, Math.ceil(needG / grams));
+      const totalPurchasedG = grams * multi;
+      const lineCost = price * multi;
+      return {
+        supplier: supplierName,
+        qty,
+        unit,
+        price,
+        grams,
+        multi,
+        totalPurchasedG,
+        lineCost,
+        remaining: Math.max(0, totalPurchasedG - needG),
+        pricePerPurchasedGram: price / grams,
+      };
+    })
+    .filter(Boolean);
+}
+
+function selectCheapestPurchaseCandidate(candidates = []) {
+  return [...candidates].sort((a, b) => {
+    if (a.lineCost !== b.lineCost) return a.lineCost - b.lineCost;
+    if (a.remaining !== b.remaining) return a.remaining - b.remaining;
+    return a.pricePerPurchasedGram - b.pricePerPurchasedGram;
+  })[0] || null;
+}
+
+function selectBestValuePurchaseCandidate(candidates = []) {
+  if (!candidates.length) return null;
+  const needG = Math.max(
+    candidates[0]?.totalPurchasedG - candidates[0]?.remaining || 0,
+    0.0001
+  );
+  const pool = candidates.filter(
+    (candidate) =>
+      candidate.totalPurchasedG <=
+      needG * SUPPLIER_BASKET_VALUE_MAX_COVERAGE_MULTIPLE + 0.0001
+  );
+  const rankedPool = (pool.length ? pool : candidates).slice();
+  return rankedPool.sort((a, b) => {
+    if (a.pricePerPurchasedGram !== b.pricePerPurchasedGram) {
+      return a.pricePerPurchasedGram - b.pricePerPurchasedGram;
+    }
+    if (a.lineCost !== b.lineCost) return a.lineCost - b.lineCost;
+    return a.remaining - b.remaining;
+  })[0] || null;
+}
+
+function buildIngredientSupplierOptions(
+  ingredient,
+  pricesState,
+  supplierOverrides = {}
+) {
+  const pricing = getLivePricingForIngredient(ingredient.name, pricesState);
+  const overrideSupplier = supplierOverrides[ingredient.name] || null;
+  const supplierNames = overrideSupplier
+    ? [overrideSupplier]
+    : Object.keys(pricing);
+
+  const supplierOptions = supplierNames.map((supplierName) => {
+    const supplierData = pricing[supplierName] || null;
+    const assessment = getSupplierMappingAssessment(
+      ingredient.name,
+      supplierName,
+      supplierData
+    );
+    const candidates = buildSupplierPurchaseCandidates(
+      ingredient,
+      supplierName,
+      supplierData
+    );
+    return {
+      supplier: supplierName,
+      supplierData,
+      assessment,
+      candidates,
+      cheapestCandidate: selectCheapestPurchaseCandidate(candidates),
+      bestValueCandidate: selectBestValuePurchaseCandidate(candidates),
+      forcedByOverride: Boolean(overrideSupplier),
+      isMissingPricing:
+        !supplierData || !Array.isArray(supplierData.S) || supplierData.S.length === 0,
+    };
+  });
+
+  return {
+    ingredient,
+    overrideSupplier,
+    supplierOptions,
+    availableOptions: supplierOptions.filter((option) => option.candidates.length > 0),
+  };
+}
+
+function getBasketConfidenceRank(mappingConfidence) {
+  if (mappingConfidence === "confirmed") return 3;
+  if (mappingConfidence === "inferred") return 2;
+  if (mappingConfidence === "uncertain") return 1;
+  return 0;
+}
+
+function selectIngredientBasketLine(
+  ingredient,
+  pricesState,
+  supplierOverrides = {},
+  mode = "cheapest"
+) {
+  const optionState = buildIngredientSupplierOptions(
+    ingredient,
+    pricesState,
+    supplierOverrides
+  );
+  const { overrideSupplier, supplierOptions, availableOptions } = optionState;
+  const requestedMode = SUPPLIER_BASKET_MODE_META[mode] ? mode : "cheapest";
+
+  if (!availableOptions.length) {
+    const missingOption = supplierOptions[0] || null;
+    const missingReason = overrideSupplier
+      ? `Supplier override "${overrideSupplier}" has no saved size/price data.`
+      : "No supplier size/price data is currently stored.";
+    return {
+      ingredientName: ingredient.name,
+      needG: Number(ingredient.g) || 0,
+      note: ingredient.note,
+      supplier: overrideSupplier || missingOption?.supplier || null,
+      lineCost: null,
+      buyText: "—",
+      remaining: null,
+      mappingConfidence: "missing",
+      confidenceNote:
+        missingOption?.assessment?.confidenceNote || missingReason,
+      qualityNote: missingOption?.assessment?.qualityNote || "",
+      forcedByOverride: Boolean(overrideSupplier),
+      status: "missing",
+      missingReason,
+      linkStatus: missingOption?.assessment?.linkStatus || null,
+      registryConfirmed:
+        missingOption?.assessment?.registryConfirmed || false,
+      linkedDuplicateOfCatalogName:
+        missingOption?.assessment?.linkedDuplicateOfCatalogName || null,
+      line: null,
+    };
+  }
+
+  const selectedOption = (() => {
+    if (overrideSupplier) {
+      return availableOptions[0];
+    }
+    if (requestedMode === "cheapest") {
+      return [...availableOptions].sort((a, b) => {
+        const aCandidate = a.cheapestCandidate;
+        const bCandidate = b.cheapestCandidate;
+        if (aCandidate.lineCost !== bCandidate.lineCost) {
+          return aCandidate.lineCost - bCandidate.lineCost;
+        }
+        if (aCandidate.remaining !== bCandidate.remaining) {
+          return aCandidate.remaining - bCandidate.remaining;
+        }
+        return (
+          aCandidate.pricePerPurchasedGram - bCandidate.pricePerPurchasedGram
+        );
+      })[0];
+    }
+    if (requestedMode === "best_value") {
+      return [...availableOptions].sort((a, b) => {
+        const aCandidate = a.bestValueCandidate || a.cheapestCandidate;
+        const bCandidate = b.bestValueCandidate || b.cheapestCandidate;
+        if (
+          aCandidate.pricePerPurchasedGram !== bCandidate.pricePerPurchasedGram
+        ) {
+          return (
+            aCandidate.pricePerPurchasedGram - bCandidate.pricePerPurchasedGram
+          );
+        }
+        if (aCandidate.lineCost !== bCandidate.lineCost) {
+          return aCandidate.lineCost - bCandidate.lineCost;
+        }
+        return aCandidate.remaining - bCandidate.remaining;
+      })[0];
+    }
+    return [...availableOptions].sort((a, b) => {
+      if (a.assessment.qualityScore !== b.assessment.qualityScore) {
+        return b.assessment.qualityScore - a.assessment.qualityScore;
+      }
+      const confidenceDelta =
+        getBasketConfidenceRank(b.assessment.mappingConfidence) -
+        getBasketConfidenceRank(a.assessment.mappingConfidence);
+      if (confidenceDelta !== 0) return confidenceDelta;
+      return a.cheapestCandidate.lineCost - b.cheapestCandidate.lineCost;
+    })[0];
+  })();
+
+  const line =
+    requestedMode === "best_value"
+      ? selectedOption.bestValueCandidate || selectedOption.cheapestCandidate
+      : selectedOption.cheapestCandidate;
+
+  return {
+    ingredientName: ingredient.name,
+    needG: Number(ingredient.g) || 0,
+    note: ingredient.note,
+    supplier: selectedOption.supplier,
+    lineCost: line.lineCost,
+    buyText: `${line.qty}${line.unit}${line.multi > 1 ? ` ×${line.multi}` : ""}`,
+    remaining: line.remaining,
+    mappingConfidence: selectedOption.assessment.mappingConfidence,
+    confidenceNote: selectedOption.assessment.confidenceNote,
+    qualityNote: selectedOption.assessment.qualityNote,
+    forcedByOverride: selectedOption.forcedByOverride,
+    status:
+      selectedOption.assessment.mappingConfidence === "uncertain"
+        ? "uncertain"
+        : selectedOption.assessment.mappingConfidence,
+    missingReason: null,
+    linkStatus: selectedOption.assessment.linkStatus,
+    registryConfirmed: selectedOption.assessment.registryConfirmed,
+    linkedDuplicateOfCatalogName:
+      selectedOption.assessment.linkedDuplicateOfCatalogName,
+    line,
+  };
+}
+
+function buildSupplierBasket(
+  ingredients,
+  pricesState,
+  supplierOverrides = {},
+  mode = "cheapest"
+) {
+  const lines = ingredients.map((ingredient) =>
+    selectIngredientBasketLine(
+      ingredient,
+      pricesState,
+      supplierOverrides,
+      mode
+    )
+  );
+  const totalCost = lines.reduce((sum, line) => sum + (line.lineCost || 0), 0);
+  const suppliersInUse = Array.from(
+    new Set(lines.map((line) => line.supplier).filter(Boolean))
+  );
+  return {
+    mode,
+    meta: SUPPLIER_BASKET_MODE_META[mode] || SUPPLIER_BASKET_MODE_META.cheapest,
+    lines,
+    totalCost,
+    missingCount: lines.filter((line) => line.status === "missing").length,
+    uncertainCount: lines.filter((line) => line.status === "uncertain").length,
+    inferredCount: lines.filter((line) => line.status === "inferred").length,
+    confirmedCount: lines.filter((line) => line.status === "confirmed").length,
+    supplierCount: suppliersInUse.length,
+    suppliersInUse,
+  };
+}
+
+function buildSupplierBasketStrategies(
+  ingredients,
+  pricesState,
+  supplierOverrides = {}
+) {
+  return Object.fromEntries(
+    SUPPLIER_BASKET_MODE_ORDER.map((mode) => [
+      mode,
+      buildSupplierBasket(ingredients, pricesState, supplierOverrides, mode),
+    ])
+  );
+}
+
+function buildBatchPlannerReport({
+  ingredients = [],
+  targetBatchG = 0,
+  inventory = {},
+  pricesState,
+  supplierOverrides = {},
+  basketMode = "cheapest",
+}) {
+  const normalizedIngredients = Array.isArray(ingredients)
+    ? ingredients
+        .map((ingredient) => ({
+          ...ingredient,
+          g: Number(ingredient?.g) || 0,
+          note: ingredient?.note || DB[ingredient?.name]?.note || "mid",
+        }))
+        .filter((ingredient) => ingredient.name && ingredient.g > 0)
+    : [];
+  const sourceTotalG = normalizedIngredients.reduce(
+    (sum, ingredient) => sum + ingredient.g,
+    0
+  );
+  const normalizedTargetBatchG = Math.max(0, Number(targetBatchG) || 0);
+
+  if (sourceTotalG <= 0 || normalizedTargetBatchG <= 0) {
+    return {
+      sourceTotalG,
+      targetBatchG: normalizedTargetBatchG,
+      totalRequiredG: 0,
+      lines: [],
+      blockingMaterials: [],
+      constrainingMaterials: [],
+      shortageBasket: null,
+      shortageCount: 0,
+      shortageTotalG: 0,
+      canFulfill: false,
+      maxProducibleG: 0,
+      coveragePercent: 0,
+    };
+  }
+
+  const lines = normalizedIngredients
+    .map((ingredient) => {
+      const proportion = ingredient.g / sourceTotalG;
+      const requiredG = proportion * normalizedTargetBatchG;
+      const onHand = Math.max(0, Number(inventory?.[ingredient.name]?.qty) || 0);
+      const shortageG = Math.max(0, requiredG - onHand);
+      const remainingG = Math.max(0, onHand - requiredG);
+      const maxProducibleG =
+        proportion > 0 ? onHand / proportion : Number.POSITIVE_INFINITY;
+      return {
+        name: ingredient.name,
+        note: ingredient.note,
+        sourceG: ingredient.g,
+        proportion,
+        requiredG,
+        onHand,
+        shortageG,
+        remainingG,
+        isBlocked: shortageG > BATCH_PLANNER_SHORTAGE_TOLERANCE,
+        maxProducibleG,
+      };
+    })
+    .sort((a, b) => b.requiredG - a.requiredG);
+
+  const blockingMaterials = lines
+    .filter((line) => line.isBlocked)
+    .sort((a, b) => {
+      if (b.shortageG !== a.shortageG) return b.shortageG - a.shortageG;
+      return a.maxProducibleG - b.maxProducibleG;
+    });
+  const constrainingMaterials = [...lines].sort((a, b) => {
+    if (a.maxProducibleG !== b.maxProducibleG) {
+      return a.maxProducibleG - b.maxProducibleG;
+    }
+    return b.requiredG - a.requiredG;
+  });
+  const shortageIngredients = blockingMaterials.map((line) => ({
+    name: line.name,
+    note: line.note,
+    g: line.shortageG,
+  }));
+  const shortageBasket = shortageIngredients.length
+    ? buildSupplierBasket(
+        shortageIngredients,
+        pricesState,
+        supplierOverrides,
+        basketMode
+      )
+    : null;
+  const finiteMaxBatchValues = lines
+    .map((line) => line.maxProducibleG)
+    .filter((value) => Number.isFinite(value));
+  const maxProducibleG = finiteMaxBatchValues.length
+    ? Math.max(0, Math.min(...finiteMaxBatchValues))
+    : 0;
+
+  return {
+    sourceTotalG,
+    targetBatchG: normalizedTargetBatchG,
+    totalRequiredG: lines.reduce((sum, line) => sum + line.requiredG, 0),
+    lines,
+    blockingMaterials,
+    constrainingMaterials,
+    shortageBasket,
+    shortageCount: blockingMaterials.length,
+    shortageTotalG: blockingMaterials.reduce(
+      (sum, line) => sum + line.shortageG,
+      0
+    ),
+    canFulfill: blockingMaterials.length === 0,
+    maxProducibleG,
+    coveragePercent:
+      normalizedTargetBatchG > 0
+        ? Math.max(0, (maxProducibleG / normalizedTargetBatchG) * 100)
+        : 0,
+  };
+}
+
+function buildFormulaProcurementRows(
+  ingredients,
+  pricesState,
+  supplierOverrides = {}
+) {
+  const total = ingredients.reduce((s, i) => s + i.g, 0);
+  const cheapestBasket = buildSupplierBasket(
+    ingredients,
+    pricesState,
+    supplierOverrides,
+    "cheapest"
+  );
+  const rows = cheapestBasket.lines.map((line, index) => {
+    const ing = ingredients[index];
+    return {
+      ...ing,
+      best: line.line
+        ? {
+            qty: line.line.qty,
+            unit: line.line.unit,
+            price: line.line.price,
+            g: line.line.grams,
+            sup: line.supplier,
+            url:
+              getLivePricingForIngredient(ing.name, pricesState)[line.supplier]
+                ?.url || "",
+            multi: line.line.multi,
+          }
+        : null,
+      cost: line.lineCost,
+      pct: total > 0 ? ((ing.g / total) * 100).toFixed(1) : "0.0",
+    };
+  });
+  return { total, grandTotal: cheapestBasket.totalCost, rows };
+}
+
 function totalCost(buildItems) {
   let cost = 0;
   buildItems.forEach((item) => {
@@ -54206,21 +55054,9 @@ function perfScore(ingredients) {
   const mids = chem.filter((i) => i.note === "mid" && i.d);
   const tops = chem.filter((i) => i.note === "top" && i.d);
   // Longevity: low VP bases, high xLogP, fixatives
-  const fixatives = [
-    "Benzyl Salicylate",
-    "Hexyl Cinnamic Aldehyde",
-    "Habanolide",
-    "Helvetolide",
-    "Ethylene Brassylate",
-    "Benzoin Siam Absolute",
-    "Labdanum Absolute 10%",
-    "Coumarin",
-    "Benzyl Benzoate",
-    "Oakmoss Absolute",
-  ];
   const fixPct =
     ingredients
-      .filter((i) => fixatives.includes(i.name))
+      .filter((i) => PERFORMANCE_FIXATIVE_NAMES.includes(i.name))
       .reduce((s, i) => s + i.g, 0) / total;
   const baseLogP =
     bases.reduce((s, i) => s + i.d.xLogP * i.wfrac, 0) /
@@ -54255,6 +55091,1323 @@ function perfScore(ingredients) {
     longevity: Math.max(0, longevity),
     sillage: Math.max(0, sillage),
     projection: Math.max(0, projection),
+  };
+}
+
+function getFormulaCompareIngredientKey(name) {
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const identity = resolveIngredientIdentity(name);
+  return (
+    normalizationEntry?.canonicalMaterialKey ||
+    identity?.normalizationEntry?.canonicalMaterialKey ||
+    identity?.resolvedIfraMaterial ||
+    String(name || "").trim().toLowerCase()
+  );
+}
+
+function buildFormulaIngredientSummaryMap(ingredients = []) {
+  const summaryMap = new Map();
+  ingredients.forEach((ingredient) => {
+    const key = getFormulaCompareIngredientKey(ingredient.name);
+    const existing = summaryMap.get(key);
+    const nextNames = new Set(existing?.names || []);
+    nextNames.add(ingredient.name);
+    const nextNotes = new Set(existing?.notes || []);
+    nextNotes.add(ingredient.note || "mid");
+    summaryMap.set(key, {
+      key,
+      primaryName: existing?.primaryName || ingredient.name,
+      names: Array.from(nextNames),
+      notes: Array.from(nextNotes).sort(
+        (a, b) =>
+          (FORMULA_NOTE_ORDER[a] ?? 2) - (FORMULA_NOTE_ORDER[b] ?? 2)
+      ),
+      totalG: (existing?.totalG || 0) + (Number(ingredient.g) || 0),
+    });
+  });
+  return summaryMap;
+}
+
+function summarizeComputedChemistry(chem = []) {
+  const topContributor = [...chem].sort(
+    (a, b) => (b.intensity || 0) - (a.intensity || 0)
+  )[0];
+  return {
+    totalIntensity: chem.reduce((s, ing) => s + (ing.intensity || 0), 0),
+    totalOV: chem.reduce((s, ing) => s + (ing.OV || 0), 0),
+    weightedXLogP: chem.reduce(
+      (s, ing) => s + (ing.wfrac || 0) * (ing.d?.xLogP || 0),
+      0
+    ),
+    weightedVP: chem.reduce(
+      (s, ing) => s + (ing.wfrac || 0) * (ing.d?.VP || 0),
+      0
+    ),
+    topContributor: topContributor?.name || "—",
+  };
+}
+
+function summarizeFormulaChemistry(ingredients = []) {
+  return summarizeComputedChemistry(computeChemistry(ingredients));
+}
+
+function clampPerformanceModelScore(value, min = 0, max = 10) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getPerformanceModelBand(
+  score,
+  {
+    low = 3.5,
+    high = 7,
+    labels = { low: "Low", mid: "Moderate", high: "High" },
+  } = {}
+) {
+  if (score >= high) return labels.high;
+  if (score <= low) return labels.low;
+  return labels.mid;
+}
+
+function buildPerformanceModelSummary(ingredients = [], options = {}) {
+  const activeIngredients = Array.isArray(ingredients)
+    ? ingredients
+        .map((ingredient) => ({
+          ...ingredient,
+          g: Number(ingredient?.g) || 0,
+          note: ingredient?.note || DB[ingredient?.name]?.note || "mid",
+        }))
+        .filter((ingredient) => ingredient.name && ingredient.g > 0)
+    : [];
+
+  if (!activeIngredients.length) {
+    return {
+      headline: "Add ingredients to see a model-based performance read.",
+      estimateNote:
+        "Estimate only — this layer translates the current chemistry and score heuristics into plain English.",
+      caveats: [],
+      facets: [],
+      axisScores: {},
+    };
+  }
+
+  const chemistry = options.chemistry || computeChemistry(activeIngredients);
+  const performance = options.performance || perfScore(activeIngredients);
+  const chemistrySummary =
+    options.chemistrySummary || summarizeComputedChemistry(chemistry);
+  const totalG =
+    activeIngredients.reduce((sum, ingredient) => sum + ingredient.g, 0) || 1;
+  const noteWeight = {
+    top:
+      activeIngredients
+        .filter((ingredient) => ingredient.note === "top")
+        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
+    mid:
+      activeIngredients
+        .filter((ingredient) => ingredient.note === "mid")
+        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
+    base:
+      activeIngredients
+        .filter((ingredient) => ingredient.note === "base")
+        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
+    carrier:
+      activeIngredients
+        .filter((ingredient) => ingredient.note === "carrier")
+        .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG,
+  };
+  const totalIntensity =
+    chemistry.reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0) ||
+    0;
+  const noteIntensity = {
+    top: chemistry
+      .filter((ingredient) => ingredient.note === "top")
+      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
+    mid: chemistry
+      .filter((ingredient) => ingredient.note === "mid")
+      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
+    base: chemistry
+      .filter((ingredient) => ingredient.note === "base")
+      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
+    carrier: chemistry
+      .filter((ingredient) => ingredient.note === "carrier")
+      .reduce((sum, ingredient) => sum + (ingredient.intensity || 0), 0),
+  };
+  const noteIntensityShare = {
+    top: totalIntensity > 0 ? noteIntensity.top / totalIntensity : noteWeight.top,
+    mid: totalIntensity > 0 ? noteIntensity.mid / totalIntensity : noteWeight.mid,
+    base:
+      totalIntensity > 0 ? noteIntensity.base / totalIntensity : noteWeight.base,
+  };
+  const freshClassPct =
+    activeIngredients
+      .filter((ingredient) =>
+        PERFORMANCE_FRESH_CLASSES.has(DB[ingredient.name]?.scentClass)
+      )
+      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
+  const denseClassPct =
+    activeIngredients
+      .filter((ingredient) =>
+        PERFORMANCE_DENSE_CLASSES.has(DB[ingredient.name]?.scentClass)
+      )
+      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
+  const fixativePct =
+    activeIngredients
+      .filter((ingredient) => PERFORMANCE_FIXATIVE_NAMES.includes(ingredient.name))
+      .reduce((sum, ingredient) => sum + ingredient.g, 0) / totalG;
+  const highImpactMaterials = chemistry.filter((ingredient) => (ingredient.OV || 0) > 1);
+  const crowdedFamilies = Object.entries(
+    highImpactMaterials.reduce((acc, ingredient) => {
+      const family = ingredient.d?.scentClass || "Other";
+      if (!acc[family]) acc[family] = [];
+      acc[family].push(ingredient);
+      return acc;
+    }, {})
+  )
+    .map(([family, members]) => ({
+      family,
+      count: members.length,
+      share:
+        totalIntensity > 0
+          ? members.reduce(
+              (sum, ingredient) => sum + (ingredient.intensity || 0),
+              0
+            ) / totalIntensity
+          : 0,
+    }))
+    .filter((family) => family.count >= 3 || family.share >= 0.35)
+    .sort((a, b) => {
+      if (b.share !== a.share) return b.share - a.share;
+      return b.count - a.count;
+    });
+  const dominantNoteLayer =
+    Object.entries({
+      opening: noteWeight.top,
+      heart: noteWeight.mid,
+      drydown: noteWeight.base,
+    }).sort((a, b) => b[1] - a[1])[0]?.[0] || "heart";
+  const unknownIngredientCount = chemistry.filter((ingredient) => !ingredient.d).length;
+
+  const axisScores = {
+    openingImpact: clampPerformanceModelScore(
+      performance.projection * 0.55 +
+        noteWeight.top * 3.25 +
+        noteIntensityShare.top * 3.25
+    ),
+    liftFreshness: clampPerformanceModelScore(
+      noteWeight.top * 3 + freshClassPct * 4.8 + Math.min(performance.projection, 6) * 0.35
+    ),
+    densityHeaviness: clampPerformanceModelScore(
+      noteWeight.base * 4 +
+        denseClassPct * 2.5 +
+        Math.min(chemistrySummary.weightedXLogP || 0, 5) * 0.7 +
+        fixativePct * 5
+    ),
+    drydownPersistence: clampPerformanceModelScore(
+      performance.longevity * 0.8 + noteWeight.base * 2 + fixativePct * 5
+    ),
+    likelyProjection: clampPerformanceModelScore(
+      performance.projection * 0.65 + performance.sillage * 0.35
+    ),
+    clutterImbalance: clampPerformanceModelScore(
+      crowdedFamilies.length * 2.4 +
+        Math.max(0, highImpactMaterials.length - 6) * 0.45 +
+        (Math.max(noteWeight.top, noteWeight.mid, noteWeight.base) > 0.62 ? 1.4 : 0) +
+        (crowdedFamilies[0]?.share || 0) * 3
+    ),
+    bridgeWeakness: clampPerformanceModelScore(
+      (noteWeight.mid < 0.18 ? 4 : 0) +
+        (noteIntensityShare.mid < 0.16 ? 3 : 0) +
+        (noteWeight.top > 0.24 && noteWeight.base > 0.28 ? 2 : 0)
+    ),
+  };
+
+  const openingBand = getPerformanceModelBand(axisScores.openingImpact, {
+    labels: { low: "Soft", mid: "Moderate", high: "Strong" },
+  });
+  const liftBand = getPerformanceModelBand(axisScores.liftFreshness, {
+    labels: { low: "Grounded", mid: "Balanced", high: "Fresh" },
+  });
+  const densityBand = getPerformanceModelBand(axisScores.densityHeaviness, {
+    labels: { low: "Light", mid: "Moderate", high: "Dense" },
+  });
+  const drydownBand = getPerformanceModelBand(axisScores.drydownPersistence, {
+    labels: { low: "Short", mid: "Steady", high: "Persistent" },
+  });
+  const projectionBand = getPerformanceModelBand(axisScores.likelyProjection, {
+    labels: { low: "Intimate", mid: "Noticeable", high: "Expansive" },
+  });
+  const clutterBand = getPerformanceModelBand(axisScores.clutterImbalance, {
+    low: 2.5,
+    high: 6,
+    labels: { low: "Low", mid: "Watch", high: "Elevated" },
+  });
+  const bridgeBand = getPerformanceModelBand(axisScores.bridgeWeakness, {
+    low: 2.5,
+    high: 6,
+    labels: { low: "Solid", mid: "Watch", high: "Possible gap" },
+  });
+
+  const headlineParts = [];
+  if (axisScores.openingImpact >= 7) headlineParts.push("a lively opening");
+  else if (axisScores.openingImpact <= 3.5)
+    headlineParts.push("a restrained opening");
+  else headlineParts.push("a measured opening");
+  if (axisScores.drydownPersistence >= 7)
+    headlineParts.push("a fairly persistent drydown");
+  else if (axisScores.drydownPersistence <= 3.5)
+    headlineParts.push("a shorter drydown");
+  else headlineParts.push("a steady drydown");
+  if (axisScores.likelyProjection >= 7)
+    headlineParts.push("noticeable projection");
+  else if (axisScores.likelyProjection <= 3.5)
+    headlineParts.push("an intimate scent cloud");
+  else headlineParts.push("moderate projection");
+
+  const caveats = [];
+  if (unknownIngredientCount > 0) {
+    caveats.push(
+      `${unknownIngredientCount} ingredient${
+        unknownIngredientCount === 1 ? "" : "s"
+      } lack full chemistry data, so this read is rougher than usual.`
+    );
+  }
+  if (chemistry.filter((ingredient) => ingredient.isUVCB).length > 0) {
+    caveats.push(
+      "Some naturals/UVCB materials are treated more coarsely in the current model."
+    );
+  }
+
+  return {
+    headline: `Model read: ${headlineParts.join(", ")}.`,
+    estimateNote:
+      "Estimate only — this summary translates the current chemistry and score heuristics into plain English, not guaranteed wear behavior.",
+    caveats,
+    axisScores,
+    facets: [
+      {
+        key: "openingImpact",
+        label: "Opening impact",
+        rating: openingBand,
+        tone:
+          axisScores.openingImpact >= 7
+            ? "warm"
+            : axisScores.openingImpact <= 3.5
+            ? "muted"
+            : "accent",
+        detail:
+          axisScores.openingImpact >= 7
+            ? "Top-note weight and the current projection model suggest a fairly assertive first impression."
+            : axisScores.openingImpact <= 3.5
+            ? "The opening reads restrained in the current model rather than sharp or explosive."
+            : "The opening should register clearly without reading especially forceful.",
+      },
+      {
+        key: "liftFreshness",
+        label: "Lift / freshness",
+        rating: liftBand,
+        tone:
+          axisScores.liftFreshness >= 7
+            ? "positive"
+            : axisScores.liftFreshness <= 3.5
+            ? "muted"
+            : "accent",
+        detail:
+          axisScores.liftFreshness >= 7
+            ? "Top-heavy weight plus fresher material classes suggest a bright, lifted feel."
+            : axisScores.liftFreshness <= 3.5
+            ? "The balance leans more grounded than sparkling; freshness signals look modest."
+            : "There is some lift, but the model does not read this as especially airy.",
+      },
+      {
+        key: "densityHeaviness",
+        label: "Density / heaviness",
+        rating: densityBand,
+        tone:
+          axisScores.densityHeaviness >= 7
+            ? "cool"
+            : axisScores.densityHeaviness <= 3.5
+            ? "muted"
+            : "accent",
+        detail:
+          axisScores.densityHeaviness >= 7
+            ? "Base weight and more lipophilic materials point to a denser body through the heart and drydown."
+            : axisScores.densityHeaviness <= 3.5
+            ? "The structure reads relatively open and light-bodied rather than dense."
+            : "The body looks balanced between openness and density in the current model.",
+      },
+      {
+        key: "drydownPersistence",
+        label: "Drydown persistence",
+        rating: drydownBand,
+        tone:
+          axisScores.drydownPersistence >= 7
+            ? "cool"
+            : axisScores.drydownPersistence <= 3.5
+            ? "caution"
+            : "accent",
+        detail:
+          axisScores.drydownPersistence >= 7
+            ? "Longevity signals, base-note weight, and fixative support suggest a persistent drydown."
+            : axisScores.drydownPersistence <= 3.5
+            ? "The drydown may taper earlier than the opening suggests."
+            : "The drydown should hold reasonably well without reading especially tenacious.",
+      },
+      {
+        key: "likelyProjection",
+        label: "Likely projection",
+        rating: projectionBand,
+        tone:
+          axisScores.likelyProjection >= 7
+            ? "warm"
+            : axisScores.likelyProjection <= 3.5
+            ? "muted"
+            : "accent",
+        detail:
+          axisScores.likelyProjection >= 7
+            ? "Projection and sillage scores point to a fairly noticeable scent cloud."
+            : axisScores.likelyProjection <= 3.5
+            ? "The model reads projection as intimate rather than room-filling."
+            : "Projection looks present but not especially aggressive.",
+      },
+      {
+        key: "clutterImbalance",
+        label: "Possible clutter / imbalance",
+        rating: clutterBand,
+        tone:
+          axisScores.clutterImbalance >= 6
+            ? "danger"
+            : axisScores.clutterImbalance > 2.5
+            ? "caution"
+            : "positive",
+        detail:
+          axisScores.clutterImbalance >= 6
+            ? crowdedFamilies.length > 0
+              ? `Several high-impact materials are competing in ${crowdedFamilies
+                  .slice(0, 2)
+                  .map((family) => family.family)
+                  .join(" / ")}, so the formula could read crowded.`
+              : `The current balance leans heavily toward the ${dominantNoteLayer}, so parts of the formula may overshadow the rest.`
+            : axisScores.clutterImbalance > 2.5
+            ? `There is a mild imbalance signal, mostly around ${dominantNoteLayer} weight or crowded high-impact materials.`
+            : "No obvious crowding signal stands out in the current model.",
+      },
+      {
+        key: "bridgeWeakness",
+        label: "Transition / bridge",
+        rating: bridgeBand,
+        tone:
+          axisScores.bridgeWeakness >= 6
+            ? "danger"
+            : axisScores.bridgeWeakness > 2.5
+            ? "caution"
+            : "positive",
+        detail:
+          axisScores.bridgeWeakness >= 6
+            ? "Mid-note coverage looks thin relative to the top and base, so the transition may feel abrupt."
+            : axisScores.bridgeWeakness > 2.5
+            ? "The heart looks a bit lean, so the opening-to-drydown handoff is worth watching."
+            : "No obvious bridge gap stands out from the current note balance.",
+      },
+    ],
+  };
+}
+
+function buildPerformanceComparisonNarrative(leftSummary, rightSummary) {
+  if (!leftSummary?.axisScores || !rightSummary?.axisScores) {
+    return [];
+  }
+  const notes = [];
+  const openingDelta =
+    rightSummary.axisScores.openingImpact -
+    leftSummary.axisScores.openingImpact;
+  const drydownDelta =
+    rightSummary.axisScores.drydownPersistence -
+    leftSummary.axisScores.drydownPersistence;
+  const densityDelta =
+    rightSummary.axisScores.densityHeaviness -
+    leftSummary.axisScores.densityHeaviness;
+  const clutterDelta =
+    rightSummary.axisScores.clutterImbalance -
+    leftSummary.axisScores.clutterImbalance;
+  const bridgeDelta =
+    rightSummary.axisScores.bridgeWeakness -
+    leftSummary.axisScores.bridgeWeakness;
+
+  if (openingDelta > 1.1) {
+    notes.push("Compared formula reads livelier in the opening.");
+  } else if (openingDelta < -1.1) {
+    notes.push("Compared formula reads softer in the opening.");
+  }
+  if (drydownDelta > 1.1) {
+    notes.push("Compared formula looks more persistent in the drydown.");
+  } else if (drydownDelta < -1.1) {
+    notes.push("Compared formula looks shorter in the drydown.");
+  }
+  if (densityDelta > 1.1) {
+    notes.push("Compared formula reads denser through the heart and base.");
+  } else if (densityDelta < -1.1) {
+    notes.push("Compared formula reads lighter and more open through the body.");
+  }
+  if (clutterDelta > 1.1) {
+    notes.push("Compared formula carries a higher clutter or imbalance signal.");
+  } else if (bridgeDelta > 1.1) {
+    notes.push("Compared formula shows a weaker modeled bridge from opening to drydown.");
+  }
+  if (!notes.length) {
+    notes.push(
+      "Both formulas read fairly similar in the current model, with no major shift in opening, body, or drydown."
+    );
+  }
+  return notes.slice(0, 3);
+}
+
+function buildFormulaCritiqueReport({
+  formula,
+  chemistry = [],
+  performance = { longevity: 0, sillage: 0, projection: 0 },
+  performanceModel,
+  basket,
+  cheapestBasket,
+  basketModeMeta,
+  ifraRows = [],
+  lens = "perfumer",
+}) {
+  const lensMeta = CRITIQUE_LENS_META[lens] || CRITIQUE_LENS_META.perfumer;
+  const formulaLabel = getFormulaDisplayLabel(formula, {
+    includeVersion: true,
+  });
+  const fallback = {
+    lens,
+    lensMeta,
+    formulaLabel,
+    headline: `Structured critique — ${lensMeta.label} lens`,
+    lensSummary: lensMeta.description,
+    supportNote:
+      "Estimate only — this critique stays grounded in the app's current model signals.",
+    strengths: [
+      "Add a formula with ingredients to see structured critique findings.",
+    ],
+    weaknesses: [
+      "No formula data is available yet, so no weakness signal can be inferred.",
+    ],
+    sensoryIssues: [
+      "Likely sensory issues appear here once the formula has ingredient data.",
+    ],
+    costIssues: [
+      "Likely cost issues appear here once the formula has supplier basket data.",
+    ],
+    suggestedChanges: [
+      "Build or load a formula first, then use the selected lens to guide the next revision.",
+    ],
+    uncertainty: [
+      "This advisor is model-based and should be treated as an estimate rather than certainty.",
+    ],
+  };
+
+  if (!formula?.ingredients?.length) return fallback;
+
+  const totalG =
+    formula.ingredients.reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) ||
+    1;
+  const noteWeight = {
+    top:
+      formula.ingredients
+        .filter((ingredient) => ingredient.note === "top")
+        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
+    mid:
+      formula.ingredients
+        .filter((ingredient) => ingredient.note === "mid")
+        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
+    base:
+      formula.ingredients
+        .filter((ingredient) => ingredient.note === "base")
+        .reduce((sum, ingredient) => sum + (Number(ingredient.g) || 0), 0) / totalG,
+  };
+  const modelFacets = Object.fromEntries(
+    (performanceModel?.facets || []).map((facet) => [facet.key, facet])
+  );
+  const axisScores = performanceModel?.axisScores || {};
+  const openingScore = axisScores.openingImpact || 0;
+  const liftScore = axisScores.liftFreshness || 0;
+  const densityScore = axisScores.densityHeaviness || 0;
+  const drydownScore = axisScores.drydownPersistence || 0;
+  const projectionScore = axisScores.likelyProjection || 0;
+  const clutterScore = axisScores.clutterImbalance || 0;
+  const bridgeScore = axisScores.bridgeWeakness || 0;
+  const unknownIngredientCount = chemistry.filter((ingredient) => !ingredient.d).length;
+  const uvcbCount = chemistry.filter((ingredient) => ingredient.isUVCB).length;
+  const highImpactMaterials = [...chemistry]
+    .filter((ingredient) => ingredient.d && (ingredient.OV || 0) > 1)
+    .sort((a, b) => (b.intensity || 0) - (a.intensity || 0));
+  const dominantFamilies = Object.entries(
+    highImpactMaterials.reduce((acc, ingredient) => {
+      const family = ingredient.d?.scentClass || "Other";
+      if (!acc[family]) {
+        acc[family] = { family, count: 0, intensity: 0 };
+      }
+      acc[family].count += 1;
+      acc[family].intensity += ingredient.intensity || 0;
+      return acc;
+    }, {})
+  )
+    .map(([, value]) => value)
+    .sort((a, b) => {
+      if (b.intensity !== a.intensity) return b.intensity - a.intensity;
+      return b.count - a.count;
+    });
+  const dominantFamily = dominantFamilies[0]?.family || null;
+  const heroMaterials = highImpactMaterials.slice(0, 3).map((ingredient) => ingredient.name);
+  const basketLines = basket?.lines || [];
+  const totalBasketCost = basket?.totalCost || 0;
+  const topSpendLines = [...basketLines]
+    .filter((line) => line.lineCost != null)
+    .sort((a, b) => (b.lineCost || 0) - (a.lineCost || 0));
+  const spendLeader = topSpendLines[0] || null;
+  const spendLeaderShare =
+    totalBasketCost > 0 && spendLeader ? spendLeader.lineCost / totalBasketCost : 0;
+  const basketDeltaVsCheapest =
+    basket && cheapestBasket ? basket.totalCost - cheapestBasket.totalCost : 0;
+  const ifraFails = ifraRows.filter((row) => row.status === "fail");
+  const ifraWarns = ifraRows.filter((row) => row.status === "warn");
+  const restrictedRows = ifraRows.filter((row) => row.limit != null);
+
+  const strengths = [];
+  const weaknesses = [];
+  const sensoryIssues = [];
+  const costIssues = [];
+  const suggestedChanges = [];
+  const uncertainty = [...(performanceModel?.caveats || [])];
+
+  if (basket?.missingCount) {
+    pushUniqueItem(
+      uncertainty,
+      `${basket.missingCount} supplier price line${
+        basket.missingCount === 1 ? "" : "s"
+      } are missing in the current ${basket.meta.title.toLowerCase()}.`
+    );
+  }
+  if (basket?.uncertainCount) {
+    pushUniqueItem(
+      uncertainty,
+      `${basket.uncertainCount} supplier mapping${
+        basket.uncertainCount === 1 ? "" : "s"
+      } are still low-confidence in the current basket.`
+    );
+  }
+  if (ifraWarns.length && !ifraFails.length) {
+    pushUniqueItem(
+      uncertainty,
+      `Cat 4 IFRA review shows ${ifraWarns.length} caution flag${
+        ifraWarns.length === 1 ? "" : "s"
+      }, so compliance still needs review before production decisions.`
+    );
+  }
+
+  if (performanceModel?.headline) {
+    pushUniqueItem(strengths, performanceModel.headline);
+  }
+  if (openingScore >= 6.5) {
+    pushUniqueItem(strengths, modelFacets.openingImpact?.detail);
+  }
+  if (drydownScore >= 6.5) {
+    pushUniqueItem(strengths, modelFacets.drydownPersistence?.detail);
+  }
+  if (bridgeScore <= 2.5) {
+    pushUniqueItem(strengths, modelFacets.bridgeWeakness?.detail);
+  }
+  if (!ifraFails.length && !ifraWarns.length) {
+    pushUniqueItem(
+      strengths,
+      "Current Cat 4 IFRA review shows no modeled violations."
+    );
+  }
+  if (basket && basket.missingCount === 0 && basket.uncertainCount === 0) {
+    pushUniqueItem(
+      strengths,
+      `Current ${basket.meta.title.toLowerCase()} is fully mapped with no missing or uncertain supplier lines.`
+    );
+  }
+
+  if (clutterScore > 4.5) {
+    pushUniqueItem(weaknesses, modelFacets.clutterImbalance?.detail);
+  }
+  if (bridgeScore > 4) {
+    pushUniqueItem(weaknesses, modelFacets.bridgeWeakness?.detail);
+  }
+  if (openingScore < 4) {
+    pushUniqueItem(weaknesses, modelFacets.openingImpact?.detail);
+  }
+  if (drydownScore < 4) {
+    pushUniqueItem(weaknesses, modelFacets.drydownPersistence?.detail);
+  }
+  if (unknownIngredientCount > 0) {
+    pushUniqueItem(
+      weaknesses,
+      `${unknownIngredientCount} ingredient${
+        unknownIngredientCount === 1 ? "" : "s"
+      } still lack full chemistry data, so confidence in the volatility read is reduced.`
+    );
+  }
+  if (uvcbCount > 0) {
+    pushUniqueItem(
+      weaknesses,
+      `${uvcbCount} natural/UVCB material${
+        uvcbCount === 1 ? "" : "s"
+      } are being modeled more coarsely than single molecules.`
+    );
+  }
+  if (ifraFails.length) {
+    pushUniqueItem(
+      weaknesses,
+      `Cat 4 IFRA review currently flags ${formatHumanList(
+        ifraFails.map((row) => row.name)
+      )} above the modeled limit.`
+    );
+  }
+
+  if (clutterScore > 4.5) {
+    pushUniqueItem(
+      sensoryIssues,
+      dominantFamily
+        ? `Several high-impact ${dominantFamily.toLowerCase()} materials may compete, so the formula could read crowded.`
+        : "Several high-impact materials may compete, so parts of the formula could read crowded."
+    );
+  }
+  if (densityScore >= 7 && liftScore <= 4) {
+    pushUniqueItem(
+      sensoryIssues,
+      "The formula may feel denser than it is fresh, especially through the heart and early drydown."
+    );
+  }
+  if (projectionScore < 4 && drydownScore >= 6.5) {
+    pushUniqueItem(
+      sensoryIssues,
+      "Drydown support looks stronger than the opening throw, so it may wear closer to the skin than its base weight suggests."
+    );
+  }
+  if (bridgeScore > 4) {
+    pushUniqueItem(
+      sensoryIssues,
+      "The opening-to-heart transition may feel abrupt if the mid-notes do not bridge enough of the top/base contrast."
+    );
+  }
+  if (openingScore > 7 && drydownScore < 4.5) {
+    pushUniqueItem(
+      sensoryIssues,
+      "The opening may promise more lift than the later wear can sustain."
+    );
+  }
+
+  if (spendLeaderShare > 0.32 && spendLeader) {
+    pushUniqueItem(
+      costIssues,
+      `${spendLeader.ingredientName} is the main spend driver in the current basket at about ${Math.round(
+        spendLeaderShare * 100
+      )}% of the modeled line cost.`
+    );
+  }
+  if (basketDeltaVsCheapest > 0.01 && basketModeMeta?.label) {
+    pushUniqueItem(
+      costIssues,
+      `Current ${basketModeMeta.label.toLowerCase()} mode is +$${basketDeltaVsCheapest.toFixed(
+        2
+      )} versus the cheapest basket before shipping.`
+    );
+  }
+  if (basket?.missingCount || basket?.uncertainCount) {
+    pushUniqueItem(
+      costIssues,
+      "Cost confidence is reduced because some supplier lines are missing or still low-confidence."
+    );
+  }
+  if (basket?.supplierCount > 3) {
+    pushUniqueItem(
+      costIssues,
+      `The current basket spans ${basket.supplierCount} suppliers, and shipping is not modeled in the total.`
+    );
+  }
+
+  if (bridgeScore > 4) {
+    pushUniqueItem(
+      suggestedChanges,
+      "Test a slightly fuller heart so the opening and drydown connect more smoothly."
+    );
+  }
+  if (clutterScore > 4.5) {
+    pushUniqueItem(
+      suggestedChanges,
+      dominantFamily
+        ? `Trim one or two overlapping ${dominantFamily.toLowerCase()} materials before adding anything new.`
+        : "Trim one or two overlapping high-impact materials before adding anything new."
+    );
+  }
+  if (drydownScore < 4) {
+    pushUniqueItem(
+      suggestedChanges,
+      "If you want more staying power, test a modest increase in base support or fixative weight."
+    );
+  }
+  if (openingScore < 4) {
+    pushUniqueItem(
+      suggestedChanges,
+      "If you want more lift, test a clearer top-note accent or reduce a little dense base weight."
+    );
+  }
+  if (basketDeltaVsCheapest > 0.01) {
+    pushUniqueItem(
+      suggestedChanges,
+      `If cost is the priority, the cheapest basket saves about $${basketDeltaVsCheapest.toFixed(
+        2
+      )} against the current mode.`
+    );
+  }
+  if (spendLeaderShare > 0.32 && spendLeader) {
+    pushUniqueItem(
+      suggestedChanges,
+      `Audit ${spendLeader.ingredientName} first if you need to lower spend without changing many lines.`
+    );
+  }
+  if (basket?.missingCount || basket?.uncertainCount) {
+    pushUniqueItem(
+      suggestedChanges,
+      "Resolve missing or uncertain supplier lines before treating the cost read as final."
+    );
+  }
+  if (ifraFails.length || ifraWarns.length) {
+    pushUniqueItem(
+      suggestedChanges,
+      `Recheck ${formatHumanList(
+        [...ifraFails, ...ifraWarns].map((row) => row.name)
+      )} against Cat 4 limits before locking this version.`
+    );
+  }
+
+  const lensOverrides = {
+    perfumer: {
+      strengths,
+      weaknesses,
+      sensoryIssues,
+      costIssues,
+      suggestedChanges,
+    },
+    chemist: {
+      strengths: [
+        strengths.find((item) => item?.includes("chemistry data")) ||
+          (unknownIngredientCount === 0
+            ? "Most ingredients in this formula have chemistry data, which makes the current volatility read more dependable."
+            : null),
+        strengths.find((item) => item?.includes("bridge")) || modelFacets.bridgeWeakness?.detail,
+        strengths.find((item) => item?.includes("drydown")) || modelFacets.drydownPersistence?.detail,
+      ],
+      weaknesses: [
+        unknownIngredientCount > 0
+          ? `${unknownIngredientCount} ingredient${
+              unknownIngredientCount === 1 ? "" : "s"
+            } still lack full chemistry data, which weakens the modeled volatility curve.`
+          : null,
+        uvcbCount > 0
+          ? `${uvcbCount} natural/UVCB material${
+              uvcbCount === 1 ? "" : "s"
+            } are being handled with coarser assumptions than single molecules.`
+          : null,
+        clutterScore > 4.5
+          ? `High-impact materials in ${
+              dominantFamily ? dominantFamily.toLowerCase() : "one dominant family"
+            } may be overlapping enough to blur the effective OV picture.`
+          : null,
+      ],
+      sensoryIssues: [
+        bridgeScore > 4
+          ? "The current volatility curve suggests a weaker mid-note bridge than the opening/base contrast needs."
+          : null,
+        densityScore >= 7 && liftScore <= 4
+          ? "The structure may read heavier than it is fresh because dense/base-heavy signals are outrunning lift."
+          : null,
+        projectionScore < 4 && drydownScore >= 6.5
+          ? "The formula may retain on skin more than it throws into the air."
+          : null,
+      ],
+      costIssues: [
+        basket?.missingCount || basket?.uncertainCount
+          ? "Supplier confidence gaps also reduce reproducibility of the current cost and sourcing read."
+          : null,
+        basket?.supplierCount > 3
+          ? `The current sourcing path is split across ${basket.supplierCount} suppliers.`
+          : null,
+        spendLeaderShare > 0.32 && spendLeader
+          ? `${spendLeader.ingredientName} dominates spend enough that any concentration change there will move total cost materially.`
+          : null,
+      ],
+      suggestedChanges: [
+        unknownIngredientCount > 0
+          ? "Fill the main chemistry data gaps before over-trusting small volatility differences."
+          : null,
+        clutterScore > 4.5
+          ? "Simplify overlapping high-OV materials before adding more complexity."
+          : null,
+        uvcbCount > 0 || restrictedRows.length > 0
+          ? "Verify diluted or restricted materials at the active-percent level when possible."
+          : null,
+      ],
+    },
+    cost: {
+      strengths: [
+        basket && basket.missingCount === 0 && basket.uncertainCount === 0
+          ? `Current ${basket.meta.title.toLowerCase()} is fully mapped, which makes this cost read relatively dependable.`
+          : null,
+        basket?.supplierCount <= 2 && basket?.supplierCount > 0
+          ? `The current basket stays fairly consolidated across ${basket.supplierCount} supplier${
+              basket.supplierCount === 1 ? "" : "s"
+            }.`
+          : null,
+        totalBasketCost > 0
+          ? `Current modeled basket total is $${totalBasketCost.toFixed(2)} in ${basketModeMeta?.label || "current"} mode.`
+          : null,
+      ],
+      weaknesses: [
+        spendLeaderShare > 0.32 && spendLeader
+          ? `${spendLeader.ingredientName} dominates spend enough to limit low-risk savings elsewhere.`
+          : null,
+        basketDeltaVsCheapest > 0.01
+          ? `The selected sourcing mode is paying a $${basketDeltaVsCheapest.toFixed(
+              2
+            )} premium over cheapest before shipping.`
+          : null,
+        basket?.missingCount || basket?.uncertainCount
+          ? "Some supplier lines are still missing or low-confidence, so the total should not be treated as final."
+          : null,
+      ],
+      sensoryIssues: [
+        clutterScore > 4.5
+          ? "If you reduce cost without simplifying the crowded families first, you may still keep the same sensory clutter."
+          : null,
+        drydownScore < 4
+          ? "Cutting base support further would likely make the short drydown more obvious."
+          : null,
+        openingScore < 4
+          ? "Removing lift-heavy materials first could make the opening read even quieter."
+          : null,
+      ],
+      costIssues: [
+        spendLeaderShare > 0.32 && spendLeader
+          ? `${spendLeader.ingredientName} is about ${Math.round(
+              spendLeaderShare * 100
+            )}% of modeled basket cost right now.`
+          : null,
+        basket?.supplierCount > 3
+          ? `The basket spans ${basket.supplierCount} suppliers, and shipping is outside the modeled total.`
+          : null,
+        basket?.missingCount || basket?.uncertainCount
+          ? "Missing or uncertain supplier data is still the biggest blocker to a confident cost read."
+          : null,
+      ],
+      suggestedChanges: [
+        spendLeaderShare > 0.32 && spendLeader
+          ? `Start with ${spendLeader.ingredientName} if you need to test lower-cost revisions.`
+          : null,
+        basketDeltaVsCheapest > 0.01
+          ? `Switching back to cheapest mode would save about $${basketDeltaVsCheapest.toFixed(
+              2
+            )} before shipping.`
+          : null,
+        basket?.missingCount || basket?.uncertainCount
+          ? "Resolve missing and uncertain basket lines before making supplier decisions permanent."
+          : null,
+      ],
+    },
+    compliance: {
+      strengths: [
+        !ifraFails.length && !ifraWarns.length
+          ? "Current Cat 4 IFRA review shows no modeled failures or caution flags."
+          : null,
+        restrictedRows.length > 0 && !ifraFails.length
+          ? `Restricted materials are present, but the current model does not show them over Cat 4 limits.`
+          : null,
+        bridgeScore <= 2.5 ? modelFacets.bridgeWeakness?.detail : null,
+      ],
+      weaknesses: [
+        ifraFails.length
+          ? `Cat 4 IFRA review currently fails ${formatHumanList(
+              ifraFails.map((row) => row.name)
+            )}.`
+          : null,
+        ifraWarns.length
+          ? `Cat 4 IFRA review is already close on ${formatHumanList(
+              ifraWarns.map((row) => row.name)
+            )}.`
+          : null,
+        restrictedRows.length >= 4
+          ? `There are ${restrictedRows.length} restricted-material rows in play, so reformulation risk is not trivial.`
+          : null,
+      ],
+      sensoryIssues: [
+        ifraFails.length || ifraWarns.length
+          ? "Any required compliance cuts could change the balance the performance model is currently describing."
+          : null,
+        openingScore > 7 && ifraRows.some((row) => row.status !== "ok" && DB[row.name]?.note === "top")
+          ? "Some of the lift may depend on top-note materials that already need compliance review."
+          : null,
+        drydownScore >= 6.5 && ifraRows.some((row) => row.status !== "ok" && DB[row.name]?.note === "base")
+          ? "Some of the modeled persistence may depend on base materials that already need compliance review."
+          : null,
+      ],
+      costIssues: [
+        basket?.missingCount || basket?.uncertainCount
+          ? "Supplier confidence gaps make it harder to estimate reformulation cost cleanly."
+          : null,
+        spendLeaderShare > 0.32 && spendLeader
+          ? `${spendLeader.ingredientName} is both a major spend line and a likely place to watch if reformulation becomes necessary.`
+          : null,
+      ],
+      suggestedChanges: [
+        ifraFails.length || ifraWarns.length
+          ? `Prioritize ${formatHumanList(
+              [...ifraFails, ...ifraWarns].map((row) => row.name)
+            )} for compliance review before locking the formula.`
+          : null,
+        restrictedRows.length > 0
+          ? "Keep Cat 4 as the working baseline and verify active-percent assumptions for diluted stocks."
+          : null,
+        bridgeScore > 4
+          ? "If compliance cuts are required, protect the mid-note bridge first so the transition does not collapse."
+          : null,
+      ],
+    },
+    brand: {
+      strengths: [
+        heroMaterials.length
+          ? `The current read suggests ${formatHumanList(heroMaterials)} are the main signature materials.`
+          : null,
+        performanceModel?.headline,
+        openingScore >= 6.5 || drydownScore >= 6.5
+          ? "There is enough modeled movement between opening and drydown to build a clearer story around the formula."
+          : null,
+      ],
+      weaknesses: [
+        clutterScore > 4.5
+          ? "Too many high-impact signals may blur the formula's identity instead of sharpening it."
+          : null,
+        dominantFamilies.length >= 4
+          ? `The formula is pulling from ${dominantFamilies.length} strong scent families, which can dilute the story.`
+          : null,
+        bridgeScore > 4
+          ? "The opening-to-drydown handoff may be less coherent than the brand story wants."
+          : null,
+      ],
+      sensoryIssues: [
+        clutterScore > 4.5
+          ? "The character may feel busy instead of signature if the crowded families all stay at current strength."
+          : null,
+        openingScore > 7 && drydownScore < 4.5
+          ? "The first impression may over-promise versus the later wear."
+          : null,
+        densityScore >= 7 && liftScore <= 4
+          ? "The formula may read more dense than fresh, which narrows the personality it projects."
+          : null,
+      ],
+      costIssues: [
+        spendLeaderShare > 0.32 && spendLeader
+          ? `${spendLeader.ingredientName} is a signature-level spend driver in the current basket.`
+          : null,
+        basket?.missingCount || basket?.uncertainCount
+          ? "Uncertain supplier lines make the commercial story less settled than it looks."
+          : null,
+      ],
+      suggestedChanges: [
+        heroMaterials.length
+          ? `Choose whether ${formatHumanList(heroMaterials.slice(0, 2))} are the hero materials, then simplify anything fighting them.`
+          : null,
+        clutterScore > 4.5
+          ? "Edit for identity first: remove overlapping accents before you add more nuance."
+          : null,
+        bridgeScore > 4
+          ? "Use the heart to connect the opening and drydown so the overall story reads as one idea."
+          : null,
+      ],
+    },
+  };
+
+  const activeLensSections = lensOverrides[lens] || lensOverrides.perfumer;
+  const sectionDefaults = {
+    strengths:
+      "No standout strength dominates the current read beyond a workable baseline.",
+    weaknesses:
+      "No single weakness dominates the current read, though the estimate remains heuristic.",
+    sensoryIssues:
+      "No single sensory issue stands out strongly in the current model.",
+    costIssues:
+      "No major cost issue stands out beyond ordinary supplier and shipping variability.",
+    suggestedChanges:
+      "If you iterate further, make one small change at a time so the next revision stays readable.",
+  };
+
+  const cleanSection = (items, fallbackText) => {
+    const cleaned = items.filter(Boolean).slice(0, 3);
+    return cleaned.length ? cleaned : [fallbackText];
+  };
+
+  const critiqueHeadline = `${lensMeta.label} lens on ${formulaLabel}`;
+  const supportNote = [
+    performanceModel?.headline || null,
+    totalBasketCost > 0
+      ? `${basketModeMeta?.label || basket?.meta?.label || "Current"} basket: $${totalBasketCost.toFixed(
+          2
+        )}`
+      : null,
+    ifraFails.length
+      ? `Cat 4 IFRA: ${ifraFails.length} fail`
+      : ifraWarns.length
+      ? `Cat 4 IFRA: ${ifraWarns.length} caution`
+      : "Cat 4 IFRA: no modeled failures",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return {
+    lens,
+    lensMeta,
+    formulaLabel,
+    headline: critiqueHeadline,
+    lensSummary: lensMeta.description,
+    supportNote,
+    strengths: cleanSection(
+      activeLensSections.strengths,
+      sectionDefaults.strengths
+    ),
+    weaknesses: cleanSection(
+      activeLensSections.weaknesses,
+      sectionDefaults.weaknesses
+    ),
+    sensoryIssues: cleanSection(
+      activeLensSections.sensoryIssues,
+      sectionDefaults.sensoryIssues
+    ),
+    costIssues: cleanSection(
+      activeLensSections.costIssues,
+      sectionDefaults.costIssues
+    ),
+    suggestedChanges: cleanSection(
+      activeLensSections.suggestedChanges,
+      sectionDefaults.suggestedChanges
+    ),
+    uncertainty: cleanSection(
+      uncertainty,
+      "Estimate only — this advisor stays grounded in current formula, cost, and compliance heuristics rather than certainty."
+    ),
+    promptSummary: {
+      performanceHeadline: performanceModel?.headline || "",
+      performance: {
+        longevity: performance.longevity || 0,
+        sillage: performance.sillage || 0,
+        projection: performance.projection || 0,
+      },
+      basketTotal: totalBasketCost,
+      basketModeLabel: basketModeMeta?.label || basket?.meta?.label || "Current",
+      heroMaterials,
+      dominantFamily,
+      topSpendIngredient: spendLeader?.ingredientName || null,
+      restrictedCount: restrictedRows.length,
+      noteWeight,
+    },
+  };
+}
+
+function buildAiCritiquePrompt({
+  targetFormula,
+  critiqueReport,
+  performance,
+}) {
+  const total = targetFormula.ingredients.reduce((sum, ingredient) => sum + ingredient.g, 0);
+  const formulaLabel = getFormulaDisplayLabel(targetFormula, {
+    includeVersion: true,
+  });
+  const ingList = targetFormula.ingredients
+    .map((ingredient) => {
+      const d = DB[ingredient.name];
+      return `  • ${ingredient.name} (${ingredient.g}g, ${((ingredient.g / total) * 100).toFixed(
+        1
+      )}%, ${ingredient.note}${d ? `, ${d.scentClass}` : ""})`;
+    })
+    .join("\n");
+  const formatSection = (label, items) =>
+    `${label}:\n${items.map((item) => `- ${item}`).join("\n")}`;
+
+  return `You are an expert fragrance advisor reviewing a concentrate through the ${
+    critiqueReport.lensMeta.label
+  } lens.
+
+Stay consistent with the app's current model signals unless you clearly mark uncertainty. Do not contradict the supplied rule-based findings casually.
+
+Formula: "${formulaLabel}" — ${targetFormula.tagline}
+Total: ${total}g concentrate
+
+Ingredients:
+${ingList}
+
+Current model anchors:
+- ${critiqueReport.supportNote}
+- Performance scores: Longevity ${performance.longevity.toFixed(
+    1
+  )}/10, Sillage ${performance.sillage.toFixed(1)}/10, Projection ${performance.projection.toFixed(
+    1
+  )}/10
+- Lens focus: ${critiqueReport.lensSummary}
+
+Structured rule-based findings:
+${formatSection("Strengths", critiqueReport.strengths)}
+
+${formatSection("Weaknesses", critiqueReport.weaknesses)}
+
+${formatSection("Likely sensory issues", critiqueReport.sensoryIssues)}
+
+${formatSection("Likely cost issues", critiqueReport.costIssues)}
+
+${formatSection("Suggested next changes", critiqueReport.suggestedChanges)}
+
+${formatSection("Uncertainty", critiqueReport.uncertainty)}
+
+Return under exactly these headings:
+**Strengths**
+**Weaknesses**
+**Likely sensory issues**
+**Likely cost issues**
+**Suggested next changes**
+**Uncertainty**
+
+Keep it under 300 words, practical, and grounded in the supplied signals.`;
+}
+
+function buildFormulaComparison(
+  leftFormula,
+  rightFormula,
+  pricesState,
+  formulaSupplierOverrides = {}
+) {
+  if (!leftFormula || !rightFormula) return null;
+
+  const leftIngredients = buildFormulaIngredientSummaryMap(
+    leftFormula.ingredients || []
+  );
+  const rightIngredients = buildFormulaIngredientSummaryMap(
+    rightFormula.ingredients || []
+  );
+  const allKeys = Array.from(
+    new Set([...leftIngredients.keys(), ...rightIngredients.keys()])
+  );
+
+  const diffRows = allKeys
+    .map((key) => {
+      const left = leftIngredients.get(key) || null;
+      const right = rightIngredients.get(key) || null;
+      const leftNotes = left?.notes.join(", ") || "—";
+      const rightNotes = right?.notes.join(", ") || "—";
+      const gramDelta = (right?.totalG || 0) - (left?.totalG || 0);
+      const status = !left
+        ? "added"
+        : !right
+        ? "removed"
+        : leftNotes !== rightNotes || Math.abs(gramDelta) > 0.0001
+        ? "changed"
+        : "same";
+
+      return {
+        key,
+        status,
+        displayName: left?.primaryName || right?.primaryName || key,
+        leftNames: left?.names || [],
+        rightNames: right?.names || [],
+        leftGrams: left?.totalG || 0,
+        rightGrams: right?.totalG || 0,
+        gramDelta,
+        leftNotes,
+        rightNotes,
+        noteChanged: leftNotes !== rightNotes,
+      };
+    })
+    .filter((row) => row.status !== "same")
+    .sort((a, b) => {
+      const statusWeight = { changed: 0, added: 1, removed: 2 };
+      const statusDelta =
+        (statusWeight[a.status] ?? 3) - (statusWeight[b.status] ?? 3);
+      if (statusDelta !== 0) return statusDelta;
+      return Math.abs(b.gramDelta) - Math.abs(a.gramDelta);
+    });
+
+  const leftCost = buildFormulaProcurementRows(
+    leftFormula.ingredients || [],
+    pricesState,
+    formulaSupplierOverrides[leftFormula.formulaKey] || {}
+  );
+  const rightCost = buildFormulaProcurementRows(
+    rightFormula.ingredients || [],
+    pricesState,
+    formulaSupplierOverrides[rightFormula.formulaKey] || {}
+  );
+  const leftChemistryModel = computeChemistry(leftFormula.ingredients || []);
+  const rightChemistryModel = computeChemistry(rightFormula.ingredients || []);
+  const leftPerformance = perfScore(leftFormula.ingredients || []);
+  const rightPerformance = perfScore(rightFormula.ingredients || []);
+  const leftChemistry = summarizeComputedChemistry(leftChemistryModel);
+  const rightChemistry = summarizeComputedChemistry(rightChemistryModel);
+  const leftPerformanceModel = buildPerformanceModelSummary(
+    leftFormula.ingredients || [],
+    {
+      chemistry: leftChemistryModel,
+      performance: leftPerformance,
+      chemistrySummary: leftChemistry,
+    }
+  );
+  const rightPerformanceModel = buildPerformanceModelSummary(
+    rightFormula.ingredients || [],
+    {
+      chemistry: rightChemistryModel,
+      performance: rightPerformance,
+      chemistrySummary: rightChemistry,
+    }
+  );
+  const leftBaskets = buildSupplierBasketStrategies(
+    leftFormula.ingredients || [],
+    pricesState,
+    formulaSupplierOverrides[leftFormula.formulaKey] || {}
+  );
+  const rightBaskets = buildSupplierBasketStrategies(
+    rightFormula.ingredients || [],
+    pricesState,
+    formulaSupplierOverrides[rightFormula.formulaKey] || {}
+  );
+
+  return {
+    diffRows,
+    addedCount: diffRows.filter((row) => row.status === "added").length,
+    removedCount: diffRows.filter((row) => row.status === "removed").length,
+    changedCount: diffRows.filter((row) => row.status === "changed").length,
+    leftCost,
+    rightCost,
+    costDelta: rightCost.grandTotal - leftCost.grandTotal,
+    leftBaskets,
+    rightBaskets,
+    leftPerformance,
+    rightPerformance,
+    leftPerformanceModel,
+    rightPerformanceModel,
+    performanceNarrative: buildPerformanceComparisonNarrative(
+      leftPerformanceModel,
+      rightPerformanceModel
+    ),
+    performanceDelta: {
+      longevity: rightPerformance.longevity - leftPerformance.longevity,
+      sillage: rightPerformance.sillage - leftPerformance.sillage,
+      projection: rightPerformance.projection - leftPerformance.projection,
+    },
+    leftChemistry,
+    rightChemistry,
+    chemistryDelta: {
+      totalIntensity:
+        rightChemistry.totalIntensity - leftChemistry.totalIntensity,
+      totalOV: rightChemistry.totalOV - leftChemistry.totalOV,
+      weightedXLogP:
+        rightChemistry.weightedXLogP - leftChemistry.weightedXLogP,
+      weightedVP: rightChemistry.weightedVP - leftChemistry.weightedVP,
+    },
   };
 }
 
@@ -54373,6 +56526,13 @@ const ALL_SUPPLIERS = [
   "Perfumers World",
   "Nature in Bottle",
 ];
+const FRAGRANCE_TYPE_PRESETS = {
+  Extrait: { pct: 25, label: "Extrait de Parfum", range: "20–30%" },
+  EDP: { pct: 17.5, label: "Eau de Parfum", range: "15–20%" },
+  EDT: { pct: 12.5, label: "Eau de Toilette", range: "10–15%" },
+  EDC: { pct: 7.5, label: "Eau de Cologne", range: "5–10%" },
+  Mist: { pct: 3.5, label: "Body Mist", range: "2–5%" },
+};
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENTS
@@ -56102,9 +58262,10 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
 export default function App() {
   const [mainTab, setMainTab] = useState("formulas");
   const [selFrag, setSelFrag] = useState(0);
+  const [pendingFormulaSelectionKey, setPendingFormulaSelectionKey] =
+    useState(null);
   const [subTab, setSubTab] = useState("formula");
   const [ifraCategory, setIfraCategory] = useState("cat4");
-  const [formulas, setFormulas] = useState(FORMULAS_INIT);
   const [buildItems, setBuildItems] = useState([]);
   const [buildSearch, setBuildSearch] = useState("");
   const [catSearch, setCatSearch] = useState("");
@@ -56142,19 +58303,20 @@ export default function App() {
     }
   });
   const [inventoryScale, setInventoryScale] = useState(1000);
+  const [batchPlannerSourceKey, setBatchPlannerSourceKey] = useState(null);
+  const [batchPlannerTargetG, setBatchPlannerTargetG] = useState(1000);
   const [inventorySearch, setInventorySearch] = useState("");
   const [inventoryFilter, setInventoryFilter] = useState("all");
   const [paScraperStatus, setPaScraperStatus] = useState("idle"); // idle|running|done|error
   const [ingSearchQuery, setIngSearchQuery] = useState("");
   const [ingSearchOpen, setIngSearchOpen] = useState(false);
-  const [savedBuilds, setSavedBuilds] = useState(() => {
-    try {
-      const s = localStorage.getItem("bb_saved_builds");
-      return s ? JSON.parse(s) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [savedBuilds, setSavedBuilds] = useState(() =>
+    readPersistedFormulaRecords()
+  );
+  const [formulaCompareState, setFormulaCompareState] = useState(() =>
+    readFormulaCompareState()
+  );
+  const [basketMode, setBasketMode] = useState("cheapest");
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
   const [supplierImportLocalReviewState, setSupplierImportLocalReviewState] =
@@ -56206,10 +58368,36 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem("bb_formula_notes", JSON.stringify(formulaNotes)); } catch(e) {}
   }, [formulaNotes]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(FORMULA_STORAGE_KEY, JSON.stringify(savedBuilds));
+    } catch (e) {}
+  }, [savedBuilds]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        FORMULA_COMPARE_STORAGE_KEY,
+        JSON.stringify(formulaCompareState)
+      );
+    } catch (e) {}
+  }, [formulaCompareState]);
   // ── AI Formula Critique ──
+  const [critiqueLens, setCritiqueLens] = useState(() => {
+    try {
+      return localStorage.getItem(CRITIQUE_LENS_STORAGE_KEY) || "perfumer";
+    } catch {
+      return "perfumer";
+    }
+  });
   const [critiqueText, setCritiqueText] = useState("");
   const [critiqueLoading, setCritiqueLoading] = useState(false);
   const [critiqueFormula, setCritiqueFormula] = useState(null);
+  const [critiqueLensUsed, setCritiqueLensUsed] = useState("perfumer");
+  useEffect(() => {
+    try {
+      localStorage.setItem(CRITIQUE_LENS_STORAGE_KEY, critiqueLens);
+    } catch (e) {}
+  }, [critiqueLens]);
   const [pricesState, setPricesState] = useState(() => {
     try {
       const saved = localStorage.getItem("bb_supplier_data_v4");
@@ -56227,7 +58415,262 @@ export default function App() {
     } catch (e) {}
     return JSON.parse(JSON.stringify(PRICING));
   });
-  const formula = formulas[selFrag];
+  const formulas = useMemo(
+    () => buildFormulaLibrary(FORMULAS_INIT, savedBuilds),
+    [savedBuilds]
+  );
+  const formula = formulas[selFrag] || formulas[0];
+  const formulaByKey = useMemo(
+    () => new Map(formulas.map((entry) => [entry.formulaKey, entry])),
+    [formulas]
+  );
+  const formulaChildrenByParent = useMemo(() => {
+    const childMap = {};
+    formulas.forEach((entry) => {
+      if (!entry.parentVersionId) return;
+      if (!childMap[entry.parentVersionId]) {
+        childMap[entry.parentVersionId] = [];
+      }
+      childMap[entry.parentVersionId].push(entry);
+    });
+    return childMap;
+  }, [formulas]);
+  const currentFormulaSupplierOverrides = formula
+    ? formulaSupplierOverrides[formula.formulaKey] ||
+      formulaSupplierOverrides[selFrag] ||
+      {}
+    : {};
+  const formulaNoteText = formula
+    ? formulaNotes[formula.formulaKey] ??
+      (formula.parentVersionId ? "" : formulaNotes[formula.name] ?? "")
+    : "";
+  const selectedFormulaLabel = getFormulaDisplayLabel(formula, {
+    includeVersion: true,
+  });
+  const selectedFragranceType =
+    FRAGRANCE_TYPE_PRESETS[dilType] || FRAGRANCE_TYPE_PRESETS.EDP;
+  const parentFormula =
+    formula?.parentVersionId
+      ? formulaByKey.get(formula.parentVersionId) || null
+      : null;
+  const parentFormulaLabel = getFormulaDisplayLabel(parentFormula, {
+    includeVersion: true,
+  });
+  const childFormulaCount = formula?.formulaKey
+    ? (formulaChildrenByParent[formula.formulaKey] || []).length
+    : 0;
+  const formulaUpdatedLabel = formatFormulaDateLabel(formula?.updatedAt);
+  const formulaCreatedLabel = formatFormulaDateLabel(formula?.createdAt);
+  const nextFormulaVersionLabel = formula
+    ? incrementFormulaVersionLabel(formula.versionLabel)
+    : "v1.1";
+  const critiqueTarget = critiqueFormula
+    ? formulaByKey.get(critiqueFormula) || null
+    : null;
+  const critiqueTargetLabel = getFormulaDisplayLabel(critiqueTarget, {
+    includeVersion: true,
+  });
+  const compareLeftFormula =
+    formulaByKey.get(formulaCompareState.leftFormulaKey) || formula || null;
+  const compareRightFormula =
+    formulaByKey.get(formulaCompareState.rightFormulaKey) ||
+    formulas.find((entry) => entry.formulaKey !== compareLeftFormula?.formulaKey) ||
+    compareLeftFormula ||
+    null;
+  const compareLeftLabel = getFormulaDisplayLabel(compareLeftFormula, {
+    includeVersion: true,
+  });
+  const compareRightLabel = getFormulaDisplayLabel(compareRightFormula, {
+    includeVersion: true,
+  });
+  const formulaComparison = useMemo(
+    () =>
+      buildFormulaComparison(
+        compareLeftFormula,
+        compareRightFormula,
+        pricesState,
+        formulaSupplierOverrides
+      ),
+    [compareLeftFormula, compareRightFormula, pricesState, formulaSupplierOverrides]
+  );
+  const formulaBasketStrategies = useMemo(
+    () =>
+      buildSupplierBasketStrategies(
+        formula?.ingredients || [],
+        pricesState,
+        currentFormulaSupplierOverrides
+      ),
+    [formula, pricesState, currentFormulaSupplierOverrides]
+  );
+  const selectedFormulaBasket =
+    formulaBasketStrategies[basketMode] || formulaBasketStrategies.cheapest;
+  const buildBasketStrategies = useMemo(
+    () => buildSupplierBasketStrategies(buildItems, pricesState, {}),
+    [buildItems, pricesState]
+  );
+  const selectedBuildBasket =
+    buildBasketStrategies[basketMode] || buildBasketStrategies.cheapest;
+  const batchPlannerSources = useMemo(() => {
+    const sources = formulas.map((entry) => {
+      const sourceTotalG = (entry.ingredients || []).reduce(
+        (sum, ingredient) => sum + (Number(ingredient?.g) || 0),
+        0
+      );
+      return {
+        key: `formula:${entry.formulaKey}`,
+        kind: "formula",
+        label: getFormulaDisplayLabel(entry, { includeVersion: true }),
+        subtitle: `${entry.ingredients.length} ingredients · ${sourceTotalG.toFixed(
+          1
+        )}g current total`,
+        ingredients: entry.ingredients || [],
+        supplierOverrides: formulaSupplierOverrides[entry.formulaKey] || {},
+        sourceTotalG,
+      };
+    });
+    if (buildItems.length > 0) {
+      const buildTotalG = buildItems.reduce(
+        (sum, ingredient) => sum + (Number(ingredient?.g) || 0),
+        0
+      );
+      sources.unshift({
+        key: "build:current",
+        kind: "build",
+        label: buildName.trim()
+          ? `${buildName.trim()} (Current Build)`
+          : "Current Build",
+        subtitle: `${buildItems.length} ingredients · ${buildTotalG.toFixed(
+          1
+        )}g current total`,
+        ingredients: buildItems,
+        supplierOverrides: {},
+        sourceTotalG: buildTotalG,
+      });
+    }
+    return sources;
+  }, [buildItems, buildName, formulas, formulaSupplierOverrides]);
+  const preferredBatchPlannerSourceKey = formula?.formulaKey
+    ? `formula:${formula.formulaKey}`
+    : batchPlannerSources[0]?.key || null;
+  const selectedBatchPlannerSource =
+    batchPlannerSources.find((source) => source.key === batchPlannerSourceKey) ||
+    batchPlannerSources.find(
+      (source) => source.key === preferredBatchPlannerSourceKey
+    ) ||
+    batchPlannerSources[0] ||
+    null;
+  const batchPlannerReport = useMemo(
+    () =>
+      buildBatchPlannerReport({
+        ingredients: selectedBatchPlannerSource?.ingredients || [],
+        targetBatchG: batchPlannerTargetG,
+        inventory,
+        pricesState,
+        supplierOverrides: selectedBatchPlannerSource?.supplierOverrides || {},
+        basketMode,
+      }),
+    [
+      selectedBatchPlannerSource,
+      batchPlannerTargetG,
+      inventory,
+      pricesState,
+      basketMode,
+    ]
+  );
+  const selectedBuildBasketLineMap = useMemo(
+    () =>
+      new Map(
+        (selectedBuildBasket?.lines || []).map((line) => [
+          line.ingredientName,
+          line,
+        ])
+      ),
+    [selectedBuildBasket]
+  );
+  const selectedBasketModeMeta =
+    SUPPLIER_BASKET_MODE_META[basketMode] ||
+    SUPPLIER_BASKET_MODE_META.cheapest;
+  const selectedCritiqueLensMeta =
+    CRITIQUE_LENS_META[critiqueLens] || CRITIQUE_LENS_META.perfumer;
+  const compareLeftBasket = formulaComparison?.leftBaskets?.[basketMode] || null;
+  const compareRightBasket =
+    formulaComparison?.rightBaskets?.[basketMode] || null;
+  const compareBasketDelta =
+    compareLeftBasket && compareRightBasket
+      ? compareRightBasket.totalCost - compareLeftBasket.totalCost
+      : 0;
+  const compareLeftPerformanceTotal = formulaComparison
+    ? formulaComparison.leftPerformance.longevity +
+      formulaComparison.leftPerformance.sillage +
+      formulaComparison.leftPerformance.projection
+    : 0;
+  const compareRightPerformanceTotal = formulaComparison
+    ? formulaComparison.rightPerformance.longevity +
+      formulaComparison.rightPerformance.sillage +
+      formulaComparison.rightPerformance.projection
+    : 0;
+  useEffect(() => {
+    if (!formulas.length) return;
+    if (pendingFormulaSelectionKey) {
+      const nextIndex = formulas.findIndex(
+        (entry) => entry.formulaKey === pendingFormulaSelectionKey
+      );
+      if (nextIndex >= 0) {
+        setSelFrag(nextIndex);
+        setPendingFormulaSelectionKey(null);
+        return;
+      }
+    }
+    if (selFrag >= formulas.length) {
+      setSelFrag(Math.max(0, formulas.length - 1));
+    }
+  }, [formulas, pendingFormulaSelectionKey, selFrag]);
+  useEffect(() => {
+    if (!batchPlannerSources.length) return;
+    const hasSelectedSource = batchPlannerSources.some(
+      (source) => source.key === batchPlannerSourceKey
+    );
+    if (hasSelectedSource) return;
+    const fallbackSourceKey =
+      batchPlannerSources.find(
+        (source) => source.key === preferredBatchPlannerSourceKey
+      )?.key || batchPlannerSources[0].key;
+    setBatchPlannerSourceKey(fallbackSourceKey);
+  }, [
+    batchPlannerSourceKey,
+    batchPlannerSources,
+    preferredBatchPlannerSourceKey,
+  ]);
+  useEffect(() => {
+    if (!formulas.length) return;
+    const availableKeys = new Set(formulas.map((entry) => entry.formulaKey));
+    const defaultLeft = formula?.formulaKey || formulas[0]?.formulaKey || null;
+    const defaultRight =
+      parentFormula?.formulaKey ||
+      formulas.find((entry) => entry.formulaKey !== defaultLeft)?.formulaKey ||
+      defaultLeft;
+    setFormulaCompareState((prev) => {
+      let changed = false;
+      let nextLeft = prev.leftFormulaKey;
+      let nextRight = prev.rightFormulaKey;
+      if (!nextLeft || !availableKeys.has(nextLeft)) {
+        nextLeft = defaultLeft;
+        changed = true;
+      }
+      if (!nextRight || !availableKeys.has(nextRight) || nextRight === nextLeft) {
+        nextRight =
+          formulas.find((entry) => entry.formulaKey !== nextLeft)?.formulaKey ||
+          defaultRight;
+        changed = true;
+      }
+      return changed
+        ? {
+            leftFormulaKey: nextLeft,
+            rightFormulaKey: nextRight,
+          }
+        : prev;
+    });
+  }, [formulas, formula, parentFormula]);
   // Persist supplier data to localStorage
   useEffect(() => {
     try {
@@ -56565,6 +59008,142 @@ export default function App() {
       setSourceDocumentEvidenceExportStatus("Copy failed.");
     }
   }, [sourceDocumentEvidenceReviewJson, sourceDocumentEvidenceReviewPayload]);
+  const saveFormulaRecord = useCallback(
+    (nextFormula) => {
+      const currentFormulaRecord = nextFormula?.formulaKey
+        ? formulaByKey.get(nextFormula.formulaKey) || null
+        : null;
+      const normalizedRecord = createPersistedFormulaRecord({
+        ...currentFormulaRecord,
+        ...nextFormula,
+        formulaKey: nextFormula?.formulaKey || currentFormulaRecord?.formulaKey,
+        sourceType:
+          nextFormula?.sourceType ||
+          (currentFormulaRecord?.sourceType === "seeded"
+            ? "seeded_override"
+            : currentFormulaRecord?.sourceType) ||
+          (nextFormula?.parentVersionId
+            ? "version"
+            : nextFormula?.isSeeded
+            ? "seeded_override"
+            : "custom"),
+        createdAt:
+          nextFormula?.createdAt ||
+          currentFormulaRecord?.createdAt ||
+          new Date().toISOString(),
+        updatedAt: nextFormula?.updatedAt || new Date().toISOString(),
+      });
+      setSavedBuilds((prev) => upsertFormulaRecord(prev, normalizedRecord));
+      return normalizedRecord;
+    },
+    [formulaByKey]
+  );
+  const updateFormulaRecord = useCallback(
+    (formulaKey, updater) => {
+      const currentFormulaRecord = formulaByKey.get(formulaKey);
+      if (!currentFormulaRecord || currentFormulaRecord.isLocked) return null;
+      const nextFormula = updater(currentFormulaRecord);
+      if (!nextFormula) return null;
+      return saveFormulaRecord({
+        ...currentFormulaRecord,
+        ...nextFormula,
+        formulaKey,
+        sourceType:
+          currentFormulaRecord.sourceType === "seeded"
+            ? "seeded_override"
+            : nextFormula.sourceType || currentFormulaRecord.sourceType,
+        isSeeded: currentFormulaRecord.isSeeded,
+        createdAt:
+          currentFormulaRecord.createdAt || nextFormula.createdAt || null,
+        updatedAt: new Date().toISOString(),
+      });
+    },
+    [formulaByKey, saveFormulaRecord]
+  );
+  const saveBuildAsFormula = useCallback(() => {
+    const name = buildName.trim();
+    if (!name || buildItems.length === 0) return;
+    const nowIso = new Date().toISOString();
+    const newFormula = createPersistedFormulaRecord({
+      name,
+      emoji: "🧪",
+      tagline: "Custom build",
+      desc: "Created in Build Lab.",
+      ingredients: sortFormulaIngredients(buildItems),
+      isCustom: true,
+      isSeeded: false,
+      sourceType: "custom",
+      versionLabel: "v1.0",
+      parentFormulaKey: null,
+      parentVersionId: null,
+      isLocked: false,
+      revisionNote: "",
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    });
+    setSavedBuilds((prev) => [...prev, newFormula]);
+    setPendingFormulaSelectionKey(newFormula.formulaKey);
+    setBuildName("");
+    setMainTab("formulas");
+    setSubTab("formula");
+  }, [buildItems, buildName]);
+  const cloneFormulaVersion = useCallback(
+    (sourceFormula) => {
+      if (!sourceFormula) return null;
+      const nowIso = new Date().toISOString();
+      const clonedFormula = createPersistedFormulaRecord({
+        ...sourceFormula,
+        formulaKey: buildFormulaKey(sourceFormula.name, "formula"),
+        versionLabel: incrementFormulaVersionLabel(sourceFormula.versionLabel),
+        parentVersionId: sourceFormula.formulaKey,
+        parentFormulaKey:
+          sourceFormula.parentFormulaKey || sourceFormula.formulaKey,
+        isLocked: false,
+        isSeeded: false,
+        isCustom: true,
+        sourceType: "version",
+        revisionNote: `Derived from ${getFormulaDisplayLabel(sourceFormula, {
+          includeVersion: true,
+        })}`,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+        seedSourceKey:
+          sourceFormula.seedSourceKey ||
+          (sourceFormula.isSeeded ? sourceFormula.formulaKey : null),
+      });
+      setSavedBuilds((prev) => [...prev, clonedFormula]);
+      setPendingFormulaSelectionKey(clonedFormula.formulaKey);
+      setSubTab("edit");
+      return clonedFormula;
+    },
+    []
+  );
+  const lockFormulaVersion = useCallback(() => {
+    if (!formula || formula.isLocked) return;
+    if (
+      !confirm(
+        `Lock ${getFormulaDisplayLabel(formula, {
+          includeVersion: true,
+        })}? Clone a new version if you need to keep iterating later.`
+      )
+    ) {
+      return;
+    }
+    saveFormulaRecord({
+      ...formula,
+      sourceType:
+        formula.sourceType === "seeded" ? "seeded_override" : formula.sourceType,
+      isLocked: true,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [formula, saveFormulaRecord]);
+  const resetFormulaToSeed = useCallback(() => {
+    if (!formula?.isSeeded) {
+      alert("Only seeded formulas can be reset to their original seed.");
+      return;
+    }
+    setSavedBuilds((prev) => removeFormulaRecord(prev, formula.formulaKey));
+  }, [formula]);
   const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
   const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
   const buildScore = useMemo(
@@ -56575,8 +59154,81 @@ export default function App() {
     [buildItems]
   );
   const formulaScore = useMemo(() => perfScore(formula.ingredients), [formula]);
+  const formulaCritiqueIfraRows = useMemo(
+    () => getFormulaIfraRows(formula.ingredients, "cat4"),
+    [formula]
+  );
+  const formulaChemistrySummary = useMemo(
+    () => summarizeComputedChemistry(chem),
+    [chem]
+  );
+  const buildChemistrySummary = useMemo(
+    () => summarizeComputedChemistry(buildChem),
+    [buildChem]
+  );
+  const formulaPerformanceModel = useMemo(
+    () =>
+      buildPerformanceModelSummary(formula.ingredients, {
+        chemistry: chem,
+        performance: formulaScore,
+        chemistrySummary: formulaChemistrySummary,
+      }),
+    [chem, formula, formulaChemistrySummary, formulaScore]
+  );
+  const buildPerformanceModel = useMemo(
+    () =>
+      buildPerformanceModelSummary(buildItems, {
+        chemistry: buildChem,
+        performance: buildScore,
+        chemistrySummary: buildChemistrySummary,
+      }),
+    [buildChem, buildChemistrySummary, buildItems, buildScore]
+  );
+  const formulaFinishedProductGuidance = useMemo(
+    () =>
+      buildFinishedProductIfraGuidance({
+        items: formula?.ingredients || [],
+        category: ifraCategory,
+        fragranceLoadPercent: selectedFragranceType.pct,
+      }),
+    [formula, ifraCategory, selectedFragranceType]
+  );
+  const buildFinishedProductGuidance = useMemo(
+    () =>
+      buildFinishedProductIfraGuidance({
+        items: buildItems,
+        category: ifraCategory,
+        fragranceLoadPercent: selectedFragranceType.pct,
+      }),
+    [buildItems, ifraCategory, selectedFragranceType]
+  );
+  const formulaCritiqueReport = useMemo(
+    () =>
+      buildFormulaCritiqueReport({
+        formula,
+        chemistry: chem,
+        performance: formulaScore,
+        performanceModel: formulaPerformanceModel,
+        basket: selectedFormulaBasket,
+        cheapestBasket: formulaBasketStrategies.cheapest || null,
+        basketModeMeta: selectedBasketModeMeta,
+        ifraRows: formulaCritiqueIfraRows,
+        lens: critiqueLens,
+      }),
+    [
+      chem,
+      critiqueLens,
+      formula,
+      formulaBasketStrategies,
+      formulaCritiqueIfraRows,
+      formulaPerformanceModel,
+      formulaScore,
+      selectedBasketModeMeta,
+      selectedFormulaBasket,
+    ]
+  );
   const totalBuildG = buildItems.reduce((s, i) => s + i.g, 0);
-  const totalBuildCost = useMemo(() => totalCost(buildItems), [buildItems]);
+  const totalBuildCost = selectedBuildBasket?.totalCost || 0;
   const allIngredients = Object.keys(DB);
 
   // Filtered catalog
@@ -56799,41 +59451,36 @@ export default function App() {
     setRefreshLoading((prev) => ({ ...prev, [stateKey]: false }));
   };
 
-  const runAiCritique = async (targetFormula) => {
+  const runAiCritique = async (targetFormula, critiqueReport) => {
     if (!apiKeyRef.current) {
       setCritiqueText("No API key set — add your Claude API key in the Suppliers tab.");
       return;
     }
     setCritiqueLoading(true);
     setCritiqueText("");
-    setCritiqueFormula(targetFormula.name);
+    setCritiqueFormula(targetFormula.formulaKey);
+    setCritiqueLensUsed(critiqueLens);
     try {
-      const total = targetFormula.ingredients.reduce((s, i) => s + i.g, 0);
-      const ingList = targetFormula.ingredients
-        .map((i) => {
-          const d = DB[i.name];
-          return `  • ${i.name} (${i.g}g, ${((i.g/total)*100).toFixed(1)}%, ${i.note}${d ? `, ${d.scentClass}` : ""})`;
-        })
-        .join("\n");
       const score = perfScore(targetFormula.ingredients);
-      const prompt = `You are an expert perfumer reviewing a fragrance concentrate formula. Analyze the following formula and provide concise, actionable feedback.
-
-Formula: "${targetFormula.name}" — ${targetFormula.tagline}
-Total: ${total}g concentrate
-
-Ingredients:
-${ingList}
-
-Performance scores: Longevity ${score.longevity.toFixed(1)}/10, Sillage ${score.sillage.toFixed(1)}/10, Projection ${score.projection.toFixed(1)}/10
-
-Provide a critique covering:
-1. **Accord balance** – Are top/mid/base notes well-balanced? Any note gaps?
-2. **Dominant character** – What is the olfactory signature?
-3. **Strengths** – What works well in this formula?
-4. **Issues** – Any overdosing, clashing notes, or fixative problems?
-5. **Specific suggestions** – 2-3 concrete ingredient adjustments (add, remove, or change ratios) to improve it.
-
-Be specific, reference ingredient names, keep it under 300 words.`;
+      const prompt = buildAiCritiquePrompt({
+        targetFormula,
+        critiqueReport:
+          critiqueReport ||
+          buildFormulaCritiqueReport({
+            formula: targetFormula,
+            chemistry: computeChemistry(targetFormula.ingredients),
+            performance: score,
+            performanceModel: buildPerformanceModelSummary(
+              targetFormula.ingredients
+            ),
+            basket: selectedFormulaBasket,
+            cheapestBasket: formulaBasketStrategies.cheapest || null,
+            basketModeMeta: selectedBasketModeMeta,
+            ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
+            lens: critiqueLens,
+          }),
+        performance: score,
+      });
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -56885,304 +59532,1927 @@ Be specific, reference ingredient names, keep it under 300 words.`;
     background: subTab === k ? "#22D3EE" : CARD,
     color: subTab === k ? "#060E1E" : "#64748B",
   });
-
-  const costTabContent = useMemo(() => {
-    const total = formula.ingredients.reduce((s, i) => s + i.g, 0);
-    let grandTotal = 0;
-    const rows = formula.ingredients.map((ing) => {
-      const pdata = pricesState[ing.name] || PRICING[ing.name] || {};
-      const overrideSupplier = formulaSupplierOverrides[selFrag]?.[ing.name];
-      const d = DB[ing.name];
-      const density = d?.density || 1.0;
-      // Find best price for exact gram need
-      let best = null;
-      const suppliers = overrideSupplier
-        ? [[overrideSupplier, pdata[overrideSupplier]]].filter((x) => x[1])
-        : Object.entries(pdata);
-      suppliers.forEach(([sup, sd]) => {
-        if (!sd?.S) return;
-        const gNeeded = ing.g;
-        let candidate = null;
-        sd.S.forEach(([qty, unit, price]) => {
-          const g = unit === "mL" ? qty * density : qty;
-          if (g >= gNeeded) {
-            if (!candidate || g < candidate.g)
-              candidate = { qty, unit, price, g, sup, url: sd.url };
-          }
-        });
-        if (!candidate && sd.S.length) {
-          const [qty, unit, price] = sd.S[sd.S.length - 1];
-          const g = unit === "mL" ? qty * density : qty;
-          candidate = {
-            qty,
-            unit,
-            price,
-            g,
-            sup,
-            url: sd.url,
-            multi: Math.ceil(gNeeded / g),
-          };
-        }
-        if (
-          candidate &&
-          (!best ||
-            candidate.price * (candidate.multi || 1) <
-              best.price * (best.multi || 1))
-        )
-          best = candidate;
-      });
-      const cost = best ? best.price * (best.multi || 1) : null;
-      if (cost) grandTotal += cost;
-      return { ...ing, best, cost, pct: ((ing.g / total) * 100).toFixed(1) };
-    });
+  const basketStatusMeta = {
+    confirmed: {
+      label: "Confirmed",
+      bg: "#052E16",
+      border: "#166534",
+      color: "#34D399",
+    },
+    inferred: {
+      label: "Inferred",
+      bg: "#0A2540",
+      border: "#1D4ED8",
+      color: "#7DD3FC",
+    },
+    uncertain: {
+      label: "Uncertain",
+      bg: "#431407",
+      border: "#92400E",
+      color: "#F59E0B",
+    },
+    missing: {
+      label: "Missing",
+      bg: "#450A0A",
+      border: "#991B1B",
+      color: "#F87171",
+    },
+  };
+  const performanceModelToneMeta = {
+    accent: {
+      bg: "#071826",
+      border: "#1E3A52",
+      chipBg: "#0A2540",
+      chipColor: "#7DD3FC",
+    },
+    positive: {
+      bg: "#061A14",
+      border: "#166534",
+      chipBg: "#052E16",
+      chipColor: "#34D399",
+    },
+    cool: {
+      bg: "#120C26",
+      border: "#4338CA",
+      chipBg: "#1E1B4B",
+      chipColor: "#A78BFA",
+    },
+    warm: {
+      bg: "#251404",
+      border: "#B45309",
+      chipBg: "#431407",
+      chipColor: "#F59E0B",
+    },
+    caution: {
+      bg: "#2A1806",
+      border: "#92400E",
+      chipBg: "#422006",
+      chipColor: "#FBBF24",
+    },
+    danger: {
+      bg: "#2A0C0C",
+      border: "#991B1B",
+      chipBg: "#450A0A",
+      chipColor: "#F87171",
+    },
+    muted: {
+      bg: "#101A28",
+      border: "#334155",
+      chipBg: "#0F172A",
+      chipColor: "#CBD5E1",
+    },
+  };
+  const finishedProductIfraStatusMeta = {
+    offender: {
+      label: "Offender",
+      bg: "#450A0A",
+      border: "#991B1B",
+      color: "#FCA5A5",
+    },
+    offender_with_missing: {
+      label: "Offender + Gaps",
+      bg: "#450A0A",
+      border: "#B91C1C",
+      color: "#FCA5A5",
+    },
+    warning: {
+      label: "Tight Headroom",
+      bg: "#422006",
+      border: "#92400E",
+      color: "#FCD34D",
+    },
+    warning_with_missing: {
+      label: "Tight Headroom + Gaps",
+      bg: "#422006",
+      border: "#B45309",
+      color: "#FCD34D",
+    },
+    appears_compliant: {
+      label: "Appears Within Limit",
+      bg: "#052E16",
+      border: "#166534",
+      color: "#86EFAC",
+    },
+    appears_compliant_with_missing: {
+      label: "Within Checked Limits + Gaps",
+      bg: "#0A2540",
+      border: "#1D4ED8",
+      color: "#7DD3FC",
+    },
+    blocked_missing: {
+      label: "Blocked by Missing Data",
+      bg: "#1E1B4B",
+      border: "#4338CA",
+      color: "#C4B5FD",
+    },
+    no_restricted_rows: {
+      label: "No Restricted Rows Hit",
+      bg: "#071826",
+      border: "#1E3A52",
+      color: "#7DD3FC",
+    },
+  };
+  const formatIfraPercent = (value) => {
+    if (!Number.isFinite(value)) return "—";
+    const digits = Math.abs(value) >= 1 ? 2 : 3;
+    return `${value.toFixed(digits)}%`;
+  };
+  const renderFinishedProductIfraControls = (
+    scopeKey,
+    { compact = false } = {}
+  ) => (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: compact
+          ? "1fr"
+          : "minmax(220px,1fr) minmax(260px,1.2fr)",
+        gap: 10,
+        marginBottom: 12,
+      }}
+    >
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 10,
+          padding: compact ? 10 : 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 8.5,
+            color: "#64748B",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          Use Context
+        </div>
+        <select
+          value={ifraCategory}
+          onChange={(e) => setIfraCategory(e.target.value)}
+          style={{
+            width: "100%",
+            background: "#0A1628",
+            color: "#E2E8F0",
+            border: "1px solid #1E3A52",
+            borderRadius: 8,
+            padding: "8px 10px",
+            fontSize: 10,
+            outline: "none",
+          }}
+        >
+          {Object.entries(IFRA_CATEGORY_LABELS).map(([key, label]) => (
+            <option key={`${scopeKey}-${key}`} value={key}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 10,
+          padding: compact ? 10 : 12,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 8.5,
+            color: "#64748B",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          Finished-Product Load
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {Object.entries(FRAGRANCE_TYPE_PRESETS).map(([typeKey, meta]) => {
+            const isActive = dilType === typeKey;
+            return (
+              <button
+                key={`${scopeKey}-${typeKey}`}
+                type="button"
+                onClick={() => setDilType(typeKey)}
+                style={{
+                  background: isActive ? "#0E3D60" : "#0A1628",
+                  border: `1px solid ${isActive ? "#38BDF8" : "#1E3A52"}`,
+                  borderRadius: 999,
+                  color: isActive ? "#7DD3FC" : "#94A3B8",
+                  padding: "4px 10px",
+                  fontSize: 8.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {typeKey}
+              </button>
+            );
+          })}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 8.8,
+            color: "#475569",
+            lineHeight: 1.6,
+          }}
+        >
+          {selectedFragranceType.label} · {selectedFragranceType.range} ·{" "}
+          {selectedFragranceType.pct}% fragrance load
+        </div>
+      </div>
+    </div>
+  );
+  const renderFinishedProductIfraGuidanceCard = (
+    guidance,
+    {
+      title = "Finished-Product IFRA Guidance",
+      compact = false,
+      showControls = false,
+      baselineNote = null,
+      scopeKey = "finished-product",
+    } = {}
+  ) => {
+    if (!guidance) return null;
+    const statusMeta =
+      finishedProductIfraStatusMeta[guidance.overallStatus] ||
+      finishedProductIfraStatusMeta.blocked_missing;
+    const focusRows = guidance.offenderRows.length
+      ? guidance.offenderRows
+      : guidance.warningRows;
+    const stateBadgeMeta = {
+      confirmed: {
+        label: "Confirmed",
+        bg: "#052E16",
+        border: "#166534",
+        color: "#34D399",
+      },
+      inferred: {
+        label: "Inferred",
+        bg: "#0A2540",
+        border: "#1D4ED8",
+        color: "#7DD3FC",
+      },
+      missing: {
+        label: "Missing",
+        bg: "#1E1B4B",
+        border: "#4338CA",
+        color: "#C4B5FD",
+      },
+    };
+    const counts = [
+      {
+        key: "confirmed",
+        label: "Confirmed rows",
+        value: guidance.counts?.confirmed || 0,
+        meta: "direct helper-backed checks",
+      },
+      {
+        key: "inferred",
+        label: "Inferred rows",
+        value: guidance.counts?.inferred || 0,
+        meta: "canonical identity inheritance",
+      },
+      {
+        key: "missing",
+        label: "Missing rows",
+        value: guidance.counts?.missing || 0,
+        meta: "cannot be treated as clear",
+      },
+    ];
+    const renderRowChip = (row) => {
+      const chip =
+        stateBadgeMeta[row.dataState] || stateBadgeMeta[row.status] || null;
+      if (!chip) return null;
+      return (
+        <span
+          style={{
+            background: chip.bg,
+            border: `1px solid ${chip.border}`,
+            borderRadius: 999,
+            padding: "2px 7px",
+            fontSize: 8,
+            fontWeight: 700,
+            color: chip.color,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+          }}
+        >
+          {chip.label}
+        </span>
+      );
+    };
     return (
-      <div style={{ padding: 4 }}>
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: compact ? 12 : 14,
+        }}
+      >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 12,
+            alignItems: "flex-start",
+            gap: 10,
+            flexWrap: "wrap",
           }}
         >
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: "#F59E0B",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            💰 Procurement Cost — {formula.name}
-          </span>
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <span style={{ fontSize: 9, color: "#64748B" }}>
-              Formula total:{" "}
-              <strong style={{ color: "#22D3EE" }}>{total.toFixed(1)}g</strong>
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748B",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: compact ? 11.5 : 12.5,
+                color: "#E2E8F0",
+                fontWeight: 700,
+              }}
+            >
+              {guidance.categoryLabel} · {selectedFragranceType.label}
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: 9,
+                color: "#94A3B8",
+                lineHeight: 1.6,
+                maxWidth: 720,
+              }}
+            >
+              {guidance.summary}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <span
+              style={{
+                background: statusMeta.bg,
+                border: `1px solid ${statusMeta.border}`,
+                borderRadius: 999,
+                padding: "3px 10px",
+                fontSize: 8.5,
+                fontWeight: 700,
+                color: statusMeta.color,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {statusMeta.label}
             </span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#34D399" }}>
-              Est. Total: ${grandTotal.toFixed(2)}
+            <span
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 999,
+                padding: "3px 10px",
+                fontSize: 8.5,
+                fontWeight: 700,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Estimate only
             </span>
           </div>
         </div>
-        <table
-          style={{ width: "100%", fontSize: 10, borderCollapse: "collapse" }}
+        {baselineNote && (
+          <div
+            style={{
+              marginTop: 8,
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 8,
+              padding: "8px 10px",
+              fontSize: 8.8,
+              color: "#94A3B8",
+              lineHeight: 1.55,
+            }}
+          >
+            {baselineNote}
+          </div>
+        )}
+        {showControls && renderFinishedProductIfraControls(scopeKey, { compact })}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+            gap: 8,
+            marginTop: showControls ? 0 : 12,
+          }}
         >
-          <thead>
-            <tr style={{ borderBottom: "1px solid #1E3A52" }}>
-              {[
-                "Ingredient",
-                "g",
-                "% of Formula",
-                "Best Supplier",
-                "Buy Size",
-                "Unit Price",
-                "Est. Cost",
-                "Link",
-              ].map((h) => (
-                <th
-                  key={h}
-                  style={{
-                    padding: "5px 8px",
-                    textAlign: "left",
-                    color: "#475569",
-                    fontWeight: 700,
-                    fontSize: 8.5,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.07em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr
-                key={row.name + i}
-                style={{ borderBottom: "1px solid #0A1628" }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#0A1E30")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
+          {counts.map((count) => {
+            const meta = stateBadgeMeta[count.key];
+            return (
+              <div
+                key={`${scopeKey}-${count.key}`}
+                style={{
+                  background: meta.bg,
+                  border: `1px solid ${meta.border}`,
+                  borderRadius: 10,
+                  padding: "9px 10px",
+                }}
               >
-                <td
+                <div
                   style={{
-                    padding: "4px 8px",
-                    fontWeight: 600,
-                    color: "#E2E8F0",
-                    whiteSpace: "nowrap",
-                    fontSize: 10,
-                  }}
-                >
-                  {row.name}
-                </td>
-                <td
-                  style={{
-                    padding: "4px 8px",
-                    color: "#22D3EE",
+                    fontSize: 8.5,
+                    color: meta.color,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
                     fontWeight: 700,
                   }}
                 >
-                  {row.g}g
-                </td>
-                <td style={{ padding: "4px 8px" }}>
+                  {count.label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 5,
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: "#E2E8F0",
+                  }}
+                >
+                  {count.value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.3,
+                    color: "#94A3B8",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {count.meta}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {focusRows.length > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              background: guidance.offenderRows.length ? "#2A0C0C" : "#2A1806",
+              border: `1px solid ${
+                guidance.offenderRows.length ? "#991B1B" : "#92400E"
+              }`,
+              borderRadius: 10,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: guidance.offenderRows.length ? "#FCA5A5" : "#FCD34D",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              {guidance.offenderRows.length
+                ? "Main Offenders"
+                : "Narrow Headroom"}
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {focusRows.slice(0, compact ? 2 : 4).map((row) => (
+                <div
+                  key={`${scopeKey}-focus-${row.name}`}
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
                   <div
-                    style={{ display: "flex", alignItems: "center", gap: 5 }}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
                   >
                     <div
                       style={{
-                        width: 40,
-                        background: "#0A1628",
-                        borderRadius: 2,
-                        height: 4,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#E2E8F0",
                       }}
                     >
-                      <div
-                        style={{
-                          width: `${Math.min(100, row.pct)}%`,
-                          background: "#0E4D6E",
-                          borderRadius: 2,
-                          height: 4,
-                        }}
-                      />
+                      {row.name}
                     </div>
-                    <span style={{ color: "#64748B", fontSize: 9 }}>
-                      {row.pct}%
-                    </span>
+                    {renderRowChip(row)}
                   </div>
-                </td>
-                <td
-                  style={{ padding: "4px 8px", color: "#7DD3FC", fontSize: 9 }}
-                >
-                  {row.best?.sup || "—"}
-                </td>
-                <td
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Uses about {formatIfraPercent(row.activeRestrictedPercent)} of
+                    the finished product versus a modeled limit of{" "}
+                    {formatIfraPercent(row.limit)}.
+                    {row.usageRatio != null
+                      ? ` (${Math.round(row.usageRatio * 100)}% of limit.)`
+                      : ""}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#CBD5E1",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {row.status === "offender" &&
+                    Number.isFinite(row.suggestedIngredientReductionPercent)
+                      ? `Simple path: reduce ${row.name} by about ${row.suggestedIngredientReductionPercent.toFixed(
+                          0
+                        )}% at this load, or lower total fragrance load.`
+                      : `Simple path: keep extra margin here or lower total fragrance load if you want more compliance headroom.`}
+                    {Number.isFinite(row.maxFinishedProductLoadPercent)
+                      ? ` Approximate total fragrance-load ceiling from this row: ${row.maxFinishedProductLoadPercent.toFixed(
+                          1
+                        )}%.`
+                      : ""}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {guidance.limitingRows.length > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 10,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              Limiting Factors
+            </div>
+            <div style={{ display: "grid", gap: 8 }}>
+              {guidance.limitingRows.slice(0, compact ? 2 : 4).map((row) => (
+                <div
+                  key={`${scopeKey}-limit-${row.name}`}
                   style={{
-                    padding: "4px 8px",
-                    color: "#94A3B8",
-                    fontSize: 9,
-                    whiteSpace: "nowrap",
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    padding: "8px 10px",
                   }}
                 >
-                  {row.best
-                    ? `${row.best.qty}${row.best.unit}${
-                        row.best.multi > 1 ? ` ×${row.best.multi}` : ""
-                      }`
-                    : row.best === null &&
-                      Object.keys(
-                        pricesState[row.name] || PRICING[row.name] || {}
-                      ).length === 0
-                    ? "No pricing"
-                    : "—"}
-                </td>
-                <td
-                  style={{ padding: "4px 8px", color: "#94A3B8", fontSize: 9 }}
-                >
-                  {row.best ? `$${row.best.price.toFixed(2)}` : ""}
-                </td>
-                <td
-                  style={{
-                    padding: "4px 8px",
-                    fontWeight: 700,
-                    color: row.cost ? "#34D399" : "#475569",
-                  }}
-                >
-                  {row.cost
-                    ? `$${row.cost.toFixed(2)}`
-                    : row.best === null
-                    ? "—"
-                    : "?"}
-                </td>
-                <td style={{ padding: "4px 8px" }}>
-                  {row.best?.url ? (
-                    <a
-                      href={row.best.url}
-                      target="_blank"
-                      rel="noreferrer"
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div
                       style={{
-                        color: "#22D3EE",
-                        fontSize: 9,
-                        textDecoration: "none",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#E2E8F0",
                       }}
                     >
-                      ↗
-                    </a>
-                  ) : (
-                    "—"
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr style={{ borderTop: "2px solid #1E3A52" }}>
-              <td
-                colSpan={6}
-                style={{
-                  padding: "6px 8px",
-                  fontWeight: 700,
-                  color: "#F59E0B",
-                  fontSize: 10,
-                  textAlign: "right",
-                }}
-              >
-                TOTAL PROCUREMENT ESTIMATE
-              </td>
-              <td
-                style={{
-                  padding: "6px 8px",
-                  fontWeight: 700,
-                  color: "#34D399",
-                  fontSize: 11,
-                }}
-              >
-                ${grandTotal.toFixed(2)}
-              </td>
-              <td />
-            </tr>
-          </tfoot>
-        </table>
+                      {row.name}
+                    </div>
+                    {renderRowChip(row)}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.8,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Approximate limiting total fragrance load from this material:
+                    {" "}
+                    {Number.isFinite(row.maxFinishedProductLoadPercent)
+                      ? `${row.maxFinishedProductLoadPercent.toFixed(1)}%`
+                      : "—"}
+                    . Current modeled active share:{" "}
+                    {formatIfraPercent(row.activeRestrictedPercent)}.
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {guidance.inferredRows.length > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              background: "#0A2540",
+              border: "1px solid #1D4ED8",
+              borderRadius: 10,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              Inferred Guidance
+            </div>
+            <div style={{ display: "grid", gap: 7 }}>
+              {guidance.inferredRows.slice(0, compact ? 2 : 4).map((row) => (
+                <div
+                  key={`${scopeKey}-inferred-${row.name}`}
+                  style={{
+                    fontSize: 8.8,
+                    color: "#BFDBFE",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <strong style={{ color: "#E2E8F0" }}>{row.name}</strong> is
+                  being evaluated through canonical identity inheritance
+                  {row.canonicalMaterialKey
+                    ? ` (${row.canonicalMaterialKey})`
+                    : ""}
+                  . Treat the modeled limit as guidance rather than a fully
+                  confirmed row.
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {guidance.missingRows.length > 0 && (
+          <div
+            style={{
+              marginTop: 12,
+              background: "#1E1B4B",
+              border: "1px solid #4338CA",
+              borderRadius: 10,
+              padding: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: "#C4B5FD",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+                marginBottom: 8,
+              }}
+            >
+              Missing / Blocked Rows
+            </div>
+            <div style={{ display: "grid", gap: 7 }}>
+              {guidance.missingRows.slice(0, compact ? 2 : 4).map((row) => (
+                <div
+                  key={`${scopeKey}-missing-${row.name}`}
+                  style={{
+                    fontSize: 8.8,
+                    color: "#DDD6FE",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <strong style={{ color: "#E2E8F0" }}>{row.name}</strong>:{" "}
+                  {row.missingReason || "The helper does not currently have enough IFRA data to judge this row."}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  const renderPerformanceModelCard = (
+    summary,
+    { title = "Performance Model Estimate", compact = false } = {}
+  ) => {
+    if (!summary) return null;
+    return (
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: compact ? 12 : 14,
+        }}
+      >
         <div
           style={{
-            marginTop: 10,
-            padding: "8px 12px",
-            background: "#060E1E",
-            border: "1px solid #F59E0B20",
-            borderRadius: 8,
-            fontSize: 9,
-            color: "#475569",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 10,
+            flexWrap: "wrap",
           }}
         >
-          💡 Costs reflect smallest available size that covers the required
-          grams. Use ✏️ Edit tab to switch supplier or adjust quantities.
-          Dynamic — updates live when formula changes.
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748B",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 700,
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: compact ? 12 : 13,
+                fontWeight: 700,
+                color: "#E2E8F0",
+                lineHeight: 1.5,
+              }}
+            >
+              {summary.headline}
+            </div>
+          </div>
+          <span
+            style={{
+              background: "#0A2540",
+              border: "1px solid #1D4ED8",
+              borderRadius: 999,
+              padding: "2px 8px",
+              fontSize: 8,
+              fontWeight: 700,
+              color: "#7DD3FC",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Estimate
+          </span>
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: compact ? 8.8 : 9,
+            color: "#94A3B8",
+            lineHeight: 1.6,
+          }}
+        >
+          {summary.estimateNote}
+        </div>
+        {summary.caveats?.length > 0 && (
+          <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
+            {summary.caveats.map((caveat) => (
+              <div
+                key={caveat}
+                style={{
+                  background: "#2A1806",
+                  border: "1px solid #92400E",
+                  borderRadius: 8,
+                  padding: "7px 9px",
+                  fontSize: 8.8,
+                  color: "#FCD34D",
+                  lineHeight: 1.55,
+                }}
+              >
+                {caveat}
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+          {(summary.facets || []).map((facet) => {
+            const tone =
+              performanceModelToneMeta[facet.tone] ||
+              performanceModelToneMeta.accent;
+            return (
+              <div
+                key={facet.key}
+                style={{
+                  background: tone.bg,
+                  border: `1px solid ${tone.border}`,
+                  borderRadius: 10,
+                  padding: compact ? "8px 10px" : "9px 11px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: compact ? 9 : 9.5,
+                      fontWeight: 700,
+                      color: "#E2E8F0",
+                    }}
+                  >
+                    {facet.label}
+                  </div>
+                  <span
+                    style={{
+                      background: tone.chipBg,
+                      border: `1px solid ${tone.border}`,
+                      borderRadius: 999,
+                      padding: "1px 7px",
+                      fontSize: 8,
+                      fontWeight: 700,
+                      color: tone.chipColor,
+                    }}
+                  >
+                    {facet.rating}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    marginTop: 5,
+                    fontSize: compact ? 8.7 : 9,
+                    color: "#94A3B8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {facet.detail}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
-  }, [formula, pricesState, formulaSupplierOverrides, selFrag]);
+  };
+  const renderCritiqueLensSelector = (scopeKey) => (
+    <div
+      style={{
+        background: "#060E1E",
+        border: "1px solid #1E3A52",
+        borderRadius: 12,
+        padding: 12,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 9,
+          color: "#64748B",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          fontWeight: 700,
+          marginBottom: 8,
+        }}
+      >
+        Critique Lens
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {CRITIQUE_LENS_ORDER.map((lensKey) => {
+          const meta = CRITIQUE_LENS_META[lensKey];
+          const isActive = critiqueLens === lensKey;
+          return (
+            <button
+              key={`${scopeKey}-${lensKey}`}
+              type="button"
+              onClick={() => setCritiqueLens(lensKey)}
+              style={{
+                background: isActive ? meta.color : "#0A1628",
+                border: `1px solid ${isActive ? meta.color : "#1E3A52"}`,
+                borderRadius: 999,
+                color: isActive ? "#060E1E" : "#94A3B8",
+                padding: "5px 10px",
+                fontSize: 9,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              {meta.label}
+            </button>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          marginTop: 8,
+          fontSize: 9,
+          color: "#94A3B8",
+          lineHeight: 1.6,
+        }}
+      >
+        {selectedCritiqueLensMeta.description}
+      </div>
+    </div>
+  );
+  const renderCritiqueReportCard = (
+    report,
+    { title = "Structured Critique & Improvement Advisor" } = {}
+  ) => {
+    if (!report) return null;
+    const sectionMeta = {
+      strengths: {
+        title: "Strengths",
+        color: "#34D399",
+        bg: "#061A14",
+        border: "#166534",
+      },
+      weaknesses: {
+        title: "Weaknesses",
+        color: "#F59E0B",
+        bg: "#251404",
+        border: "#B45309",
+      },
+      sensoryIssues: {
+        title: "Likely Sensory Issues",
+        color: "#7DD3FC",
+        bg: "#071826",
+        border: "#1E3A52",
+      },
+      costIssues: {
+        title: "Likely Cost Issues",
+        color: "#34D399",
+        bg: "#052E16",
+        border: "#166534",
+      },
+      suggestedChanges: {
+        title: "Suggested Next Changes",
+        color: "#A78BFA",
+        bg: "#120C26",
+        border: "#4338CA",
+      },
+    };
+    return (
+      <div
+        style={{
+          background: CARD,
+          borderRadius: 14,
+          border: `1px solid ${BORDER}`,
+          padding: 16,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 10,
+            flexWrap: "wrap",
+            marginBottom: 10,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#475569",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+              }}
+            >
+              {title}
+            </div>
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#E2E8F0",
+              }}
+            >
+              {report.headline}
+            </div>
+          </div>
+          <span
+            style={{
+              background: report.lensMeta.color,
+              borderRadius: 999,
+              padding: "3px 10px",
+              fontSize: 8.5,
+              fontWeight: 700,
+              color: "#060E1E",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            {report.lensMeta.label} Lens
+          </span>
+        </div>
+        <div style={{ fontSize: 9.5, color: "#94A3B8", lineHeight: 1.6 }}>
+          {report.lensSummary}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 9,
+            color: "#64748B",
+            lineHeight: 1.6,
+          }}
+        >
+          {report.supportNote}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 10,
+            marginTop: 12,
+          }}
+        >
+          {Object.entries(sectionMeta).map(([key, meta]) => (
+            <div
+              key={key}
+              style={{
+                background: meta.bg,
+                border: `1px solid ${meta.border}`,
+                borderRadius: 10,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: meta.color,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  marginBottom: 8,
+                }}
+              >
+                {meta.title}
+              </div>
+              <div style={{ display: "grid", gap: 7 }}>
+                {(report[key] || []).map((item) => (
+                  <div
+                    key={`${key}-${item}`}
+                    style={{
+                      fontSize: 9.5,
+                      color: "#CBD5E1",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div
+          style={{
+            marginTop: 12,
+            background: "#2A1806",
+            border: "1px solid #92400E",
+            borderRadius: 10,
+            padding: 12,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: "#FBBF24",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              marginBottom: 8,
+            }}
+          >
+            Uncertainty
+          </div>
+          <div style={{ display: "grid", gap: 7 }}>
+            {(report.uncertainty || []).map((item) => (
+              <div
+                key={`uncertainty-${item}`}
+                style={{
+                  fontSize: 9.2,
+                  color: "#FCD34D",
+                  lineHeight: 1.55,
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  const renderBasketStrategyCards = (strategies, scopeKey) => {
+    if (!strategies) return null;
+    const cheapestTotal = strategies.cheapest?.totalCost || 0;
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))",
+          gap: 10,
+        }}
+      >
+        {SUPPLIER_BASKET_MODE_ORDER.map((mode) => {
+          const basket = strategies[mode];
+          const meta = SUPPLIER_BASKET_MODE_META[mode];
+          const isActive = basketMode === mode;
+          const delta = (basket?.totalCost || 0) - cheapestTotal;
+          return (
+            <button
+              key={`${scopeKey}-${mode}`}
+              type="button"
+              onClick={() => setBasketMode(mode)}
+              style={{
+                background: isActive
+                  ? "linear-gradient(135deg,#0A2540,#0E3D60)"
+                  : "#060E1E",
+                border: `1px solid ${isActive ? meta.color : "#1E3A52"}`,
+                borderRadius: 12,
+                padding: 12,
+                textAlign: "left",
+                cursor: "pointer",
+                boxShadow: isActive ? `0 0 16px ${meta.color}22` : "none",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: meta.color,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {meta.title}
+                </div>
+                {isActive && (
+                  <span
+                    style={{
+                      fontSize: 8,
+                      color: "#060E1E",
+                      background: meta.color,
+                      borderRadius: 999,
+                      padding: "1px 6px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    ACTIVE
+                  </span>
+                )}
+              </div>
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 20,
+                  fontWeight: 800,
+                  color: "#E2E8F0",
+                }}
+              >
+                ${((basket?.totalCost || 0) + 0).toFixed(2)}
+              </div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color:
+                    delta > 0
+                      ? "#F59E0B"
+                      : delta < 0
+                      ? "#34D399"
+                      : "#64748B",
+                  marginTop: 2,
+                }}
+              >
+                {mode === "cheapest"
+                  ? "Baseline basket"
+                  : `vs cheapest: ${delta >= 0 ? "+" : ""}$${delta.toFixed(2)}`}
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.6,
+                }}
+              >
+                {(basket?.supplierCount || 0) +
+                  " suppliers · " +
+                  (basket?.missingCount || 0) +
+                  " missing · " +
+                  (basket?.uncertainCount || 0) +
+                  " uncertain"}
+              </div>
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 8.5,
+                  color: "#475569",
+                  lineHeight: 1.6,
+                }}
+              >
+                {meta.description}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+  const renderBasketDetailTable = (basket, heading) => {
+    if (!basket || !basket.lines.length) {
+      return (
+        <div
+          style={{
+            background: "#060E1E",
+            border: "1px solid #1E3A52",
+            borderRadius: 12,
+            padding: 14,
+            fontSize: 10,
+            color: "#94A3B8",
+          }}
+        >
+          No ingredients are currently available for this basket.
+        </div>
+      );
+    }
+    return (
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12,
+            marginBottom: 10,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: basket.meta.color,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {heading || basket.meta.title}
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#475569",
+                marginTop: 4,
+                lineHeight: 1.6,
+                maxWidth: 640,
+              }}
+            >
+              {basket.meta.description} Missing price data and low-confidence
+              mappings stay flagged instead of being guessed.
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#E2E8F0",
+              }}
+            >
+              ${basket.totalCost.toFixed(2)}
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748B",
+                marginTop: 2,
+                lineHeight: 1.5,
+              }}
+            >
+              {basket.supplierCount} suppliers · {basket.confirmedCount} confirmed
+              {" · "}
+              {basket.uncertainCount} uncertain · {basket.missingCount} missing
+            </div>
+          </div>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              fontSize: 10,
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                {[
+                  "Ingredient",
+                  "Role",
+                  "Need",
+                  "Supplier",
+                  "Buy",
+                  "Pack Price",
+                  "Line Cost",
+                  "Remaining",
+                  "Mapping",
+                ].map((headingLabel) => (
+                  <th
+                    key={headingLabel}
+                    style={{
+                      padding: "5px 8px",
+                      textAlign: "left",
+                      color: "#475569",
+                      fontWeight: 700,
+                      fontSize: 8.5,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {headingLabel}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {basket.lines.map((line) => {
+                const noteColor = NC[line.note] || NC.carrier;
+                const statusStyle =
+                  basketStatusMeta[line.status] || basketStatusMeta.inferred;
+                const supplierUrl =
+                  line.supplier &&
+                  getLivePricingForIngredient(line.ingredientName, pricesState)[
+                    line.supplier
+                  ]?.url;
+                const noteParts = [
+                  line.forcedByOverride ? "Supplier override applied." : null,
+                  line.missingReason || null,
+                  line.confidenceNote || null,
+                  basket.mode === "best_quality" ? line.qualityNote || null : null,
+                ].filter(Boolean);
+                return (
+                  <tr
+                    key={`${basket.mode}-${line.ingredientName}`}
+                    style={{ borderBottom: "1px solid #0A1628" }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "#0A1E30")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
+                  >
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: "#E2E8F0",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setDetailName(line.ingredientName)}
+                    >
+                      {line.ingredientName}
+                    </td>
+                    <td style={{ padding: "5px 8px" }}>
+                      <span
+                        style={{
+                          background: noteColor.light,
+                          color: noteColor.text,
+                          border: `1px solid ${noteColor.bg}50`,
+                          borderRadius: 999,
+                          padding: "1px 7px",
+                          fontSize: 8,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {String(line.note || "mid").toUpperCase()}
+                      </span>
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: "#22D3EE",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.needG.toFixed(1)}g
+                    </td>
+                    <td style={{ padding: "5px 8px", color: "#CBD5E1" }}>
+                      <div
+                        style={{
+                          color: SUPPLIER_COLORS[line.supplier] || "#CBD5E1",
+                          fontSize: 9.5,
+                        }}
+                      >
+                        {line.supplier || "—"}
+                        {supplierUrl && (
+                          <a
+                            href={supplierUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              color: "#22D3EE",
+                              marginLeft: 6,
+                              textDecoration: "none",
+                            }}
+                          >
+                            ↗
+                          </a>
+                        )}
+                      </div>
+                      {line.forcedByOverride && (
+                        <div style={{ fontSize: 8, color: "#FCD34D", marginTop: 2 }}>
+                          Override
+                        </div>
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: line.line ? "#94A3B8" : "#475569",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.line ? line.buyText : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: line.line ? "#94A3B8" : "#475569",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.line ? `$${line.line.price.toFixed(2)}` : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        fontWeight: 700,
+                        color:
+                          line.lineCost != null
+                            ? "#34D399"
+                            : basketStatusMeta.missing.color,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.lineCost != null ? `$${line.lineCost.toFixed(2)}` : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color:
+                          line.remaining != null ? "#818CF8" : "#475569",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.remaining != null
+                        ? `${line.remaining.toFixed(1)}g`
+                        : "—"}
+                    </td>
+                    <td style={{ padding: "5px 8px", minWidth: 200 }}>
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "1px 7px",
+                          borderRadius: 999,
+                          background: statusStyle.bg,
+                          border: `1px solid ${statusStyle.border}`,
+                          color: statusStyle.color,
+                          fontSize: 8,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {statusStyle.label}
+                      </div>
+                      {noteParts.length > 0 && (
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {noteParts.join(" ")}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+  const renderBatchPlannerPurchaseSummary = (batchPlan) => {
+    if (!batchPlan?.blockingMaterials?.length || !batchPlan.shortageBasket) {
+      return (
+        <div
+          style={{
+            background: "#052E16",
+            border: "1px solid #166534",
+            borderRadius: 12,
+            padding: 12,
+            fontSize: 10,
+            color: "#86EFAC",
+            lineHeight: 1.7,
+          }}
+        >
+          Current stock can fulfill this batch. No shortage follow-up purchase
+          basket is needed for the active target.
+        </div>
+      );
+    }
+
+    const shortageMap = new Map(
+      batchPlan.blockingMaterials.map((line) => [line.name, line])
+    );
+    return (
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12,
+            marginBottom: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: selectedBasketModeMeta.color,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Purchase Follow-Up · {selectedBasketModeMeta.label}
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 9,
+                color: "#475569",
+                lineHeight: 1.6,
+                maxWidth: 720,
+              }}
+            >
+              Reuses the shared supplier basket mode for shortage coverage, so
+              the planner follows the same sourcing heuristic as formulas,
+              build, and compare.
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 800,
+                color: "#E2E8F0",
+              }}
+            >
+              ${batchPlan.shortageBasket.totalCost.toFixed(2)}
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#64748B",
+                marginTop: 2,
+                lineHeight: 1.5,
+              }}
+            >
+              {batchPlan.shortageBasket.supplierCount} suppliers ·{" "}
+              {batchPlan.shortageBasket.missingCount} missing ·{" "}
+              {batchPlan.shortageBasket.uncertainCount} uncertain
+            </div>
+          </div>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              fontSize: 10,
+              borderCollapse: "collapse",
+            }}
+          >
+            <thead>
+              <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                {[
+                  "Material",
+                  "Shortage",
+                  "Recommended Buy",
+                  "Supplier",
+                  "Line Cost",
+                  "Mapping",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    style={{
+                      padding: "5px 8px",
+                      textAlign: "left",
+                      color: "#475569",
+                      fontWeight: 700,
+                      fontSize: 8.5,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {batchPlan.shortageBasket.lines.map((line) => {
+                const statusStyle =
+                  basketStatusMeta[line.status] || basketStatusMeta.inferred;
+                const shortageLine = shortageMap.get(line.ingredientName);
+                return (
+                  <tr
+                    key={`planner-shortage-${line.ingredientName}`}
+                    style={{ borderBottom: "1px solid #0A1628" }}
+                  >
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: "#E2E8F0",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                      onClick={() => setDetailName(line.ingredientName)}
+                    >
+                      {line.ingredientName}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: "#F87171",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {shortageLine ? `${shortageLine.shortageG.toFixed(2)}g` : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: line.line ? "#94A3B8" : "#475569",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.line ? line.buyText : "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color: SUPPLIER_COLORS[line.supplier] || "#CBD5E1",
+                      }}
+                    >
+                      {line.supplier || "—"}
+                    </td>
+                    <td
+                      style={{
+                        padding: "5px 8px",
+                        color:
+                          line.lineCost != null ? "#34D399" : "#F87171",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {line.lineCost != null ? `$${line.lineCost.toFixed(2)}` : "—"}
+                    </td>
+                    <td style={{ padding: "5px 8px", minWidth: 180 }}>
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "1px 7px",
+                          borderRadius: 999,
+                          background: statusStyle.bg,
+                          border: `1px solid ${statusStyle.border}`,
+                          color: statusStyle.color,
+                          fontSize: 8,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {statusStyle.label}
+                      </div>
+                      {(line.missingReason || line.confidenceNote) && (
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {line.missingReason || line.confidenceNote}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const formulaCheapestBasketTotal = formulaBasketStrategies.cheapest?.totalCost || 0;
+  const formulaBasketDelta = selectedFormulaBasket
+    ? selectedFormulaBasket.totalCost - formulaCheapestBasketTotal
+    : 0;
+  const buildCheapestBasketTotal = buildBasketStrategies.cheapest?.totalCost || 0;
+  const buildBasketDelta = selectedBuildBasket
+    ? selectedBuildBasket.totalCost - buildCheapestBasketTotal
+    : 0;
+  const costTabContent = (
+    <div style={{ padding: 4, display: "grid", gap: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: "#F59E0B",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          💰 Supplier Basket Costing — {selectedFormulaLabel}
+        </span>
+        <div
+          style={{
+            display: "flex",
+            gap: 14,
+            alignItems: "center",
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
+          <span style={{ fontSize: 9, color: "#64748B" }}>
+            Formula total:{" "}
+            <strong style={{ color: "#22D3EE" }}>
+              {formula.ingredients.reduce((sum, ing) => sum + ing.g, 0).toFixed(1)}g
+            </strong>
+          </span>
+          <span style={{ fontSize: 9, color: "#64748B" }}>
+            Active mode:{" "}
+            <strong style={{ color: selectedBasketModeMeta.color }}>
+              {selectedBasketModeMeta.label}
+            </strong>
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#34D399" }}>
+            Basket total: ${selectedFormulaBasket.totalCost.toFixed(2)}
+          </span>
+        </div>
+      </div>
+      {renderBasketStrategyCards(formulaBasketStrategies, "formula-cost")}
+      <div
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 10,
+          padding: "10px 12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ fontSize: 9, color: "#94A3B8", lineHeight: 1.6 }}>
+          {selectedBasketModeMeta.description}
+        </div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color:
+              formulaBasketDelta > 0
+                ? "#F59E0B"
+                : formulaBasketDelta < 0
+                ? "#34D399"
+                : "#CBD5E1",
+          }}
+        >
+          {basketMode === "cheapest"
+            ? "Cheapest basket is the baseline."
+            : `Delta vs cheapest: ${
+                formulaBasketDelta >= 0 ? "+" : ""
+              }$${formulaBasketDelta.toFixed(2)}`}
+        </div>
+      </div>
+      {renderBasketDetailTable(
+        selectedFormulaBasket,
+        `${selectedFormulaBasket.meta.title} Line Detail`
+      )}
+    </div>
+  );
 
   const inventoryTabContent = useMemo(() => {
     // Collect all unique ingredients across all formulas
     const allIngs = {};
-    formulas.forEach((f, fi) => {
+    formulas.forEach((f) => {
+      const formulaLabel = getFormulaDisplayLabel(f, { includeVersion: true });
       f.ingredients.forEach((ing) => {
         if (!allIngs[ing.name])
           allIngs[ing.name] = { name: ing.name, formulas: {}, totalNeeded: {} };
         const n = inventoryScale > 0 ? (ing.g / 1000) * inventoryScale : ing.g;
-        allIngs[ing.name].formulas[f.name] =
-          (allIngs[ing.name].formulas[f.name] || 0) + ing.g;
-        allIngs[ing.name].totalNeeded[f.name] =
-          (allIngs[ing.name].totalNeeded[f.name] || 0) + n;
+        allIngs[ing.name].formulas[formulaLabel] =
+          (allIngs[ing.name].formulas[formulaLabel] || 0) + ing.g;
+        allIngs[ing.name].totalNeeded[formulaLabel] =
+          (allIngs[ing.name].totalNeeded[formulaLabel] || 0) + n;
       });
     });
     const ingList = Object.values(allIngs).sort((a, b) =>
       a.name.localeCompare(b.name)
+    );
+    const batchPlannerStatusStyle = batchPlannerReport.canFulfill
+      ? {
+          bg: "#052E16",
+          border: "#166534",
+          color: "#86EFAC",
+          label: "MAKEABLE",
+        }
+      : {
+          bg: "#450A0A",
+          border: "#991B1B",
+          color: "#FCA5A5",
+          label: "BLOCKED",
+        };
+    const topBlockingMaterials = batchPlannerReport.blockingMaterials.slice(0, 5);
+    const topConstrainingMaterials = batchPlannerReport.constrainingMaterials.slice(
+      0,
+      5
     );
     return (
       <div>
@@ -57263,6 +61533,684 @@ Be specific, reference ingredient names, keep it under 300 words.`;
               🗑 Clear All
             </button>
           </div>
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              marginBottom: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "#475569",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  margin: 0,
+                }}
+              >
+                Batch Planner
+              </p>
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  fontSize: 9,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                }}
+              >
+                Scale a saved formula or the current build against on-hand
+                stock, then reuse the shared supplier basket mode for shortage
+                follow-up.
+              </p>
+            </div>
+            {selectedBatchPlannerSource && (
+              <div
+                style={{
+                  background: batchPlannerStatusStyle.bg,
+                  border: `1px solid ${batchPlannerStatusStyle.border}`,
+                  borderRadius: 999,
+                  padding: "4px 10px",
+                  color: batchPlannerStatusStyle.color,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {batchPlannerStatusStyle.label}
+              </div>
+            )}
+          </div>
+
+          {batchPlannerSources.length === 0 ? (
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: 14,
+                fontSize: 10,
+                color: "#94A3B8",
+              }}
+            >
+              Add ingredients to the current build or keep saved formulas in the
+              library to enable batch planning.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 12 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(260px,1.4fr) minmax(180px,0.8fr)",
+                  gap: 12,
+                  alignItems: "start",
+                }}
+              >
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Plan Source
+                  </div>
+                  <select
+                    value={selectedBatchPlannerSource?.key || ""}
+                    onChange={(e) => setBatchPlannerSourceKey(e.target.value)}
+                    style={{
+                      width: "100%",
+                      background: "#0A1628",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#E2E8F0",
+                      padding: "8px 10px",
+                      fontSize: 10,
+                      outline: "none",
+                    }}
+                  >
+                    {batchPlannerSources.map((source) => (
+                      <option key={source.key} value={source.key}>
+                        {source.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 9,
+                      color: "#475569",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {selectedBatchPlannerSource?.subtitle || "Choose a source."}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Target Batch Size
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <input
+                      type="number"
+                      min={1}
+                      step={10}
+                      value={batchPlannerTargetG}
+                      onChange={(e) =>
+                        setBatchPlannerTargetG(parseFloat(e.target.value) || 0)
+                      }
+                      style={{
+                        flex: 1,
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        color: "#22D3EE",
+                        padding: "8px 10px",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        outline: "none",
+                      }}
+                    />
+                    <span style={{ fontSize: 10, color: "#64748B" }}>g</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                      marginTop: 8,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setBatchPlannerTargetG(
+                          Math.max(
+                            1,
+                            Math.round(selectedBatchPlannerSource?.sourceTotalG || 0)
+                          )
+                        )
+                      }
+                      style={{
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 999,
+                        color: "#94A3B8",
+                        padding: "4px 8px",
+                        fontSize: 8.5,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Use source total
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBatchPlannerTargetG(inventoryScale)}
+                      style={{
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 999,
+                        color: "#94A3B8",
+                        padding: "4px 8px",
+                        fontSize: 8.5,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Use {inventoryScale}g
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Shared Basket Mode
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#475569",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Purchase recommendations below follow the same shared mode
+                      used in formulas, build, and compare.
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {SUPPLIER_BASKET_MODE_ORDER.map((mode) => {
+                      const meta = SUPPLIER_BASKET_MODE_META[mode];
+                      const isActive = basketMode === mode;
+                      return (
+                        <button
+                          key={`inventory-planner-mode-${mode}`}
+                          type="button"
+                          onClick={() => setBasketMode(mode)}
+                          style={{
+                            background: isActive ? meta.color : "#0A1628",
+                            border: `1px solid ${
+                              isActive ? meta.color : "#1E3A52"
+                            }`,
+                            borderRadius: 999,
+                            color: isActive ? "#060E1E" : "#94A3B8",
+                            padding: "5px 10px",
+                            fontSize: 9,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {meta.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                  gap: 10,
+                }}
+              >
+                {[
+                  {
+                    label: "Target Batch",
+                    value: `${batchPlannerReport.targetBatchG.toFixed(1)}g`,
+                    meta: `Scaled from ${batchPlannerReport.sourceTotalG.toFixed(
+                      1
+                    )}g source total`,
+                    color: "#22D3EE",
+                  },
+                  {
+                    label: "Max Producible",
+                    value: `${batchPlannerReport.maxProducibleG.toFixed(1)}g`,
+                    meta: `${batchPlannerReport.coveragePercent.toFixed(0)}% of current target`,
+                    color:
+                      batchPlannerReport.maxProducibleG >=
+                      batchPlannerReport.targetBatchG
+                        ? "#34D399"
+                        : "#F59E0B",
+                  },
+                  {
+                    label: "Blocking Materials",
+                    value: String(batchPlannerReport.shortageCount),
+                    meta: batchPlannerReport.canFulfill
+                      ? "No shortages for this target"
+                      : `${batchPlannerReport.shortageTotalG.toFixed(1)}g total shortage`,
+                    color: batchPlannerReport.canFulfill ? "#34D399" : "#F87171",
+                  },
+                  {
+                    label: "Shortage Follow-Up",
+                    value: batchPlannerReport.shortageBasket
+                      ? `$${batchPlannerReport.shortageBasket.totalCost.toFixed(2)}`
+                      : "$0.00",
+                    meta: `${selectedBasketModeMeta.label} sourcing mode`,
+                    color: selectedBasketModeMeta.color,
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.label}
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 10,
+                      padding: "10px 14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#475569",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {card.label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 800,
+                        color: card.color,
+                        marginTop: 4,
+                      }}
+                    >
+                      {card.value}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        marginTop: 3,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {card.meta}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                  gap: 12,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Blocking Materials
+                  </div>
+                  {topBlockingMaterials.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 9.5,
+                        color: "#86EFAC",
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Nothing blocks this target batch right now.
+                    </div>
+                  ) : (
+                    topBlockingMaterials.map((line) => (
+                      <div
+                        key={`blocking-${line.name}`}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          padding: "6px 0",
+                          borderBottom: "1px solid #0A1628",
+                          fontSize: 9.5,
+                        }}
+                      >
+                        <span style={{ color: "#CBD5E1" }}>{line.name}</span>
+                        <span style={{ color: "#F87171", fontFamily: "monospace" }}>
+                          -{line.shortageG.toFixed(2)}g
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                      marginBottom: 8,
+                    }}
+                  >
+                    Most Constraining Materials
+                  </div>
+                  {topConstrainingMaterials.map((line) => (
+                    <div
+                      key={`constraint-${line.name}`}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        padding: "6px 0",
+                        borderBottom: "1px solid #0A1628",
+                        fontSize: 9.5,
+                      }}
+                    >
+                      <span style={{ color: "#CBD5E1" }}>{line.name}</span>
+                      <span
+                        style={{
+                          color:
+                            line.maxProducibleG >= batchPlannerReport.targetBatchG
+                              ? "#34D399"
+                              : "#F59E0B",
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {line.maxProducibleG.toFixed(1)}g max
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Required Materials vs On Hand
+                  </div>
+                  <div style={{ fontSize: 9, color: "#475569" }}>
+                    {selectedBatchPlannerSource?.label} ·{" "}
+                    {batchPlannerReport.lines.length} materials
+                  </div>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                  <table
+                    style={{
+                      width: "100%",
+                      fontSize: 10,
+                      borderCollapse: "collapse",
+                    }}
+                  >
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid #1E3A52" }}>
+                        {[
+                          "Material",
+                          "Role",
+                          "Required",
+                          "On Hand",
+                          "Shortage",
+                          "Remaining",
+                          "Max Batch",
+                        ].map((heading) => (
+                          <th
+                            key={heading}
+                            style={{
+                              padding: "5px 8px",
+                              textAlign: "left",
+                              color: "#475569",
+                              fontWeight: 700,
+                              fontSize: 8.5,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.07em",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {heading}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {batchPlannerReport.lines.map((line) => {
+                        const noteColor = NC[line.note] || NC.carrier;
+                        return (
+                          <tr
+                            key={`batch-plan-${line.name}`}
+                            style={{ borderBottom: "1px solid #0A1628" }}
+                          >
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color: "#E2E8F0",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                              }}
+                              onClick={() => setDetailName(line.name)}
+                            >
+                              {line.name}
+                            </td>
+                            <td style={{ padding: "5px 8px" }}>
+                              <span
+                                style={{
+                                  background: noteColor.light,
+                                  color: noteColor.text,
+                                  border: `1px solid ${noteColor.bg}50`,
+                                  borderRadius: 999,
+                                  padding: "1px 7px",
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {String(line.note).toUpperCase()}
+                              </span>
+                            </td>
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color: "#22D3EE",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {line.requiredG.toFixed(2)}g
+                            </td>
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color: "#34D399",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {line.onHand.toFixed(2)}g
+                            </td>
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color: line.isBlocked ? "#F87171" : "#475569",
+                                fontWeight: line.isBlocked ? 700 : 400,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {line.isBlocked
+                                ? `${line.shortageG.toFixed(2)}g`
+                                : "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color:
+                                  line.remainingG > 0 ? "#34D399" : "#475569",
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {line.remainingG > 0
+                                ? `${line.remainingG.toFixed(2)}g`
+                                : "—"}
+                            </td>
+                            <td
+                              style={{
+                                padding: "5px 8px",
+                                color:
+                                  line.maxProducibleG >=
+                                  batchPlannerReport.targetBatchG
+                                    ? "#34D399"
+                                    : "#F59E0B",
+                                fontWeight: 700,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {line.maxProducibleG.toFixed(1)}g
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {renderBatchPlannerPurchaseSummary(batchPlannerReport)}
+            </div>
+          )}
         </div>
 
         {/* Summary cards */}
@@ -57738,12 +62686,19 @@ Be specific, reference ingredient names, keep it under 300 words.`;
       </div>
     );
   }, [
+    batchPlannerReport,
+    batchPlannerSources,
+    batchPlannerTargetG,
+    basketMode,
     formulas,
     inventory,
     inventoryScale,
     inventorySearch,
     inventoryFilter,
     pricesState,
+    renderBatchPlannerPurchaseSummary,
+    selectedBatchPlannerSource,
+    selectedBasketModeMeta,
   ]);
   return (
     <div
@@ -57845,7 +62800,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
             >
               {formulas.map((f, i) => (
                 <button
-                  key={f.name}
+                  key={f.formulaKey}
                   onClick={() => {
                     setSelFrag(i);
                     setSubTab("formula");
@@ -57877,6 +62832,17 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     }}
                   >
                     {f.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8,
+                      color: f.isLocked ? "#F59E0B" : "#475569",
+                      marginTop: 4,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {f.versionLabel}
+                    {f.parentVersionId ? " · derived" : f.isSeeded ? " · seeded" : " · saved"}
                   </div>
                 </button>
               ))}
@@ -57935,6 +62901,84 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     >
                       {formula.desc}
                     </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        marginTop: 10,
+                      }}
+                    >
+                      {[
+                        {
+                          label: formula.versionLabel,
+                          color: "#7DD3FC",
+                          border: "#22D3EE30",
+                        },
+                        formula.isLocked
+                          ? {
+                              label: "Locked",
+                              color: "#F59E0B",
+                              border: "#F59E0B30",
+                            }
+                          : {
+                              label: formula.isSeeded ? "Seeded" : "Editable",
+                              color: formula.isSeeded ? "#A78BFA" : "#34D399",
+                              border: formula.isSeeded
+                                ? "#A78BFA30"
+                                : "#34D39930",
+                            },
+                        parentFormulaLabel
+                          ? {
+                              label: `From ${parentFormulaLabel}`,
+                              color: "#CBD5E1",
+                              border: "#1E3A52",
+                            }
+                          : null,
+                        childFormulaCount > 0
+                          ? {
+                              label: `${childFormulaCount} child ${
+                                childFormulaCount === 1 ? "version" : "versions"
+                              }`,
+                              color: "#CBD5E1",
+                              border: "#1E3A52",
+                            }
+                          : null,
+                        formulaUpdatedLabel
+                          ? {
+                              label: `Updated ${formulaUpdatedLabel}`,
+                              color: "#94A3B8",
+                              border: "#1E3A52",
+                            }
+                          : formulaCreatedLabel
+                          ? {
+                              label: `Created ${formulaCreatedLabel}`,
+                              color: "#94A3B8",
+                              border: "#1E3A52",
+                            }
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .map((badge) => (
+                          <span
+                            key={badge.label}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              padding: "3px 8px",
+                              borderRadius: 999,
+                              border: `1px solid ${badge.border}`,
+                              color: badge.color,
+                              fontSize: 9,
+                              fontWeight: 700,
+                              background: "#060E1E",
+                            }}
+                          >
+                            {badge.label}
+                          </span>
+                        ))}
+                    </div>
                   </div>
                   <div style={{ textAlign: "right", flexShrink: 0 }}>
                     <div style={{ color: ACC, fontWeight: 800, fontSize: 16 }}>
@@ -57950,18 +62994,82 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                       {formulaScore.sillage.toFixed(1)} P:
                       {formulaScore.projection.toFixed(1)}
                     </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        justifyContent: "flex-end",
+                        marginTop: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <button
+                        onClick={() => cloneFormulaVersion(formula)}
+                        style={{
+                          background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                          border: "1px solid #22D3EE40",
+                          borderRadius: 8,
+                          color: "#7DD3FC",
+                          padding: "6px 10px",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        CLONE {nextFormulaVersionLabel}
+                      </button>
+                      <button
+                        onClick={lockFormulaVersion}
+                        disabled={formula.isLocked}
+                        style={{
+                          background: formula.isLocked ? "#0A1628" : "#0A1628",
+                          border: `1px solid ${
+                            formula.isLocked ? "#1E3A52" : "#F59E0B30"
+                          }`,
+                          borderRadius: 8,
+                          color: formula.isLocked ? "#475569" : "#F59E0B",
+                          padding: "6px 10px",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          cursor: formula.isLocked ? "not-allowed" : "pointer",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        {formula.isLocked ? "LOCKED" : "LOCK VERSION"}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
-                  {["formula", "edit", "cost", "chemistry", "analysis", "timeline", "odormap", "notes", "critique"].map(
+                  {["formula", "compare", "edit", "cost", "chemistry", "analysis", "timeline", "odormap", "notes", "critique"].map(
                     (k) => (
                       <button
                         key={k}
                         style={subTabStyle(k)}
-                        onClick={() => setSubTab(k)}
+                        onClick={() => {
+                          if (k === "compare") {
+                            setFormulaCompareState((prev) => ({
+                              leftFormulaKey: formula.formulaKey,
+                              rightFormulaKey:
+                                prev.rightFormulaKey &&
+                                prev.rightFormulaKey !== formula.formulaKey
+                                  ? prev.rightFormulaKey
+                                  : parentFormula?.formulaKey ||
+                                    formulas.find(
+                                      (entry) =>
+                                        entry.formulaKey !== formula.formulaKey
+                                    )?.formulaKey ||
+                                    formula.formulaKey,
+                            }));
+                          }
+                          setSubTab(k);
+                        }}
                       >
                         {k === "formula"
                           ? "📋 Formula"
+                          : k === "compare"
+                          ? "🔀 Compare"
                           : k === "edit"
                           ? "✏️ Edit"
                           : k === "cost"
@@ -58092,6 +63200,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           </div>
                         ) : null;
                       })()}
+                      <div style={{ marginTop: 10 }}>
+                        {renderPerformanceModelCard(formulaPerformanceModel, {
+                          title: `Performance Model Estimate — ${selectedFormulaLabel}`,
+                        })}
+                      </div>
                     </div>
                     <div style={{ overflowX: "auto" }}>
                       <div
@@ -58246,23 +63359,21 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       }
                                       onBlur={() => {
                                         const v = parseFloat(editVal);
-                                        if (!isNaN(v) && v > 0)
-                                          setFormulas((prev) =>
-                                            prev.map((f, fi) =>
-                                              fi !== selFrag
-                                                ? f
-                                                : {
-                                                    ...f,
-                                                    ingredients:
-                                                      f.ingredients.map(
-                                                        (x, xi) =>
-                                                          xi !== ii
-                                                            ? x
-                                                            : { ...x, g: v }
-                                                      ),
-                                                  }
-                                            )
+                                        if (!formula.isLocked && !isNaN(v) && v > 0) {
+                                          updateFormulaRecord(
+                                            formula.formulaKey,
+                                            (current) => ({
+                                              ...current,
+                                              ingredients:
+                                                current.ingredients.map(
+                                                  (x, xi) =>
+                                                    xi !== ii
+                                                      ? x
+                                                      : { ...x, g: v }
+                                                ),
+                                            })
                                           );
+                                        }
                                         setEditIdx(null);
                                       }}
                                       onKeyDown={(e) => {
@@ -58271,23 +63382,21 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                           e.key === "Escape"
                                         ) {
                                           const v = parseFloat(editVal);
-                                          if (!isNaN(v) && v > 0)
-                                            setFormulas((prev) =>
-                                              prev.map((f, fi) =>
-                                                fi !== selFrag
-                                                  ? f
-                                                  : {
-                                                      ...f,
-                                                      ingredients:
-                                                        f.ingredients.map(
-                                                          (x, xi) =>
-                                                            xi !== ii
-                                                              ? x
-                                                              : { ...x, g: v }
-                                                        ),
-                                                    }
-                                              )
+                                          if (!formula.isLocked && !isNaN(v) && v > 0) {
+                                            updateFormulaRecord(
+                                              formula.formulaKey,
+                                              (current) => ({
+                                                ...current,
+                                                ingredients:
+                                                  current.ingredients.map(
+                                                    (x, xi) =>
+                                                      xi !== ii
+                                                        ? x
+                                                        : { ...x, g: v }
+                                                  ),
+                                              })
                                             );
+                                          }
                                           setEditIdx(null);
                                         }
                                       }}
@@ -58310,6 +63419,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                         fontWeight: 700,
                                       }}
                                       onClick={() => {
+                                        if (formula.isLocked) return;
                                         setEditIdx(key);
                                         setEditVal(ing.g);
                                       }}
@@ -58391,6 +63501,785 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                )}
+                {subTab === "compare" && (
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+                        gap: 12,
+                      }}
+                    >
+                      {[
+                        [
+                          "Baseline Formula",
+                          compareLeftFormula?.formulaKey || "",
+                          compareLeftLabel,
+                          (nextKey) =>
+                            setFormulaCompareState((prev) => ({
+                              ...prev,
+                              leftFormulaKey: nextKey,
+                            })),
+                        ],
+                        [
+                          "Compare Against",
+                          compareRightFormula?.formulaKey || "",
+                          compareRightLabel,
+                          (nextKey) =>
+                            setFormulaCompareState((prev) => ({
+                              ...prev,
+                              rightFormulaKey: nextKey,
+                            })),
+                        ],
+                      ].map(([label, value, activeLabel, onChange]) => (
+                        <div
+                          key={label}
+                          style={{
+                            background: "#060E1E",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9,
+                              fontWeight: 700,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 8,
+                            }}
+                          >
+                            {label}
+                          </div>
+                          <select
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            style={{
+                              width: "100%",
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              color: "#E2E8F0",
+                              padding: "8px 10px",
+                              fontSize: 10,
+                              outline: "none",
+                            }}
+                          >
+                            {formulas.map((entry) => (
+                              <option
+                                key={entry.formulaKey}
+                                value={entry.formulaKey}
+                              >
+                                {getFormulaDisplayLabel(entry, {
+                                  includeVersion: true,
+                                })}
+                              </option>
+                            ))}
+                          </select>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              fontSize: 9,
+                              color: "#475569",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {activeLabel || "Choose a formula version."}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {formulaComparison && (
+                      <>
+                        <div
+                          style={{
+                            background: "#060E1E",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                              marginBottom: 8,
+                            }}
+                          >
+                            Supplier Basket Mode
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            {SUPPLIER_BASKET_MODE_ORDER.map((mode) => {
+                              const meta = SUPPLIER_BASKET_MODE_META[mode];
+                              const isActive = basketMode === mode;
+                              return (
+                                <button
+                                  key={`compare-basket-mode-${mode}`}
+                                  type="button"
+                                  onClick={() => setBasketMode(mode)}
+                                  style={{
+                                    background: isActive ? meta.color : "#0A1628",
+                                    border: `1px solid ${
+                                      isActive ? meta.color : "#1E3A52"
+                                    }`,
+                                    borderRadius: 999,
+                                    color: isActive ? "#060E1E" : "#94A3B8",
+                                    padding: "5px 10px",
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  {meta.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              fontSize: 9,
+                              color: "#475569",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {selectedBasketModeMeta.description}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+                            gap: 10,
+                          }}
+                        >
+                          {[
+                            {
+                              label: "Ingredient Diff",
+                              value: `${formulaComparison.changedCount} changed`,
+                              meta: `+${formulaComparison.addedCount} added · -${formulaComparison.removedCount} removed`,
+                              color: "#7DD3FC",
+                            },
+                            {
+                              label: `${selectedBasketModeMeta.label} Delta`,
+                              value: `${compareBasketDelta >= 0 ? "+" : ""}$${compareBasketDelta.toFixed(2)}`,
+                              meta: `$${(compareLeftBasket?.totalCost || 0).toFixed(2)} → $${(compareRightBasket?.totalCost || 0).toFixed(2)}`,
+                              color:
+                                compareBasketDelta > 0
+                                  ? "#F59E0B"
+                                  : compareBasketDelta < 0
+                                  ? "#34D399"
+                                  : "#CBD5E1",
+                            },
+                            {
+                              label: "Performance Delta",
+                              value: `${
+                                compareRightPerformanceTotal -
+                                  compareLeftPerformanceTotal >=
+                                0
+                                  ? "+"
+                                  : ""
+                              }${(
+                                compareRightPerformanceTotal -
+                                compareLeftPerformanceTotal
+                              ).toFixed(2)}`,
+                              meta: `${compareLeftPerformanceTotal.toFixed(2)} → ${compareRightPerformanceTotal.toFixed(2)}`,
+                              color: "#34D399",
+                            },
+                            {
+                              label: "Chemistry Delta",
+                              value: `${
+                                formulaComparison.chemistryDelta.totalIntensity >=
+                                0
+                                  ? "+"
+                                  : ""
+                              }${formulaComparison.chemistryDelta.totalIntensity.toFixed(
+                                1
+                              )}`,
+                              meta: `${formulaComparison.leftChemistry.topContributor} → ${formulaComparison.rightChemistry.topContributor}`,
+                              color: "#A78BFA",
+                            },
+                          ].map((card) => (
+                            <div
+                              key={card.label}
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 10,
+                                padding: "10px 12px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                  marginBottom: 5,
+                                }}
+                              >
+                                {card.label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 16,
+                                  fontWeight: 800,
+                                  color: card.color,
+                                }}
+                              >
+                                {card.value}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#475569",
+                                  marginTop: 4,
+                                }}
+                              >
+                                {card.meta}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                            gap: 12,
+                          }}
+                        >
+                          {[
+                            [compareLeftLabel, compareLeftBasket],
+                            [compareRightLabel, compareRightBasket],
+                          ].map(([label, basket]) => (
+                            <div
+                              key={`${label}-basket`}
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 12,
+                                padding: 12,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                  marginBottom: 8,
+                                }}
+                              >
+                                {label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 18,
+                                  fontWeight: 800,
+                                  color: "#E2E8F0",
+                                }}
+                              >
+                                ${basket?.totalCost.toFixed(2) || "0.00"}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 6,
+                                  fontSize: 9,
+                                  color: "#94A3B8",
+                                  lineHeight: 1.6,
+                                }}
+                              >
+                                {(basket?.supplierCount || 0) +
+                                  " suppliers · " +
+                                  (basket?.missingCount || 0) +
+                                  " missing · " +
+                                  (basket?.uncertainCount || 0) +
+                                  " uncertain"}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+                            gap: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 12,
+                              padding: 12,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 700,
+                                marginBottom: 8,
+                              }}
+                            >
+                              Performance Delta
+                            </div>
+                            {[
+                              [
+                                "Longevity",
+                                formulaComparison.leftPerformance.longevity,
+                                formulaComparison.rightPerformance.longevity,
+                              ],
+                              [
+                                "Sillage",
+                                formulaComparison.leftPerformance.sillage,
+                                formulaComparison.rightPerformance.sillage,
+                              ],
+                              [
+                                "Projection",
+                                formulaComparison.leftPerformance.projection,
+                                formulaComparison.rightPerformance.projection,
+                              ],
+                            ].map(([metric, leftValue, rightValue]) => {
+                              const delta = rightValue - leftValue;
+                              return (
+                                <div
+                                  key={metric}
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    gap: 10,
+                                    padding: "6px 0",
+                                    borderBottom: "1px solid #0A1628",
+                                    fontSize: 10,
+                                  }}
+                                >
+                                  <span style={{ color: "#CBD5E1" }}>
+                                    {metric}
+                                  </span>
+                                  <span style={{ color: "#64748B" }}>
+                                    {leftValue.toFixed(2)} → {rightValue.toFixed(2)}
+                                  </span>
+                                  <span
+                                    style={{
+                                      color:
+                                        delta > 0
+                                          ? "#34D399"
+                                          : delta < 0
+                                          ? "#F87171"
+                                          : "#94A3B8",
+                                      fontWeight: 700,
+                                      minWidth: 54,
+                                      textAlign: "right",
+                                    }}
+                                  >
+                                    {delta >= 0 ? "+" : ""}
+                                    {delta.toFixed(2)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 12,
+                              padding: 12,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 700,
+                                marginBottom: 8,
+                              }}
+                            >
+                              Chemistry Delta
+                            </div>
+                            {[
+                              [
+                                "Total Intensity",
+                                formulaComparison.leftChemistry.totalIntensity,
+                                formulaComparison.rightChemistry.totalIntensity,
+                              ],
+                              [
+                                "Total OV",
+                                formulaComparison.leftChemistry.totalOV,
+                                formulaComparison.rightChemistry.totalOV,
+                              ],
+                              [
+                                "Weighted xLogP",
+                                formulaComparison.leftChemistry.weightedXLogP,
+                                formulaComparison.rightChemistry.weightedXLogP,
+                              ],
+                              [
+                                "Weighted VP",
+                                formulaComparison.leftChemistry.weightedVP,
+                                formulaComparison.rightChemistry.weightedVP,
+                              ],
+                            ].map(([metric, leftValue, rightValue]) => {
+                              const delta = rightValue - leftValue;
+                              return (
+                                <div
+                                  key={metric}
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    gap: 10,
+                                    padding: "6px 0",
+                                    borderBottom: "1px solid #0A1628",
+                                    fontSize: 10,
+                                  }}
+                                >
+                                  <span style={{ color: "#CBD5E1" }}>
+                                    {metric}
+                                  </span>
+                                  <span style={{ color: "#64748B" }}>
+                                    {leftValue.toFixed(2)} → {rightValue.toFixed(2)}
+                                  </span>
+                                  <span
+                                    style={{
+                                      color:
+                                        delta > 0
+                                          ? "#34D399"
+                                          : delta < 0
+                                          ? "#F87171"
+                                          : "#94A3B8",
+                                      fontWeight: 700,
+                                      minWidth: 54,
+                                      textAlign: "right",
+                                    }}
+                                  >
+                                    {delta >= 0 ? "+" : ""}
+                                    {delta.toFixed(2)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                            <div
+                              style={{
+                                marginTop: 8,
+                                fontSize: 9,
+                                color: "#475569",
+                              }}
+                            >
+                              Top contributor:{" "}
+                              <strong style={{ color: "#CBD5E1" }}>
+                                {formulaComparison.leftChemistry.topContributor}
+                              </strong>{" "}
+                              →{" "}
+                              <strong style={{ color: "#CBD5E1" }}>
+                                {formulaComparison.rightChemistry.topContributor}
+                              </strong>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: "#060E1E",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                              marginBottom: 8,
+                            }}
+                          >
+                            Performance Model Estimate
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: "#94A3B8",
+                              lineHeight: 1.6,
+                              marginBottom: 10,
+                            }}
+                          >
+                            Estimate only — translated from the app&apos;s current
+                            chemistry and performance heuristics.
+                          </div>
+                          <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
+                            {(formulaComparison.performanceNarrative || []).map(
+                              (note) => (
+                                <div
+                                  key={note}
+                                  style={{
+                                    background: "#071826",
+                                    border: "1px solid #1E3A52",
+                                    borderRadius: 8,
+                                    padding: "7px 9px",
+                                    fontSize: 9,
+                                    color: "#CBD5E1",
+                                    lineHeight: 1.55,
+                                  }}
+                                >
+                                  {note}
+                                </div>
+                              )
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit,minmax(280px,1fr))",
+                              gap: 12,
+                            }}
+                          >
+                            {renderPerformanceModelCard(
+                              formulaComparison.leftPerformanceModel,
+                              {
+                                title: compareLeftLabel,
+                                compact: true,
+                              }
+                            )}
+                            {renderPerformanceModelCard(
+                              formulaComparison.rightPerformanceModel,
+                              {
+                                title: compareRightLabel,
+                                compact: true,
+                              }
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: "#060E1E",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 12,
+                            padding: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: 10,
+                              gap: 12,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Structured Diff
+                            </div>
+                            <div style={{ fontSize: 9, color: "#475569" }}>
+                              {compareLeftLabel} → {compareRightLabel}
+                            </div>
+                          </div>
+                          {formulaComparison.diffRows.length === 0 ? (
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: "#94A3B8",
+                                padding: "6px 0 2px",
+                              }}
+                            >
+                              No ingredient, role, or gram changes were detected
+                              between these formulas.
+                            </div>
+                          ) : (
+                            <div style={{ overflowX: "auto" }}>
+                              <table
+                                style={{
+                                  width: "100%",
+                                  fontSize: 10,
+                                  borderCollapse: "collapse",
+                                }}
+                              >
+                                <thead>
+                                  <tr
+                                    style={{
+                                      borderBottom: "1px solid #1E3A52",
+                                    }}
+                                  >
+                                    {[
+                                      "Status",
+                                      "Ingredient",
+                                      compareLeftLabel,
+                                      compareRightLabel,
+                                      "Role Delta",
+                                      "Δg",
+                                    ].map((heading) => (
+                                      <th
+                                        key={heading}
+                                        style={{
+                                          padding: "5px 8px",
+                                          textAlign: "left",
+                                          color: "#475569",
+                                          fontWeight: 700,
+                                          fontSize: 8.5,
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.07em",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {heading}
+                                      </th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {formulaComparison.diffRows.map((row) => {
+                                    const statusStyle =
+                                      row.status === "added"
+                                        ? {
+                                            bg: "#0A2D1B",
+                                            color: "#34D399",
+                                            label: "Added",
+                                          }
+                                        : row.status === "removed"
+                                        ? {
+                                            bg: "#2D0A0A",
+                                            color: "#F87171",
+                                            label: "Removed",
+                                          }
+                                        : {
+                                            bg: "#0A2540",
+                                            color: "#7DD3FC",
+                                            label: "Changed",
+                                          };
+                                    const nameChanged =
+                                      row.leftNames[0] &&
+                                      row.rightNames[0] &&
+                                      row.leftNames[0] !== row.rightNames[0];
+                                    return (
+                                      <tr
+                                        key={row.key}
+                                        style={{
+                                          borderBottom: "1px solid #0A1628",
+                                        }}
+                                      >
+                                        <td style={{ padding: "5px 8px" }}>
+                                          <span
+                                            style={{
+                                              background: statusStyle.bg,
+                                              color: statusStyle.color,
+                                              padding: "1px 7px",
+                                              borderRadius: 999,
+                                              fontSize: 8,
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            {statusStyle.label}
+                                          </span>
+                                        </td>
+                                        <td
+                                          style={{
+                                            padding: "5px 8px",
+                                            color: "#E2E8F0",
+                                            fontWeight: 600,
+                                          }}
+                                        >
+                                          <div>{row.displayName}</div>
+                                          {nameChanged && (
+                                            <div
+                                              style={{
+                                                fontSize: 8,
+                                                color: "#475569",
+                                                marginTop: 2,
+                                              }}
+                                            >
+                                              {row.leftNames[0]} → {row.rightNames[0]}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td
+                                          style={{
+                                            padding: "5px 8px",
+                                            color: "#94A3B8",
+                                            fontFamily: "monospace",
+                                          }}
+                                        >
+                                          {row.leftGrams > 0
+                                            ? `${row.leftGrams.toFixed(1)}g`
+                                            : "—"}
+                                        </td>
+                                        <td
+                                          style={{
+                                            padding: "5px 8px",
+                                            color: "#94A3B8",
+                                            fontFamily: "monospace",
+                                          }}
+                                        >
+                                          {row.rightGrams > 0
+                                            ? `${row.rightGrams.toFixed(1)}g`
+                                            : "—"}
+                                        </td>
+                                        <td
+                                          style={{
+                                            padding: "5px 8px",
+                                            color:
+                                              row.noteChanged
+                                                ? "#FCD34D"
+                                                : "#475569",
+                                          }}
+                                        >
+                                          {row.leftNotes === row.rightNotes
+                                            ? row.leftNotes
+                                            : `${row.leftNotes} → ${row.rightNotes}`}
+                                        </td>
+                                        <td
+                                          style={{
+                                            padding: "5px 8px",
+                                            fontFamily: "monospace",
+                                            fontWeight: 700,
+                                            color:
+                                              row.gramDelta > 0
+                                                ? "#34D399"
+                                                : row.gramDelta < 0
+                                                ? "#F87171"
+                                                : "#94A3B8",
+                                          }}
+                                        >
+                                          {row.gramDelta >= 0 ? "+" : ""}
+                                          {row.gramDelta.toFixed(1)}g
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 {subTab === "chemistry" && (
@@ -58979,6 +64868,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           >
                             <input
                               value={ingSearchQuery}
+                              disabled={formula.isLocked}
                               onChange={(e) => {
                                 setIngSearchQuery(e.target.value);
                                 setIngSearchOpen(true);
@@ -59001,6 +64891,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             />
                             {ingSearchQuery && (
                               <button
+                                disabled={formula.isLocked}
                                 onClick={() => {
                                   setIngSearchQuery("");
                                   setIngSearchOpen(false);
@@ -59051,32 +64942,20 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                       <div
                                         key={nm}
                                         onMouseDown={() => {
-                                          const NOTE_ORDER = {
-                                            top: 0,
-                                            mid: 1,
-                                            base: 2,
-                                            carrier: 3,
-                                          };
-                                          setFormulas((prev) =>
-                                            prev.map((f, fi) => {
-                                              if (fi !== selFrag) return f;
-                                              const newIng = {
-                                                name: nm,
-                                                g: 10,
-                                                note: d?.note || "mid",
-                                              };
-                                              const updated = [
-                                                ...f.ingredients,
-                                                newIng,
-                                              ].sort(
-                                                (a, b) =>
-                                                  (NOTE_ORDER[a.note] ?? 2) -
-                                                  (NOTE_ORDER[b.note] ?? 2)
-                                              );
-                                              return {
-                                                ...f,
-                                                ingredients: updated,
-                                              };
+                                          if (formula.isLocked) return;
+                                          updateFormulaRecord(
+                                            formula.formulaKey,
+                                            (current) => ({
+                                              ...current,
+                                              ingredients:
+                                                sortFormulaIngredients([
+                                                  ...current.ingredients,
+                                                  {
+                                                    name: nm,
+                                                    g: 10,
+                                                    note: d?.note || "mid",
+                                                  },
+                                                ]),
                                             })
                                           );
                                           setIngSearchQuery("");
@@ -59162,32 +65041,34 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             })()}
                         </div>
                         <button
+                          disabled={!formula.isSeeded || formula.isLocked}
                           onClick={() => {
                             if (
                               confirm(
-                                "Reset this formula to its original values?"
+                                "Reset this seeded formula to its original values?"
                               )
                             ) {
-                              if (FORMULAS_INIT[selFrag])
-                                setFormulas((prev) =>
-                                  prev.map((f, i) =>
-                                    i === selFrag ? FORMULAS_INIT[selFrag] : f
-                                  )
-                                );
-                              else
-                                alert(
-                                  "Custom formulas cannot be reset to a default."
-                                );
+                              resetFormulaToSeed();
                             }
                           }}
                           style={{
                             background: "#0A1628",
-                            border: "1px solid #F8717140",
+                            border: `1px solid ${
+                              !formula.isSeeded || formula.isLocked
+                                ? "#1E3A52"
+                                : "#F8717140"
+                            }`,
                             borderRadius: 6,
-                            color: "#F87171",
+                            color:
+                              !formula.isSeeded || formula.isLocked
+                                ? "#475569"
+                                : "#F87171",
                             padding: "5px 10px",
                             fontSize: 9,
-                            cursor: "pointer",
+                            cursor:
+                              !formula.isSeeded || formula.isLocked
+                                ? "not-allowed"
+                                : "pointer",
                             fontWeight: 700,
                           }}
                         >
@@ -59195,6 +65076,116 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         </button>
                       </div>
                     </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 240px",
+                        gap: 12,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: 12,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 8,
+                          }}
+                        >
+                          Revision Note
+                        </div>
+                        <textarea
+                          value={formula.revisionNote || ""}
+                          disabled={formula.isLocked}
+                          onChange={(e) =>
+                            updateFormulaRecord(formula.formulaKey, (current) => ({
+                              ...current,
+                              revisionNote: e.target.value,
+                            }))
+                          }
+                          placeholder="Summarize what changed in this version..."
+                          style={{
+                            width: "100%",
+                            minHeight: 78,
+                            background: "#0A1628",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: 10,
+                            fontSize: 10,
+                            resize: "vertical",
+                            boxSizing: "border-box",
+                            outline: "none",
+                          }}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 6,
+                          fontSize: 10,
+                          color: "#64748B",
+                        }}
+                      >
+                        <span>
+                          Version: <strong style={{ color: "#7DD3FC" }}>{formula.versionLabel}</strong>
+                        </span>
+                        <span>
+                          Parent:{" "}
+                          <strong style={{ color: "#CBD5E1" }}>
+                            {parentFormulaLabel || (formula.isSeeded ? "Seeded base" : "Standalone")}
+                          </strong>
+                        </span>
+                        <span>
+                          Status:{" "}
+                          <strong
+                            style={{
+                              color: formula.isLocked ? "#F59E0B" : "#34D399",
+                            }}
+                          >
+                            {formula.isLocked ? "Locked" : "Editable"}
+                          </strong>
+                        </span>
+                        {formulaUpdatedLabel && (
+                          <span>
+                            Updated:{" "}
+                            <strong style={{ color: "#CBD5E1" }}>
+                              {formulaUpdatedLabel}
+                            </strong>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {formula.isLocked && (
+                      <div
+                        style={{
+                          marginBottom: 12,
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          background: "#2D1B00",
+                          border: "1px solid #F59E0B30",
+                          color: "#FCD34D",
+                          fontSize: 9,
+                        }}
+                      >
+                        This version is locked. Clone a new version to keep editing.
+                      </div>
+                    )}
                     <table
                       style={{
                         width: "100%",
@@ -59246,7 +65237,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             pricesState[ing.name] || PRICING[ing.name] || {}
                           );
                           const currentSupplier =
-                            formulaSupplierOverrides[selFrag]?.[ing.name] ||
+                            currentFormulaSupplierOverrides[ing.name] ||
                             suppliers[0] ||
                             "";
                           return (
@@ -59264,35 +65255,23 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               <td style={{ padding: "5px 8px" }}>
                                 <select
                                   value={ing.note}
+                                  disabled={formula.isLocked}
                                   onChange={(e) => {
-                                    const NO = {
-                                      top: 0,
-                                      mid: 1,
-                                      base: 2,
-                                      carrier: 3,
-                                    };
-                                    setFormulas((prev) =>
-                                      prev.map((f, fi) =>
-                                        fi === selFrag
-                                          ? {
-                                              ...f,
-                                              ingredients: f.ingredients
-                                                .map((ing2, i2) =>
-                                                  i2 === ii
-                                                    ? {
-                                                        ...ing2,
-                                                        note: e.target.value,
-                                                      }
-                                                    : ing2
-                                                )
-                                                .sort(
-                                                  (a, b) =>
-                                                    (NO[a.note] ?? 2) -
-                                                    (NO[b.note] ?? 2)
-                                                ),
-                                            }
-                                          : f
-                                      )
+                                    updateFormulaRecord(
+                                      formula.formulaKey,
+                                      (current) => ({
+                                        ...current,
+                                        ingredients: sortFormulaIngredients(
+                                          current.ingredients.map((ing2, i2) =>
+                                            i2 === ii
+                                              ? {
+                                                  ...ing2,
+                                                  note: e.target.value,
+                                                }
+                                              : ing2
+                                          )
+                                        ),
+                                      })
                                     );
                                   }}
                                   style={{
@@ -59318,22 +65297,20 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               <td style={{ padding: "5px 8px" }}>
                                 <input
                                   value={ing.name}
+                                  disabled={formula.isLocked}
                                   onChange={(e) => {
                                     const newName = e.target.value;
-                                    setFormulas((prev) =>
-                                      prev.map((f, fi) =>
-                                        fi === selFrag
-                                          ? {
-                                              ...f,
-                                              ingredients: f.ingredients.map(
-                                                (ing2, i2) =>
-                                                  i2 === ii
-                                                    ? { ...ing2, name: newName }
-                                                    : ing2
-                                              ),
-                                            }
-                                          : f
-                                      )
+                                    updateFormulaRecord(
+                                      formula.formulaKey,
+                                      (current) => ({
+                                        ...current,
+                                        ingredients: current.ingredients.map(
+                                          (ing2, i2) =>
+                                            i2 === ii
+                                              ? { ...ing2, name: newName }
+                                              : ing2
+                                        ),
+                                      })
                                     );
                                   }}
                                   style={{
@@ -59372,22 +65349,20 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                     min={0}
                                     step={0.5}
                                     value={ing.g}
+                                    disabled={formula.isLocked}
                                     onChange={(e) => {
                                       const v = parseFloat(e.target.value) || 0;
-                                      setFormulas((prev) =>
-                                        prev.map((f, fi) =>
-                                          fi === selFrag
-                                            ? {
-                                                ...f,
-                                                ingredients: f.ingredients.map(
-                                                  (ing2, i2) =>
-                                                    i2 === ii
-                                                      ? { ...ing2, g: v }
-                                                      : ing2
-                                                ),
-                                              }
-                                            : f
-                                        )
+                                      updateFormulaRecord(
+                                        formula.formulaKey,
+                                        (current) => ({
+                                          ...current,
+                                          ingredients: current.ingredients.map(
+                                            (ing2, i2) =>
+                                              i2 === ii
+                                                ? { ...ing2, g: v }
+                                                : ing2
+                                          ),
+                                        })
                                       );
                                     }}
                                     style={{
@@ -59429,11 +65404,13 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                 {suppliers.length > 0 ? (
                                   <select
                                     value={currentSupplier}
+                                    disabled={formula.isLocked}
                                     onChange={(e) => {
                                       setFormulaSupplierOverrides((prev) => ({
                                         ...prev,
-                                        [selFrag]: {
-                                          ...(prev[selFrag] || {}),
+                                        [formula.formulaKey]: {
+                                          ...(prev[formula.formulaKey] ||
+                                            currentFormulaSupplierOverrides),
                                           [ing.name]: e.target.value,
                                         },
                                       }));
@@ -59464,27 +65441,25 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               </td>
                               <td style={{ padding: "5px 8px" }}>
                                 <button
+                                  disabled={formula.isLocked}
                                   onClick={() => {
                                     if (confirm(`Remove ${ing.name}?`))
-                                      setFormulas((prev) =>
-                                        prev.map((f, fi) =>
-                                          fi === selFrag
-                                            ? {
-                                                ...f,
-                                                ingredients:
-                                                  f.ingredients.filter(
-                                                    (_, i2) => i2 !== ii
-                                                  ),
-                                              }
-                                            : f
-                                        )
+                                      updateFormulaRecord(
+                                        formula.formulaKey,
+                                        (current) => ({
+                                          ...current,
+                                          ingredients:
+                                            current.ingredients.filter(
+                                              (_, i2) => i2 !== ii
+                                            ),
+                                        })
                                       );
                                   }}
                                   style={{
                                     background: "none",
                                     border: "none",
-                                    color: "#475569",
-                                    cursor: "pointer",
+                                    color: formula.isLocked ? "#334155" : "#475569",
+                                    cursor: formula.isLocked ? "not-allowed" : "pointer",
                                     fontSize: 12,
                                     padding: 2,
                                   }}
@@ -59531,14 +65506,17 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                 {subTab === "notes" && (
                   <div style={{ maxWidth: 680 }}>
                     <p style={{ fontSize: 11, color: "#64748B", marginBottom: 10, lineHeight: 1.6 }}>
-                      Iteration log for <strong style={{ color: ACC }}>{formula.name}</strong>. Track changes, impressions, and next steps.
+                      Iteration log for <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. Track changes, impressions, and next steps.
                     </p>
                     <textarea
-                      value={formulaNotes[formula.name] || ""}
+                      value={formulaNoteText}
                       onChange={(e) =>
-                        setFormulaNotes((prev) => ({ ...prev, [formula.name]: e.target.value }))
+                        setFormulaNotes((prev) => ({
+                          ...prev,
+                          [formula.formulaKey]: e.target.value,
+                        }))
                       }
-                      placeholder={`Notes for ${formula.name}…\n\nExamples:\n• 2026-03-12 – Batch #1: sillage feels thin, consider +10g Habanolide\n• 2026-03-18 – Batch #2: much better projection, sweetness slightly high\n• TODO: try replacing DPG with Isopropyl Myristate for skin-feel test`}
+                      placeholder={`Notes for ${selectedFormulaLabel}…\n\nExamples:\n• 2026-03-12 – Batch #1: sillage feels thin, consider +10g Habanolide\n• 2026-03-18 – Batch #2: much better projection, sweetness slightly high\n• TODO: try replacing DPG with Isopropyl Myristate for skin-feel test`}
                       style={{
                         width: "100%",
                         minHeight: 280,
@@ -59557,11 +65535,18 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
                       <span style={{ fontSize: 10, color: "#334155" }}>
-                        Auto-saved to browser storage · {(formulaNotes[formula.name] || "").length} chars
+                        Auto-saved to browser storage · {formulaNoteText.length} chars
                       </span>
-                      {formulaNotes[formula.name] && (
+                      {formulaNoteText && (
                         <button
-                          onClick={() => setFormulaNotes((prev) => { const n = {...prev}; delete n[formula.name]; return n; })}
+                          onClick={() =>
+                            setFormulaNotes((prev) => {
+                              const next = { ...prev };
+                              delete next[formula.formulaKey];
+                              delete next[formula.name];
+                              return next;
+                            })
+                          }
                           style={{ background: "none", border: "1px solid #1E3A52", borderRadius: 6, color: "#475569", fontSize: 10, padding: "3px 10px", cursor: "pointer" }}
                         >
                           Clear
@@ -59573,12 +65558,29 @@ Be specific, reference ingredient names, keep it under 300 words.`;
 
                 {/* ── AI CRITIQUE SUB-TAB ── */}
                 {subTab === "critique" && (
-                  <div style={{ maxWidth: 680 }}>
-                    <p style={{ fontSize: 11, color: "#64748B", marginBottom: 12, lineHeight: 1.6 }}>
-                      Get an AI perfumer's critique of <strong style={{ color: ACC }}>{formula.name}</strong> — accord balance, strengths, issues, and specific improvement suggestions. Requires API key in Suppliers tab.
+                  <div style={{ maxWidth: 920, display: "grid", gap: 12 }}>
+                    {renderCritiqueLensSelector("critique")}
+                    {critiqueLens === "compliance" &&
+                      renderFinishedProductIfraGuidanceCard(
+                        formulaFinishedProductGuidance,
+                        {
+                          title: "Finished-Product IFRA Guidance",
+                          compact: true,
+                          showControls: true,
+                          scopeKey: "formula-critique-finished-product",
+                          baselineNote:
+                            "Supplemental use-context estimate only. The structured critique below still keeps Cat 4 as its baseline so existing compliance review behavior stays intact.",
+                        }
+                      )}
+                    {renderCritiqueReportCard(formulaCritiqueReport, {
+                      title: "Structured Critique & Improvement Advisor",
+                    })}
+                    <p style={{ fontSize: 11, color: "#64748B", margin: 0, lineHeight: 1.6 }}>
+                      Add an AI pass on top of the current structured {selectedCritiqueLensMeta.label.toLowerCase()}-lens critique for{" "}
+                      <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. The prompt is grounded in the app&apos;s current performance, cost, and compliance signals. Requires API key in Suppliers tab.
                     </p>
                     <button
-                      onClick={() => runAiCritique(formula)}
+                      onClick={() => runAiCritique(formula, formulaCritiqueReport)}
                       disabled={critiqueLoading}
                       style={{
                         background: critiqueLoading ? "#0A2540" : "linear-gradient(135deg,#0E4D6E,#1A6D9A)",
@@ -59593,13 +65595,15 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         letterSpacing: "0.07em",
                       }}
                     >
-                      {critiqueLoading ? "⏳ Analyzing…" : "🤖 Critique This Formula"}
+                      {critiqueLoading
+                        ? "⏳ Analyzing…"
+                        : `🤖 Generate ${selectedCritiqueLensMeta.label} AI Add-On`}
                     </button>
                     {critiqueText && (
                       <div
                         style={{
                           background: "#060E1E",
-                          border: `1px solid ${critiqueFormula === formula.name ? "#22D3EE40" : BORDER}`,
+                          border: `1px solid ${critiqueFormula === formula.formulaKey ? "#22D3EE40" : BORDER}`,
                           borderRadius: 10,
                           padding: 16,
                           fontSize: 11,
@@ -59608,9 +65612,17 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                           whiteSpace: "pre-wrap",
                         }}
                       >
-                        {critiqueFormula !== formula.name && (
+                        {(critiqueFormula !== formula.formulaKey ||
+                          critiqueLensUsed !== critiqueLens) && (
                           <div style={{ fontSize: 10, color: "#F59E0B", marginBottom: 8 }}>
-                            ⚠️ This critique is for <strong>{critiqueFormula}</strong> — click the button above to analyze the current formula.
+                            ⚠️ This AI add-on is for <strong>{critiqueTargetLabel || "another formula"}</strong>
+                            {critiqueLensUsed
+                              ? ` using the ${(
+                                  CRITIQUE_LENS_META[critiqueLensUsed] ||
+                                  CRITIQUE_LENS_META.perfumer
+                                ).label.toLowerCase()} lens`
+                              : ""}
+                            {" — "}click the button above to refresh it for the current formula and lens.
                           </div>
                         )}
                         {critiqueText.split(/(\*\*[^*]+\*\*)/).map((part, idx) =>
@@ -59622,7 +65634,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     )}
                     {!critiqueText && !critiqueLoading && (
                       <div style={{ fontSize: 10, color: "#334155", fontStyle: "italic" }}>
-                        Click the button to send this formula to Claude for a perfumer's critique.
+                        The structured rule-based critique is already live above. Click the button to add an AI pass that stays aligned with the selected lens.
                       </div>
                     )}
                   </div>
@@ -59971,9 +65983,11 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     </button>
                   </div>
                   {buildItems.map((item) => {
-                    const d = DB[item.name];
-                    const nc = NC[item.note] || NC.carrier;
-                    const plan = getInventoryPlan(item.name, item.g);
+                    const basketLine =
+                      selectedBuildBasketLineMap.get(item.name) || null;
+                    const basketLineStatus =
+                      basketStatusMeta[basketLine?.status] ||
+                      basketStatusMeta.inferred;
                     return (
                       <div
                         key={item.name}
@@ -60069,7 +66083,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                             ))}
                           </select>
                         </div>
-                        {plan && (
+                        {basketLine && (
                           <div
                             style={{
                               fontSize: 9,
@@ -60077,34 +66091,107 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                               background: "#0A1628",
                               borderRadius: 5,
                               padding: "5px 8px",
-                              display: "flex",
-                              justifyContent: "space-between",
+                              display: "grid",
+                              gap: 4,
                             }}
                           >
-                            <span>
-                              Buy:{" "}
-                              <span
-                                style={{ color: "#34D399", fontWeight: 700 }}
-                              >
-                                {plan.qty}
-                                {plan.unit} @ ${plan.price.toFixed(2)}
-                              </span>{" "}
-                              from{" "}
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span>
+                                <span style={{ color: "#64748B" }}>Buy: </span>
+                                <span
+                                  style={{
+                                    color:
+                                      basketLine.lineCost != null
+                                        ? "#34D399"
+                                        : "#F87171",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {basketLine.line
+                                    ? `${basketLine.buyText} @ $${basketLine.line.price.toFixed(2)}`
+                                    : "No price data"}
+                                </span>{" "}
+                                <span style={{ color: "#64748B" }}>from </span>
+                                <span
+                                  style={{
+                                    color:
+                                      SUPPLIER_COLORS[basketLine.supplier] ||
+                                      "#CBD5E1",
+                                  }}
+                                >
+                                  {basketLine.supplier || "—"}
+                                </span>
+                              </span>
                               <span
                                 style={{
                                   color:
-                                    SUPPLIER_COLORS[plan.supplier] || "#fff",
+                                    basketLine.lineCost != null
+                                      ? "#34D399"
+                                      : "#F87171",
+                                  fontWeight: 700,
+                                  fontFamily: "monospace",
                                 }}
                               >
-                                {plan.supplier}
+                                {basketLine.lineCost != null
+                                  ? `$${basketLine.lineCost.toFixed(2)}`
+                                  : "—"}
                               </span>
-                            </span>
-                            <span>
-                              Remaining:{" "}
-                              <span style={{ color: ACC }}>
-                                {plan.remaining.toFixed(1)}g
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                  padding: "1px 7px",
+                                  borderRadius: 999,
+                                  background: basketLineStatus.bg,
+                                  border: `1px solid ${basketLineStatus.border}`,
+                                  color: basketLineStatus.color,
+                                  fontSize: 8,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {basketLineStatus.label}
                               </span>
-                            </span>
+                              <span>
+                                Remaining:{" "}
+                                <span style={{ color: ACC }}>
+                                  {basketLine.remaining != null
+                                    ? `${basketLine.remaining.toFixed(1)}g`
+                                    : "—"}
+                                </span>
+                              </span>
+                            </div>
+                            {(basketLine.missingReason ||
+                              basketLine.confidenceNote) && (
+                              <div
+                                style={{
+                                  fontSize: 8.5,
+                                  color: "#64748B",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {basketLine.missingReason ||
+                                  basketLine.confidenceNote}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -60128,7 +66215,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         color: "#E2E8F0",
                       }}
                     >
-                      Estimated Cost
+                      Estimated Cost · {selectedBasketModeMeta.label}
                     </span>
                     <span
                       style={{
@@ -60268,106 +66355,151 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         ) : null;
                       })()}
                     </div>
-                    <div
-                      style={{
-                        background: CARD,
-                        borderRadius: 14,
-                        border: `1px solid ${BORDER}`,
-                        padding: 16,
-                      }}
-                    >
-                      <p
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 700,
-                          color: "#475569",
-                          textTransform: "uppercase",
-                          margin: "0 0 16px",
-                        }}
-                      >
-                        Performance Scores
-                      </p>
-                      <ScoreBar
-                        label="🕰️ Longevity"
-                        value={buildScore.longevity}
-                        color="#818CF8"
-                      />
-                      <ScoreBar
-                        label="🌬️ Sillage"
-                        value={buildScore.sillage}
-                        color="#22D3EE"
-                      />
-                      <ScoreBar
-                        label="💥 Projection"
-                        value={buildScore.projection}
-                        color="#F59E0B"
-                      />
+                    <div style={{ display: "grid", gap: 12 }}>
                       <div
                         style={{
-                          marginTop: 14,
-                          padding: "10px 12px",
-                          background: "#060E1E",
-                          borderRadius: 8,
+                          background: CARD,
+                          borderRadius: 14,
                           border: `1px solid ${BORDER}`,
-                          fontSize: 10,
-                          color: "#475569",
-                          lineHeight: 1.7,
+                          padding: 16,
                         }}
                       >
-                        <div>
-                          <span style={{ color: "#818CF8" }}>Longevity</span>{" "}
-                          driven by base note VP, xLogP &amp; fixatives
-                        </div>
-                        <div>
-                          <span style={{ color: "#22D3EE" }}>Sillage</span>{" "}
-                          driven by diffusive musks &amp; Ambroxan
-                        </div>
-                        <div>
-                          <span style={{ color: "#F59E0B" }}>Projection</span>{" "}
-                          driven by top note OV &amp; high VP ingredients
+                        <p
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#475569",
+                            textTransform: "uppercase",
+                            margin: "0 0 16px",
+                          }}
+                        >
+                          Performance Scores
+                        </p>
+                        <ScoreBar
+                          label="🕰️ Longevity"
+                          value={buildScore.longevity}
+                          color="#818CF8"
+                        />
+                        <ScoreBar
+                          label="🌬️ Sillage"
+                          value={buildScore.sillage}
+                          color="#22D3EE"
+                        />
+                        <ScoreBar
+                          label="💥 Projection"
+                          value={buildScore.projection}
+                          color="#F59E0B"
+                        />
+                        <div
+                          style={{
+                            marginTop: 14,
+                            padding: "10px 12px",
+                            background: "#060E1E",
+                            borderRadius: 8,
+                            border: `1px solid ${BORDER}`,
+                            fontSize: 10,
+                            color: "#475569",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          <div>
+                            <span style={{ color: "#818CF8" }}>Longevity</span>{" "}
+                            driven by base note VP, xLogP &amp; fixatives
+                          </div>
+                          <div>
+                            <span style={{ color: "#22D3EE" }}>Sillage</span>{" "}
+                            driven by diffusive musks &amp; Ambroxan
+                          </div>
+                          <div>
+                            <span style={{ color: "#F59E0B" }}>Projection</span>{" "}
+                            driven by top note OV &amp; high VP ingredients
+                          </div>
                         </div>
                       </div>
+                      {renderPerformanceModelCard(buildPerformanceModel, {
+                        title: `Performance Model Estimate — ${
+                          buildName.trim() || "Current Build"
+                        }`,
+                      })}
                     </div>
                   </div>
                   {(() => {
                     const rows = getFormulaIfraRows(buildItems, ifraCategory);
-                    if (rows.length === 0) return null;
-                    const catLabels = { cat4: "Cat 4 — Fine Fragrance", cat5b: "Cat 5b — Face Moisturizer", cat9: "Cat 9 — Body Lotion", cat1: "Cat 1 — Lip Product", cat11a: "Cat 11a — Rinse-off Body" };
+                    if (!buildItems.length) return null;
                     const anyActiveAdjusted = rows.some(r => r.usesActivePercent);
-                    const allOk = rows.every(r => r.status === "ok" || r.status === "unknown");
+                    const allOk =
+                      rows.length > 0 &&
+                      rows.every(r => r.status === "ok" || r.status === "unknown");
                     const anyFail = rows.some(r => r.status === "fail");
                     return (
                       <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 14, marginBottom: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                           <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", margin: 0 }}>IFRA Compliance</p>
-                          <select value={ifraCategory} onChange={e => setIfraCategory(e.target.value)} style={{ fontSize: 10, background: "#0F172A", color: "#94A3B8", border: "1px solid #334155", borderRadius: 6, padding: "2px 6px" }}>
-                            {Object.entries(catLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                          </select>
-                        </div>
-                        {rows.map(({ name, activePercent, formulaPercent, limit, status, usesActivePercent }) => (
-                          <div key={name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5, fontSize: 10 }}>
-                            <span style={{ flex: 1, color: "#CBD5E1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
-                            <span
-                              style={{ color: "#64748B", minWidth: 48, textAlign: "right" }}
-                              title={
-                                usesActivePercent
-                                  ? `Active restricted material percent: ${activePercent.toFixed(2)}% from ${formulaPercent.toFixed(2)}% stock usage`
-                                  : undefined
-                              }
-                            >
-                              {activePercent.toFixed(2)}%
-                            </span>
-                            <span style={{ color: "#475569", minWidth: 48, textAlign: "right" }}>{limit != null ? `≤${limit}%` : "—"}</span>
-                            <span style={{ minWidth: 18 }}>{status === "ok" ? "✅" : status === "warn" ? "⚠️" : status === "fail" ? "🚫" : "❓"}</span>
+                          <div style={{ fontSize: 9, color: "#64748B" }}>
+                            Current build · {selectedFragranceType.label}
                           </div>
-                        ))}
-                        {anyActiveAdjusted && (
+                        </div>
+                        {renderFinishedProductIfraGuidanceCard(
+                          buildFinishedProductGuidance,
+                          {
+                            title: "Finished-Product Guidance",
+                            compact: true,
+                            showControls: true,
+                            scopeKey: "build-finished-product",
+                          }
+                        )}
+                        <div style={{ marginTop: 12 }}>
+                          {rows.length === 0 ? (
+                            <div
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 10,
+                                padding: "10px 12px",
+                                fontSize: 9.5,
+                                color: "#94A3B8",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              No direct concentrate-level restricted rows were
+                              triggered for {IFRA_CATEGORY_LABELS[ifraCategory]} in
+                              the current helper dataset. Finished-product guidance
+                              above still treats missing data separately and should
+                              not be read as a blanket clearance.
+                            </div>
+                          ) : (
+                            rows.map(({ name, activePercent, formulaPercent, limit, status, usesActivePercent }) => (
+                              <div key={name} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5, fontSize: 10 }}>
+                                <span style={{ flex: 1, color: "#CBD5E1", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+                                <span
+                                  style={{ color: "#64748B", minWidth: 48, textAlign: "right" }}
+                                  title={
+                                    usesActivePercent
+                                      ? `Active restricted material percent: ${activePercent.toFixed(2)}% from ${formulaPercent.toFixed(2)}% stock usage`
+                                      : undefined
+                                  }
+                                >
+                                  {activePercent.toFixed(2)}%
+                                </span>
+                                <span style={{ color: "#475569", minWidth: 48, textAlign: "right" }}>{limit != null ? `≤${limit}%` : "—"}</span>
+                                <span style={{ minWidth: 18 }}>{status === "ok" ? "✅" : status === "warn" ? "⚠️" : status === "fail" ? "🚫" : "❓"}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {rows.length > 0 && anyActiveAdjusted && (
                           <div style={{ marginTop: 6, fontSize: 9, color: "#64748B" }}>
                             Diluted stocks are evaluated by active restricted material percent.
                           </div>
                         )}
-                        <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: anyFail ? "#450A0A" : allOk ? "#052E16" : "#431407", border: `1px solid ${anyFail ? "#991B1B" : allOk ? "#166534" : "#92400E"}`, fontSize: 10, color: anyFail ? "#FCA5A5" : allOk ? "#86EFAC" : "#FCD34D", fontWeight: 600 }}>
-                          {anyFail ? "🚫 IFRA Violations Detected — Reduce highlighted ingredients" : allOk ? `✅ IFRA Compliant — ${catLabels[ifraCategory]}` : "⚠️ Some ingredients approaching limit — review before production"}
+                        <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: rows.length === 0 ? "#071826" : anyFail ? "#450A0A" : allOk ? "#052E16" : "#431407", border: `1px solid ${rows.length === 0 ? "#1E3A52" : anyFail ? "#991B1B" : allOk ? "#166534" : "#92400E"}`, fontSize: 10, color: rows.length === 0 ? "#7DD3FC" : anyFail ? "#FCA5A5" : allOk ? "#86EFAC" : "#FCD34D", fontWeight: 600 }}>
+                          {rows.length === 0
+                            ? `ℹ️ No direct restricted rows were triggered — ${IFRA_CATEGORY_LABELS[ifraCategory]}`
+                            : anyFail
+                            ? "🚫 IFRA Violations Detected — Reduce highlighted ingredients"
+                            : allOk
+                            ? `✅ IFRA Compliant — ${IFRA_CATEGORY_LABELS[ifraCategory]}`
+                            : "⚠️ Some ingredients approaching limit — review before production"}
                         </div>
                       </div>
                     );
@@ -60464,141 +66596,59 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         margin: "0 0 10px",
                       }}
                     >
-                      Procurement Summary
+                      Supplier Basket Summary
                     </p>
-                    <table
-                      style={{
-                        width: "100%",
-                        fontSize: 10.5,
-                        borderCollapse: "collapse",
-                      }}
-                    >
-                      <thead>
-                        <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-                          {[
-                            "Ingredient",
-                            "Need",
-                            "Buy",
-                            "From",
-                            "Price",
-                            "Remaining",
-                          ].map((h) => (
-                            <th
-                              key={h}
-                              style={{
-                                padding: "4px 8px",
-                                textAlign: "left",
-                                color: "#334155",
-                                fontSize: 9.5,
-                                fontWeight: 600,
-                              }}
-                            >
-                              {h}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {buildItems.map((item) => {
-                          const plan = getInventoryPlan(item.name, item.g);
-                          return (
-                            <tr
-                              key={item.name}
-                              style={{ borderBottom: "1px solid #0A1628" }}
-                              onMouseEnter={(e) =>
-                                (e.currentTarget.style.background = "#0A1E30")
-                              }
-                              onMouseLeave={(e) =>
-                                (e.currentTarget.style.background =
-                                  "transparent")
-                              }
-                            >
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color: "#E2E8F0",
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {item.name}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color: ACC,
-                                  fontFamily: "monospace",
-                                }}
-                              >
-                                {item.g}g
-                              </td>
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color: "#CBD5E1",
-                                  fontFamily: "monospace",
-                                }}
-                              >
-                                {plan ? `${plan.qty}${plan.unit}` : "—"}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color:
-                                    SUPPLIER_COLORS[plan?.supplier] ||
-                                    "#475569",
-                                  fontSize: 9.5,
-                                }}
-                              >
-                                {plan?.supplier || "—"}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color: "#34D399",
-                                  fontFamily: "monospace",
-                                }}
-                              >
-                                {plan ? `$${plan.price.toFixed(2)}` : "—"}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "5px 8px",
-                                  color: "#818CF8",
-                                  fontFamily: "monospace",
-                                }}
-                              >
-                                {plan ? `${plan.remaining.toFixed(1)}g` : "—"}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        <tr style={{ borderTop: `2px solid ${BORDER}` }}>
-                          <td
-                            colSpan={4}
-                            style={{
-                              padding: "6px 8px",
-                              color: "#64748B",
-                              fontSize: 10,
-                              textAlign: "right",
-                            }}
-                          >
-                            TOTAL PROCUREMENT COST
-                          </td>
-                          <td
-                            style={{
-                              padding: "6px 8px",
-                              color: "#34D399",
-                              fontWeight: 800,
-                              fontSize: 14,
-                              fontFamily: "monospace",
-                            }}
-                          >
-                            ${totalBuildCost.toFixed(2)}
-                          </td>
-                          <td />
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div style={{ display: "grid", gap: 10 }}>
+                      {renderBasketStrategyCards(
+                        buildBasketStrategies,
+                        "build-cost"
+                      )}
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          {selectedBasketModeMeta.description}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color:
+                              basketMode === "cheapest"
+                                ? "#CBD5E1"
+                                : buildBasketDelta > 0
+                                ? "#F59E0B"
+                                : "#34D399",
+                          }}
+                        >
+                          {basketMode === "cheapest"
+                            ? "Cheapest basket is the baseline."
+                            : `Delta vs cheapest: ${
+                                buildBasketDelta >= 0 ? "+" : ""
+                              }$${buildBasketDelta.toFixed(2)}`}
+                        </div>
+                      </div>
+                      {renderBasketDetailTable(
+                        selectedBuildBasket,
+                        `${selectedBuildBasket.meta.title} Build Detail`
+                      )}
+                    </div>
                   </div>
                   <div
                     style={{
@@ -60639,37 +66689,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                     />
                     <button
                       disabled={!buildName.trim() || buildItems.length === 0}
-                      onClick={() => {
-                        const name = buildName.trim();
-                        if (!name || buildItems.length === 0) return;
-                        const newFormula = {
-                          name,
-                          emoji: "🧪",
-                          tagline: "Custom build",
-                          desc: "Created in Build Lab.",
-                          ingredients: [...buildItems].sort(
-                            (a, b) =>
-                              (({ top: 0, mid: 1, base: 2, carrier: 3 }[
-                                a.note
-                              ] ?? 2) -
-                              ({ top: 0, mid: 1, base: 2, carrier: 3 }[
-                                b.note
-                              ] ?? 2))
-                          ),
-                          isCustom: true,
-                        };
-                        const updated = [...savedBuilds, newFormula];
-                        setSavedBuilds(updated);
-                        try {
-                          localStorage.setItem(
-                            "bb_saved_builds",
-                            JSON.stringify(updated)
-                          );
-                        } catch {}
-                        setFormulas((prev) => [...prev, newFormula]);
-                        setBuildName("");
-                        alert(`"${name}" saved! Find it in the Formulas tab.`);
-                      }}
+                      onClick={saveBuildAsFormula}
                       style={{
                         background:
                           buildName.trim() && buildItems.length > 0
@@ -61186,7 +67206,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                         const tot = sc.longevity + sc.sillage + sc.projection;
                         return (
                           <tr
-                            key={f.name}
+                            key={f.formulaKey}
                             style={{
                               borderBottom: "1px solid #0A1628",
                               cursor: "pointer",
@@ -61206,7 +67226,7 @@ Be specific, reference ingredient names, keep it under 300 words.`;
                                 fontWeight: 600,
                               }}
                             >
-                              {f.emoji} {f.name}
+                              {f.emoji} {getFormulaDisplayLabel(f, { includeVersion: true })}
                             </td>
                             <td style={{ padding: "6px 8px" }}>
                               <ScoreBar
@@ -61250,6 +67270,35 @@ Be specific, reference ingredient names, keep it under 300 words.`;
 
             {/* Right: Ingredient advisor */}
             <div>
+              <div style={{ marginBottom: 12 }}>
+                {renderPerformanceModelCard(formulaPerformanceModel, {
+                  title: `Performance Model Estimate — ${selectedFormulaLabel}`,
+                  compact: true,
+                })}
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                {renderCritiqueLensSelector("advisor")}
+              </div>
+              {critiqueLens === "compliance" && (
+                <div style={{ marginBottom: 12 }}>
+                  {renderFinishedProductIfraGuidanceCard(
+                    formulaFinishedProductGuidance,
+                    {
+                      title: "Finished-Product IFRA Guidance",
+                      compact: true,
+                      showControls: true,
+                      scopeKey: "advisor-finished-product",
+                      baselineNote:
+                        "Supplemental use-context estimate only. The structured critique below still keeps Cat 4 as its baseline so the advisor lens remains backward-compatible.",
+                    }
+                  )}
+                </div>
+              )}
+              <div style={{ marginBottom: 12 }}>
+                {renderCritiqueReportCard(formulaCritiqueReport, {
+                  title: "Structured Critique & Improvement Advisor",
+                })}
+              </div>
               <div
                 style={{
                   background: CARD,
@@ -65744,16 +71793,10 @@ Be specific, reference ingredient names, keep it under 300 words.`;
         {/* DILUTION CALCULATOR TAB */}
         {/* ═══════════════════════════════════════════════════════════ */}
         {mainTab === "dilution" && (() => {
-          const TYPES = {
-            "Extrait":  { pct: 25, label: "Extrait de Parfum",  range: "20–30%" },
-            "EDP":      { pct: 17.5, label: "Eau de Parfum",    range: "15–20%" },
-            "EDT":      { pct: 12.5, label: "Eau de Toilette",  range: "10–15%" },
-            "EDC":      { pct: 7.5,  label: "Eau de Cologne",   range: "5–10%"  },
-            "Mist":     { pct: 3.5,  label: "Body Mist",        range: "2–5%"   },
-          };
+          const TYPES = FRAGRANCE_TYPE_PRESETS;
           const concG = parseFloat(dilConc) || 0;
           const volMl = parseFloat(dilVolume) || 0;
-          const chosen = TYPES[dilType] || TYPES["EDP"];
+          const chosen = selectedFragranceType;
           // concentrate pct of final volume (assume concentrate density ≈ 1 g/mL)
           const concMl = concG; // approx
           const totalFinalMl = concMl / (chosen.pct / 100);

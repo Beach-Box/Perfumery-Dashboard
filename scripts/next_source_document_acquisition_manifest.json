@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "version": 1,
+    "generatedAt": "2026-03-18T00:46:12.690508+00:00",
+    "source": "source_document_acquisition_gap_report",
+    "note": "Review-only fetch/acquisition manifest for stronger source documents. No downloads, evidence candidates, helper chemistry, IFRA, or catalog rows are modified."
+  },
+  "products": [
+    {
+      "productUrl": "https://fraterworks.com/products/tolu-balsam-resinoid",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "tolu_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Tolu Balsam Resinoid 50% TEC"
+      ],
+      "currentReadiness": "only_regulatory_docs_present",
+      "missingPreferredSourceTypes": [
+        "SDS (better readable/product-specific)",
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA"
+      ],
+      "notes": [
+        "Current readiness: only_regulatory_docs_present.",
+        "Strongest current source: tolu_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_tolu_50pct_ifra_pdf (allergen_statement, regulatory_only).",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Keep the current structural seed honest until a document-backed candidate exists.",
+        "Current canonical seed is structural/source-seeded only.",
+        "Prefer a trusted supplier or manufacturer document before promoting chemistry."
+      ]
+    },
+    {
+      "productUrl": "https://fraterworks.com/products/peru-balsam-resinoid",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "peru_balsam_resinoid",
+      "relatedCatalogNames": [
+        "Peru Balsam “Signature” Resinoid"
+      ],
+      "currentReadiness": "has_some_docs_but_needs_stronger_identity_source",
+      "missingPreferredSourceTypes": [
+        "SDS (better readable/product-specific)",
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA"
+      ],
+      "notes": [
+        "Current readiness: has_some_docs_but_needs_stronger_identity_source.",
+        "Strongest current source: peru_balsam_resinoid:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifra51_peru_balsam_resinoid_extra_r7210_pdf (ifra_certificate, likely_mismatched).",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Treat this as a separate resinoid identity, not a synonym for Peru balsam oil.",
+        "Keep unresolved fields blank until a trusted document exists.",
+        "The earlier CCID-style CAS candidate has been rejected because it looked more like Peru balsam oil evidence than resinoid-specific evidence.",
+        "At least one evidence candidate has been promoted into the helper canonical seed layer.",
+        "Additional target fields may still require separate document review and promotion.",
+        "Keep the vendor-style resinoid distinct from Peru balsam oil.",
+        "Leave chemistry blank unless a trusted document clearly supports the canonical resinoid identity."
+      ]
+    },
+    {
+      "productUrl": "https://fraterworks.com/products/poplar-bud-absolute",
+      "supplier": "Fraterworks",
+      "canonicalMaterialKey": "poplar_bud_absolute",
+      "relatedCatalogNames": [
+        "Poplar Bud Absolute 50% TEC"
+      ],
+      "currentReadiness": "has_some_docs_but_needs_stronger_identity_source",
+      "missingPreferredSourceTypes": [
+        "SDS (better readable/product-specific)",
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA"
+      ],
+      "notes": [
+        "Current readiness: has_some_docs_but_needs_stronger_identity_source.",
+        "Strongest current source: poplar_bud_absolute:unknown_pdf:cdn_shopify_com_s_files_1_0682_1448_9400_files_ifr_bl51_f1952_pdf (ifra_certificate, regulatory_only).",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Current helper coverage comes from the diluted stock row only.",
+        "Do not infer canonical chemistry from the carrier stock representation.",
+        "Current canonical seed is derived from the live diluted-stock row only.",
+        "Do not promote IFRA linkage without a trusted standard source."
+      ]
+    },
+    {
+      "productUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-fine-organic.html",
+      "supplier": "Eden Botanicals",
+      "canonicalMaterialKey": "ylang_ylang_fine_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang Fine Oil, Org"
+      ],
+      "currentReadiness": "no_useful_docs_present",
+      "missingPreferredSourceTypes": [
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA",
+        "first usable identity document"
+      ],
+      "notes": [
+        "Current readiness: no_useful_docs_present.",
+        "No inspected source documents are currently linked.",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Shared family CAS and INCI coverage already exists; this target is about deeper grade-specific identity evidence.",
+        "CAS and INCI are already covered conservatively through the shared Ylang oil family treatment.",
+        "The next safe evidence gap is note-role and stronger identity description for the Fine grade."
+      ]
+    },
+    {
+      "productUrl": "https://www.edenbotanicals.com/ylang-ylang-i-organic.html",
+      "supplier": "Eden Botanicals",
+      "canonicalMaterialKey": "ylang_ylang_i_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang I Oil, Org"
+      ],
+      "currentReadiness": "no_useful_docs_present",
+      "missingPreferredSourceTypes": [
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA",
+        "first usable identity document"
+      ],
+      "notes": [
+        "Current readiness: no_useful_docs_present.",
+        "No inspected source documents are currently linked.",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Do not backfill note-role or IFRA hints from family assumptions alone.",
+        "Keep fractional grade identity distinct from Extra, Complete, and III.",
+        "Do not guess note-role or IFRA material linkage from family similarity alone."
+      ]
+    },
+    {
+      "productUrl": "https://www.edenbotanicals.com/ylang-ylang-ii-organic.html",
+      "supplier": "Eden Botanicals",
+      "canonicalMaterialKey": "ylang_ylang_ii_oil",
+      "relatedCatalogNames": [
+        "Ylang-Ylang II Oil, Org"
+      ],
+      "currentReadiness": "no_useful_docs_present",
+      "missingPreferredSourceTypes": [
+        "TDS / PDS",
+        "spec sheet",
+        "product-specific PDF",
+        "COA",
+        "first usable identity document"
+      ],
+      "notes": [
+        "Current readiness: no_useful_docs_present.",
+        "No inspected source documents are currently linked.",
+        "Acquire a stronger identity-oriented document before preparing new evidence candidates.",
+        "Treat grade-specific evidence as separate from Extra, Complete, and III.",
+        "CAS and INCI already inherit from the shared Ylang oil family coverage.",
+        "A trusted supplier spec or PDF is still needed before promoting deeper chemistry or IFRA hints."
+      ]
+    }
+  ]
+}
