@@ -2964,6 +2964,16 @@ function getBackfillFieldMeta(fieldKey = "") {
   );
 }
 
+function normalizeGeneratedProposalCandidateKeyPart(value = "") {
+  return (
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "unknown"
+  );
+}
+
 function normalizeBackfillCandidateValue(value) {
   if (typeof value === "boolean") return value ? "true" : "false";
   if (value == null) return "";
@@ -3168,6 +3178,19 @@ const BACKFILL_PROPOSAL_FIELD_ORDER = [
   "ifra_support",
 ];
 
+const BACKFILL_PROPOSAL_CANDIDATE_FIELD_MAP = {
+  canonical_identity: ["canonical_identity", "cas", "inci"],
+  supplier_variants: ["supplier_variants"],
+  pack_sizes: ["pack_sizes"],
+  pricing: ["pricing"],
+  dilution_carrier: ["dilution_carrier"],
+  cas_inci: ["cas", "inci", "cas_inci"],
+  scent_summary: ["scentDesc", "rep", "scent_summary"],
+  note_role_material_type: ["note", "type", "note_role_material_type"],
+  technical_support: ["technical_support"],
+  ifra_support: ["ifraMaterialHint", "ifra_support"],
+};
+
 const IMPROVEMENT_QUEUE_ISSUE_META = {
   conflicting_evidence: {
     label: "Conflicting evidence",
@@ -3214,6 +3237,10 @@ function getBackfillProposalSupportLabel(status) {
   return BACKFILL_PROPOSAL_SUPPORT_LABELS[status] || status || "Unknown";
 }
 
+function getBackfillProposalCandidateFieldKeys(fieldKey = "") {
+  return BACKFILL_PROPOSAL_CANDIDATE_FIELD_MAP[fieldKey] || [fieldKey];
+}
+
 function getCandidateRowsForFields(candidates = [], fieldKeys = []) {
   const fieldSet = new Set(fieldKeys);
   return (candidates || []).filter((candidate) =>
@@ -3238,6 +3265,13 @@ function getFirstPresentValue(...values) {
     if (typeof value === "string") return value.trim() !== "";
     return true;
   }) ?? null;
+}
+
+function mapProposalSupportStatusToConfidence(status) {
+  if (status === "confirmed") return "high";
+  if (status === "likely") return "medium";
+  if (status === "conflicting" || status === "missing") return "low";
+  return "unknown";
 }
 
 function buildCandidateValuePreview(candidates = [], emptyText = "No staged candidate yet.") {
@@ -3616,10 +3650,10 @@ function buildGeneratedBackfillProposalRows({
         : `Preferred source types: ${requestedSourceTypes}`,
   });
 
-  const regulatoryCandidates = getCandidateRowsForFields(stagedCandidates, [
-    "cas",
-    "inci",
-  ]);
+  const regulatoryCandidates = getCandidateRowsForFields(
+    stagedCandidates,
+    getBackfillProposalCandidateFieldKeys("cas_inci")
+  );
   const regulatoryConflict = getConflictEntryForFields(conflictSummary, [
     "cas",
     "inci",
@@ -3680,10 +3714,10 @@ function buildGeneratedBackfillProposalRows({
     linkedCandidateCount: regulatoryCandidates.length,
   });
 
-  const scentCandidates = getCandidateRowsForFields(stagedCandidates, [
-    "scentDesc",
-    "rep",
-  ]);
+  const scentCandidates = getCandidateRowsForFields(
+    stagedCandidates,
+    getBackfillProposalCandidateFieldKeys("scent_summary")
+  );
   const scentConflict = getConflictEntryForFields(conflictSummary, [
     "scentDesc",
     "rep",
@@ -3742,7 +3776,10 @@ function buildGeneratedBackfillProposalRows({
     linkedCandidateCount: scentCandidates.length,
   });
 
-  const noteCandidates = getCandidateRowsForFields(stagedCandidates, ["note"]);
+  const noteCandidates = getCandidateRowsForFields(
+    stagedCandidates,
+    getBackfillProposalCandidateFieldKeys("note_role_material_type")
+  );
   const noteConflict = getConflictEntryForFields(conflictSummary, ["note"]);
   pushRow({
     fieldKey: "note_role_material_type",
@@ -3809,9 +3846,10 @@ function buildGeneratedBackfillProposalRows({
         : `Preferred source types: ${requestedSourceTypes}`,
   });
 
-  const ifraCandidates = getCandidateRowsForFields(stagedCandidates, [
-    "ifraMaterialHint",
-  ]);
+  const ifraCandidates = getCandidateRowsForFields(
+    stagedCandidates,
+    getBackfillProposalCandidateFieldKeys("ifra_support")
+  );
   const ifraConflict = getConflictEntryForFields(conflictSummary, [
     "ifraMaterialHint",
   ]);
@@ -3938,33 +3976,67 @@ function buildMaterialBackfillTargetState({
         localDecision === "deferred"
           ? "deferred_locally"
           : candidate?.reviewStatus || "pending_review";
+      const applyPath = candidate?.applyPath || fieldMeta.applyPath;
+      const applyPathClassification =
+        candidate?.applyPathClassification ||
+        (applyPath === "promotion_json"
+          ? "promotion_safe"
+          : candidate?.proposalSupportStatus === "missing"
+          ? "insufficient_support"
+          : "manual_review_only");
       const conflictingField = conflictSummary.find(
         (entry) => entry.fieldKey === fieldKey
       );
       return {
         evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
         fieldKey,
-        fieldLabel: fieldMeta.label,
+        fieldLabel: candidate?.fieldLabel || fieldMeta.label,
         candidateValue: candidate?.candidateValue,
         displayValue:
-          normalizeBackfillCandidateValue(candidate?.candidateValue) || "—",
+          normalizeBackfillCandidateValue(
+            getFirstPresentValue(candidate?.displayValue, candidate?.candidateValue)
+          ) || "—",
         confidence: candidate?.confidence || "unknown",
+        confidenceLabel:
+          candidate?.confidenceLabel ||
+          candidate?.proposalSupportStatusLabel ||
+          candidate?.confidence ||
+          "unknown",
         supplier: candidate?.supplier || null,
         sourceType: candidate?.sourceType || null,
         sourceDocumentKey: candidate?.sourceDocumentKey || null,
         notes: Array.isArray(candidate?.notes) ? candidate.notes : [],
-        applyPath: fieldMeta.applyPath,
+        applyPath,
         applyPathLabel:
-          fieldMeta.applyPath === "promotion_json"
+          candidate?.applyPathLabel ||
+          (applyPath === "promotion_json"
             ? "Promotion JSON"
-            : "Manual review",
+            : "Manual review"),
+        applyPathClassification,
+        applyPathClassificationLabel:
+          candidate?.applyPathClassificationLabel ||
+          getBackfillProposalLaneLabel(applyPathClassification),
+        proposalSupportStatus: candidate?.proposalSupportStatus || null,
+        proposalSupportStatusLabel:
+          candidate?.proposalSupportStatusLabel || null,
         reviewStatus,
         localDecision,
         reviewedAt: candidate?.reviewedAt || null,
         sourceReviewStatus: candidate?.sourceReviewStatus || null,
-        hasConflict: Boolean(conflictingField),
+        hasConflict: Boolean(
+          conflictingField ||
+            candidate?.conflictNote ||
+            candidate?.proposalSupportStatus === "conflicting"
+        ),
         conflictValues: conflictingField?.values || [],
-        guidance: fieldMeta.guidance,
+        conflictNote: candidate?.conflictNote || null,
+        sourceContextNote: candidate?.sourceContextNote || null,
+        sourceOrigin: candidate?.sourceOrigin || null,
+        generatedProposalKey: candidate?.generatedProposalKey || null,
+        currentWeakness: candidate?.currentWeakness || null,
+        recommendedAction: candidate?.recommendedAction || null,
+        sourceSummary: candidate?.sourceSummary || null,
+        guidance: candidate?.guidance || fieldMeta.guidance,
       };
     })
     .sort((a, b) => {
@@ -4040,6 +4112,100 @@ function buildMaterialBackfillTargetState({
     manualFollowUpRows,
     generatedProposalRows,
     proposalSummary,
+  };
+}
+
+export function buildGeneratedProposalReviewCandidate({
+  target = null,
+  proposal = null,
+} = {}) {
+  const materialName = String(target?.name || "").trim();
+  const fieldKey = String(proposal?.fieldKey || "").trim();
+  if (!materialName || !fieldKey) return null;
+
+  const canonicalMaterialKey = target?.canonicalMaterialKey || null;
+  const proposalKey =
+    String(proposal?.proposalKey || "").trim() || `${materialName}:${fieldKey}`;
+  const evidenceCandidateKey = `generated_proposal:${normalizeGeneratedProposalCandidateKeyPart(
+    proposalKey
+  )}`;
+  const relatedCatalogNames = Array.from(
+    new Set(
+      [
+        materialName,
+        ...(Array.isArray(target?.relatedCatalogNames)
+          ? target.relatedCatalogNames
+          : []),
+      ].filter(Boolean)
+    )
+  );
+  const applyPath =
+    proposal?.reviewLane === "promotion_safe"
+      ? "promotion_json"
+      : "manual_review";
+  const conflictEntries = (target?.conflictSummary || []).filter((entry) =>
+    getBackfillProposalCandidateFieldKeys(fieldKey).includes(entry?.fieldKey)
+  );
+  const conflictNote =
+    conflictEntries.length > 0
+      ? conflictEntries
+          .map((entry) => `${entry.fieldLabel}: ${entry.values.join(" vs ")}`)
+          .join(" | ")
+      : proposal?.supportStatus === "conflicting"
+      ? proposal?.currentWeakness || "Conflicting support is still surfaced."
+      : null;
+  const sourceContextNote =
+    "Promoted from generated proposal logic in the Data Backfill Workbench.";
+
+  return {
+    evidenceCandidateKey,
+    canonicalMaterialKey,
+    materialName,
+    relatedCatalogNames,
+    sourceDocumentKey: null,
+    sourceType: "generated_proposal",
+    supplier: "Generated proposal logic",
+    candidateFieldName: fieldKey,
+    fieldLabel: proposal?.fieldLabel || getBackfillFieldMeta(fieldKey).label,
+    candidateValue: proposal?.displayValue || null,
+    displayValue: proposal?.displayValue || null,
+    confidence: mapProposalSupportStatusToConfidence(proposal?.supportStatus),
+    confidenceLabel:
+      proposal?.supportStatusLabel ||
+      getBackfillProposalSupportLabel(proposal?.supportStatus),
+    sourceReviewStatus: "pending_review",
+    reviewStatus: "pending_review",
+    notes: [
+      sourceContextNote,
+      proposal?.currentWeakness,
+      proposal?.recommendedAction,
+      proposal?.sourceSummary,
+      conflictNote,
+    ].filter(Boolean),
+    applyPath,
+    applyPathLabel:
+      applyPath === "promotion_json" ? "Promotion JSON" : "Manual review",
+    applyPathClassification:
+      proposal?.reviewLane ||
+      (applyPath === "promotion_json"
+        ? "promotion_safe"
+        : "manual_review_only"),
+    applyPathClassificationLabel:
+      proposal?.reviewLaneLabel ||
+      getBackfillProposalLaneLabel(proposal?.reviewLane),
+    proposalSupportStatus: proposal?.supportStatus || null,
+    proposalSupportStatusLabel:
+      proposal?.supportStatusLabel ||
+      getBackfillProposalSupportLabel(proposal?.supportStatus),
+    generatedProposalKey: proposalKey,
+    sourceOrigin: "generated_proposal",
+    sourceContextNote,
+    currentWeakness: proposal?.currentWeakness || null,
+    recommendedAction: proposal?.recommendedAction || null,
+    sourceSummary: proposal?.sourceSummary || null,
+    conflictNote,
+    guidance:
+      proposal?.recommendedAction || getBackfillFieldMeta(fieldKey).guidance,
   };
 }
 

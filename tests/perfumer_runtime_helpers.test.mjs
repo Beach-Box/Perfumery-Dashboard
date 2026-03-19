@@ -5,6 +5,7 @@ import { buildIngredientTruthCompletenessReport } from "../src/lib/ifra_combined
 import {
   buildCapitalConstrainedLaunchRecommendation,
   buildMaterialBackfillWorkbench,
+  buildGeneratedProposalReviewCandidate,
   buildMaterialImprovementQueue,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
@@ -474,6 +475,144 @@ test("material improvement queue surfaces founder-critical and high-spend weak m
     )
   );
   assert.ok(queue.summary.pricingGapMaterialCount >= 1);
+});
+
+test("generated proposal promotion builds a staged review candidate with preserved context", () => {
+  const promotedCandidate = buildGeneratedProposalReviewCandidate({
+    target: {
+      name: "Sparse Workhorse",
+      canonicalMaterialKey: "sparse_workhorse",
+      relatedCatalogNames: ["Sparse Workhorse"],
+      conflictSummary: [
+        {
+          fieldKey: "cas",
+          fieldLabel: "CAS",
+          values: ["100-00-1", "100-00-2"],
+        },
+      ],
+    },
+    proposal: {
+      proposalKey: "Sparse Workhorse:cas_inci",
+      fieldKey: "cas_inci",
+      fieldLabel: "CAS / INCI",
+      displayValue: "CAS 100-00-1 · INCI Sparse Workhorse",
+      supportStatus: "conflicting",
+      supportStatusLabel: "Conflicting",
+      reviewLane: "manual_review_only",
+      reviewLaneLabel: "Manual-review-only",
+      currentWeakness: "Conflicting CAS / INCI support is already surfacing.",
+      recommendedAction: "Resolve conflicting CAS / INCI evidence before promotion.",
+      sourceSummary: "2 linked source docs",
+    },
+  });
+
+  assert.equal(
+    promotedCandidate.evidenceCandidateKey,
+    "generated_proposal:sparse_workhorse_cas_inci"
+  );
+  assert.equal(promotedCandidate.candidateFieldName, "cas_inci");
+  assert.equal(promotedCandidate.confidence, "low");
+  assert.equal(promotedCandidate.confidenceLabel, "Conflicting");
+  assert.equal(promotedCandidate.applyPath, "manual_review");
+  assert.equal(
+    promotedCandidate.applyPathClassification,
+    "manual_review_only"
+  );
+  assert.equal(promotedCandidate.sourceOrigin, "generated_proposal");
+  assert.match(promotedCandidate.conflictNote, /100-00-1/);
+  assert.match(promotedCandidate.sourceContextNote, /generated proposal logic/i);
+});
+
+test("material backfill workbench preserves promoted generated-candidate review metadata", () => {
+  const promotedCandidate = buildGeneratedProposalReviewCandidate({
+    target: {
+      name: "Sparse Workhorse",
+      canonicalMaterialKey: "sparse_workhorse",
+      relatedCatalogNames: ["Sparse Workhorse"],
+      conflictSummary: [],
+    },
+    proposal: {
+      proposalKey: "Sparse Workhorse:pricing",
+      fieldKey: "pricing",
+      fieldLabel: "Pricing",
+      displayValue: "Supplier A · 100g $55.00",
+      supportStatus: "likely",
+      supportStatusLabel: "Likely",
+      reviewLane: "manual_review_only",
+      reviewLaneLabel: "Manual-review-only",
+      currentWeakness: "Pricing coverage is still too weak for stronger founder cost reads.",
+      recommendedAction: "Review live price points before treating current basket economics as settled.",
+      sourceSummary: "1 supplier priced",
+    },
+  });
+
+  const workbench = buildMaterialBackfillWorkbench({
+    targetNames: ["Sparse Workhorse"],
+    prioritizationRows: [
+      {
+        name: "Sparse Workhorse",
+        truthLevel: "partial",
+        priorityScore: 44,
+      },
+    ],
+    evidenceCandidates: [
+      {
+        ...promotedCandidate,
+        reviewStatus: "pending_review",
+      },
+    ],
+    intakeTargets: [
+      {
+        canonicalMaterialKey: "sparse_workhorse",
+        relatedCatalogNames: ["Sparse Workhorse"],
+        stillMissingFields: ["pricing"],
+        requestedSourceTypes: ["sds"],
+      },
+    ],
+    materialContextByName: {
+      "Sparse Workhorse": {
+        canonicalMaterialKey: "sparse_workhorse",
+        supplierVariantCount: 1,
+        livePricingSupplierCount: 1,
+        livePricingPackCount: 1,
+        sourceDocumentCount: 0,
+        evidenceCandidateCount: 1,
+        supplierProducts: [],
+        dbRecord: {},
+        truthReport: {
+          name: "Sparse Workhorse",
+          primaryGap: "Pricing needs review.",
+          canonicalSource: null,
+          sourceDocuments: [],
+          livePricingEntries: [["Supplier A", { S: [[100, "g", 55]] }]],
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            regulatory: { status: "missing" },
+            descriptive: { status: "missing" },
+            supplier: { status: "confirmed" },
+            pricing: { status: "inferred" },
+            technical: { status: "uncertain" },
+            ifra: { status: "uncertain" },
+            evidence: { status: "uncertain" },
+          },
+          uncertainSignals: [],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+    },
+  });
+
+  const stagedCandidate = workbench.targets[0].stagedCandidates[0];
+
+  assert.equal(stagedCandidate.fieldLabel, "Pricing");
+  assert.equal(stagedCandidate.applyPath, "manual_review");
+  assert.equal(
+    stagedCandidate.applyPathClassification,
+    "manual_review_only"
+  );
+  assert.equal(stagedCandidate.confidenceLabel, "Likely");
+  assert.equal(stagedCandidate.sourceOrigin, "generated_proposal");
+  assert.match(stagedCandidate.sourceContextNote, /generated proposal logic/i);
 });
 
 test("launch planner and recommender expose trust summaries from live launch math", () => {

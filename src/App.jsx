@@ -72,6 +72,7 @@ import {
 } from "./lib/formula_runtime_helpers";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildGeneratedProposalReviewCandidate,
   buildMaterialBackfillWorkbench,
   buildMaterialImprovementQueue,
   buildFounderProductContextState,
@@ -57957,21 +57958,108 @@ function buildEvidenceCandidateSourceSnapshot(candidate) {
     evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
     sourceDocumentKey: candidate?.sourceDocumentKey || null,
     canonicalMaterialKey: candidate?.canonicalMaterialKey || null,
+    materialName: candidate?.materialName || null,
     relatedCatalogNames: Array.isArray(candidate?.relatedCatalogNames)
       ? [...candidate.relatedCatalogNames]
       : [],
     candidateFieldName: candidate?.candidateFieldName || null,
+    fieldLabel: candidate?.fieldLabel || null,
     candidateValue: Object.prototype.hasOwnProperty.call(
       candidate || {},
       "candidateValue"
     )
       ? candidate.candidateValue
       : null,
+    displayValue: candidate?.displayValue || null,
     confidence: candidate?.confidence || null,
+    confidenceLabel: candidate?.confidenceLabel || null,
     supplier: candidate?.supplier || null,
     sourceType: candidate?.sourceType || null,
+    applyPath: candidate?.applyPath || null,
+    applyPathLabel: candidate?.applyPathLabel || null,
+    applyPathClassification: candidate?.applyPathClassification || null,
+    applyPathClassificationLabel:
+      candidate?.applyPathClassificationLabel || null,
+    proposalSupportStatus: candidate?.proposalSupportStatus || null,
+    proposalSupportStatusLabel:
+      candidate?.proposalSupportStatusLabel || null,
+    sourceOrigin: candidate?.sourceOrigin || null,
+    sourceContextNote: candidate?.sourceContextNote || null,
+    sourceSummary: candidate?.sourceSummary || null,
+    currentWeakness: candidate?.currentWeakness || null,
+    recommendedAction: candidate?.recommendedAction || null,
+    conflictNote: candidate?.conflictNote || null,
+    generatedProposalKey: candidate?.generatedProposalKey || null,
+    guidance: candidate?.guidance || null,
     sourceReviewStatus: candidate?.sourceReviewStatus || "pending_review",
     notes: Array.isArray(candidate?.notes) ? [...candidate.notes] : [],
+  };
+}
+
+function buildEvidenceReviewCandidateFromSourceSnapshot({
+  evidenceCandidateKey,
+  sourceSnapshot,
+  localReview = null,
+}) {
+  if (!evidenceCandidateKey || !sourceSnapshot) return null;
+
+  const sourceReviewStatus = normalizeEvidenceCandidateReviewStatus(
+    sourceSnapshot?.sourceReviewStatus
+  );
+  const reviewStatus =
+    localReview?.reviewStatus || sourceReviewStatus || "pending_review";
+  const relatedCatalogNames = Array.isArray(sourceSnapshot?.relatedCatalogNames)
+    ? [...sourceSnapshot.relatedCatalogNames]
+    : sourceSnapshot?.materialName
+    ? [sourceSnapshot.materialName]
+    : [];
+  const canonicalMaterialKey = sourceSnapshot?.canonicalMaterialKey || null;
+
+  return {
+    evidenceCandidateKey,
+    canonicalMaterialKey,
+    materialName: sourceSnapshot?.materialName || null,
+    relatedCatalogNames,
+    sourceDocumentKey: sourceSnapshot?.sourceDocumentKey || null,
+    sourceType: sourceSnapshot?.sourceType || null,
+    supplier: sourceSnapshot?.supplier || null,
+    candidateFieldName: sourceSnapshot?.candidateFieldName || null,
+    fieldLabel: sourceSnapshot?.fieldLabel || null,
+    candidateValue: Object.prototype.hasOwnProperty.call(
+      sourceSnapshot || {},
+      "candidateValue"
+    )
+      ? sourceSnapshot.candidateValue
+      : null,
+    displayValue: sourceSnapshot?.displayValue || null,
+    confidence: sourceSnapshot?.confidence || null,
+    confidenceLabel: sourceSnapshot?.confidenceLabel || null,
+    sourceReviewStatus,
+    reviewStatus,
+    localDecision: localReview?.decision || null,
+    reviewedAt: localReview?.reviewedAt || null,
+    notes: Array.isArray(sourceSnapshot?.notes) ? [...sourceSnapshot.notes] : [],
+    applyPath: sourceSnapshot?.applyPath || null,
+    applyPathLabel: sourceSnapshot?.applyPathLabel || null,
+    applyPathClassification: sourceSnapshot?.applyPathClassification || null,
+    applyPathClassificationLabel:
+      sourceSnapshot?.applyPathClassificationLabel || null,
+    proposalSupportStatus: sourceSnapshot?.proposalSupportStatus || null,
+    proposalSupportStatusLabel:
+      sourceSnapshot?.proposalSupportStatusLabel || null,
+    sourceOrigin: sourceSnapshot?.sourceOrigin || null,
+    sourceContextNote: sourceSnapshot?.sourceContextNote || null,
+    sourceSummary: sourceSnapshot?.sourceSummary || null,
+    currentWeakness: sourceSnapshot?.currentWeakness || null,
+    recommendedAction: sourceSnapshot?.recommendedAction || null,
+    conflictNote: sourceSnapshot?.conflictNote || null,
+    generatedProposalKey: sourceSnapshot?.generatedProposalKey || null,
+    guidance: sourceSnapshot?.guidance || null,
+    family: classifySupplierCoverageFamily(
+      canonicalMaterialKey,
+      relatedCatalogNames,
+      sourceSnapshot?.supplier
+    ),
   };
 }
 
@@ -58007,7 +58095,7 @@ function buildApprovedEvidenceCandidateExportPayload(localReviewState) {
       exportedAt: new Date().toISOString(),
       approvedCandidateCount: approvedEvidenceCandidates.length,
       note:
-        "Portable approved evidence candidates only. First-pass promotion supports only low-risk helper seed fields: cas, inci, scentDesc, and isUVCB. IFRA, rep, note-role, and live catalog changes remain manual.",
+        "Portable approved evidence candidates and promoted generated-proposal review artifacts only. Existing low-risk helper seed fields still remain the only direct apply path; IFRA, pricing, note-role, and live catalog changes remain manual.",
     },
     approvedEvidenceCandidates,
   };
@@ -58885,46 +58973,165 @@ const SOURCE_DOCUMENT_PRIORITY_WEIGHT = {
 };
 
 function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
-  const evidenceCandidates = Object.entries(EVIDENCE_CANDIDATES)
-    .map(([evidenceCandidateKey, record]) => {
+  const evidenceCandidateByKey = new Map(
+    Object.entries(EVIDENCE_CANDIDATES).map(([evidenceCandidateKey, record]) => {
       const sourceReviewStatus = normalizeEvidenceCandidateReviewStatus(
         record?.reviewStatus
       );
       const localReview = localReviewState[evidenceCandidateKey] || null;
+      const sourceSnapshot = localReview?.sourceSnapshot || null;
       const reviewStatus =
         localReview?.reviewStatus || sourceReviewStatus || "pending_review";
 
-      return {
+      return [
         evidenceCandidateKey,
-        canonicalMaterialKey: record?.canonicalMaterialKey || null,
-        relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
-          ? [...record.relatedCatalogNames]
-          : [],
-        sourceDocumentKey: record?.sourceDocumentKey || null,
-        sourceType: record?.sourceType || null,
-        supplier: record?.supplier || null,
-        candidateFieldName: record?.candidateFieldName || null,
-        candidateValue: Object.prototype.hasOwnProperty.call(record || {}, "candidateValue")
-          ? record.candidateValue
-          : null,
-        confidence: record?.confidence || null,
-        sourceReviewStatus,
-        reviewStatus,
-        localDecision: localReview?.decision || null,
-        reviewedAt: localReview?.reviewedAt || null,
-        notes: Array.isArray(record?.notes) ? [...record.notes] : [],
-        family: classifySupplierCoverageFamily(
-          record?.canonicalMaterialKey,
-          record?.relatedCatalogNames,
-          record?.supplier
-        ),
-      };
+        {
+          evidenceCandidateKey,
+          canonicalMaterialKey: record?.canonicalMaterialKey || null,
+          materialName: sourceSnapshot?.materialName || null,
+          relatedCatalogNames: Array.isArray(record?.relatedCatalogNames)
+            ? [...record.relatedCatalogNames]
+            : [],
+          sourceDocumentKey: record?.sourceDocumentKey || null,
+          sourceType: record?.sourceType || null,
+          supplier: record?.supplier || null,
+          candidateFieldName: record?.candidateFieldName || null,
+          fieldLabel: sourceSnapshot?.fieldLabel || null,
+          candidateValue: Object.prototype.hasOwnProperty.call(
+            record || {},
+            "candidateValue"
+          )
+            ? record.candidateValue
+            : null,
+          displayValue: sourceSnapshot?.displayValue || null,
+          confidence: record?.confidence || null,
+          confidenceLabel: sourceSnapshot?.confidenceLabel || null,
+          sourceReviewStatus,
+          reviewStatus,
+          localDecision: localReview?.decision || null,
+          reviewedAt: localReview?.reviewedAt || null,
+          notes: Array.isArray(record?.notes) ? [...record.notes] : [],
+          applyPath: sourceSnapshot?.applyPath || null,
+          applyPathLabel: sourceSnapshot?.applyPathLabel || null,
+          applyPathClassification:
+            sourceSnapshot?.applyPathClassification || null,
+          applyPathClassificationLabel:
+            sourceSnapshot?.applyPathClassificationLabel || null,
+          proposalSupportStatus: sourceSnapshot?.proposalSupportStatus || null,
+          proposalSupportStatusLabel:
+            sourceSnapshot?.proposalSupportStatusLabel || null,
+          sourceOrigin: sourceSnapshot?.sourceOrigin || null,
+          sourceContextNote: sourceSnapshot?.sourceContextNote || null,
+          sourceSummary: sourceSnapshot?.sourceSummary || null,
+          currentWeakness: sourceSnapshot?.currentWeakness || null,
+          recommendedAction: sourceSnapshot?.recommendedAction || null,
+          conflictNote: sourceSnapshot?.conflictNote || null,
+          generatedProposalKey: sourceSnapshot?.generatedProposalKey || null,
+          guidance: sourceSnapshot?.guidance || null,
+          family: classifySupplierCoverageFamily(
+            record?.canonicalMaterialKey,
+            record?.relatedCatalogNames,
+            record?.supplier
+          ),
+        },
+      ];
     })
-    .sort((a, b) =>
-      (a.canonicalMaterialKey || a.evidenceCandidateKey).localeCompare(
-        b.canonicalMaterialKey || b.evidenceCandidateKey
-      )
-    );
+  );
+
+  Object.entries(localReviewState || {}).forEach(([evidenceCandidateKey, localReview]) => {
+    const sourceSnapshot = localReview?.sourceSnapshot || null;
+    if (!sourceSnapshot) return;
+
+    if (evidenceCandidateByKey.has(evidenceCandidateKey)) {
+      const existing = evidenceCandidateByKey.get(evidenceCandidateKey);
+      const mergedNotes = Array.from(
+        new Set(
+          [
+            ...(Array.isArray(existing?.notes) ? existing.notes : []),
+            ...(Array.isArray(sourceSnapshot?.notes) ? sourceSnapshot.notes : []),
+          ].filter(Boolean)
+        )
+      );
+      const relatedCatalogNames =
+        Array.isArray(sourceSnapshot?.relatedCatalogNames) &&
+        sourceSnapshot.relatedCatalogNames.length > 0
+          ? [...sourceSnapshot.relatedCatalogNames]
+          : existing.relatedCatalogNames;
+      evidenceCandidateByKey.set(evidenceCandidateKey, {
+        ...existing,
+        materialName: sourceSnapshot?.materialName || existing.materialName || null,
+        relatedCatalogNames,
+        fieldLabel: sourceSnapshot?.fieldLabel || existing.fieldLabel || null,
+        displayValue: sourceSnapshot?.displayValue || existing.displayValue || null,
+        confidenceLabel:
+          sourceSnapshot?.confidenceLabel || existing.confidenceLabel || null,
+        notes: mergedNotes,
+        applyPath: sourceSnapshot?.applyPath || existing.applyPath || null,
+        applyPathLabel:
+          sourceSnapshot?.applyPathLabel || existing.applyPathLabel || null,
+        applyPathClassification:
+          sourceSnapshot?.applyPathClassification ||
+          existing.applyPathClassification ||
+          null,
+        applyPathClassificationLabel:
+          sourceSnapshot?.applyPathClassificationLabel ||
+          existing.applyPathClassificationLabel ||
+          null,
+        proposalSupportStatus:
+          sourceSnapshot?.proposalSupportStatus ||
+          existing.proposalSupportStatus ||
+          null,
+        proposalSupportStatusLabel:
+          sourceSnapshot?.proposalSupportStatusLabel ||
+          existing.proposalSupportStatusLabel ||
+          null,
+        sourceOrigin: sourceSnapshot?.sourceOrigin || existing.sourceOrigin || null,
+        sourceContextNote:
+          sourceSnapshot?.sourceContextNote || existing.sourceContextNote || null,
+        sourceSummary: sourceSnapshot?.sourceSummary || existing.sourceSummary || null,
+        currentWeakness:
+          sourceSnapshot?.currentWeakness || existing.currentWeakness || null,
+        recommendedAction:
+          sourceSnapshot?.recommendedAction ||
+          existing.recommendedAction ||
+          null,
+        conflictNote: sourceSnapshot?.conflictNote || existing.conflictNote || null,
+        generatedProposalKey:
+          sourceSnapshot?.generatedProposalKey ||
+          existing.generatedProposalKey ||
+          null,
+        guidance: sourceSnapshot?.guidance || existing.guidance || null,
+        reviewStatus:
+          localReview?.reviewStatus || existing.reviewStatus || "pending_review",
+        localDecision: localReview?.decision || existing.localDecision || null,
+        reviewedAt: localReview?.reviewedAt || existing.reviewedAt || null,
+        sourceReviewStatus: normalizeEvidenceCandidateReviewStatus(
+          sourceSnapshot?.sourceReviewStatus || existing.sourceReviewStatus
+        ),
+        family: classifySupplierCoverageFamily(
+          existing.canonicalMaterialKey,
+          relatedCatalogNames,
+          sourceSnapshot?.supplier || existing.supplier
+        ),
+      });
+      return;
+    }
+
+    const localCandidate = buildEvidenceReviewCandidateFromSourceSnapshot({
+      evidenceCandidateKey,
+      sourceSnapshot,
+      localReview,
+    });
+    if (localCandidate) {
+      evidenceCandidateByKey.set(evidenceCandidateKey, localCandidate);
+    }
+  });
+
+  const evidenceCandidates = Array.from(evidenceCandidateByKey.values()).sort((a, b) =>
+    (a.canonicalMaterialKey || a.materialName || a.evidenceCandidateKey).localeCompare(
+      b.canonicalMaterialKey || b.materialName || b.evidenceCandidateKey
+    )
+  );
 
   const sourceDocuments = Object.entries(SOURCE_DOCUMENT_REGISTRY)
     .map(([sourceDocumentKey, record]) => {
@@ -58959,9 +59166,32 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
       )
     );
 
+  const getLinkedEvidenceCandidatesForTarget = (
+    canonicalMaterialKey,
+    relatedCatalogNames = []
+  ) =>
+    evidenceCandidates.filter((candidate) => {
+      if (
+        canonicalMaterialKey &&
+        candidate?.canonicalMaterialKey &&
+        candidate.canonicalMaterialKey === canonicalMaterialKey
+      ) {
+        return true;
+      }
+      const candidateCatalogNames = Array.isArray(candidate?.relatedCatalogNames)
+        ? candidate.relatedCatalogNames
+        : [];
+      return (relatedCatalogNames || []).some((catalogName) =>
+        candidateCatalogNames.includes(catalogName)
+      );
+    });
+
   const intakeTargets = Object.entries(SOURCE_DOCUMENT_INTAKE_TARGETS)
     .map(([targetKey, target]) => {
       const canonicalMaterialKey = target?.canonicalMaterialKey || targetKey;
+      const relatedCatalogNames = Array.isArray(target?.relatedCatalogNames)
+        ? [...target.relatedCatalogNames]
+        : [];
       const canonicalHelperSource = canonicalMaterialKey
         ? getCanonicalMaterialSource(canonicalMaterialKey)
         : null;
@@ -58973,8 +59203,10 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
         : null;
       const linkedDocuments =
         getSourceDocumentsForCanonicalMaterialKey(canonicalMaterialKey);
-      const linkedEvidenceCandidates =
-        getEvidenceCandidatesForCanonicalMaterialKey(canonicalMaterialKey);
+      const linkedEvidenceCandidates = getLinkedEvidenceCandidatesForTarget(
+        canonicalMaterialKey,
+        relatedCatalogNames
+      );
       const requestedFields = Array.isArray(target?.requestedFields)
         ? [...target.requestedFields]
         : [];
@@ -58994,9 +59226,7 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
       return {
         targetKey,
         canonicalMaterialKey,
-        relatedCatalogNames: Array.isArray(target?.relatedCatalogNames)
-          ? [...target.relatedCatalogNames]
-          : [],
+        relatedCatalogNames,
         relatedSuppliers: Array.isArray(target?.relatedSuppliers)
           ? [...target.relatedSuppliers]
           : [],
@@ -59048,7 +59278,7 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
       version: 1,
       generatedAt: new Date().toISOString(),
       note:
-        "Read-only source-document and evidence-candidate review payload. No helper chemistry, IFRA linkage, or live catalog data is applied automatically.",
+        "Read-only source-document and evidence-candidate review payload, including locally promoted generated-proposal candidates. No helper chemistry, IFRA linkage, or live catalog data is applied automatically.",
     },
     summary: {
       sourceDocumentCount: sourceDocuments.length,
@@ -60427,6 +60657,28 @@ export default function App() {
     approvedEvidenceCandidateExportJson,
     approvedEvidenceCandidateRecords.length,
   ]);
+  const promoteGeneratedProposalToReviewQueue = useCallback(
+    (target, proposal) => {
+      const promotedCandidate = buildGeneratedProposalReviewCandidate({
+        target,
+        proposal,
+      });
+      if (!promotedCandidate?.evidenceCandidateKey) return;
+      setEvidenceCandidateLocalReviewState((prev) => ({
+        ...prev,
+        [promotedCandidate.evidenceCandidateKey]: {
+          decision: prev[promotedCandidate.evidenceCandidateKey]?.decision || null,
+          reviewStatus:
+            prev[promotedCandidate.evidenceCandidateKey]?.reviewStatus ||
+            "pending_review",
+          reviewedAt:
+            prev[promotedCandidate.evidenceCandidateKey]?.reviewedAt || null,
+          sourceSnapshot: buildEvidenceCandidateSourceSnapshot(promotedCandidate),
+        },
+      }));
+    },
+    []
+  );
   const approveEvidenceWorkbenchCandidate = useCallback((candidate) => {
     if (!candidate?.evidenceCandidateKey) return;
     const reviewedAt = new Date().toISOString();
@@ -64987,8 +65239,22 @@ export default function App() {
       if (confidence === "high") return "#34D399";
       if (confidence === "medium") return "#FDE68A";
       if (confidence === "low") return "#FCA5A5";
+      if (confidence === "confirmed") return "#34D399";
+      if (confidence === "likely") return "#FDE68A";
+      if (confidence === "conflicting" || confidence === "missing") {
+        return "#FCA5A5";
+      }
       return "#94A3B8";
     };
+    const getEvidenceCandidateDisplayValue = (candidate) => {
+      if (candidate?.displayValue) return candidate.displayValue;
+      if (typeof candidate?.candidateValue === "boolean") {
+        return String(candidate.candidateValue);
+      }
+      return candidate?.candidateValue || "—";
+    };
+    const getEvidenceCandidateConfidenceLabel = (candidate) =>
+      candidate?.confidenceLabel || candidate?.confidence || "unknown";
     const renderFormulaTypeLabel = (entry) =>
       entry?.isLocked
         ? "Locked Version"
@@ -70318,6 +70584,17 @@ export default function App() {
                           const supportMeta = getWorkbenchProposalSupportMeta(
                             proposal.supportStatus
                           );
+                          const promotedProposalCandidate =
+                            target.stagedCandidates.find(
+                              (candidate) =>
+                                candidate.generatedProposalKey ===
+                                proposal.proposalKey
+                            ) || null;
+                          const promotedStatusMeta = promotedProposalCandidate
+                            ? getWorkbenchReviewStatusMeta(
+                                promotedProposalCandidate
+                              )
+                            : null;
                           return (
                             <div
                               key={proposal.proposalKey}
@@ -70384,6 +70661,23 @@ export default function App() {
                                   >
                                     {proposal.reviewLaneLabel}
                                   </span>
+                                  {promotedStatusMeta ? (
+                                    <span
+                                      style={{
+                                        background: promotedStatusMeta.bg,
+                                        border: `1px solid ${promotedStatusMeta.border}`,
+                                        borderRadius: 999,
+                                        padding: "2px 8px",
+                                        fontSize: 7.5,
+                                        fontWeight: 700,
+                                        color: promotedStatusMeta.color,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                      }}
+                                    >
+                                      {promotedStatusMeta.label} in queue
+                                    </span>
+                                  ) : null}
                                 </div>
                               </div>
                               <div
@@ -70430,13 +70724,70 @@ export default function App() {
                                 {proposal.sourceSummary ? (
                                   <span>{proposal.sourceSummary}</span>
                                 ) : null}
-                                {proposal.linkedCandidateCount > 0 ? (
-                                  <span>
-                                    {proposal.linkedCandidateCount} linked staged
-                                    candidate
-                                    {proposal.linkedCandidateCount === 1 ? "" : "s"}
-                                  </span>
-                                ) : null}
+                                  {proposal.linkedCandidateCount > 0 ? (
+                                    <span>
+                                      {proposal.linkedCandidateCount} linked staged
+                                      candidate
+                                      {proposal.linkedCandidateCount === 1 ? "" : "s"}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              <div
+                                style={{
+                                  marginTop: 8,
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 8,
+                                  alignItems: "center",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 7.7,
+                                    color: "#64748B",
+                                    lineHeight: 1.45,
+                                    maxWidth: 500,
+                                  }}
+                                >
+                                  {promotedProposalCandidate
+                                    ? "Promoted proposals use the same local review state and approved-evidence export path as the existing staged candidates."
+                                    : "Promotion stages a local review candidate only. Nothing writes into live truth automatically."}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    promoteGeneratedProposalToReviewQueue(
+                                      target,
+                                      proposal
+                                    )
+                                  }
+                                  disabled={Boolean(promotedProposalCandidate)}
+                                  style={{
+                                    background: promotedProposalCandidate
+                                      ? "#071826"
+                                      : "#0A1628",
+                                    border: `1px solid ${
+                                      promotedProposalCandidate
+                                        ? "#1E3A52"
+                                        : "#1D4ED8"
+                                    }`,
+                                    borderRadius: 6,
+                                    color: promotedProposalCandidate
+                                      ? "#64748B"
+                                      : "#93C5FD",
+                                    padding: "4px 8px",
+                                    fontSize: 8.1,
+                                    fontWeight: 700,
+                                    cursor: promotedProposalCandidate
+                                      ? "default"
+                                      : "pointer",
+                                  }}
+                                >
+                                  {promotedProposalCandidate
+                                    ? "In Review Queue"
+                                    : "Promote to Review Queue"}
+                                </button>
                               </div>
                             </div>
                           );
@@ -70500,6 +70851,11 @@ export default function App() {
                             target.stagedCandidates.map((candidate) => {
                               const statusMeta =
                                 getWorkbenchReviewStatusMeta(candidate);
+                              const laneMeta = candidate.applyPathClassification
+                                ? getWorkbenchProposalLaneMeta(
+                                    candidate.applyPathClassification
+                                  )
+                                : null;
                               return (
                                 <div
                                   key={candidate.evidenceCandidateKey}
@@ -70551,6 +70907,23 @@ export default function App() {
                                       >
                                         {statusMeta.label}
                                       </span>
+                                      {laneMeta ? (
+                                        <span
+                                          style={{
+                                            background: laneMeta.bg,
+                                            border: `1px solid ${laneMeta.border}`,
+                                            borderRadius: 999,
+                                            padding: "2px 8px",
+                                            fontSize: 7.5,
+                                            fontWeight: 700,
+                                            color: laneMeta.color,
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.08em",
+                                          }}
+                                        >
+                                          {candidate.applyPathClassificationLabel}
+                                        </span>
+                                      ) : null}
                                       <span
                                         style={{
                                           background:
@@ -70587,7 +70960,9 @@ export default function App() {
                                           letterSpacing: "0.08em",
                                         }}
                                       >
-                                        {candidate.confidence || "unknown"}
+                                        {getEvidenceCandidateConfidenceLabel(
+                                          candidate
+                                        )}
                                       </span>
                                     </div>
                                   </div>
@@ -70599,7 +70974,7 @@ export default function App() {
                                       lineHeight: 1.55,
                                     }}
                                   >
-                                    {candidate.displayValue}
+                                    {getEvidenceCandidateDisplayValue(candidate)}
                                   </div>
                                   <div
                                     style={{
@@ -70625,7 +71000,45 @@ export default function App() {
                                         lineHeight: 1.5,
                                       }}
                                     >
-                                      Conflict: {candidate.conflictValues.join(" vs ")}
+                                      Conflict:{" "}
+                                      {candidate.conflictNote ||
+                                        candidate.conflictValues.join(" vs ")}
+                                    </div>
+                                  ) : null}
+                                  {candidate.sourceContextNote ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 8,
+                                        color: "#93C5FD",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {candidate.sourceContextNote}
+                                    </div>
+                                  ) : null}
+                                  {candidate.sourceSummary ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 8,
+                                        color: "#94A3B8",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {candidate.sourceSummary}
+                                    </div>
+                                  ) : null}
+                                  {candidate.currentWeakness ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 8,
+                                        color: "#94A3B8",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {candidate.currentWeakness}
                                     </div>
                                   ) : null}
                                   <div
@@ -70636,7 +71049,7 @@ export default function App() {
                                       lineHeight: 1.5,
                                     }}
                                   >
-                                    {candidate.guidance}
+                                    {candidate.recommendedAction || candidate.guidance}
                                   </div>
                                   <div
                                     style={{
@@ -71271,6 +71684,7 @@ export default function App() {
     materialImprovementQueue,
     materialTruthGapSummary,
     openFormulaFromDashboard,
+    promoteGeneratedProposalToReviewQueue,
     rejectEvidenceWorkbenchCandidate,
     removeBackfillWorkbenchTarget,
     scrollToFounderLaunchPlanner,
@@ -77942,6 +78356,20 @@ export default function App() {
               }));
             };
 
+            const deferEvidenceCandidate = (candidate) => {
+              if (!candidate?.evidenceCandidateKey) return;
+              const reviewedAt = new Date().toISOString();
+              setEvidenceCandidateLocalReviewState((prev) => ({
+                ...prev,
+                [candidate.evidenceCandidateKey]: {
+                  decision: "deferred",
+                  reviewStatus: "pending_review",
+                  reviewedAt,
+                  sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+                },
+              }));
+            };
+
             const clearEvidenceCandidateReview = (candidate) => {
               if (!candidate?.evidenceCandidateKey) return;
               setEvidenceCandidateLocalReviewState((prev) => {
@@ -79299,7 +79727,9 @@ export default function App() {
                                         }}
                                       >
                                         <div style={{ fontWeight: 700 }}>
-                                          {candidate.canonicalMaterialKey}
+                                          {candidate.materialName ||
+                                            candidate.canonicalMaterialKey ||
+                                            "Unknown material"}
                                         </div>
                                         <div
                                           style={{
@@ -79308,7 +79738,82 @@ export default function App() {
                                             marginTop: 3,
                                           }}
                                         >
-                                          {candidate.candidateFieldName}
+                                          {candidate.fieldLabel ||
+                                            candidate.candidateFieldName}
+                                        </div>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            gap: 4,
+                                            flexWrap: "wrap",
+                                            marginTop: 4,
+                                          }}
+                                        >
+                                          {candidate.applyPathClassificationLabel ? (
+                                            <span
+                                              style={{
+                                                background: "#0A1628",
+                                                border: "1px solid #1E3A52",
+                                                borderRadius: 999,
+                                                color: "#CBD5E1",
+                                                padding: "1px 6px",
+                                                fontSize: 7,
+                                                fontWeight: 700,
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.08em",
+                                              }}
+                                            >
+                                              {candidate.applyPathClassificationLabel}
+                                            </span>
+                                          ) : null}
+                                          {candidate.applyPathLabel ? (
+                                            <span
+                                              style={{
+                                                background:
+                                                  candidate.applyPath ===
+                                                  "promotion_json"
+                                                    ? "#0A2E1A"
+                                                    : "#071826",
+                                                border: `1px solid ${
+                                                  candidate.applyPath ===
+                                                  "promotion_json"
+                                                    ? "#166534"
+                                                    : "#1E3A52"
+                                                }`,
+                                                borderRadius: 999,
+                                                color:
+                                                  candidate.applyPath ===
+                                                  "promotion_json"
+                                                    ? "#86EFAC"
+                                                    : "#94A3B8",
+                                                padding: "1px 6px",
+                                                fontSize: 7,
+                                                fontWeight: 700,
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.08em",
+                                              }}
+                                            >
+                                              {candidate.applyPathLabel}
+                                            </span>
+                                          ) : null}
+                                          {candidate.sourceOrigin ===
+                                          "generated_proposal" ? (
+                                            <span
+                                              style={{
+                                                background: "#0A1628",
+                                                border: "1px solid #1D4ED8",
+                                                borderRadius: 999,
+                                                color: "#93C5FD",
+                                                padding: "1px 6px",
+                                                fontSize: 7,
+                                                fontWeight: 700,
+                                                textTransform: "uppercase",
+                                                letterSpacing: "0.08em",
+                                              }}
+                                            >
+                                              Generated proposal
+                                            </span>
+                                          ) : null}
                                         </div>
                                         <div
                                           style={{
@@ -79330,10 +79835,36 @@ export default function App() {
                                           lineHeight: 1.6,
                                         }}
                                       >
-                                        {typeof candidate.candidateValue ===
-                                        "boolean"
-                                          ? String(candidate.candidateValue)
-                                          : candidate.candidateValue || "—"}
+                                        {getEvidenceCandidateDisplayValue(
+                                          candidate
+                                        )}
+                                        {candidate.hasConflict ||
+                                        candidate.conflictNote ? (
+                                          <div
+                                            style={{
+                                              color: "#FDE68A",
+                                              fontSize: 7.5,
+                                              marginTop: 4,
+                                            }}
+                                          >
+                                            Conflict:{" "}
+                                            {candidate.conflictNote ||
+                                              candidate.conflictValues?.join(
+                                                " vs "
+                                              )}
+                                          </div>
+                                        ) : null}
+                                        {candidate.currentWeakness ? (
+                                          <div
+                                            style={{
+                                              color: "#94A3B8",
+                                              fontSize: 7.5,
+                                              marginTop: 4,
+                                            }}
+                                          >
+                                            {candidate.currentWeakness}
+                                          </div>
+                                        ) : null}
                                       </td>
                                       <td
                                         style={{
@@ -79342,21 +79873,34 @@ export default function App() {
                                           minWidth: 220,
                                           lineHeight: 1.6,
                                         }}
-                                      >
-                                        <div>
-                                          {candidate.supplier || "Unknown supplier"} ·{" "}
-                                          {candidate.sourceType || "unknown"}
-                                        </div>
-                                        <div
-                                          style={{
-                                            color: "#64748B",
-                                            fontSize: 7.5,
-                                            marginTop: 3,
-                                          }}
                                         >
-                                          {candidate.sourceDocumentKey}
-                                        </div>
-                                      </td>
+                                          <div>
+                                            {candidate.supplier || "Unknown supplier"} ·{" "}
+                                            {candidate.sourceType || "unknown"}
+                                          </div>
+                                          <div
+                                            style={{
+                                              color: "#64748B",
+                                              fontSize: 7.5,
+                                              marginTop: 3,
+                                            }}
+                                          >
+                                            {candidate.sourceDocumentKey ||
+                                              candidate.sourceContextNote ||
+                                              "No source document key attached."}
+                                          </div>
+                                          {candidate.sourceSummary ? (
+                                            <div
+                                              style={{
+                                                color: "#94A3B8",
+                                                fontSize: 7.5,
+                                                marginTop: 3,
+                                              }}
+                                            >
+                                              {candidate.sourceSummary}
+                                            </div>
+                                          ) : null}
+                                        </td>
                                       <td
                                         style={{
                                           padding: "8px",
@@ -79364,13 +79908,35 @@ export default function App() {
                                           minWidth: 90,
                                         }}
                                       >
-                                        {candidate.confidence || "—"}
+                                        <div>
+                                          {getEvidenceCandidateConfidenceLabel(
+                                            candidate
+                                          ) || "—"}
+                                        </div>
+                                        {candidate.proposalSupportStatusLabel &&
+                                        candidate.proposalSupportStatusLabel !==
+                                          getEvidenceCandidateConfidenceLabel(
+                                            candidate
+                                          ) ? (
+                                          <div
+                                            style={{
+                                              color: "#64748B",
+                                              fontSize: 7.5,
+                                              marginTop: 3,
+                                            }}
+                                          >
+                                            {candidate.proposalSupportStatusLabel}
+                                          </div>
+                                        ) : null}
                                       </td>
                                       <td style={{ padding: "8px", minWidth: 160 }}>
                                         <span
                                           style={{
                                             background:
-                                              candidate.reviewStatus ===
+                                              candidate.localDecision ===
+                                              "deferred"
+                                                ? "#0A1628"
+                                                : candidate.reviewStatus ===
                                               "approved_for_promotion"
                                                 ? "#0A2E1A"
                                                 : candidate.reviewStatus ===
@@ -79378,7 +79944,10 @@ export default function App() {
                                                 ? "#2A0F14"
                                                 : "#2A1A00",
                                             border: `1px solid ${
-                                              candidate.reviewStatus ===
+                                              candidate.localDecision ===
+                                              "deferred"
+                                                ? "#1D4ED8"
+                                                : candidate.reviewStatus ===
                                               "approved_for_promotion"
                                                 ? "#166534"
                                                 : candidate.reviewStatus ===
@@ -79388,7 +79957,10 @@ export default function App() {
                                             }`,
                                             borderRadius: 999,
                                             color:
-                                              candidate.reviewStatus ===
+                                              candidate.localDecision ===
+                                              "deferred"
+                                                ? "#93C5FD"
+                                                : candidate.reviewStatus ===
                                               "approved_for_promotion"
                                                 ? "#86EFAC"
                                                 : candidate.reviewStatus ===
@@ -79401,7 +79973,9 @@ export default function App() {
                                             whiteSpace: "nowrap",
                                           }}
                                         >
-                                          {candidate.reviewStatus}
+                                          {candidate.localDecision === "deferred"
+                                            ? "deferred_locally"
+                                            : candidate.reviewStatus}
                                         </span>
                                         {candidate.reviewedAt && (
                                           <div
@@ -79464,6 +80038,23 @@ export default function App() {
                                             }}
                                           >
                                             Reject
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              deferEvidenceCandidate(candidate)
+                                            }
+                                            style={{
+                                              background: "#0A1628",
+                                              border: "1px solid #1D4ED8",
+                                              borderRadius: 6,
+                                              color: "#93C5FD",
+                                              padding: "4px 8px",
+                                              fontSize: 8.5,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Defer
                                           </button>
                                           <button
                                             onClick={() =>
