@@ -3142,6 +3142,907 @@ function matchesBackfillTarget(candidate, name, canonicalMaterialKey, relatedCat
   );
 }
 
+const BACKFILL_PROPOSAL_LANE_LABELS = {
+  promotion_safe: "Promotion-safe",
+  manual_review_only: "Manual-review-only",
+  insufficient_support: "Insufficient-support",
+};
+
+const BACKFILL_PROPOSAL_SUPPORT_LABELS = {
+  confirmed: "Confirmed",
+  likely: "Likely",
+  conflicting: "Conflicting",
+  missing: "Missing",
+};
+
+const BACKFILL_PROPOSAL_FIELD_ORDER = [
+  "canonical_identity",
+  "supplier_variants",
+  "pack_sizes",
+  "pricing",
+  "dilution_carrier",
+  "cas_inci",
+  "scent_summary",
+  "note_role_material_type",
+  "technical_support",
+  "ifra_support",
+];
+
+const IMPROVEMENT_QUEUE_ISSUE_META = {
+  conflicting_evidence: {
+    label: "Conflicting evidence",
+    description:
+      "Conflicting staged evidence is already surfacing for this material.",
+  },
+  founder_critical_weak_material: {
+    label: "Founder-critical weak material",
+    description:
+      "Weak truth is shaping founder-facing launch or scenario outputs.",
+  },
+  pricing_gap_material: {
+    label: "Pricing gap material",
+    description:
+      "Supplier pack-size or live price coverage is still distorting cost reads.",
+  },
+  repeated_manual_follow_up: {
+    label: "Repeated manual follow-up",
+    description:
+      "Multiple manual-only follow-ups keep surfacing for this material.",
+  },
+  sparse_trust_distortion: {
+    label: "Sparse trust distortion",
+    description:
+      "Sparse truth is still pushing founder confidence for this material.",
+  },
+  highest_spend_weak_material: {
+    label: "Highest-spend weak material",
+    description:
+      "Current basket spend says this weak material is worth tightening next.",
+  },
+  most_used_weak_material: {
+    label: "Most-used weak material",
+    description:
+      "This weak material keeps showing up across the saved formula set.",
+  },
+};
+
+function getBackfillProposalLaneLabel(lane) {
+  return BACKFILL_PROPOSAL_LANE_LABELS[lane] || lane || "Unknown";
+}
+
+function getBackfillProposalSupportLabel(status) {
+  return BACKFILL_PROPOSAL_SUPPORT_LABELS[status] || status || "Unknown";
+}
+
+function getCandidateRowsForFields(candidates = [], fieldKeys = []) {
+  const fieldSet = new Set(fieldKeys);
+  return (candidates || []).filter((candidate) =>
+    fieldSet.has(candidate?.fieldKey || candidate?.candidateFieldName)
+  );
+}
+
+function getConflictEntryForFields(conflictSummary = [], fieldKeys = []) {
+  const fieldSet = new Set(fieldKeys);
+  return (conflictSummary || []).find((entry) => fieldSet.has(entry?.fieldKey)) || null;
+}
+
+function getManualFollowUpForFields(rows = [], fieldKeys = []) {
+  const fieldSet = new Set(fieldKeys);
+  return (rows || []).find((row) => fieldSet.has(row?.fieldKey)) || null;
+}
+
+function getFirstPresentValue(...values) {
+  return values.find((value) => {
+    if (value == null) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === "string") return value.trim() !== "";
+    return true;
+  }) ?? null;
+}
+
+function buildCandidateValuePreview(candidates = [], emptyText = "No staged candidate yet.") {
+  const values = Array.from(
+    new Set(
+      (candidates || [])
+        .map((candidate) => candidate?.displayValue || candidate?.candidateValue)
+        .map((value) => normalizeBackfillCandidateValue(value))
+        .filter(Boolean)
+    )
+  );
+  if (values.length === 0) return emptyText;
+  if (values.length === 1) return values[0];
+  if (values.length === 2) return `${values[0]} · ${values[1]}`;
+  return `${values.slice(0, 2).join(" · ")} · +${values.length - 2} more`;
+}
+
+function summarizeSourceDocumentTypes(sourceDocuments = []) {
+  const types = Array.from(
+    new Set((sourceDocuments || []).map((record) => record?.sourceType).filter(Boolean))
+  );
+  return types.length > 0 ? formatHumanList(types.slice(0, 4)) : null;
+}
+
+function summarizeSupplierProductPreview(supplierProducts = []) {
+  if (!Array.isArray(supplierProducts) || supplierProducts.length === 0) {
+    return "No mapped supplier variants are attached yet.";
+  }
+
+  const preview = supplierProducts
+    .slice(0, 2)
+    .map(
+      (product) =>
+        `${product?.supplierDisplayName || "Unknown supplier"} · ${
+          product?.productTitle || "Untitled product"
+        }`
+    );
+  return supplierProducts.length > 2
+    ? `${preview.join(" · ")} · +${supplierProducts.length - 2} more`
+    : preview.join(" · ");
+}
+
+function summarizePricingEntries(
+  livePricingEntries = [],
+  { includePrices = true } = {}
+) {
+  const parts = (livePricingEntries || [])
+    .slice(0, 2)
+    .map(([supplierName, supplierData]) => {
+      const pricePoints = Array.isArray(supplierData?.S) ? supplierData.S : [];
+      const pointPreview = pricePoints
+        .slice(0, 2)
+        .map((point) => {
+          if (!Array.isArray(point) || point.length < 3) return null;
+          const qty = Number(point[0]);
+          const unit = String(point[1] || "").trim();
+          const price = Number(point[2]);
+          if (!Number.isFinite(qty) || !unit) return null;
+          if (includePrices && Number.isFinite(price)) {
+            return `${qty}${unit} $${price.toFixed(2)}`;
+          }
+          return `${qty}${unit}`;
+        })
+        .filter(Boolean);
+      if (pointPreview.length === 0) return supplierName || "Unknown supplier";
+      return `${supplierName || "Unknown supplier"} · ${pointPreview.join(" / ")}`;
+    })
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return includePrices
+      ? "No live supplier pricing is attached yet."
+      : "No live pack sizes are attached yet.";
+  }
+  if (livePricingEntries.length > 2) {
+    parts.push(`+${livePricingEntries.length - 2} more suppliers`);
+  }
+  return parts.join(" · ");
+}
+
+function buildTechnicalSupportPreview(dbRecord = null) {
+  const rows = [
+    ["MW", dbRecord?.MW],
+    ["xLogP", dbRecord?.xLogP],
+    ["VP", dbRecord?.VP],
+    ["ODT", dbRecord?.ODT],
+    ["TPSA", dbRecord?.TPSA],
+    ["Odor threshold", dbRecord?.odorThreshold_ngL],
+  ].filter(([, value]) => value != null && String(value).trim() !== "");
+
+  if (rows.length === 0) {
+    return {
+      displayValue: "MW / xLogP / VP / ODT support is still missing.",
+      populatedCount: 0,
+    };
+  }
+
+  return {
+    displayValue: rows
+      .slice(0, 4)
+      .map(([label, value]) => `${label} ${value}`)
+      .join(" · "),
+    populatedCount: rows.length,
+  };
+}
+
+function buildDilutionCarrierPreview({
+  name,
+  truthReport = null,
+  dbRecord = null,
+  supplierProducts = [],
+} = {}) {
+  const hints = [];
+  const dilutionFactor = Number(dbRecord?.dilutionFactor);
+  if (Number.isFinite(dilutionFactor) && dilutionFactor > 0) {
+    hints.push(`${dilutionFactor}x dilution factor`);
+  }
+  if (truthReport?.normalizationEntry?.entryKind === "diluted_stock") {
+    hints.push("Diluted-stock normalization");
+  }
+  const percentMatch = String(name || "").match(
+    /(\d+(?:\.\d+)?)%\s*(TEC|DPG|IPM|Alcohol|EtOH)?/i
+  );
+  if (percentMatch) {
+    hints.push(
+      `${percentMatch[1]}% ${percentMatch[2] ? percentMatch[2].toUpperCase() : "stock"}`
+    );
+  }
+  const carrierTitle = (supplierProducts || []).find((product) =>
+    /(?:TEC|DPG|carrier|dilut)/i.test(
+      `${product?.productTitle || ""} ${product?.supplierDisplayName || ""}`
+    )
+  );
+  if (carrierTitle) {
+    hints.push(
+      `${carrierTitle.supplierDisplayName || "Supplier"} carrier-bound listing`
+    );
+  }
+
+  const uniqueHints = Array.from(new Set(hints.filter(Boolean)));
+  return {
+    displayValue:
+      uniqueHints.length > 0
+        ? uniqueHints.slice(0, 3).join(" · ")
+        : "No carrier / dilution state is confirmed yet.",
+    hasSupport: uniqueHints.length > 0,
+  };
+}
+
+function buildGeneratedBackfillProposalRows({
+  name,
+  priorityRow = null,
+  truthReport = null,
+  intakeTarget = null,
+  stagedCandidates = [],
+  promotableCandidates = [],
+  manualCandidates = [],
+  conflictSummary = [],
+  manualFollowUpRows = [],
+  supplierProducts = [],
+  livePricingSupplierCount = 0,
+  livePricingPackCount = 0,
+  dbRecord = null,
+} = {}) {
+  const rows = [];
+  const canonicalSource = truthReport?.canonicalSource || null;
+  const sourceDocuments = Array.isArray(truthReport?.sourceDocuments)
+    ? truthReport.sourceDocuments
+    : [];
+  const sourceDocCount = sourceDocuments.length;
+  const sourceDocTypes = summarizeSourceDocumentTypes(sourceDocuments);
+  const requestedSourceTypes =
+    Array.isArray(intakeTarget?.requestedSourceTypes) &&
+    intakeTarget.requestedSourceTypes.length > 0
+      ? formatHumanList(intakeTarget.requestedSourceTypes)
+      : "a trusted SDS, TDS, spec sheet, or supplier PDF";
+  const currentCas = getFirstPresentValue(dbRecord?.cas, canonicalSource?.cas);
+  const currentInci = getFirstPresentValue(dbRecord?.inci, canonicalSource?.inci);
+  const currentScentDesc = getFirstPresentValue(
+    dbRecord?.scentDesc,
+    dbRecord?.scentSummary,
+    dbRecord?.char,
+    canonicalSource?.scentDesc,
+    canonicalSource?.scentSummary
+  );
+  const currentRep = getFirstPresentValue(dbRecord?.rep, canonicalSource?.rep);
+  const currentNote = getFirstPresentValue(dbRecord?.note, canonicalSource?.note);
+  const currentType = getFirstPresentValue(dbRecord?.type, canonicalSource?.type);
+  const ifraMaterial = getIfraMaterialRecord(name);
+  const technicalPreview = buildTechnicalSupportPreview(dbRecord);
+  const dilutionPreview = buildDilutionCarrierPreview({
+    name,
+    truthReport,
+    dbRecord,
+    supplierProducts,
+  });
+  const livePricingEntries = Array.isArray(truthReport?.livePricingEntries)
+    ? truthReport.livePricingEntries
+    : [];
+
+  const pushRow = ({
+    fieldKey,
+    fieldLabel,
+    displayValue,
+    supportStatus,
+    reviewLane,
+    currentWeakness,
+    recommendedAction,
+    sourceSummary,
+    linkedCandidateCount = 0,
+    notes = [],
+  }) => {
+    rows.push({
+      proposalKey: `${name}:${fieldKey}`,
+      fieldKey,
+      fieldLabel,
+      displayValue,
+      supportStatus,
+      supportStatusLabel: getBackfillProposalSupportLabel(supportStatus),
+      reviewLane,
+      reviewLaneLabel: getBackfillProposalLaneLabel(reviewLane),
+      currentWeakness: currentWeakness || null,
+      recommendedAction,
+      sourceSummary: sourceSummary || null,
+      linkedCandidateCount,
+      notes: Array.isArray(notes) ? notes.filter(Boolean).slice(0, 3) : [],
+    });
+  };
+
+  const identityConflict =
+    getConflictEntryForFields(conflictSummary, ["cas", "inci"]) &&
+    truthReport?.dimensionByKey?.identity?.status !== "confirmed";
+  pushRow({
+    fieldKey: "canonical_identity",
+    fieldLabel: "Canonical Identity",
+    displayValue: truthReport?.canonicalMaterialKey
+      ? `${canonicalSource?.canonicalName || name} · ${truthReport.canonicalMaterialKey}`
+      : "Canonical identity still unresolved.",
+    supportStatus: identityConflict
+      ? "conflicting"
+      : truthReport?.dimensionByKey?.identity?.status === "confirmed"
+      ? "confirmed"
+      : truthReport?.dimensionByKey?.identity?.status === "missing"
+      ? "missing"
+      : truthReport?.canonicalMaterialKey
+      ? "likely"
+      : "missing",
+    reviewLane:
+      truthReport?.dimensionByKey?.identity?.status === "missing"
+        ? "insufficient_support"
+        : "manual_review_only",
+    currentWeakness:
+      truthReport?.missingSignals?.find((signal) =>
+        signal.toLowerCase().includes("canonical")
+      ) ||
+      truthReport?.primaryGap ||
+      "Canonical identity should be tightened before chemistry or IFRA promotion.",
+    recommendedAction:
+      truthReport?.dimensionByKey?.identity?.status === "missing"
+        ? "Open the dossier and verify alias, canonical ownership, and CAS / INCI mapping before deeper backfill."
+        : "Keep identity review-first before promoting chemistry or IFRA support.",
+    sourceSummary: `${supplierProducts.length} mapped supplier variant${
+      supplierProducts.length === 1 ? "" : "s"
+    } · ${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"}`,
+  });
+
+  pushRow({
+    fieldKey: "supplier_variants",
+    fieldLabel: "Supplier Variants",
+    displayValue: summarizeSupplierProductPreview(supplierProducts),
+    supportStatus:
+      supplierProducts.length > 0
+        ? "confirmed"
+        : livePricingSupplierCount > 0
+        ? "likely"
+        : "missing",
+    reviewLane:
+      supplierProducts.length > 0 || livePricingSupplierCount > 0
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["supplier_variants"])
+        ?.reason ||
+      "Supplier-variant registry coverage is still light for this material.",
+    recommendedAction:
+      supplierProducts.length > 0
+        ? "Review mapped supplier ownership before treating supplier coverage as complete."
+        : "Prioritize supplier-first ingestion and normalization mapping before deeper chemistry backfill.",
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"} · ${requestedSourceTypes}`
+        : `Preferred source types: ${requestedSourceTypes}`,
+  });
+
+  pushRow({
+    fieldKey: "pack_sizes",
+    fieldLabel: "Pack Sizes",
+    displayValue: summarizePricingEntries(livePricingEntries, {
+      includePrices: false,
+    }),
+    supportStatus:
+      livePricingPackCount > 0
+        ? "confirmed"
+        : livePricingSupplierCount > 0
+        ? "likely"
+        : "missing",
+    reviewLane:
+      livePricingPackCount > 0 || livePricingSupplierCount > 0
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["pricing"])?.reason ||
+      "Pack-size coverage is still too light for confident costing.",
+    recommendedAction:
+      livePricingPackCount > 0
+        ? "Confirm which pack sizes should remain in the founder-facing basket."
+        : "Backfill trusted supplier sizes before founder costing treats this material as covered.",
+    sourceSummary: `${livePricingSupplierCount} supplier${
+      livePricingSupplierCount === 1 ? "" : "s"
+    } priced · ${supplierProducts.length} mapped variant${
+      supplierProducts.length === 1 ? "" : "s"
+    }`,
+  });
+
+  pushRow({
+    fieldKey: "pricing",
+    fieldLabel: "Pricing",
+    displayValue: summarizePricingEntries(livePricingEntries, {
+      includePrices: true,
+    }),
+    supportStatus:
+      truthReport?.dimensionByKey?.pricing?.status === "confirmed"
+        ? "confirmed"
+        : livePricingPackCount > 0 || livePricingSupplierCount > 0
+        ? "likely"
+        : "missing",
+    reviewLane:
+      livePricingPackCount > 0 || livePricingSupplierCount > 0
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["pricing"])?.reason ||
+      truthReport?.uncertainSignals?.find((signal) =>
+        signal.toLowerCase().includes("pricing")
+      ) ||
+      "Pricing coverage is still too weak for stronger founder cost reads.",
+    recommendedAction:
+      livePricingPackCount > 0
+        ? "Review live price points before treating current basket economics as settled."
+        : "Backfill supplier sizes and live pricing first.",
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"} · ${requestedSourceTypes}`
+        : `Preferred source types: ${requestedSourceTypes}`,
+  });
+
+  pushRow({
+    fieldKey: "dilution_carrier",
+    fieldLabel: "Dilution / Carrier",
+    displayValue: dilutionPreview.displayValue,
+    supportStatus: dilutionPreview.hasSupport ? "likely" : "missing",
+    reviewLane: dilutionPreview.hasSupport
+      ? "manual_review_only"
+      : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["dilution_carrier"])
+        ?.reason ||
+      "Carrier state should stay explicit before using this row as a canonical chemistry source.",
+    recommendedAction:
+      dilutionPreview.hasSupport
+        ? "Confirm whether the material is neat, pre-diluted, or carrier-bound before deeper promotion."
+        : "Capture explicit dilution or carrier support before treating this row as canonical chemistry.",
+    sourceSummary:
+      supplierProducts.length > 0
+        ? summarizeSupplierProductPreview(supplierProducts)
+        : `Preferred source types: ${requestedSourceTypes}`,
+  });
+
+  const regulatoryCandidates = getCandidateRowsForFields(stagedCandidates, [
+    "cas",
+    "inci",
+  ]);
+  const regulatoryConflict = getConflictEntryForFields(conflictSummary, [
+    "cas",
+    "inci",
+  ]);
+  pushRow({
+    fieldKey: "cas_inci",
+    fieldLabel: "CAS / INCI",
+    displayValue: regulatoryConflict
+      ? regulatoryConflict.values.join(" vs ")
+      : [
+          currentCas ? `CAS ${currentCas}` : null,
+          currentInci ? `INCI ${currentInci}` : null,
+          !currentCas && !currentInci
+            ? buildCandidateValuePreview(
+                regulatoryCandidates,
+                "CAS / INCI still missing."
+              )
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+    supportStatus: regulatoryConflict
+      ? "conflicting"
+      : truthReport?.dimensionByKey?.regulatory?.status === "confirmed"
+      ? "confirmed"
+      : regulatoryCandidates.length > 0 || currentCas || currentInci
+      ? "likely"
+      : "missing",
+    reviewLane: regulatoryConflict
+      ? "manual_review_only"
+      : regulatoryCandidates.some((candidate) => candidate.applyPath === "promotion_json")
+      ? "promotion_safe"
+      : currentCas || currentInci
+      ? "manual_review_only"
+      : "insufficient_support",
+    currentWeakness:
+      regulatoryConflict
+        ? "Conflicting CAS / INCI support is already surfacing for this material."
+        : truthReport?.uncertainSignals?.find((signal) =>
+            signal.toLowerCase().includes("cas / inci")
+          ) ||
+          "CAS / INCI support is still partial in the current helper and evidence path.",
+    recommendedAction: regulatoryConflict
+      ? "Resolve conflicting CAS / INCI evidence before promoting anything into helper truth."
+      : regulatoryCandidates.some((candidate) => candidate.applyPath === "promotion_json")
+      ? `Review ${regulatoryCandidates.length} low-risk CAS / INCI candidate${
+          regulatoryCandidates.length === 1 ? "" : "s"
+        } already staged below, then export approved JSON if they hold up.`
+      : currentCas || currentInci
+      ? "Confirm the current CAS / INCI against a trusted SDS or TDS before treating this support as settled."
+      : `Prefer ${requestedSourceTypes} before filling CAS / INCI.`,
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"}${
+            sourceDocTypes ? ` · ${sourceDocTypes}` : ""
+          }`
+        : `Preferred source types: ${requestedSourceTypes}`,
+    linkedCandidateCount: regulatoryCandidates.length,
+  });
+
+  const scentCandidates = getCandidateRowsForFields(stagedCandidates, [
+    "scentDesc",
+    "rep",
+  ]);
+  const scentConflict = getConflictEntryForFields(conflictSummary, [
+    "scentDesc",
+    "rep",
+  ]);
+  pushRow({
+    fieldKey: "scent_summary",
+    fieldLabel: "Scent Summary / Description",
+    displayValue: scentConflict
+      ? scentConflict.values.join(" vs ")
+      : currentScentDesc || currentRep || buildCandidateValuePreview(
+          scentCandidates,
+          "No scent summary candidate is staged yet."
+        ),
+    supportStatus: scentConflict
+      ? "conflicting"
+      : truthReport?.dimensionByKey?.descriptive?.status === "confirmed"
+      ? "confirmed"
+      : currentScentDesc || currentRep || scentCandidates.length > 0
+      ? "likely"
+      : "missing",
+    reviewLane: scentConflict
+      ? "manual_review_only"
+      : scentCandidates.some((candidate) => candidate.fieldKey === "scentDesc")
+      ? "promotion_safe"
+      : currentScentDesc || currentRep || scentCandidates.length > 0
+      ? "manual_review_only"
+      : "insufficient_support",
+    currentWeakness:
+      scentConflict
+        ? "Scent-description support is currently conflicting."
+        : truthReport?.uncertainSignals?.find((signal) =>
+            signal.toLowerCase().includes("scent")
+          ) ||
+          truthReport?.missingSignals?.find((signal) =>
+            signal.toLowerCase().includes("scent")
+          ) ||
+          "Scent and descriptive support is still light for this material.",
+    recommendedAction: scentConflict
+      ? "Resolve conflicting descriptive evidence before promotion."
+      : scentCandidates.some((candidate) => candidate.fieldKey === "scentDesc")
+      ? `Review ${scentCandidates.filter((candidate) => candidate.fieldKey === "scentDesc").length} low-risk scent candidate${
+          scentCandidates.filter((candidate) => candidate.fieldKey === "scentDesc")
+            .length === 1
+            ? ""
+            : "s"
+        } already staged below.`
+      : currentScentDesc || currentRep
+      ? "Treat descriptive metadata as review-first unless a source clearly supports the canonical material."
+      : `Backfill descriptive support from ${requestedSourceTypes}.`,
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"}${
+            sourceDocTypes ? ` · ${sourceDocTypes}` : ""
+          }`
+        : `Preferred source types: ${requestedSourceTypes}`,
+    linkedCandidateCount: scentCandidates.length,
+  });
+
+  const noteCandidates = getCandidateRowsForFields(stagedCandidates, ["note"]);
+  const noteConflict = getConflictEntryForFields(conflictSummary, ["note"]);
+  pushRow({
+    fieldKey: "note_role_material_type",
+    fieldLabel: "Note Role / Material Type",
+    displayValue:
+      [currentNote ? `${currentNote} note` : null, currentType ? currentType : null]
+        .filter(Boolean)
+        .join(" · ") ||
+      buildCandidateValuePreview(noteCandidates, "No note-role / material-type support is staged yet."),
+    supportStatus: noteConflict
+      ? "conflicting"
+      : currentNote && currentType
+      ? "confirmed"
+      : currentNote || currentType || noteCandidates.length > 0
+      ? "likely"
+      : "missing",
+    reviewLane:
+      currentNote || currentType || noteCandidates.length > 0
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["note"])?.reason ||
+      "Note-role and material-type support should stay manual unless the source is clearly canonical.",
+    recommendedAction:
+      currentNote || currentType || noteCandidates.length > 0
+        ? "Keep note-role and material-type enrichment in manual review."
+        : `Backfill note-role and type support from ${requestedSourceTypes}.`,
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"}`
+        : `Preferred source types: ${requestedSourceTypes}`,
+    linkedCandidateCount: noteCandidates.length,
+  });
+
+  pushRow({
+    fieldKey: "technical_support",
+    fieldLabel: "Technical Support",
+    displayValue: technicalPreview.displayValue,
+    supportStatus:
+      truthReport?.dimensionByKey?.technical?.status === "confirmed"
+        ? "confirmed"
+        : technicalPreview.populatedCount > 0
+        ? "likely"
+        : "missing",
+    reviewLane:
+      technicalPreview.populatedCount > 0
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["technical"])?.reason ||
+      truthReport?.uncertainSignals?.find((signal) =>
+        signal.toLowerCase().includes("technical behavior")
+      ) ||
+      "Technical behavior support is still partial for this material.",
+    recommendedAction:
+      technicalPreview.populatedCount > 0
+        ? "Keep technical behavior support in manual review before treating projections as strong."
+        : `Backfill MW / xLogP / VP / ODT support from ${requestedSourceTypes}.`,
+    sourceSummary:
+      technicalPreview.populatedCount > 0
+        ? `${technicalPreview.populatedCount} populated technical signal${
+            technicalPreview.populatedCount === 1 ? "" : "s"
+          }`
+        : `Preferred source types: ${requestedSourceTypes}`,
+  });
+
+  const ifraCandidates = getCandidateRowsForFields(stagedCandidates, [
+    "ifraMaterialHint",
+  ]);
+  const ifraConflict = getConflictEntryForFields(conflictSummary, [
+    "ifraMaterialHint",
+  ]);
+  pushRow({
+    fieldKey: "ifra_support",
+    fieldLabel: "IFRA / Restriction Support",
+    displayValue: ifraConflict
+      ? ifraConflict.values.join(" vs ")
+      : ifraMaterial?.canonicalName
+      ? `IFRA record resolved · ${ifraMaterial.canonicalName}`
+      : buildCandidateValuePreview(
+          ifraCandidates,
+          "No active IFRA / restriction support is resolved yet."
+        ),
+    supportStatus: ifraConflict
+      ? "conflicting"
+      : truthReport?.dimensionByKey?.ifra?.status === "confirmed"
+      ? "confirmed"
+      : ifraMaterial || ifraCandidates.length > 0
+      ? "likely"
+      : "missing",
+    reviewLane:
+      ifraMaterial || ifraCandidates.length > 0 || ifraConflict
+        ? "manual_review_only"
+        : "insufficient_support",
+    currentWeakness:
+      getManualFollowUpForFields(manualFollowUpRows, ["ifra"])?.reason ||
+      truthReport?.uncertainSignals?.find((signal) =>
+        signal.toLowerCase().includes("ifra")
+      ) ||
+      "Structured IFRA / restriction support is still partial for this material.",
+    recommendedAction: ifraConflict
+      ? "Resolve conflicting IFRA hints before promotion."
+      : ifraMaterial || ifraCandidates.length > 0
+      ? "Keep IFRA linkage conservative and manual until the canonical match is confirmed."
+      : `Prefer ${requestedSourceTypes} or a structured standard before adding IFRA support.`,
+    sourceSummary:
+      sourceDocCount > 0
+        ? `${sourceDocCount} linked source doc${sourceDocCount === 1 ? "" : "s"}${
+            sourceDocTypes ? ` · ${sourceDocTypes}` : ""
+          }`
+        : `Preferred source types: ${requestedSourceTypes}`,
+    linkedCandidateCount: ifraCandidates.length,
+  });
+
+  return rows.sort(
+    (a, b) =>
+      BACKFILL_PROPOSAL_FIELD_ORDER.indexOf(a.fieldKey) -
+      BACKFILL_PROPOSAL_FIELD_ORDER.indexOf(b.fieldKey)
+  );
+}
+
+function buildBackfillProposalSummary(rows = []) {
+  return {
+    totalCount: (rows || []).length,
+    promotionSafeCount: (rows || []).filter(
+      (row) => row.reviewLane === "promotion_safe"
+    ).length,
+    manualReviewCount: (rows || []).filter(
+      (row) => row.reviewLane === "manual_review_only"
+    ).length,
+    insufficientSupportCount: (rows || []).filter(
+      (row) => row.reviewLane === "insufficient_support"
+    ).length,
+    conflictingCount: (rows || []).filter(
+      (row) => row.supportStatus === "conflicting"
+    ).length,
+  };
+}
+
+function buildMaterialBackfillTargetState({
+  name,
+  priorityRow = null,
+  materialContext = {},
+  evidenceCandidates = [],
+  intakeTargets = [],
+} = {}) {
+  const safePriorityRow = priorityRow || { name };
+  const truthReport = materialContext.truthReport || null;
+  const canonicalMaterialKey =
+    materialContext.canonicalMaterialKey ||
+    truthReport?.canonicalMaterialKey ||
+    safePriorityRow.canonicalMaterialKey ||
+    null;
+  const relatedCatalogNames = Array.from(
+    new Set(
+      [
+        name,
+        ...(materialContext.relatedCatalogNames || []),
+        ...(truthReport?.canonicalCatalogName ? [truthReport.canonicalCatalogName] : []),
+        ...(truthReport?.sourceDocuments || []).flatMap((record) =>
+          Array.isArray(record?.relatedCatalogNames)
+            ? record.relatedCatalogNames
+            : []
+        ),
+      ].filter(Boolean)
+    )
+  );
+
+  const linkedIntakeTarget =
+    materialContext.intakeTarget ||
+    (intakeTargets || []).find(
+      (target) =>
+        (canonicalMaterialKey &&
+          target?.canonicalMaterialKey === canonicalMaterialKey) ||
+        (Array.isArray(target?.relatedCatalogNames) &&
+          target.relatedCatalogNames.some((catalogName) =>
+            relatedCatalogNames.includes(catalogName)
+          ))
+    ) ||
+    null;
+
+  const linkedCandidates = (evidenceCandidates || []).filter((candidate) =>
+    matchesBackfillTarget(candidate, name, canonicalMaterialKey, relatedCatalogNames)
+  );
+
+  const conflictSummary = buildBackfillConflictSummary(linkedCandidates);
+  const stagedCandidates = linkedCandidates
+    .map((candidate) => {
+      const fieldKey = candidate?.candidateFieldName || "unknown";
+      const fieldMeta = getBackfillFieldMeta(fieldKey);
+      const localDecision = candidate?.localDecision || null;
+      const reviewStatus =
+        localDecision === "deferred"
+          ? "deferred_locally"
+          : candidate?.reviewStatus || "pending_review";
+      const conflictingField = conflictSummary.find(
+        (entry) => entry.fieldKey === fieldKey
+      );
+      return {
+        evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
+        fieldKey,
+        fieldLabel: fieldMeta.label,
+        candidateValue: candidate?.candidateValue,
+        displayValue:
+          normalizeBackfillCandidateValue(candidate?.candidateValue) || "—",
+        confidence: candidate?.confidence || "unknown",
+        supplier: candidate?.supplier || null,
+        sourceType: candidate?.sourceType || null,
+        sourceDocumentKey: candidate?.sourceDocumentKey || null,
+        notes: Array.isArray(candidate?.notes) ? candidate.notes : [],
+        applyPath: fieldMeta.applyPath,
+        applyPathLabel:
+          fieldMeta.applyPath === "promotion_json"
+            ? "Promotion JSON"
+            : "Manual review",
+        reviewStatus,
+        localDecision,
+        reviewedAt: candidate?.reviewedAt || null,
+        sourceReviewStatus: candidate?.sourceReviewStatus || null,
+        hasConflict: Boolean(conflictingField),
+        conflictValues: conflictingField?.values || [],
+        guidance: fieldMeta.guidance,
+      };
+    })
+    .sort((a, b) => {
+      const promotableDelta =
+        (a.applyPath === "promotion_json" ? 0 : 1) -
+        (b.applyPath === "promotion_json" ? 0 : 1);
+      if (promotableDelta !== 0) return promotableDelta;
+      const conflictDelta = Number(b.hasConflict) - Number(a.hasConflict);
+      if (conflictDelta !== 0) return conflictDelta;
+      return (a.fieldLabel || "").localeCompare(b.fieldLabel || "");
+    });
+
+  const promotableCandidates = stagedCandidates.filter(
+    (candidate) => candidate.applyPath === "promotion_json"
+  );
+  const manualCandidates = stagedCandidates.filter(
+    (candidate) => candidate.applyPath !== "promotion_json"
+  );
+  const manualFollowUpRows = buildBackfillManualFollowUps({
+    target: linkedIntakeTarget,
+    priorityRow: safePriorityRow,
+    truthReport,
+    supplierVariantCount: materialContext.supplierVariantCount,
+    livePricingPackCount: materialContext.livePricingPackCount,
+    livePricingSupplierCount: materialContext.livePricingSupplierCount,
+  });
+  const generatedProposalRows = buildGeneratedBackfillProposalRows({
+    name,
+    priorityRow: safePriorityRow,
+    truthReport,
+    intakeTarget: linkedIntakeTarget,
+    stagedCandidates,
+    promotableCandidates,
+    manualCandidates,
+    conflictSummary,
+    manualFollowUpRows,
+    supplierProducts: Array.isArray(materialContext.supplierProducts)
+      ? materialContext.supplierProducts
+      : [],
+    livePricingSupplierCount: materialContext.livePricingSupplierCount,
+    livePricingPackCount: materialContext.livePricingPackCount,
+    dbRecord: materialContext.dbRecord || null,
+  });
+  const proposalSummary = buildBackfillProposalSummary(generatedProposalRows);
+
+  return {
+    name,
+    priorityRow: safePriorityRow,
+    truthReport,
+    canonicalMaterialKey,
+    relatedCatalogNames,
+    intakeTarget: linkedIntakeTarget,
+    supplierVariantCount: toFiniteNumber(materialContext.supplierVariantCount),
+    livePricingSupplierCount: toFiniteNumber(materialContext.livePricingSupplierCount),
+    livePricingPackCount: toFiniteNumber(materialContext.livePricingPackCount),
+    sourceDocumentCount: toFiniteNumber(materialContext.sourceDocumentCount),
+    evidenceCandidateCount: toFiniteNumber(
+      materialContext.evidenceCandidateCount,
+      linkedCandidates.length
+    ),
+    supplierProducts: Array.isArray(materialContext.supplierProducts)
+      ? materialContext.supplierProducts
+      : [],
+    primaryGap:
+      truthReport?.primaryGap ||
+      safePriorityRow.primaryGap ||
+      manualFollowUpRows[0]?.reason ||
+      null,
+    stagedCandidates,
+    promotableCandidates,
+    manualCandidates,
+    conflictSummary,
+    manualFollowUpRows,
+    generatedProposalRows,
+    proposalSummary,
+  };
+}
+
 export function buildMaterialBackfillWorkbench({
   targetNames = [],
   prioritizationRows = [],
@@ -3161,150 +4062,15 @@ export function buildMaterialBackfillWorkbench({
   );
 
   const targets = normalizedTargetNames
-    .map((name) => {
-      const priorityRow = prioritizationByName.get(name) || { name };
-      const materialContext = materialContextByName[name] || {};
-      const truthReport = materialContext.truthReport || null;
-      const canonicalMaterialKey =
-        materialContext.canonicalMaterialKey ||
-        truthReport?.canonicalMaterialKey ||
-        priorityRow.canonicalMaterialKey ||
-        null;
-      const relatedCatalogNames = Array.from(
-        new Set(
-          [
-            name,
-            ...(materialContext.relatedCatalogNames || []),
-            ...(truthReport?.canonicalCatalogName
-              ? [truthReport.canonicalCatalogName]
-              : []),
-            ...(truthReport?.sourceDocuments || []).flatMap((record) =>
-              Array.isArray(record?.relatedCatalogNames)
-                ? record.relatedCatalogNames
-                : []
-            ),
-          ].filter(Boolean)
-        )
-      );
-
-      const linkedIntakeTarget =
-        materialContext.intakeTarget ||
-        (intakeTargets || []).find(
-          (target) =>
-            (canonicalMaterialKey &&
-              target?.canonicalMaterialKey === canonicalMaterialKey) ||
-            (Array.isArray(target?.relatedCatalogNames) &&
-              target.relatedCatalogNames.some((catalogName) =>
-                relatedCatalogNames.includes(catalogName)
-              ))
-        ) ||
-        null;
-
-      const linkedCandidates = (evidenceCandidates || []).filter((candidate) =>
-        matchesBackfillTarget(
-          candidate,
-          name,
-          canonicalMaterialKey,
-          relatedCatalogNames
-        )
-      );
-
-      const conflictSummary = buildBackfillConflictSummary(linkedCandidates);
-      const stagedCandidates = linkedCandidates
-        .map((candidate) => {
-          const fieldKey = candidate?.candidateFieldName || "unknown";
-          const fieldMeta = getBackfillFieldMeta(fieldKey);
-          const localDecision = candidate?.localDecision || null;
-          const reviewStatus =
-            localDecision === "deferred"
-              ? "deferred_locally"
-              : candidate?.reviewStatus || "pending_review";
-          const conflictingField = conflictSummary.find(
-            (entry) => entry.fieldKey === fieldKey
-          );
-          return {
-            evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
-            fieldKey,
-            fieldLabel: fieldMeta.label,
-            candidateValue: candidate?.candidateValue,
-            displayValue:
-              normalizeBackfillCandidateValue(candidate?.candidateValue) || "—",
-            confidence: candidate?.confidence || "unknown",
-            supplier: candidate?.supplier || null,
-            sourceType: candidate?.sourceType || null,
-            sourceDocumentKey: candidate?.sourceDocumentKey || null,
-            notes: Array.isArray(candidate?.notes) ? candidate.notes : [],
-            applyPath: fieldMeta.applyPath,
-            applyPathLabel:
-              fieldMeta.applyPath === "promotion_json"
-                ? "Promotion JSON"
-                : "Manual review",
-            reviewStatus,
-            localDecision,
-            reviewedAt: candidate?.reviewedAt || null,
-            sourceReviewStatus: candidate?.sourceReviewStatus || null,
-            hasConflict: Boolean(conflictingField),
-            conflictValues: conflictingField?.values || [],
-            guidance: fieldMeta.guidance,
-          };
-        })
-        .sort((a, b) => {
-          const promotableDelta =
-            (a.applyPath === "promotion_json" ? 0 : 1) -
-            (b.applyPath === "promotion_json" ? 0 : 1);
-          if (promotableDelta !== 0) return promotableDelta;
-          const conflictDelta = Number(b.hasConflict) - Number(a.hasConflict);
-          if (conflictDelta !== 0) return conflictDelta;
-          return (a.fieldLabel || "").localeCompare(b.fieldLabel || "");
-        });
-
-      const promotableCandidates = stagedCandidates.filter(
-        (candidate) => candidate.applyPath === "promotion_json"
-      );
-      const manualCandidates = stagedCandidates.filter(
-        (candidate) => candidate.applyPath !== "promotion_json"
-      );
-      const manualFollowUpRows = buildBackfillManualFollowUps({
-        target: linkedIntakeTarget,
-        priorityRow,
-        truthReport,
-        supplierVariantCount: materialContext.supplierVariantCount,
-        livePricingPackCount: materialContext.livePricingPackCount,
-        livePricingSupplierCount: materialContext.livePricingSupplierCount,
-      });
-
-      return {
+    .map((name) =>
+      buildMaterialBackfillTargetState({
         name,
-        priorityRow,
-        truthReport,
-        canonicalMaterialKey,
-        relatedCatalogNames,
-        intakeTarget: linkedIntakeTarget,
-        supplierVariantCount: toFiniteNumber(materialContext.supplierVariantCount),
-        livePricingSupplierCount: toFiniteNumber(
-          materialContext.livePricingSupplierCount
-        ),
-        livePricingPackCount: toFiniteNumber(materialContext.livePricingPackCount),
-        sourceDocumentCount: toFiniteNumber(materialContext.sourceDocumentCount),
-        evidenceCandidateCount: toFiniteNumber(
-          materialContext.evidenceCandidateCount,
-          linkedCandidates.length
-        ),
-        supplierProducts: Array.isArray(materialContext.supplierProducts)
-          ? materialContext.supplierProducts
-          : [],
-        primaryGap:
-          truthReport?.primaryGap ||
-          priorityRow.primaryGap ||
-          manualFollowUpRows[0]?.reason ||
-          null,
-        stagedCandidates,
-        promotableCandidates,
-        manualCandidates,
-        conflictSummary,
-        manualFollowUpRows,
-      };
-    })
+        priorityRow: prioritizationByName.get(name) || { name },
+        materialContext: materialContextByName[name] || {},
+        evidenceCandidates,
+        intakeTargets,
+      })
+    )
     .filter(Boolean);
 
   return {
@@ -3327,6 +4093,18 @@ export function buildMaterialBackfillWorkbench({
           target.manualFollowUpRows.length,
         0
       ),
+      generatedProposalCount: targets.reduce(
+        (sum, target) => sum + target.generatedProposalRows.length,
+        0
+      ),
+      promotionSafeProposalCount: targets.reduce(
+        (sum, target) => sum + target.proposalSummary.promotionSafeCount,
+        0
+      ),
+      insufficientSupportProposalCount: targets.reduce(
+        (sum, target) => sum + target.proposalSummary.insufficientSupportCount,
+        0
+      ),
       conflictCount: targets.reduce(
         (sum, target) => sum + target.conflictSummary.length,
         0
@@ -3336,6 +4114,256 @@ export function buildMaterialBackfillWorkbench({
           sum + (target.intakeTarget?.stillMissingFields?.length || 0),
         0
       ),
+    },
+  };
+}
+
+function buildImprovementQueueDrivers(target = {}) {
+  const priorityRow = target.priorityRow || {};
+  const drivers = [];
+  const pushDriver = (key, weight) => {
+    if (!Number.isFinite(weight) || weight <= 0) return;
+    drivers.push({
+      key,
+      weight,
+      label: IMPROVEMENT_QUEUE_ISSUE_META[key]?.label || key,
+      description: IMPROVEMENT_QUEUE_ISSUE_META[key]?.description || "",
+    });
+  };
+
+  pushDriver(
+    "conflicting_evidence",
+    target.conflictSummary.length > 0
+      ? 24 + target.conflictSummary.length * 4
+      : 0
+  );
+  pushDriver(
+    "founder_critical_weak_material",
+    toFiniteNumber(priorityRow.founderCriticalCount) * 8 +
+      toFiniteNumber(priorityRow.nearReadyCount) * 4
+  );
+  pushDriver(
+    "pricing_gap_material",
+    toFiniteNumber(priorityRow.pricingGapCount) * 7 +
+      (priorityRow.pricingStatus === "missing"
+        ? 8
+        : priorityRow.pricingStatus === "uncertain"
+        ? 4
+        : priorityRow.pricingStatus === "inferred"
+        ? 2
+        : 0)
+  );
+  pushDriver(
+    "repeated_manual_follow_up",
+    target.manualFollowUpRows.length >= 3
+      ? target.manualFollowUpRows.length * 4
+      : 0
+  );
+  pushDriver(
+    "sparse_trust_distortion",
+    priorityRow.truthLevel === "sparse"
+      ? 18 +
+        Math.min(
+          8,
+          toFiniteNumber(priorityRow.founderCriticalCount) +
+            toFiniteNumber(priorityRow.formulaCount)
+        )
+      : 0
+  );
+  pushDriver(
+    "highest_spend_weak_material",
+    toFiniteNumber(priorityRow.totalLineCost) > 0
+      ? Math.min(18, toFiniteNumber(priorityRow.totalLineCost) / 4)
+      : 0
+  );
+  pushDriver(
+    "most_used_weak_material",
+    toFiniteNumber(priorityRow.formulaCount) * 3 +
+      Math.min(6, toFiniteNumber(priorityRow.appearanceCount))
+  );
+
+  return drivers.sort((a, b) => b.weight - a.weight || a.label.localeCompare(b.label));
+}
+
+function buildImprovementQueueRecommendedAction(target = {}, drivers = []) {
+  const primaryDriver = drivers[0]?.key || null;
+  if (primaryDriver === "conflicting_evidence") {
+    return "Resolve conflicting evidence in the workbench before promoting anything else.";
+  }
+  if ((target.proposalSummary?.promotionSafeCount || 0) > 0) {
+    return `Review ${target.proposalSummary.promotionSafeCount} promotion-safe candidate row${
+      target.proposalSummary.promotionSafeCount === 1 ? "" : "s"
+    } plus any staged evidence below, then export approved JSON if they hold up.`;
+  }
+  if (primaryDriver === "pricing_gap_material") {
+    return "Backfill supplier pack sizes and live pricing before founder costing leans too hard on this material.";
+  }
+  if (primaryDriver === "founder_critical_weak_material") {
+    return "Stage this material in the workbench and tighten the first founder-facing trust gap next.";
+  }
+  if (target.manualFollowUpRows[0]?.guidance) {
+    return target.manualFollowUpRows[0].guidance;
+  }
+  if (target.priorityRow?.backfillFocus) {
+    return target.priorityRow.backfillFocus;
+  }
+  return "Open the dossier and workbench to review the current highest-value weak spot.";
+}
+
+function buildImprovementQueueWeakness(target = {}) {
+  return (
+    target.primaryGap ||
+    target.generatedProposalRows.find((row) => row.supportStatus !== "confirmed")
+      ?.currentWeakness ||
+    target.priorityRow?.primaryGap ||
+    target.priorityRow?.backfillFocus ||
+    "No specific weakness surfaced yet."
+  );
+}
+
+function sortImprovementQueueRows(rows = [], comparator) {
+  return [...rows].sort((a, b) => {
+    const primary = comparator(a, b);
+    if (primary !== 0) return primary;
+    if (b.priorityScore !== a.priorityScore) {
+      return b.priorityScore - a.priorityScore;
+    }
+    return (a.name || "").localeCompare(b.name || "");
+  });
+}
+
+export function buildMaterialImprovementQueue({
+  prioritizationRows = [],
+  evidenceCandidates = [],
+  intakeTargets = [],
+  materialContextByName = {},
+} = {}) {
+  const targetStates = (prioritizationRows || [])
+    .filter((row) => row?.name)
+    .map((row) =>
+      buildMaterialBackfillTargetState({
+        name: row.name,
+        priorityRow: row,
+        materialContext: materialContextByName[row.name] || {},
+        evidenceCandidates,
+        intakeTargets,
+      })
+    )
+    .filter(
+      (target) =>
+        target?.priorityRow?.truthLevel !== "strong" ||
+        toFiniteNumber(target?.priorityRow?.pricingGapCount) > 0 ||
+        target?.conflictSummary?.length > 0 ||
+        (target?.proposalSummary?.insufficientSupportCount || 0) > 0
+    );
+
+  const rows = targetStates
+    .map((target) => {
+      const drivers = buildImprovementQueueDrivers(target);
+      const primaryDriver = drivers[0] || {
+        key: "most_used_weak_material",
+        label: IMPROVEMENT_QUEUE_ISSUE_META.most_used_weak_material.label,
+        description: IMPROVEMENT_QUEUE_ISSUE_META.most_used_weak_material.description,
+        weight: 0,
+      };
+      return {
+        name: target.name,
+        canonicalMaterialKey: target.canonicalMaterialKey || null,
+        truthLevel: target.priorityRow?.truthLevel || target.truthReport?.level || "partial",
+        supportLabel:
+          target.priorityRow?.supportLabel || target.truthReport?.supportLabel || "—",
+        issueType: primaryDriver.label,
+        issueTypeKey: primaryDriver.key,
+        issueTags: drivers.slice(0, 3).map((driver) => driver.label),
+        priorityScore: Number(
+          (
+            toFiniteNumber(target.priorityRow?.priorityScore) +
+            toFiniteNumber(primaryDriver.weight) +
+            toFiniteNumber(target.manualFollowUpRows.length) * 2 +
+            toFiniteNumber(target.conflictSummary.length) * 4 +
+            toFiniteNumber(target.proposalSummary?.promotionSafeCount) * 2
+          ).toFixed(2)
+        ),
+        priorityReason:
+          target.priorityRow?.priorityReason ||
+          drivers
+            .slice(0, 2)
+            .map((driver) => driver.description || driver.label)
+            .join(" · "),
+        currentWeakness: buildImprovementQueueWeakness(target),
+        recommendedNextAction: buildImprovementQueueRecommendedAction(
+          target,
+          drivers
+        ),
+        primaryGap: target.primaryGap,
+        formulaCount: toFiniteNumber(target.priorityRow?.formulaCount),
+        totalLineCost: toFiniteNumber(target.priorityRow?.totalLineCost),
+        founderCriticalCount: toFiniteNumber(target.priorityRow?.founderCriticalCount),
+        pricingGapCount: toFiniteNumber(target.priorityRow?.pricingGapCount),
+        manualFollowUpCount: target.manualFollowUpRows.length,
+        conflictCount: target.conflictSummary.length,
+        promotionSafeCount: toFiniteNumber(
+          target.proposalSummary?.promotionSafeCount
+        ),
+        insufficientSupportCount: toFiniteNumber(
+          target.proposalSummary?.insufficientSupportCount
+        ),
+      };
+    })
+    .sort((a, b) => b.priorityScore - a.priorityScore || a.name.localeCompare(b.name));
+
+  const mostUsedWeakMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.formulaCount > 0),
+    (a, b) => b.formulaCount - a.formulaCount
+  ).slice(0, 6);
+  const highestSpendWeakMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.totalLineCost > 0),
+    (a, b) => b.totalLineCost - a.totalLineCost
+  ).slice(0, 6);
+  const founderCriticalWeakMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.founderCriticalCount > 0),
+    (a, b) => b.founderCriticalCount - a.founderCriticalCount
+  ).slice(0, 6);
+  const pricingGapMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.pricingGapCount > 0),
+    (a, b) => b.pricingGapCount - a.pricingGapCount
+  ).slice(0, 6);
+  const sparseTrustMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.truthLevel === "sparse"),
+    (a, b) => b.priorityScore - a.priorityScore
+  ).slice(0, 6);
+  const repeatedManualFollowUpMaterials = sortImprovementQueueRows(
+    rows.filter((row) => row.manualFollowUpCount > 1 || row.conflictCount > 0),
+    (a, b) =>
+      b.manualFollowUpCount - a.manualFollowUpCount ||
+      b.conflictCount - a.conflictCount
+  ).slice(0, 6);
+
+  return {
+    rows,
+    topRows: rows.slice(0, 10),
+    buckets: {
+      mostUsedWeakMaterials,
+      highestSpendWeakMaterials,
+      founderCriticalWeakMaterials,
+      pricingGapMaterials,
+      sparseTrustMaterials,
+      repeatedManualFollowUpMaterials,
+    },
+    summary: {
+      queueCount: rows.length,
+      topPriorityMaterialName: rows[0]?.name || null,
+      mostUsedWeakCount: mostUsedWeakMaterials.length,
+      highestSpendWeakCount: highestSpendWeakMaterials.length,
+      founderCriticalWeakCount: founderCriticalWeakMaterials.length,
+      pricingGapMaterialCount: pricingGapMaterials.length,
+      sparseTrustMaterialCount: sparseTrustMaterials.length,
+      repeatedManualFollowUpCount: repeatedManualFollowUpMaterials.length,
+      promotionSafeMaterialCount: rows.filter((row) => row.promotionSafeCount > 0)
+        .length,
+      insufficientSupportMaterialCount: rows.filter(
+        (row) => row.insufficientSupportCount > 0
+      ).length,
     },
   };
 }

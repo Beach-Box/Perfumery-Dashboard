@@ -73,6 +73,7 @@ import {
 import {
   buildCapitalConstrainedLaunchRecommendation,
   buildMaterialBackfillWorkbench,
+  buildMaterialImprovementQueue,
   buildFounderProductContextState,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
@@ -61624,12 +61625,12 @@ export default function App() {
 
     return buildMaterialTruthGapPrioritization(Array.from(materialMap.values()));
   }, [founderDashboardItems, founderInsightsEnabled, pricesState]);
-  const materialBackfillWorkbench = useMemo(() => {
+  const materialBackfillContextByName = useMemo(() => {
     if (!founderInsightsEnabled) {
-      return buildMaterialBackfillWorkbench();
+      return {};
     }
 
-    const materialContextByName = Object.fromEntries(
+    return Object.fromEntries(
       materialTruthGapSummary.rows.map((row) => {
         const truthReport = buildIngredientTruthCompletenessReport(row.name, {
           record: DB[row.name] || null,
@@ -61644,6 +61645,7 @@ export default function App() {
           row.name,
           {
             truthReport,
+            dbRecord: DB[row.name] || null,
             canonicalMaterialKey: truthReport.canonicalMaterialKey || null,
             relatedCatalogNames: Array.from(
               new Set(
@@ -61676,19 +61678,41 @@ export default function App() {
         ];
       })
     );
+  }, [founderInsightsEnabled, materialTruthGapSummary, pricesState]);
+  const materialImprovementQueue = useMemo(() => {
+    if (!founderInsightsEnabled) {
+      return buildMaterialImprovementQueue();
+    }
+
+    return buildMaterialImprovementQueue({
+      prioritizationRows: materialTruthGapSummary.rows,
+      evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+      intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
+      materialContextByName: materialBackfillContextByName,
+    });
+  }, [
+    founderInsightsEnabled,
+    materialBackfillContextByName,
+    materialTruthGapSummary,
+    sourceDocumentEvidenceReviewPayload,
+  ]);
+  const materialBackfillWorkbench = useMemo(() => {
+    if (!founderInsightsEnabled) {
+      return buildMaterialBackfillWorkbench();
+    }
 
     return buildMaterialBackfillWorkbench({
       targetNames: backfillWorkbenchTargets,
       prioritizationRows: materialTruthGapSummary.rows,
       evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
       intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
-      materialContextByName,
+      materialContextByName: materialBackfillContextByName,
     });
   }, [
     backfillWorkbenchTargets,
     founderInsightsEnabled,
+    materialBackfillContextByName,
     materialTruthGapSummary,
-    pricesState,
     sourceDocumentEvidenceReviewPayload,
   ]);
   useEffect(() => {
@@ -64318,6 +64342,7 @@ export default function App() {
     const launchPlannerTrustSummary = launchRunPlannerSummary.trustSummary;
     const recommendationTrustSummary = launchRecommendation.trustSummary;
     const materialPrioritySummary = materialTruthGapSummary.summary;
+    const improvementQueueSummary = materialImprovementQueue.summary;
     const founderTrustWarnings = [
       ["Founder dashboard", dashboardTrustSummary],
       ["SKU economics", skuTrustSummary],
@@ -64579,6 +64604,334 @@ export default function App() {
       );
     };
     const backfillSelectedTargetSet = new Set(backfillWorkbenchTargets);
+    const getImprovementQueueIssueMeta = (issueTypeKey) => {
+      if (issueTypeKey === "conflicting_evidence") {
+        return {
+          color: "#FCA5A5",
+          bg: "#2A0F14",
+          border: "#7F1D1D",
+        };
+      }
+      if (issueTypeKey === "pricing_gap_material") {
+        return {
+          color: "#FDE68A",
+          bg: "#2A1A00",
+          border: "#78350F",
+        };
+      }
+      if (issueTypeKey === "founder_critical_weak_material") {
+        return {
+          color: "#C4B5FD",
+          bg: "#1E1231",
+          border: "#6D28D9",
+        };
+      }
+      if (issueTypeKey === "repeated_manual_follow_up") {
+        return {
+          color: "#93C5FD",
+          bg: "#0A1628",
+          border: "#1D4ED8",
+        };
+      }
+      if (issueTypeKey === "highest_spend_weak_material") {
+        return {
+          color: "#86EFAC",
+          bg: "#0A2E1A",
+          border: "#166534",
+        };
+      }
+      return {
+        color: "#7DD3FC",
+        bg: "#071826",
+        border: "#1E3A52",
+      };
+    };
+    const getWorkbenchProposalLaneMeta = (lane) => {
+      if (lane === "promotion_safe") {
+        return {
+          color: "#86EFAC",
+          bg: "#0A2E1A",
+          border: "#166534",
+        };
+      }
+      if (lane === "manual_review_only") {
+        return {
+          color: "#CBD5E1",
+          bg: "#0A1628",
+          border: "#1E3A52",
+        };
+      }
+      return {
+        color: "#FDE68A",
+        bg: "#2A1A00",
+        border: "#78350F",
+      };
+    };
+    const getWorkbenchProposalSupportMeta = (status) => {
+      if (status === "confirmed") {
+        return {
+          color: "#86EFAC",
+          bg: "#0A2E1A",
+          border: "#166534",
+        };
+      }
+      if (status === "likely") {
+        return {
+          color: "#93C5FD",
+          bg: "#0A1628",
+          border: "#1D4ED8",
+        };
+      }
+      if (status === "conflicting") {
+        return {
+          color: "#FCA5A5",
+          bg: "#2A0F14",
+          border: "#7F1D1D",
+        };
+      }
+      return {
+        color: "#FDE68A",
+        bg: "#2A1A00",
+        border: "#78350F",
+      };
+    };
+    const renderImprovementQueueRow = (row) => {
+      const truthMeta =
+        MATERIAL_COMPLETENESS_LEVEL_META[row?.truthLevel] ||
+        MATERIAL_COMPLETENESS_LEVEL_META.partial;
+      const issueMeta = getImprovementQueueIssueMeta(row?.issueTypeKey);
+      const isSelected = backfillSelectedTargetSet.has(row.name);
+      return (
+        <div
+          key={`improvement-queue-${row.name}`}
+          style={{
+            background: "#071826",
+            border: "1px solid #1E3A52",
+            borderRadius: 12,
+            padding: "10px 12px",
+            display: "grid",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9.8,
+                    fontWeight: 700,
+                    color: "#E2E8F0",
+                  }}
+                >
+                  {row.name}
+                </div>
+                <span
+                  style={{
+                    background: issueMeta.bg,
+                    border: `1px solid ${issueMeta.border}`,
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 7.4,
+                    fontWeight: 700,
+                    color: issueMeta.color,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {row.issueType}
+                </span>
+                <span
+                  style={{
+                    background: truthMeta.bg,
+                    border: `1px solid ${truthMeta.border}`,
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 7.4,
+                    fontWeight: 700,
+                    color: truthMeta.color,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {truthMeta.label}
+                </span>
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.5,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                {row.priorityReason || "No priority reason surfaced."}
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gap: 6,
+                justifyItems: "end",
+                minWidth: 164,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.4,
+                  color: "#FCD34D",
+                  fontWeight: 700,
+                  fontFamily: "monospace",
+                }}
+              >
+                {row.priorityScore.toFixed(0)}
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => setDetailName(row.name)}
+                  style={{
+                    background: "#0A1628",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    color: "#CBD5E1",
+                    padding: "5px 9px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Open Dossier
+                </button>
+                <button
+                  type="button"
+                  disabled={isSelected}
+                  onClick={() => {
+                    if (!isSelected) toggleBackfillWorkbenchTarget(row.name);
+                  }}
+                  style={{
+                    background: isSelected ? "#052E16" : "#0A2E1A",
+                    border: `1px solid ${isSelected ? "#166534" : "#166534"}`,
+                    borderRadius: 8,
+                    color: isSelected ? "#86EFAC" : "#BBF7D0",
+                    padding: "5px 9px",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    cursor: isSelected ? "default" : "pointer",
+                    opacity: isSelected ? 0.9 : 1,
+                  }}
+                >
+                  {isSelected ? "Staged" : "Stage in Workbench"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1fr) minmax(200px,0.7fr)",
+              gap: 10,
+            }}
+          >
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Current Weakness
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.5,
+                  color: "#CBD5E1",
+                  lineHeight: 1.55,
+                }}
+              >
+                {row.currentWeakness}
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8,
+                  color: "#64748B",
+                  lineHeight: 1.5,
+                }}
+              >
+                {row.recommendedNextAction}
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                display: "grid",
+                gap: 5,
+              }}
+            >
+              {[
+                ["Support", row.supportLabel || "—", "#7DD3FC"],
+                ["Pricing gaps", row.pricingGapCount, "#F59E0B"],
+                ["Manual follow-up", row.manualFollowUpCount, "#A78BFA"],
+                ["Promotion-safe", row.promotionSafeCount, "#34D399"],
+              ].map(([label, value, color]) => (
+                <div
+                  key={`${row.name}-${label}`}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    alignItems: "center",
+                    fontSize: 8,
+                  }}
+                >
+                  <span style={{ color: "#64748B" }}>{label}</span>
+                  <span
+                    style={{
+                      color,
+                      fontWeight: 700,
+                      fontFamily:
+                        typeof value === "number" ? "monospace" : "inherit",
+                    }}
+                  >
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
     const normalizedBackfillSearch = String(
       backfillWorkbenchSearch || ""
     ).trim();
@@ -69082,6 +69435,178 @@ export default function App() {
                 style={{
                   fontSize: 10,
                   fontWeight: 700,
+                  color: "#FDE68A",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Improvement Queue
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 8.8,
+                  color: "#64748B",
+                  lineHeight: 1.6,
+                  maxWidth: 760,
+                }}
+              >
+                A unified queue that blends current formula usage, spend,
+                founder-critical risk, pricing gaps, sparse trust, and repeated
+                manual follow-up into one review-first list. Each row stays tied
+                to the existing dossier and workbench path instead of inventing
+                a second improvement system.
+              </div>
+            </div>
+            <div
+              style={{
+                fontSize: 8.5,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+                textAlign: "right",
+                maxWidth: 260,
+              }}
+            >
+              {improvementQueueSummary.topPriorityMaterialName
+                ? `Top queue item: ${improvementQueueSummary.topPriorityMaterialName}`
+                : "No improvement queue item is standing out under the current runtime."}
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+              gap: 8,
+            }}
+          >
+            {[
+              [
+                "Most-Used Weak",
+                improvementQueueSummary.mostUsedWeakCount,
+                "Weak materials showing up across saved formulas",
+                "#7DD3FC",
+              ],
+              [
+                "High-Spend Weak",
+                improvementQueueSummary.highestSpendWeakCount,
+                "Weak materials shaping current basket spend",
+                "#34D399",
+              ],
+              [
+                "Founder-Critical",
+                improvementQueueSummary.founderCriticalWeakCount,
+                "Weak materials inside launch-relevant reads",
+                "#A78BFA",
+              ],
+              [
+                "Pricing-Gap",
+                improvementQueueSummary.pricingGapMaterialCount,
+                `${selectedBasketModeMeta.label} basket mode`,
+                "#F59E0B",
+              ],
+              [
+                "Sparse-Trust",
+                improvementQueueSummary.sparseTrustMaterialCount,
+                "Sparse truth still distorting founder confidence",
+                "#F87171",
+              ],
+              [
+                "Repeated Follow-Up",
+                improvementQueueSummary.repeatedManualFollowUpCount,
+                "Materials still surfacing multiple manual review steps",
+                "#FDE68A",
+              ],
+            ].map(([label, value, meta, color]) => (
+              <div
+                key={`improvement-queue-metric-${label}`}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 10,
+                  padding: "9px 10px",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color,
+                  }}
+                >
+                  {value}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.5,
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {label}
+                </div>
+                <div
+                  style={{
+                    marginTop: 3,
+                    fontSize: 8.1,
+                    color: "#64748B",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {meta}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
+            {materialImprovementQueue.topRows.length === 0 ? (
+              <div
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 12,
+                  padding: "12px 14px",
+                  fontSize: 9,
+                  color: "#94A3B8",
+                  lineHeight: 1.7,
+                }}
+              >
+                No high-value improvement item stands out under the current
+                runtime snapshot.
+              </div>
+            ) : (
+              materialImprovementQueue.topRows.map((row) =>
+                renderImprovementQueueRow(row)
+              )
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: CARD,
+            borderRadius: 14,
+            border: `1px solid ${BORDER}`,
+            padding: 14,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
                   color: "#C4B5FD",
                   textTransform: "uppercase",
                   letterSpacing: "0.08em",
@@ -69124,10 +69649,14 @@ export default function App() {
               >
                 {materialBackfillWorkbench.summary.targetCount} target
                 {materialBackfillWorkbench.summary.targetCount === 1 ? "" : "s"}{" "}
-                staged ·{" "}
-                {materialBackfillWorkbench.summary.promotableCandidateCount}{" "}
-                promotable candidate
-                {materialBackfillWorkbench.summary.promotableCandidateCount === 1
+                staged · {materialBackfillWorkbench.summary.generatedProposalCount}{" "}
+                generated proposal
+                {materialBackfillWorkbench.summary.generatedProposalCount === 1
+                  ? ""
+                  : "s"}{" "}
+                · {materialBackfillWorkbench.summary.promotionSafeProposalCount}{" "}
+                promotion-safe lane
+                {materialBackfillWorkbench.summary.promotionSafeProposalCount === 1
                   ? ""
                   : "s"}{" "}
                 · {materialBackfillWorkbench.summary.conflictCount} conflict
@@ -69645,6 +70174,278 @@ export default function App() {
 
                     <div
                       style={{
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        display: "grid",
+                        gap: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#FDE68A",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Evidence Candidate Generator
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 4,
+                              fontSize: 8.2,
+                              color: "#64748B",
+                              lineHeight: 1.55,
+                              maxWidth: 760,
+                            }}
+                          >
+                            Generates reviewable proposal rows from the current
+                            helper, intake-target, supplier, pricing, and staged
+                            evidence context. Promotion-safe rows point back into
+                            the existing low-risk review/export path; manual and
+                            insufficient-support rows stay review-first.
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.2,
+                            color: "#94A3B8",
+                            lineHeight: 1.55,
+                            textAlign: "right",
+                            minWidth: 230,
+                          }}
+                        >
+                          {target.generatedProposalRows.length} proposal
+                          {target.generatedProposalRows.length === 1 ? "" : "s"}{" "}
+                          · {target.proposalSummary.promotionSafeCount} promotion-safe
+                          {" "}· {target.proposalSummary.insufficientSupportCount} insufficient
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+                          gap: 8,
+                        }}
+                      >
+                        {[
+                          [
+                            "Promotion-Safe",
+                            target.proposalSummary.promotionSafeCount,
+                            "Can lean on the current low-risk review/export path",
+                            "#34D399",
+                          ],
+                          [
+                            "Manual Review",
+                            target.proposalSummary.manualReviewCount,
+                            "Needs human review before any live truth move",
+                            "#CBD5E1",
+                          ],
+                          [
+                            "Insufficient",
+                            target.proposalSummary.insufficientSupportCount,
+                            "Still needs stronger document or source support",
+                            "#FDE68A",
+                          ],
+                          [
+                            "Conflicting",
+                            target.proposalSummary.conflictingCount,
+                            "Conflicting or split support surfaced",
+                            "#F87171",
+                          ],
+                        ].map(([label, value, meta, color]) => (
+                          <div
+                            key={`${target.name}-proposal-metric-${label}`}
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 10,
+                              padding: "8px 10px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 14,
+                                fontWeight: 800,
+                                color,
+                              }}
+                            >
+                              {value}
+                            </div>
+                            <div
+                              style={{
+                                marginTop: 3,
+                                fontSize: 8.2,
+                                color: "#CBD5E1",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {label}
+                            </div>
+                            <div
+                              style={{
+                                marginTop: 3,
+                                fontSize: 7.8,
+                                color: "#64748B",
+                                lineHeight: 1.45,
+                              }}
+                            >
+                              {meta}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {target.generatedProposalRows.map((proposal) => {
+                          const laneMeta = getWorkbenchProposalLaneMeta(
+                            proposal.reviewLane
+                          );
+                          const supportMeta = getWorkbenchProposalSupportMeta(
+                            proposal.supportStatus
+                          );
+                          return (
+                            <div
+                              key={proposal.proposalKey}
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 10,
+                                padding: "9px 10px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: "#E2E8F0",
+                                  }}
+                                >
+                                  {proposal.fieldLabel}
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: 6,
+                                    flexWrap: "wrap",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      background: supportMeta.bg,
+                                      border: `1px solid ${supportMeta.border}`,
+                                      borderRadius: 999,
+                                      padding: "2px 8px",
+                                      fontSize: 7.5,
+                                      fontWeight: 700,
+                                      color: supportMeta.color,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {proposal.supportStatusLabel}
+                                  </span>
+                                  <span
+                                    style={{
+                                      background: laneMeta.bg,
+                                      border: `1px solid ${laneMeta.border}`,
+                                      borderRadius: 999,
+                                      padding: "2px 8px",
+                                      fontSize: 7.5,
+                                      fontWeight: 700,
+                                      color: laneMeta.color,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {proposal.reviewLaneLabel}
+                                  </span>
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 5,
+                                  fontSize: 8.8,
+                                  color: "#CBD5E1",
+                                  lineHeight: 1.55,
+                                }}
+                              >
+                                {proposal.displayValue}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 8.1,
+                                  color: "#94A3B8",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {proposal.currentWeakness}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 7.9,
+                                  color: "#64748B",
+                                  lineHeight: 1.5,
+                                }}
+                              >
+                                {proposal.recommendedAction}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 5,
+                                  display: "flex",
+                                  gap: 10,
+                                  flexWrap: "wrap",
+                                  fontSize: 7.8,
+                                  color: "#64748B",
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                {proposal.sourceSummary ? (
+                                  <span>{proposal.sourceSummary}</span>
+                                ) : null}
+                                {proposal.linkedCandidateCount > 0 ? (
+                                  <span>
+                                    {proposal.linkedCandidateCount} linked staged
+                                    candidate
+                                    {proposal.linkedCandidateCount === 1 ? "" : "s"}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
                         display: "grid",
                         gridTemplateColumns: "minmax(0,1.4fr) minmax(280px,0.9fr)",
                         gap: 10,
@@ -69691,9 +70492,9 @@ export default function App() {
                               }}
                             >
                               No evidence candidates are staged yet for this
-                              material. Use the missing-field guidance at right
-                              to decide which document/support path to backfill
-                              next.
+                              material. Use the generated proposal rows and
+                              missing-field guidance at right to decide which
+                              document/support path to backfill next.
                             </div>
                           ) : (
                             target.stagedCandidates.map((candidate) => {
@@ -70467,6 +71268,7 @@ export default function App() {
     loadLaunchRecommendationIntoPlanner,
     loadFounderScenario,
     materialBackfillWorkbench,
+    materialImprovementQueue,
     materialTruthGapSummary,
     openFormulaFromDashboard,
     rejectEvidenceWorkbenchCandidate,

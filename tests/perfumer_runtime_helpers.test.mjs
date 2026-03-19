@@ -5,6 +5,7 @@ import { buildIngredientTruthCompletenessReport } from "../src/lib/ifra_combined
 import {
   buildCapitalConstrainedLaunchRecommendation,
   buildMaterialBackfillWorkbench,
+  buildMaterialImprovementQueue,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderTrustSummary,
@@ -243,11 +244,17 @@ test("material backfill workbench stages promotable candidates, manual follow-up
         sourceDocumentCount: 0,
         evidenceCandidateCount: 4,
         supplierProducts: [],
+        dbRecord: {},
         truthReport: {
           name: "Sparse Workhorse",
           primaryGap: "No live priced pack-size options are attached yet.",
+          canonicalSource: null,
+          sourceDocuments: [],
+          livePricingEntries: [],
           dimensionByKey: {
             identity: { status: "confirmed" },
+            regulatory: { status: "missing" },
+            descriptive: { status: "missing" },
             supplier: { status: "uncertain" },
             pricing: { status: "missing" },
             technical: { status: "uncertain" },
@@ -267,6 +274,7 @@ test("material backfill workbench stages promotable candidates, manual follow-up
 
   assert.equal(workbench.summary.targetCount, 1);
   assert.equal(workbench.summary.promotableCandidateCount, 3);
+  assert.ok(workbench.summary.generatedProposalCount >= 1);
   assert.equal(workbench.targets[0].conflictSummary[0].fieldKey, "cas");
   assert.ok(
     workbench.targets[0].manualFollowUpRows.some(
@@ -278,6 +286,194 @@ test("material backfill workbench stages promotable candidates, manual follow-up
       (candidate) => candidate.fieldKey === "ifraMaterialHint"
     )
   );
+  assert.equal(
+    workbench.targets[0].generatedProposalRows.find(
+      (row) => row.fieldKey === "cas_inci"
+    )?.supportStatus,
+    "conflicting"
+  );
+  assert.ok(
+    workbench.targets[0].generatedProposalRows.some(
+      (row) => row.fieldKey === "pricing"
+    )
+  );
+});
+
+test("material improvement queue surfaces founder-critical and high-spend weak materials", () => {
+  const queue = buildMaterialImprovementQueue({
+    prioritizationRows: [
+      {
+        name: "Sparse Workhorse",
+        truthLevel: "sparse",
+        priorityScore: 88,
+        priorityReason: "Used in 5 formulas · 2 pricing gap hits · Sparse truth",
+        formulaCount: 5,
+        appearanceCount: 5,
+        totalLineCost: 24,
+        founderCriticalCount: 3,
+        nearReadyCount: 2,
+        blockedFormulaCount: 1,
+        pricingGapCount: 2,
+        pricingStatus: "missing",
+        primaryGap: "No live priced pack-size options are attached yet.",
+      },
+      {
+        name: "Expensive Partial",
+        truthLevel: "partial",
+        priorityScore: 62,
+        priorityReason: "Used in 2 formulas · ~$96.00 basket spend · Partial truth",
+        formulaCount: 2,
+        appearanceCount: 2,
+        totalLineCost: 96,
+        founderCriticalCount: 1,
+        nearReadyCount: 1,
+        blockedFormulaCount: 0,
+        pricingGapCount: 0,
+        pricingStatus: "inferred",
+        primaryGap:
+          "Supplier variants exist, but live-priced size options are still missing.",
+      },
+    ],
+    evidenceCandidates: [
+      {
+        evidenceCandidateKey: "sparse:cas:a",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-1",
+        confidence: "medium",
+        sourceType: "sds",
+        supplier: "Supplier A",
+        reviewStatus: "pending_review",
+      },
+      {
+        evidenceCandidateKey: "sparse:cas:b",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-2",
+        confidence: "low",
+        sourceType: "supplier_pdf",
+        supplier: "Supplier B",
+        reviewStatus: "pending_review",
+      },
+    ],
+    intakeTargets: [
+      {
+        canonicalMaterialKey: "sparse_workhorse",
+        relatedCatalogNames: ["Sparse Workhorse"],
+        stillMissingFields: ["cas", "inci", "ifraMaterialHint"],
+        requestedSourceTypes: ["sds", "tds"],
+        notes: ["Prefer trusted SDS before promoting CAS."],
+      },
+      {
+        canonicalMaterialKey: "expensive_partial",
+        relatedCatalogNames: ["Expensive Partial"],
+        stillMissingFields: ["scentDesc"],
+        requestedSourceTypes: ["supplier_pdf"],
+        notes: ["Tighten descriptive support before deeper launch reads."],
+      },
+    ],
+    materialContextByName: {
+      "Sparse Workhorse": {
+        canonicalMaterialKey: "sparse_workhorse",
+        supplierVariantCount: 0,
+        livePricingSupplierCount: 0,
+        livePricingPackCount: 0,
+        sourceDocumentCount: 0,
+        evidenceCandidateCount: 2,
+        supplierProducts: [],
+        dbRecord: {},
+        truthReport: {
+          name: "Sparse Workhorse",
+          supportLabel: "25% resolved · 0% confirmed",
+          primaryGap: "No live priced pack-size options are attached yet.",
+          canonicalSource: null,
+          sourceDocuments: [],
+          livePricingEntries: [],
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            regulatory: { status: "missing" },
+            descriptive: { status: "missing" },
+            supplier: { status: "missing" },
+            pricing: { status: "missing" },
+            technical: { status: "uncertain" },
+            ifra: { status: "uncertain" },
+            evidence: { status: "uncertain" },
+          },
+          uncertainSignals: [
+            "Technical behavior support is still sparse (MW / xLogP / VP / ODT / TPSA).",
+            "Structured IFRA restriction support is still partial in the current helper path.",
+          ],
+          missingSignals: [
+            "No live supplier pricing or registry-backed supplier variant is attached yet.",
+          ],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+      "Expensive Partial": {
+        canonicalMaterialKey: "expensive_partial",
+        supplierVariantCount: 1,
+        livePricingSupplierCount: 1,
+        livePricingPackCount: 1,
+        sourceDocumentCount: 1,
+        evidenceCandidateCount: 0,
+        supplierProducts: [
+          {
+            supplierDisplayName: "Supplier A",
+            productTitle: "Expensive Partial Material",
+          },
+        ],
+        dbRecord: {
+          note: "base",
+          type: "ABS",
+          MW: 250,
+          xLogP: 3.8,
+        },
+        truthReport: {
+          name: "Expensive Partial",
+          supportLabel: "63% resolved · 38% confirmed",
+          primaryGap:
+            "Supplier variants exist, but live-priced size options are still missing.",
+          canonicalSource: {
+            canonicalName: "Expensive Partial",
+            cas: "9000-00-0",
+            scentDesc: "Warm balsamic material.",
+            note: "base",
+            type: "ABS",
+          },
+          sourceDocuments: [{ sourceType: "supplier_pdf" }],
+          livePricingEntries: [["Supplier A", { S: [[100, "g", 55]] }]],
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            regulatory: { status: "uncertain" },
+            descriptive: { status: "inferred" },
+            supplier: { status: "confirmed" },
+            pricing: { status: "inferred" },
+            technical: { status: "inferred" },
+            ifra: { status: "uncertain" },
+            evidence: { status: "inferred" },
+          },
+          uncertainSignals: [
+            "CAS / INCI support is still partial in the current catalog and canonical records.",
+          ],
+          missingSignals: [],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+    },
+  });
+
+  assert.equal(queue.topRows[0].name, "Sparse Workhorse");
+  assert.ok(
+    queue.buckets.highestSpendWeakMaterials.some(
+      (row) => row.name === "Expensive Partial"
+    )
+  );
+  assert.ok(
+    queue.buckets.founderCriticalWeakMaterials.some(
+      (row) => row.name === "Sparse Workhorse"
+    )
+  );
+  assert.ok(queue.summary.pricingGapMaterialCount >= 1);
 });
 
 test("launch planner and recommender expose trust summaries from live launch math", () => {
