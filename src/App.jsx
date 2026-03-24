@@ -34,8 +34,11 @@ import {
   SOURCE_DOCUMENT_INTAKE_TARGETS,
   SOURCE_DOCUMENT_REGISTRY,
   SUPPLIER_PRODUCT_REGISTRY,
+  buildSupplierProductKey,
   buildIngredientTruthCompletenessReport,
+  compareMaterialCasSupportValues,
   buildFinishedProductIfraGuidance,
+  formatMaterialCasSupportValue,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
   getEvidenceCandidatesForCanonicalMaterialKey,
@@ -72,7 +75,12 @@ import {
 } from "./lib/formula_runtime_helpers";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildFormulaCriticalDataAudit,
+  buildFormulaFieldCorrectionReviewCandidate,
+  buildFormulaMissingMaterialReviewCandidates,
+  buildLocalDraftIngredientArtifacts,
   buildGeneratedProposalReviewCandidate,
+  buildFraterworksSupplierAdapterResult,
   buildMaterialBackfillWorkbench,
   buildMaterialImprovementQueue,
   buildFounderProductContextState,
@@ -85,6 +93,8 @@ import {
   buildMaterialTruthGapPrioritization,
   buildSubstitutionReviewDraftFormula,
   buildMaterialSubstitutionSuggestions,
+  buildSupplierAdapterConflictReviewCandidate,
+  buildSupplierAdapterExportPayload,
   buildAiCritiquePrompt,
   buildBatchPlannerReport,
   buildFormulaComparison,
@@ -97,6 +107,8 @@ import {
   CRITIQUE_LENS_META,
   CRITIQUE_LENS_ORDER,
   createFounderLaunchScenarioRecord,
+  FORMULA_CRITICAL_REVIEW_FIELD_META,
+  FORMULA_CRITICAL_REVIEW_FIELD_ORDER,
   FOUNDER_PRODUCT_PROFILE_META,
   FOUNDER_PRODUCT_PROFILE_ORDER,
   FOUNDER_RECOMMENDER_EMPHASIS_META,
@@ -104,13 +116,25 @@ import {
   getLivePricingForIngredient,
   LAUNCH_READINESS_STATUS_META,
   normalizeFounderLaunchScenarioRecord,
+  parseSupplierAdapterPackLines,
   PERFORMANCE_FIXATIVE_NAMES,
   replaceIngredientInItems,
   SKU_ECONOMICS_STATUS_META,
+  SUPPLIER_ADAPTER_TRUST_LANE_META,
+  SUPPLIER_ADAPTER_TRUST_LANE_ORDER,
   summarizeComputedChemistry,
   SUPPLIER_BASKET_MODE_META,
   SUPPLIER_BASKET_MODE_ORDER,
 } from "./lib/perfumer_runtime_helpers";
+import {
+  buildFraterworksFullCatalogSyncPlan,
+  buildFraterworksReferenceWorkbookExport,
+  buildFraterworksJsonPasteImportPlan,
+  deriveFraterworksProductJsonUrl,
+  buildTrustedSupplierWorkbookImportPlan,
+  normalizeFraterworksJsonPastePayload,
+  parseTrustedSupplierWorkbookArrayBuffer,
+} from "./lib/supplier_workbook_import_helpers";
 import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
 import supplierPriceDraftSeedsFile from "./data/supplier_price_draft_seeds.json";
 
@@ -31553,6 +31577,7 @@ const CANONICAL_DB_NAME_BY_KEY = Object.fromEntries(
     )
     .map(([name, record]) => [record.canonicalMaterialKey, name])
 );
+const BASE_CATALOG_NAMES = new Set(Object.keys(DB));
 
 const CANONICAL_CHEMISTRY_FIELDS = [
   "mw",
@@ -31669,6 +31694,7 @@ const NORMALIZATION_ENTRY_KIND_LABELS = {
   supplier_product: "Supplier Product",
   diluted_stock: "Diluted Stock",
   accord: "Accord",
+  local_draft: "Local Draft",
 };
 
 const NORMALIZATION_BADGE_META = {
@@ -31699,6 +31725,13 @@ const NORMALIZATION_BADGE_META = {
     background: "rgba(45,212,191,0.12)",
     color: "#5EEAD4",
     borderColor: "#2DD4BF50",
+  },
+  local_draft: {
+    compactLabel: "Local Draft",
+    label: "Local Draft / Manual Trusted Entry",
+    background: "rgba(244,114,182,0.12)",
+    color: "#F9A8D4",
+    borderColor: "#EC489950",
   },
 };
 
@@ -31745,6 +31778,7 @@ const CATALOG_NORMALIZATION_FILTER_OPTIONS = [
   ["canonical_material", "Canonical"],
   ["diluted_stock", "Diluted"],
   ["accord", "Accords"],
+  ["local_draft", "Local Drafts"],
   ["linked_duplicate", "Linked Dups"],
 ];
 
@@ -31775,21 +31809,40 @@ function getNormalizationGroupKey(name, record = DB[name]) {
   );
 }
 
+function getMaterialDisplayName(name, record = DB[name]) {
+  const displayName = String(record?.displayName || "").trim();
+  return displayName || name;
+}
+
+function getMaterialRuntimeKeyCaption(name, record = DB[name]) {
+  const displayName = String(record?.displayName || "").trim();
+  if (!displayName || displayName === name) return null;
+  return name;
+}
+
 function buildIngredientSearchText(name, record = DB[name]) {
   const parts = [
     name,
+    getMaterialDisplayName(name, record),
     record?.scentClass,
     record?.scentSummary,
+    record?.scentDesc,
     record?.entryKind,
     record?.entryKind
       ? NORMALIZATION_ENTRY_KIND_LABELS[record.entryKind] || record.entryKind
       : null,
     record?.canonicalMaterialKey,
     record?.linkedDuplicateOfCatalogName,
+    record?.localDraftSupplierDisplayName,
+    record?.localDraftSourceNote,
   ];
 
   if (isLinkedDuplicateCatalogRecord(record)) {
     parts.push("linked duplicate", "duplicate");
+  }
+
+  if (record?.isLocalDraft || record?.entryKind === "local_draft") {
+    parts.push("local draft", "manual trusted entry", "review pending");
   }
 
   if (recordHasSupplierLinkStatus(record, "supplier_grade_variant")) {
@@ -31899,6 +31952,15 @@ function getIngredientCatalogMetadata(name) {
     });
   }
 
+  if (d.entryKind === "local_draft" || d.isLocalDraft) {
+    rowBadges.push({
+      key: "local_draft",
+      title:
+        "Browser-local manual trusted draft ingredient. Usable in the runtime, but not yet canonical truth.",
+      ...NORMALIZATION_BADGE_META.local_draft,
+    });
+  }
+
   return {
     entryKindLabel: d.entryKind ? NORMALIZATION_ENTRY_KIND_LABELS[d.entryKind] || d.entryKind : null,
     canonicalMaterialKey: d.canonicalMaterialKey || null,
@@ -31940,6 +32002,19 @@ function getIngredientIfraData(name) {
           borderColor: badgeMeta.borderColor,
         }
       : null,
+  };
+}
+
+function getIngredientIfraVisibility(name) {
+  const ifraData = getIngredientIfraData(name);
+  const record = DB[name] || {};
+  return {
+    ifraData,
+    limitLabel: ifraData?.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—",
+    statusLabel: ifraData?.stateLabel || "Missing",
+    hasManualEdit: Boolean(
+      record?.manualIdentityEdited || record?.manualSupplierEdited
+    ),
   };
 }
 
@@ -54269,6 +54344,385 @@ Object.entries(PRICING).forEach(([name, supplierEntries]) => {
   });
 });
 
+const LOCAL_DRAFT_INGREDIENTS_BOOTSTRAP = readJsonStorage(
+  APP_STORAGE_KEYS.localDraftIngredients,
+  {}
+);
+const LOCAL_DRAFT_RUNTIME_NAMES = new Set();
+const MANUAL_RECORD_EDITS_BOOTSTRAP = readJsonStorage(
+  APP_STORAGE_KEYS.manualRecordEdits,
+  {}
+);
+const MANUAL_RECORD_RUNTIME_NAMES = new Set();
+const MANUAL_RECORD_BASE_SNAPSHOTS = new Map();
+
+const SUPPLIER_AVAILABILITY_LABELS = {
+  unknown: "Unknown",
+  "in stock": "In stock",
+  "limited stock": "Limited stock",
+  "request only": "Request / quote",
+  "sold out": "Sold out",
+  discontinued: "Discontinued",
+};
+const MAX_MANUAL_SDS_ATTACHMENT_BYTES = 1.5 * 1024 * 1024;
+
+function formatSupplierAvailabilityLabel(status = "unknown") {
+  const normalizedStatus = String(status || "unknown").trim().toLowerCase();
+  return (
+    SUPPLIER_AVAILABILITY_LABELS[normalizedStatus] ||
+    normalizedStatus ||
+    "Unknown"
+  );
+}
+
+function normalizeManualRecordText(value) {
+  const normalizedValue = String(value ?? "").trim();
+  return normalizedValue || null;
+}
+
+function normalizeManualRecordNumber(value) {
+  if (value == null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeManualComparableValue(value) {
+  if (Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  if (value == null || value === "") return "";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value).trim();
+}
+
+function getChangedManualFieldKeys(currentValues = {}, nextValues = {}) {
+  return Object.entries(nextValues).reduce((changedKeys, [fieldKey, nextValue]) => {
+    const currentValue = currentValues?.[fieldKey];
+    if (
+      normalizeManualComparableValue(currentValue) !==
+      normalizeManualComparableValue(nextValue)
+    ) {
+      changedKeys.push(fieldKey);
+    }
+    return changedKeys;
+  }, []);
+}
+
+function buildManualSupplierLayerRecordKey(materialName = "", supplierName = "") {
+  const normalizePart = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "unknown";
+  return `manual_direct_edit:${normalizePart(materialName)}:${normalizePart(
+    supplierName
+  )}`;
+}
+
+function rebuildManualRecordEditRecord(
+  materialName,
+  existingRecord = {},
+  nextSections = {},
+  updatedAt = new Date().toISOString()
+) {
+  const normalizedSections = Object.fromEntries(
+    Object.entries(nextSections || {}).filter(([, sectionValue]) => {
+      if (!sectionValue || typeof sectionValue !== "object") return false;
+      const editedFieldKeys = Array.isArray(sectionValue.editedFieldKeys)
+        ? sectionValue.editedFieldKeys
+        : [];
+      return editedFieldKeys.length > 0;
+    })
+  );
+  const editedSections = Object.entries(normalizedSections)
+    .filter(
+      ([, sectionValue]) =>
+        Array.isArray(sectionValue?.editedFieldKeys) &&
+        sectionValue.editedFieldKeys.length > 0
+    )
+    .map(([entryKey]) => entryKey);
+  const editedFieldKeys = editedSections.flatMap((entryKey) =>
+    (normalizedSections[entryKey]?.editedFieldKeys || []).map(
+      (fieldKey) => `${entryKey}:${fieldKey}`
+    )
+  );
+
+  return {
+    ...existingRecord,
+    materialName,
+    createdAt: existingRecord?.createdAt || updatedAt,
+    updatedAt,
+    sourceType: existingRecord?.sourceType || "manual_direct_record_edit",
+    sections: normalizedSections,
+    editedSections,
+    editedFieldKeys,
+  };
+}
+
+function buildManualRecordRuntimePatch(editRecord = {}) {
+  const sections =
+    editRecord?.sections && typeof editRecord.sections === "object"
+      ? editRecord.sections
+      : {};
+  const coreSection =
+    sections.core && typeof sections.core === "object" ? sections.core : null;
+  const supplierSection =
+    sections.supplier && typeof sections.supplier === "object"
+      ? sections.supplier
+      : null;
+  const identitySection =
+    sections.identity && typeof sections.identity === "object"
+      ? sections.identity
+      : null;
+  const technicalSection =
+    sections.technical && typeof sections.technical === "object"
+      ? sections.technical
+      : null;
+  const editedSections = Array.isArray(editRecord?.editedSections)
+    ? editRecord.editedSections
+    : [];
+  const editedFieldKeys = Array.isArray(editRecord?.editedFieldKeys)
+    ? editRecord.editedFieldKeys
+    : [];
+
+  const runtimePatch = {
+    isManuallyEdited: editedFieldKeys.length > 0,
+    manualEditStatusLabel: "Manual Trusted Edit",
+    manualEditUpdatedAt: editRecord?.updatedAt || null,
+    manualEditCreatedAt: editRecord?.createdAt || null,
+    manualEditSections: editedSections,
+    manualEditedFieldKeys: editedFieldKeys,
+    manualCoreEdited: Boolean(coreSection?.editedFieldKeys?.length),
+    manualSupplierEdited: Boolean(supplierSection?.editedFieldKeys?.length),
+    manualIdentityEdited: Boolean(identitySection?.editedFieldKeys?.length),
+    manualTechnicalEdited: Boolean(technicalSection?.editedFieldKeys?.length),
+    manualCoreUpdatedAt: coreSection?.updatedAt || editRecord?.updatedAt || null,
+    manualSupplierEditSummary: supplierSection?.editedFieldKeys?.length
+      ? {
+          supplierName: supplierSection?.supplierName || null,
+          editedFieldKeys: supplierSection.editedFieldKeys,
+          updatedAt:
+            supplierSection?.updatedAt || editRecord?.updatedAt || null,
+        }
+      : null,
+    manualIdentityUpdatedAt:
+      identitySection?.updatedAt || editRecord?.updatedAt || null,
+    manualTechnicalUpdatedAt:
+      technicalSection?.updatedAt || editRecord?.updatedAt || null,
+    manualCoreDescriptionEdited: Boolean(
+      coreSection?.editedFieldKeys?.includes("scentDesc")
+    ),
+    manualIdentityNotes: identitySection?.identityNotes || null,
+    manualTechnicalNotes: technicalSection?.technicalNotes || null,
+  };
+
+  [
+    ["displayName", coreSection?.displayName],
+    ["scentDesc", coreSection?.scentDesc],
+  ].forEach(([fieldKey, nextValue]) => {
+    if (Object.prototype.hasOwnProperty.call(coreSection || {}, fieldKey)) {
+      runtimePatch[fieldKey] = nextValue;
+    }
+  });
+
+  [
+    ["cas", identitySection?.cas],
+    ["inci", identitySection?.inci],
+    ["note", identitySection?.note],
+    ["type", identitySection?.type],
+    ["rep", identitySection?.rep],
+    ["MW", technicalSection?.MW],
+    ["xLogP", technicalSection?.xLogP],
+    ["VP", technicalSection?.VP],
+    ["ODT", technicalSection?.ODT],
+    ["TPSA", technicalSection?.TPSA],
+    ["odorThreshold_ngL", technicalSection?.odorThreshold_ngL],
+  ].forEach(([fieldKey, nextValue]) => {
+    const sourceSection = identitySection || technicalSection;
+    if (!sourceSection) return;
+    if (Object.prototype.hasOwnProperty.call(identitySection || {}, fieldKey)) {
+      runtimePatch[fieldKey] = nextValue;
+      return;
+    }
+    if (Object.prototype.hasOwnProperty.call(technicalSection || {}, fieldKey)) {
+      runtimePatch[fieldKey] = nextValue;
+      return;
+    }
+  });
+
+  return runtimePatch;
+}
+
+function syncManualRecordEditsToRuntime(
+  manualRecordEdits = {},
+  { db = DB } = {}
+) {
+  const safeManualRecordEdits =
+    manualRecordEdits && typeof manualRecordEdits === "object"
+      ? manualRecordEdits
+      : {};
+  const nextNames = new Set();
+
+  Object.entries(safeManualRecordEdits).forEach(([storedName, editRecord]) => {
+    const materialName =
+      String(editRecord?.materialName || storedName || "").trim() || null;
+    if (!materialName || !db[materialName]) return;
+    if (!MANUAL_RECORD_BASE_SNAPSHOTS.has(materialName)) {
+      MANUAL_RECORD_BASE_SNAPSHOTS.set(materialName, { ...db[materialName] });
+    }
+    const baseRecord = MANUAL_RECORD_BASE_SNAPSHOTS.get(materialName);
+    db[materialName] = {
+      ...baseRecord,
+      ...buildManualRecordRuntimePatch(editRecord),
+    };
+    nextNames.add(materialName);
+  });
+
+  Array.from(MANUAL_RECORD_RUNTIME_NAMES).forEach((materialName) => {
+    if (nextNames.has(materialName)) return;
+    const baseRecord = MANUAL_RECORD_BASE_SNAPSHOTS.get(materialName);
+    if (baseRecord) {
+      db[materialName] = { ...baseRecord };
+    }
+    MANUAL_RECORD_RUNTIME_NAMES.delete(materialName);
+  });
+
+  nextNames.forEach((materialName) =>
+    MANUAL_RECORD_RUNTIME_NAMES.add(materialName)
+  );
+}
+
+const DIRECT_SUPPLIER_EDIT_FIELD_LABELS = {
+  url: "Supplier product URL",
+  vendorName: "Supplier / vendor context",
+  availabilityStatus: "Availability",
+  ifraPercent: "IFRA % shown on page",
+  sdsUrl: "SDS URL",
+  manualSdsAttachment: "Manual SDS PDF",
+  inciShown: "INCI shown on page",
+  productDescription: "Supplier description",
+  scentSummary: "Supplier scent summary",
+  dilutionOrCarrier: "Dilution / carrier",
+  supplierNotes: "Supplier notes",
+  originNote: "Origin / organic notes",
+  pricePoints: "Size / price rows",
+};
+
+const DIRECT_CORE_EDIT_FIELD_LABELS = {
+  displayName: "Display / material name",
+  scentDesc: "Main description",
+};
+
+const DIRECT_IDENTITY_EDIT_FIELD_LABELS = {
+  cas: "CAS",
+  inci: "Material INCI",
+  note: "Note role",
+  type: "Material type",
+  rep: "Representative odorant",
+  identityNotes: "Identity notes",
+};
+
+const DIRECT_TECHNICAL_EDIT_FIELD_LABELS = {
+  MW: "MW",
+  xLogP: "xLogP",
+  VP: "Vapor pressure",
+  ODT: "Odor threshold",
+  TPSA: "TPSA",
+  odorThreshold_ngL: "Odor threshold (ng/L)",
+  technicalNotes: "Technical notes",
+};
+
+const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
+  prices: {
+    label: "Refresh Prices",
+    fieldKeys: ["pricePoints", "availabilityStatus"],
+  },
+  facts: {
+    label: "Refresh Supplier Facts",
+    fieldKeys: [
+      "productTitle",
+      "url",
+      "vendorName",
+      "productDescription",
+      "scentSummary",
+      "dilutionOrCarrier",
+    ],
+  },
+  compliance: {
+    label: "Refresh Compliance Fields",
+    fieldKeys: ["casShown", "inciShown", "ifraPercent", "sdsUrl"],
+  },
+  all_safe: {
+    label: "Refresh All Safe Fields",
+    fieldKeys: [
+      "pricePoints",
+      "availabilityStatus",
+      "productTitle",
+      "url",
+      "vendorName",
+      "productDescription",
+      "scentSummary",
+      "dilutionOrCarrier",
+      "casShown",
+      "inciShown",
+      "ifraPercent",
+      "sdsUrl",
+    ],
+  },
+};
+
+function getSupplierPageRefreshFieldKeys(scope = "all_safe") {
+  return SUPPLIER_PAGE_REFRESH_SCOPE_META[scope]?.fieldKeys ||
+    SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.fieldKeys;
+}
+
+function syncLocalDraftIngredientsToRuntime(
+  localDraftIngredients = {},
+  { db = DB, pricing = PRICING } = {}
+) {
+  const safeLocalDraftIngredients =
+    localDraftIngredients && typeof localDraftIngredients === "object"
+      ? localDraftIngredients
+      : {};
+  const nextNames = new Set();
+
+  Object.entries(safeLocalDraftIngredients).forEach(([storedName, storedDraft]) => {
+    const artifacts = buildLocalDraftIngredientArtifacts({
+      ...storedDraft,
+      materialName: storedDraft?.materialName || storedName,
+      pricePoints:
+        storedDraft?.pricePoints ||
+        storedDraft?.localDraftPricePoints ||
+        [],
+      createdAt:
+        storedDraft?.createdAt || storedDraft?.localDraftCreatedAt || null,
+      updatedAt:
+        storedDraft?.updatedAt || storedDraft?.localDraftUpdatedAt || null,
+    });
+    const localDraftName = artifacts?.name || null;
+    if (!localDraftName) return;
+    if (BASE_CATALOG_NAMES.has(localDraftName)) return;
+
+    nextNames.add(localDraftName);
+    db[localDraftName] = artifacts.dbRecord;
+    pricing[localDraftName] = artifacts.pricingBySupplier;
+  });
+
+  Array.from(LOCAL_DRAFT_RUNTIME_NAMES).forEach((name) => {
+    if (nextNames.has(name)) return;
+    delete db[name];
+    delete pricing[name];
+    LOCAL_DRAFT_RUNTIME_NAMES.delete(name);
+  });
+
+  nextNames.forEach((name) => LOCAL_DRAFT_RUNTIME_NAMES.add(name));
+}
+
+syncLocalDraftIngredientsToRuntime(LOCAL_DRAFT_INGREDIENTS_BOOTSTRAP);
+syncManualRecordEditsToRuntime(MANUAL_RECORD_EDITS_BOOTSTRAP);
+
 // ─────────────────────────────────────────────────────────────
 // LONGEVITY / SILLAGE / PROJECTION SCORING
 // ─────────────────────────────────────────────────────────────
@@ -54845,12 +55299,630 @@ const MATERIAL_COMPLETENESS_LEVEL_META = {
   },
 };
 
+const DOSSIER_STATUS_META = {
+  confirmed: {
+    label: "Well-supported",
+    shortLabel: "Strong",
+    color: "#34D399",
+    description:
+      "This area is backed by stronger confirmed data, not only a working guess.",
+  },
+  inferred: {
+    label: "Present but incomplete",
+    shortLabel: "Partial",
+    color: "#7DD3FC",
+    description:
+      "Some usable data exists here, but it still needs fuller support to become strong.",
+  },
+  uncertain: {
+    label: "Needs review",
+    shortLabel: "Uncertain",
+    color: "#F59E0B",
+    description:
+      "Data exists here, but it is weak, conflicting, or manual enough that it should stay cautious.",
+  },
+  missing: {
+    label: "Missing",
+    shortLabel: "Missing",
+    color: "#F87171",
+    description: "There is not enough useful information in this area yet.",
+  },
+};
+
+function pluralizeLabel(count, singular, plural = `${singular}s`) {
+  return count === 1 ? singular : plural;
+}
+
+function formatHumanList(items = []) {
+  const cleanItems = items.filter(Boolean);
+  if (!cleanItems.length) return "None";
+  if (cleanItems.length === 1) return cleanItems[0];
+  if (cleanItems.length === 2) return `${cleanItems[0]} and ${cleanItems[1]}`;
+  return `${cleanItems.slice(0, -1).join(", ")}, and ${
+    cleanItems[cleanItems.length - 1]
+  }`;
+}
+
+function addUniqueDossierLine(target, message) {
+  if (!message || target.includes(message)) return;
+  target.push(message);
+}
+
+function buildDossierDimensionBuckets(report) {
+  const dimensions = Array.isArray(report?.dimensions) ? report.dimensions : [];
+  return {
+    confirmed: dimensions
+      .filter((dimension) => dimension?.status === "confirmed")
+      .map((dimension) => dimension.label),
+    inferred: dimensions
+      .filter((dimension) => dimension?.status === "inferred")
+      .map((dimension) => dimension.label),
+    uncertain: dimensions
+      .filter((dimension) => dimension?.status === "uncertain")
+      .map((dimension) => dimension.label),
+    missing: dimensions
+      .filter((dimension) => dimension?.status === "missing")
+      .map((dimension) => dimension.label),
+  };
+}
+
+function DossierCountCard({ label, value, meta, color = "#CBD5E1" }) {
+  return (
+    <div
+      style={{
+        background: "#071826",
+        border: "1px solid #1E3A52",
+        borderRadius: 10,
+        padding: "8px 10px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 7.8,
+          color: "#64748B",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          fontWeight: 700,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          marginTop: 4,
+          fontSize: 12.2,
+          fontWeight: 700,
+          color,
+          lineHeight: 1.35,
+        }}
+      >
+        {value}
+      </div>
+      {meta ? (
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 8.1,
+            color: "#94A3B8",
+            lineHeight: 1.5,
+          }}
+        >
+          {meta}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function DossierGuidanceBlock({
+  title,
+  intro = "",
+  items = [],
+  accent = "#CBD5E1",
+}) {
+  return (
+    <div
+      style={{
+        background: "#071826",
+        border: "1px solid #1E3A52",
+        borderRadius: 10,
+        padding: "10px 11px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 8.1,
+          color: accent,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          fontWeight: 700,
+        }}
+      >
+        {title}
+      </div>
+      {intro ? (
+        <div
+          style={{
+            marginTop: 5,
+            fontSize: 8.4,
+            color: "#CBD5E1",
+            lineHeight: 1.55,
+          }}
+        >
+          {intro}
+        </div>
+      ) : null}
+      <div style={{ display: "grid", gap: 6, marginTop: intro ? 8 : 6 }}>
+        {(items || []).map((item, index) => (
+          <div
+            key={`${title}-${index}`}
+            style={{
+              display: "flex",
+              gap: 6,
+              alignItems: "flex-start",
+            }}
+          >
+            <span
+              style={{
+                color: accent,
+                fontSize: 9,
+                lineHeight: 1.5,
+                marginTop: 0.5,
+              }}
+            >
+              •
+            </span>
+            <div
+              style={{
+                fontSize: 8.4,
+                color: "#CBD5E1",
+                lineHeight: 1.55,
+              }}
+            >
+              {item}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function buildDossierCompletenessPanelContent(
+  report,
+  {
+    primaryGap = null,
+    hasSdsSupport = false,
+    hasIfraShownSupport = false,
+    sourceDocumentCount = 0,
+    evidenceCandidateCount = 0,
+  } = {}
+) {
+  if (!report) {
+    return {
+      summary:
+        "Ingredient truth has not been summarized yet for this dossier.",
+      cards: [],
+      meaningLines: [],
+      bucketRows: [],
+      whyLines: [],
+      improveLines: [],
+    };
+  }
+
+  const total = report.totalConsideredCount || report.dimensions?.length || 8;
+  const reviewCount = (report.uncertainCount || 0) + (report.missingCount || 0);
+  const buckets = buildDossierDimensionBuckets(report);
+  const bucketRows = ["confirmed", "inferred", "uncertain", "missing"].map(
+    (statusKey) => {
+      const meta = DOSSIER_STATUS_META[statusKey];
+      const items = buckets[statusKey] || [];
+      return {
+        statusKey,
+        label: meta.label,
+        count: items.length,
+        color: meta.color,
+        description: meta.description,
+        items,
+      };
+    }
+  );
+
+  let summary =
+    `${report.resolvedCount} of ${total} major data areas have usable information.`;
+  if (report.resolvedCount === total && report.confirmedCount === total) {
+    summary =
+      "All major data areas are filled and strongly supported, so this record reads as genuinely complete.";
+  } else if (report.hasAnyStrongManualSupport && !report.hasActiveManualConflict) {
+    summary =
+      `This record now has strong practical support, including manually verified fields, even though the formal audit trail may still be lighter.`;
+  } else if (report.resolvedCount === total) {
+    summary =
+      `All major data areas have at least some information, but only ${report.confirmedCount} of ${total} are strongly supported.`;
+  } else if (report.level === "sparse") {
+    summary =
+      `This record is still usable in places, but several important data areas are weak or missing, so downstream reads should stay cautious.`;
+  } else if (report.confirmedCount === 0) {
+    summary =
+      `Usable information is present, but most of this record is still partial rather than strongly supported.`;
+  }
+
+  const whyLines = [];
+  addUniqueDossierLine(
+    whyLines,
+    report.livePricingSupplierCount > 0
+      ? `Live prices are attached from ${report.livePricingSupplierCount} supplier ${pluralizeLabel(
+          report.livePricingSupplierCount,
+          "row",
+          "rows"
+        )}.`
+      : report.supplierVariantCount > 0
+      ? `Supplier variants exist, but priced size support is still incomplete.`
+      : `No live supplier pricing is attached yet.`
+  );
+  addUniqueDossierLine(
+    whyLines,
+    report.dimensionByKey?.regulatory?.status === "confirmed"
+      ? "CAS and INCI both have usable support in the current record."
+      : report.dimensionByKey?.regulatory?.status === "inferred"
+      ? "Only part of the CAS / INCI identity support is filled in right now."
+      : report.dimensionByKey?.regulatory?.status === "uncertain"
+      ? "CAS / INCI support is present, but it is still weak or incomplete."
+      : "CAS / INCI support is still missing."
+  );
+  addUniqueDossierLine(
+    whyLines,
+    report.dimensionByKey?.technical?.status === "confirmed"
+      ? `Technical behavior coverage is strong with ${report.technicalFieldCount} of ${report.technicalFieldTotal} tracked fields filled.`
+      : report.technicalFieldCount > 0
+      ? `Only ${report.technicalFieldCount} of ${report.technicalFieldTotal} tracked technical fields are filled.`
+      : "No technical behavior fields are filled yet."
+  );
+  addUniqueDossierLine(
+    whyLines,
+    report.dimensionByKey?.ifra?.status === "confirmed"
+      ? report.hasStrongManualIfraSupport
+        ? "IFRA support was manually verified from supplier sources and is being treated as strong support."
+        : hasIfraShownSupport
+        ? "IFRA support is present from current supplier or helper data."
+        : "Structured IFRA support is available for this material."
+      : hasIfraShownSupport
+      ? "Supplier IFRA information exists, but structured IFRA support is still incomplete."
+      : "No structured IFRA support is attached yet."
+  );
+  addUniqueDossierLine(
+    whyLines,
+    hasSdsSupport
+      ? "An SDS is attached on at least one supplier record."
+      : "No SDS URL or manual SDS PDF is attached yet."
+  );
+  (report.manualTrustedSignals || []).forEach((signal) =>
+    addUniqueDossierLine(whyLines, signal)
+  );
+  if (report.hasActiveManualConflict) {
+    addUniqueDossierLine(
+      whyLines,
+      "An explicit active conflict is still attached to at least one manually edited field, so those fields stay cautious."
+    );
+  } else if (!sourceDocumentCount && !evidenceCandidateCount) {
+    addUniqueDossierLine(
+      whyLines,
+      report.hasAnyStrongManualSupport
+        ? "Formal evidence review is not attached yet, but practical support is already strong."
+        : "No formal evidence-review records are attached yet."
+    );
+  }
+
+  const improveLines = [];
+  if (report.dimensionByKey?.supplier?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add supplier URLs or attach more supplier product rows so supplier coverage is less thin."
+    );
+  }
+  if (report.dimensionByKey?.pricing?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add priced pack sizes or live supplier prices to strengthen costing and sourcing reads."
+    );
+  }
+  if (report.dimensionByKey?.regulatory?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Confirm or correct CAS and INCI to strengthen identity confidence."
+    );
+  }
+  if (!hasSdsSupport) {
+    addUniqueDossierLine(
+      improveLines,
+      "Attach an SDS URL or upload a manual SDS PDF so compliance support is easier to verify."
+    );
+  }
+  if (report.dimensionByKey?.ifra?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add IFRA shown or strengthen the structured IFRA mapping before treating restriction reads as strong."
+    );
+  }
+  if (report.dimensionByKey?.descriptive?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add a clearer scent summary, note role, material type, or main description."
+    );
+  }
+  if (report.dimensionByKey?.technical?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add MW, xLogP, VP, ODT, TPSA, or odor-threshold support where known."
+    );
+  }
+  if (!sourceDocumentCount && !evidenceCandidateCount) {
+    addUniqueDossierLine(
+      improveLines,
+      report.hasAnyStrongManualSupport && !report.hasActiveManualConflict
+        ? "Formal evidence review is optional here. Add it only if you want a stronger audit trail or need to document a future conflict."
+        : "Attach stronger source support or route conflicts into evidence review when you need more auditability."
+    );
+  }
+  if (!improveLines.length) {
+    improveLines.push(
+      "This record already covers the major data areas well. Keep supplier prices, IFRA support, and source links current as pages change."
+    );
+  }
+
+  return {
+    summary,
+    cards: [
+      {
+        label: "Usable data present",
+        value: `${report.resolvedCount} of ${total} areas`,
+        meta:
+          report.resolvedCount === total
+            ? "All major data areas have at least some usable information."
+            : "These areas have enough information to be useful right now.",
+        color: "#7DD3FC",
+      },
+      {
+        label: "High-confidence support",
+        value: `${report.confirmedCount} of ${total} areas`,
+        meta:
+          report.confirmedCount === 0
+            ? "Nothing is strongly backed yet."
+            : "These areas are the strongest parts of the current record.",
+        color: "#34D399",
+      },
+      {
+        label: "Still incomplete",
+        value: `${report.inferredCount} ${pluralizeLabel(
+          report.inferredCount,
+          "area"
+        )}`,
+        meta:
+          report.inferredCount > 0
+            ? "Usable data exists here, but it still needs stronger support."
+            : "No partially filled areas are holding this back right now.",
+        color: "#A78BFA",
+      },
+      {
+        label: "Needs review",
+        value: `${reviewCount} ${pluralizeLabel(reviewCount, "area")}`,
+        meta:
+          reviewCount > 0
+            ? "These areas are weak, conflicting, or still missing."
+            : "No major weak-or-missing areas are standing out right now.",
+        color: reviewCount > 0 ? "#F59E0B" : "#34D399",
+      },
+    ],
+    meaningLines: [
+      "Coverage means how many major data areas have at least some usable information.",
+      "High-confidence support means the area is backed by stronger confirmed data, not only a working guess.",
+      "Strong manual support means the field was directly verified and saved without an active conflict.",
+      "Present but incomplete means useful data exists, but it is still partial.",
+      "Needs review or missing means the area is conflicting or absent enough that downstream reads should stay cautious.",
+    ],
+    primaryGap,
+    bucketRows,
+    whyLines: whyLines.slice(0, 6),
+    improveLines: improveLines.slice(0, 5),
+  };
+}
+
+function buildDossierTrustPanelContent(
+  trustSummary,
+  report,
+  {
+    primaryGap = null,
+    canonicalMaterialKey = null,
+    sourceDocumentCount = 0,
+    evidenceCandidateCount = 0,
+    livePricingSupplierCount = 0,
+  } = {}
+) {
+  if (!trustSummary) {
+    return {
+      summary:
+        "No active formula or build trust read is attached right now, so this dossier is falling back to record quality only.",
+      cards: [],
+      meaningLines: [],
+      whyLines: [],
+      improveLines: [],
+    };
+  }
+
+  const total = trustSummary.totalConsideredCount || report?.totalConsideredCount || 0;
+  const cautionCount =
+    (trustSummary.missingSignals?.length || 0) +
+    (trustSummary.uncertainSignals?.length || 0) +
+    (trustSummary.blockerSignals?.length || 0);
+  const hasFormalEvidence = sourceDocumentCount + evidenceCandidateCount > 0;
+
+  let summary =
+    "Current formula/build advice has some usable trust context, but it still depends on inferred or incomplete support.";
+  if (trustSummary.level === "supported") {
+    summary =
+      report?.hasAnyStrongManualSupport && !report?.hasActiveManualConflict
+        ? "Current formula/build advice is backed by resolved supplier, pricing, and manually verified record support. Formal evidence review is lighter, but practical trust is strong."
+        : "Current formula/build advice is mostly backed by resolved supplier, pricing, and identity support.";
+  } else if (trustSummary.level === "mixed") {
+    summary =
+      report?.hasAnyStrongManualSupport && !report?.hasActiveManualConflict
+        ? "Most of the current advice is usable and manually verified fields are helping meaningfully, but some areas still depend on inferred support."
+        : "Most of the current advice is usable, but part of it still depends on inferred or manually supported data.";
+  } else if (trustSummary.level === "sparse") {
+    summary =
+      "Current advice is usable, but sparse supplier, pricing, or compliance data is still shaping the result.";
+  } else if (trustSummary.level === "blocked") {
+    summary =
+      "Current advice is being limited by missing supplier, pricing, or compliance inputs.";
+  }
+
+  const whyLines = [];
+  addUniqueDossierLine(
+    whyLines,
+    `${trustSummary.resolvedCount} of ${total} trust signals are resolved enough to use right now.`
+  );
+  addUniqueDossierLine(
+    whyLines,
+    trustSummary.confirmedCount > 0
+      ? `${trustSummary.confirmedCount} of those signals are high-confidence rather than inferred.`
+      : "None of the current trust signals are strongly confirmed yet."
+  );
+  addUniqueDossierLine(
+    whyLines,
+    livePricingSupplierCount > 0
+      ? `Live supplier pricing is present, which strengthens cost and sourcing reads.`
+      : `No live supplier pricing is attached, so trust still leans on sparse support.`
+  );
+  addUniqueDossierLine(
+    whyLines,
+    canonicalMaterialKey
+      ? "Canonical identity can be resolved from the current record."
+      : "Canonical identity is still unresolved, so identity-sensitive reads stay cautious."
+  );
+  (report?.manualTrustedSignals || []).forEach((signal) =>
+    addUniqueDossierLine(whyLines, signal)
+  );
+  addUniqueDossierLine(
+    whyLines,
+    hasFormalEvidence
+      ? `Formal evidence review currently includes ${sourceDocumentCount} source ${pluralizeLabel(
+          sourceDocumentCount,
+          "document"
+        )} and ${evidenceCandidateCount} staged evidence ${pluralizeLabel(
+          evidenceCandidateCount,
+          "item"
+        )}.`
+      : report?.hasAnyStrongManualSupport && !report?.hasActiveManualConflict
+      ? "No formal evidence-review records are attached yet. Auditability is lighter, but practical trust is still strong."
+      : "No formal evidence-review records are attached yet. That affects auditability, not just day-to-day usability."
+  );
+
+  const improveLines = [];
+  if (!livePricingSupplierCount || report?.dimensionByKey?.pricing?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add live supplier prices so costing and sourcing reads stop leaning on sparse support."
+    );
+  }
+  if (!canonicalMaterialKey || report?.dimensionByKey?.regulatory?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Confirm the material identity with stronger CAS / INCI support so trust is less inference-driven."
+    );
+  }
+  if (report?.dimensionByKey?.ifra?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Strengthen IFRA support before treating compliance guidance as high-confidence."
+    );
+  }
+  if (!hasFormalEvidence) {
+    addUniqueDossierLine(
+      improveLines,
+      report?.hasAnyStrongManualSupport && !report?.hasActiveManualConflict
+        ? "Formal evidence review is optional here. Add SDS or source support only if you want a stronger audit trail or need to document a real conflict."
+        : "Attach SDS or source support, or stage identity conflicts into evidence review if you need a more audit-ready record."
+    );
+  }
+  if (report?.dimensionByKey?.technical?.status !== "confirmed") {
+    addUniqueDossierLine(
+      improveLines,
+      "Add technical fields if you want stronger performance-model support."
+    );
+  }
+  if (!improveLines.length) {
+    improveLines.push(
+      "Trust support already looks strong. Keep supplier prices and source-backed support current as supplier pages change."
+    );
+  }
+
+  return {
+    summary,
+    cards: [
+      {
+        label: "Usable right now",
+        value: `${trustSummary.resolvedCount} of ${total} signals`,
+        meta:
+          total > 0
+            ? "These trust inputs are resolved enough to use in the current read."
+            : "No trust signals were available in the current runtime slice.",
+        color: "#7DD3FC",
+      },
+      {
+        label: "High-confidence support",
+        value: `${trustSummary.confirmedCount} of ${total} signals`,
+        meta:
+          trustSummary.confirmedCount > 0
+            ? "These are the strongest inputs driving the current advice."
+            : "Nothing is strongly confirmed in this trust slice yet.",
+        color: "#34D399",
+      },
+      {
+        label: "Formal evidence review",
+        value: `${sourceDocumentCount} docs / ${evidenceCandidateCount} staged`,
+        meta:
+          hasFormalEvidence
+            ? "Older evidence-review support is attached here."
+            : report?.hasAnyStrongManualSupport && !report?.hasActiveManualConflict
+            ? "Audit trail is lighter here, but strong manual trusted support is present."
+            : "Zero here does not automatically mean the material is unusable.",
+        color: hasFormalEvidence ? "#A78BFA" : "#94A3B8",
+      },
+      {
+        label: "Open cautions",
+        value: `${cautionCount} signal${cautionCount === 1 ? "" : "s"}`,
+        meta:
+          cautionCount > 0
+            ? "These missing, uncertain, or blocker signals still need follow-up."
+            : "No major trust cautions are standing out right now.",
+        color: cautionCount > 0 ? "#F59E0B" : "#34D399",
+      },
+    ],
+    meaningLines: [
+      "Resolved support means the current formula/build read has enough mapped supplier, pricing, or compliance context to use.",
+      "High-confidence support means the strongest inputs are confirmed rather than inferred.",
+      "Manual trusted support means fields were directly verified and saved without an active conflict.",
+      "Formal evidence-review support means source documents or staged evidence items are attached.",
+      "Zero formal evidence-review support does not automatically mean the material is broken if practical supplier and pricing data already exists.",
+    ],
+    primaryGap,
+    whyLines: whyLines.slice(0, 5),
+    improveLines: improveLines.slice(0, 5),
+  };
+}
+
 function IngredientDetailPanel({
   name,
   onClose,
   onSelectMaterial,
   onStartSubstitutionReview,
   pricesState,
+  supplierLayerPageFacts,
+  manualRecordEdit,
+  onSaveDirectSupplierRecordEdit,
+  onSaveDirectMaterialRecordEdit,
+  onReassignDirectSupplierRelationship,
+  onRefreshSupplierPageData,
   inventory,
   formulas,
   currentFormula,
@@ -54866,6 +55938,8 @@ function IngredientDetailPanel({
   if (!d) return null;
 
   const nc = NC[d.note] || NC.carrier;
+  const materialDisplayName = getMaterialDisplayName(name, d);
+  const materialRuntimeKeyCaption = getMaterialRuntimeKeyCaption(name, d);
   const ifraData = getIngredientIfraData(name);
   const catalogMetadata = getIngredientCatalogMetadata(name);
   const resolvedIdentity = resolveIngredientIdentity(name);
@@ -54887,8 +55961,50 @@ function IngredientDetailPanel({
   const canonicalSupplierProducts = canonicalMaterialKey
     ? getSupplierProductsForCanonicalMaterialKey(canonicalMaterialKey)
     : [];
+  const relatedSupplierLayerRecords = useMemo(
+    () =>
+      Object.values(supplierLayerPageFacts || {})
+        .filter(
+          (record) =>
+            record?.mappedCatalogName === name ||
+            (canonicalMaterialKey &&
+              record?.canonicalMaterialKey === canonicalMaterialKey)
+        )
+        .sort((a, b) => (b.updatedAt || b.fetchedAt || "").localeCompare(
+          a.updatedAt || a.fetchedAt || ""
+        )),
+    [canonicalMaterialKey, name, supplierLayerPageFacts]
+  );
   const livePricing = getLivePricingForIngredient(name, pricesState, PRICING);
   const livePricingEntries = Object.entries(livePricing || {});
+  const supplierLayerRecordBySupplier = useMemo(
+    () =>
+      relatedSupplierLayerRecords.reduce((recordMap, record) => {
+        if (!record?.supplierDisplayName || recordMap.has(record.supplierDisplayName)) {
+          return recordMap;
+        }
+        recordMap.set(record.supplierDisplayName, record);
+        return recordMap;
+      }, new Map()),
+    [relatedSupplierLayerRecords]
+  );
+  const supplierEditOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          [
+            ...livePricingEntries.map(([supplierName]) => supplierName),
+            ...relatedSupplierLayerRecords.map(
+              (record) => record?.supplierDisplayName
+            ),
+            d.supplier,
+          ].filter(Boolean)
+        )
+      ).sort((a, b) => a.localeCompare(b)),
+    [d.supplier, livePricingEntries, relatedSupplierLayerRecords]
+  );
+  const defaultSupplierEditName =
+    supplierEditOptions[0] || d.supplier || "Manual Supplier";
   const inventoryQty = Number(inventory?.[name]?.qty) || 0;
   const behaviorSignals = useMemo(
     () => buildMaterialBehaviorSignals(name, { db: DB }),
@@ -54901,6 +56017,217 @@ function IngredientDetailPanel({
         livePricing,
       }),
     [d, livePricing, name]
+  );
+  const buildSupplierEditDraft = useCallback(
+    (supplierNameValue = defaultSupplierEditName) => {
+      const selectedSupplierName =
+        String(supplierNameValue || defaultSupplierEditName || "").trim() ||
+        "Manual Supplier";
+      const liveSupplierRow = livePricing?.[selectedSupplierName] || {};
+      const supplierLayerRecord =
+        supplierLayerRecordBySupplier.get(selectedSupplierName) || null;
+      const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
+      const savedSupplierSection =
+        manualRecordEdit?.sections?.supplier?.supplierName === selectedSupplierName
+          ? manualRecordEdit.sections.supplier
+          : null;
+
+      return {
+        supplierName: selectedSupplierName,
+        url:
+          savedSupplierSection?.url ??
+          liveSupplierRow?.url ??
+          supplierPageFacts?.url ??
+          "",
+        vendorName:
+          savedSupplierSection?.vendorName ??
+          liveSupplierRow?.supplierVendorName ??
+          supplierPageFacts?.vendorName ??
+          "",
+        availabilityStatus:
+          savedSupplierSection?.availabilityStatus ??
+          liveSupplierRow?.availabilityStatus ??
+          supplierPageFacts?.availabilityStatus ??
+          "unknown",
+        ifraPercent:
+          savedSupplierSection?.ifraPercent != null
+            ? String(savedSupplierSection.ifraPercent)
+            : liveSupplierRow?.ifraPercent != null
+            ? String(liveSupplierRow.ifraPercent)
+            : supplierPageFacts?.ifraPercent != null
+            ? String(supplierPageFacts.ifraPercent)
+            : "",
+        sdsUrl:
+          savedSupplierSection?.sdsUrl ??
+          liveSupplierRow?.sdsUrl ??
+          supplierPageFacts?.sdsUrl ??
+          "",
+        manualSdsAttachment:
+          liveSupplierRow?.manualSdsAttachment ||
+          supplierPageFacts?.manualSdsAttachment || null,
+        inciShown:
+          savedSupplierSection?.inciShown ??
+          liveSupplierRow?.inciShown ??
+          supplierPageFacts?.inci ??
+          "",
+        productDescription:
+          savedSupplierSection?.productDescription ??
+          liveSupplierRow?.productDescription ??
+          supplierPageFacts?.productDescription ??
+          "",
+        scentSummary:
+          savedSupplierSection?.scentSummary ??
+          liveSupplierRow?.scentSummary ??
+          supplierPageFacts?.scentSummary ??
+          "",
+        dilutionOrCarrier:
+          savedSupplierSection?.dilutionOrCarrier ??
+          liveSupplierRow?.dilutionOrCarrier ??
+          supplierPageFacts?.dilutionOrCarrier ??
+          "",
+        supplierNotes:
+          savedSupplierSection?.supplierNotes ??
+          liveSupplierRow?.supplierNotes ??
+          supplierLayerRecord?.sourceNote ??
+          "",
+        originNote:
+          savedSupplierSection?.originNote ??
+          liveSupplierRow?.originNote ??
+          supplierPageFacts?.originNote ??
+          "",
+        packLines: formatSupplierAdapterPricePointsForTextarea(
+          savedSupplierSection?.pricePoints ||
+            liveSupplierRow?.S ||
+            supplierPageFacts?.pricePoints ||
+            []
+        ),
+      };
+    },
+    [
+      defaultSupplierEditName,
+      livePricing,
+      manualRecordEdit,
+      supplierLayerRecordBySupplier,
+    ]
+  );
+  const buildCoreEditDraft = useCallback(
+    () => ({
+      displayName: manualRecordEdit?.sections?.core?.displayName ?? d.displayName ?? "",
+      scentDesc: manualRecordEdit?.sections?.core?.scentDesc ?? d.scentDesc ?? "",
+    }),
+    [d.displayName, d.scentDesc, manualRecordEdit]
+  );
+  const buildIdentityEditDraft = useCallback(
+    () => ({
+      materialName: name,
+      cas: manualRecordEdit?.sections?.identity?.cas ?? d.cas ?? "",
+      inci: manualRecordEdit?.sections?.identity?.inci ?? d.inci ?? "",
+      note: manualRecordEdit?.sections?.identity?.note ?? d.note ?? "",
+      type: manualRecordEdit?.sections?.identity?.type ?? d.type ?? "",
+      rep: manualRecordEdit?.sections?.identity?.rep ?? d.rep ?? "",
+      identityNotes:
+        manualRecordEdit?.sections?.identity?.identityNotes ??
+        d.manualIdentityNotes ??
+        "",
+    }),
+    [d, manualRecordEdit, name]
+  );
+  const buildTechnicalEditDraft = useCallback(
+    () => ({
+      MW:
+        manualRecordEdit?.sections?.technical?.MW != null
+          ? String(manualRecordEdit.sections.technical.MW)
+          : d.MW != null
+          ? String(d.MW)
+          : "",
+      xLogP:
+        manualRecordEdit?.sections?.technical?.xLogP != null
+          ? String(manualRecordEdit.sections.technical.xLogP)
+          : d.xLogP != null
+          ? String(d.xLogP)
+          : "",
+      VP:
+        manualRecordEdit?.sections?.technical?.VP != null
+          ? String(manualRecordEdit.sections.technical.VP)
+          : d.VP != null
+          ? String(d.VP)
+          : "",
+      ODT:
+        manualRecordEdit?.sections?.technical?.ODT != null
+          ? String(manualRecordEdit.sections.technical.ODT)
+          : d.ODT != null
+          ? String(d.ODT)
+          : "",
+      TPSA:
+        manualRecordEdit?.sections?.technical?.TPSA != null
+          ? String(manualRecordEdit.sections.technical.TPSA)
+          : d.TPSA != null
+          ? String(d.TPSA)
+          : "",
+      odorThreshold_ngL:
+        manualRecordEdit?.sections?.technical?.odorThreshold_ngL != null
+          ? String(manualRecordEdit.sections.technical.odorThreshold_ngL)
+          : d.odorThreshold_ngL != null
+          ? String(d.odorThreshold_ngL)
+          : "",
+      technicalNotes:
+        manualRecordEdit?.sections?.technical?.technicalNotes ??
+        d.manualTechnicalNotes ??
+        "",
+    }),
+    [d, manualRecordEdit]
+  );
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorTab, setEditorTab] = useState("core");
+  const [selectedSupplierEditName, setSelectedSupplierEditName] =
+    useState(defaultSupplierEditName);
+  const [editorStatus, setEditorStatus] = useState("");
+  const [coreEditDraft, setCoreEditDraft] = useState(() =>
+    buildCoreEditDraft()
+  );
+  const [supplierEditDraft, setSupplierEditDraft] = useState(() =>
+    buildSupplierEditDraft(defaultSupplierEditName)
+  );
+  const [identityEditDraft, setIdentityEditDraft] = useState(() =>
+    buildIdentityEditDraft()
+  );
+  const [technicalEditDraft, setTechnicalEditDraft] = useState(() =>
+    buildTechnicalEditDraft()
+  );
+  const [supplierRelationshipTargetName, setSupplierRelationshipTargetName] =
+    useState("");
+  const [supplierRefreshLoadingKey, setSupplierRefreshLoadingKey] =
+    useState("");
+  const manualSdsUploadInputRef = useRef(null);
+  useEffect(() => {
+    setSelectedSupplierEditName(defaultSupplierEditName);
+    setIsEditorOpen(false);
+    setEditorTab("core");
+    setEditorStatus("");
+  }, [defaultSupplierEditName, name]);
+  useEffect(() => {
+    setCoreEditDraft(buildCoreEditDraft());
+  }, [buildCoreEditDraft]);
+  useEffect(() => {
+    setSupplierEditDraft(buildSupplierEditDraft(selectedSupplierEditName));
+  }, [buildSupplierEditDraft, selectedSupplierEditName]);
+  useEffect(() => {
+    setIdentityEditDraft(buildIdentityEditDraft());
+  }, [buildIdentityEditDraft]);
+  useEffect(() => {
+    setTechnicalEditDraft(buildTechnicalEditDraft());
+  }, [buildTechnicalEditDraft]);
+  useEffect(() => {
+    setSupplierRelationshipTargetName("");
+  }, [name, selectedSupplierEditName]);
+  const supplierRelationshipOptions = useMemo(
+    () =>
+      Object.keys(DB)
+        .filter((catalogName) => catalogName !== name)
+        .sort((a, b) =>
+          getMaterialDisplayName(a).localeCompare(getMaterialDisplayName(b))
+        ),
+    [name, manualRecordEdit, pricesState]
   );
 
   const formulasUsingMaterial = useMemo(
@@ -55139,7 +56466,12 @@ function IngredientDetailPanel({
   const cat4LimitText =
     ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
   const identityRows = [
-    ["CAS", d.cas || canonicalSource?.cas],
+    [
+      "CAS",
+      formatMaterialCasSupportValue(d.cas || canonicalSource?.cas) ||
+        d.cas ||
+        canonicalSource?.cas,
+    ],
     ["INCI", d.inci || canonicalSource?.inci],
     ["Rep. Odorant", d.rep || canonicalSource?.rep],
     ["IFRA State", ifraData.stateLabel],
@@ -55223,16 +56555,26 @@ function IngredientDetailPanel({
     },
   ];
   const materialTrustSummary = useMemo(() => {
+    const hasStrongManualTrustSupport = Boolean(
+      materialCompletenessReport?.hasAnyStrongManualSupport &&
+        !materialCompletenessReport?.hasActiveManualConflict
+    );
     const syntheticTrustLine = activeContextBasketLine
       ? activeContextBasketLine
       : livePricingEntries.length > 0
       ? {
           mappingConfidence:
-            canonicalMaterialKey || sourceDocuments.length || evidenceCandidates.length
+            canonicalMaterialKey ||
+            sourceDocuments.length ||
+            evidenceCandidates.length ||
+            hasStrongManualTrustSupport
               ? "inferred"
               : "uncertain",
         }
-      : canonicalMaterialKey || sourceDocuments.length || evidenceCandidates.length
+      : canonicalMaterialKey ||
+        sourceDocuments.length ||
+        evidenceCandidates.length ||
+        hasStrongManualTrustSupport
       ? {
           mappingConfidence: "inferred",
         }
@@ -55252,7 +56594,11 @@ function IngredientDetailPanel({
         "Canonical identity is still unresolved for this material."
       );
     }
-    if (!sourceDocuments.length && !evidenceCandidates.length) {
+    if (
+      !sourceDocuments.length &&
+      !evidenceCandidates.length &&
+      !hasStrongManualTrustSupport
+    ) {
       extraUncertainSignals.push(
         "No linked source documents or evidence candidates are attached yet."
       );
@@ -55330,6 +56676,379 @@ function IngredientDetailPanel({
   const materialCompletenessDriver =
     materialCompletenessReport?.primaryGap ||
     "The current dossier can lean on canonical, pricing, and technical context without surfacing a major truth gap.";
+  const hasSupplierSdsSupport = useMemo(
+    () =>
+      livePricingEntries.some(
+        ([, supplierData]) =>
+          Boolean(supplierData?.sdsUrl || supplierData?.manualSdsAttachment)
+      ) ||
+      relatedSupplierLayerRecords.some((record) =>
+        Boolean(
+          record?.pageFacts?.sdsUrl || record?.pageFacts?.manualSdsAttachment
+        )
+      ) ||
+      catalogSupplierProducts.some((record) =>
+        Boolean(record?.sdsUrl || record?.manualSdsAttachment)
+      ) ||
+      canonicalSupplierProducts.some((record) =>
+        Boolean(record?.sdsUrl || record?.manualSdsAttachment)
+      ),
+    [
+      canonicalSupplierProducts,
+      catalogSupplierProducts,
+      livePricingEntries,
+      relatedSupplierLayerRecords,
+    ]
+  );
+  const hasSupplierIfraShown = useMemo(
+    () =>
+      livePricingEntries.some(
+        ([, supplierData]) =>
+          supplierData?.ifraPercent != null &&
+          String(supplierData.ifraPercent).trim() !== ""
+      ) ||
+      relatedSupplierLayerRecords.some(
+        (record) =>
+          record?.pageFacts?.ifraPercent != null &&
+          String(record.pageFacts.ifraPercent).trim() !== ""
+      ) ||
+      catalogSupplierProducts.some(
+        (record) =>
+          record?.ifraPercentShown != null &&
+          String(record.ifraPercentShown).trim() !== ""
+      ) ||
+      canonicalSupplierProducts.some(
+        (record) =>
+          record?.ifraPercentShown != null &&
+          String(record.ifraPercentShown).trim() !== ""
+      ),
+    [
+      canonicalSupplierProducts,
+      catalogSupplierProducts,
+      livePricingEntries,
+      relatedSupplierLayerRecords,
+    ]
+  );
+  const materialCompletenessPanelContent = useMemo(
+    () =>
+      buildDossierCompletenessPanelContent(materialCompletenessReport, {
+        primaryGap: materialCompletenessDriver,
+        hasSdsSupport: hasSupplierSdsSupport,
+        hasIfraShownSupport: hasSupplierIfraShown,
+        sourceDocumentCount: sourceDocuments.length,
+        evidenceCandidateCount: evidenceCandidates.length,
+      }),
+    [
+      evidenceCandidates.length,
+      hasSupplierIfraShown,
+      hasSupplierSdsSupport,
+      materialCompletenessDriver,
+      materialCompletenessReport,
+      sourceDocuments.length,
+    ]
+  );
+  const materialTrustPanelContent = useMemo(
+    () =>
+      buildDossierTrustPanelContent(
+        materialTrustSummary,
+        materialCompletenessReport,
+        {
+          primaryGap: materialTrustDriver,
+          canonicalMaterialKey,
+          sourceDocumentCount: sourceDocuments.length,
+          evidenceCandidateCount: evidenceCandidates.length,
+          livePricingSupplierCount: livePricingEntries.length,
+        }
+      ),
+    [
+      canonicalMaterialKey,
+      evidenceCandidates.length,
+      livePricingEntries.length,
+      materialCompletenessReport,
+      materialTrustDriver,
+      materialTrustSummary,
+      sourceDocuments.length,
+    ]
+  );
+  const isLocalDraftMaterial = Boolean(d.isLocalDraft);
+  const noteTypeLabel =
+    [
+      d.note ? d.note.toUpperCase() : isLocalDraftMaterial ? "NOTE TBD" : null,
+      d.type || (isLocalDraftMaterial ? "TYPE TBD" : null),
+    ]
+      .filter(Boolean)
+      .join(" · ") || "Catalog Row";
+  const scentMetaLine =
+    [
+      d.scentClass || (isLocalDraftMaterial ? "Local Draft" : null),
+      d.scentSummary ||
+        (isLocalDraftMaterial ? "Manual trusted entry awaiting canonical review" : null),
+    ]
+      .filter(Boolean)
+      .join(" · ") || "No scent summary attached yet.";
+  const dossierDescription =
+    d.scentDesc ||
+    (isLocalDraftMaterial
+      ? "Browser-local manual trusted draft ingredient. Use it now, but keep trust/compliance reads review-aware until canonical support catches up."
+      : "No dossier description is attached yet.");
+  const localDraftUpdatedLabel = d.localDraftUpdatedAt
+    ? new Date(d.localDraftUpdatedAt).toLocaleString()
+    : null;
+  const localDraftSupplierLabel =
+    d.localDraftSupplierDisplayName || d.localDraftSupplierName || d.supplier || "—";
+  const localDraftPricePointCount = Array.isArray(d.localDraftPricePoints)
+    ? d.localDraftPricePoints.length
+    : 0;
+  const manualEditUpdatedLabel = manualRecordEdit?.updatedAt
+    ? new Date(manualRecordEdit.updatedAt).toLocaleString()
+    : d.manualEditUpdatedAt
+    ? new Date(d.manualEditUpdatedAt).toLocaleString()
+    : null;
+  const manualEditSummaryRows = [
+    manualRecordEdit?.sections?.core?.editedFieldKeys?.length
+      ? `Core Record: ${manualRecordEdit.sections.core.editedFieldKeys
+          .map(
+            (fieldKey) =>
+              DIRECT_CORE_EDIT_FIELD_LABELS[fieldKey] || fieldKey
+          )
+          .join(", ")}`
+      : null,
+    manualRecordEdit?.sections?.supplier?.editedFieldKeys?.length
+      ? `Supplier Data${
+          manualRecordEdit.sections.supplier.supplierName
+            ? ` · ${manualRecordEdit.sections.supplier.supplierName}`
+            : ""
+        }: ${manualRecordEdit.sections.supplier.editedFieldKeys
+          .map(
+            (fieldKey) =>
+              DIRECT_SUPPLIER_EDIT_FIELD_LABELS[fieldKey] || fieldKey
+          )
+          .join(", ")}`
+      : null,
+    manualRecordEdit?.sections?.identity?.editedFieldKeys?.length
+      ? `Material Identity: ${manualRecordEdit.sections.identity.editedFieldKeys
+          .map(
+            (fieldKey) =>
+              DIRECT_IDENTITY_EDIT_FIELD_LABELS[fieldKey] || fieldKey
+          )
+          .join(", ")}`
+      : null,
+    manualRecordEdit?.sections?.technical?.editedFieldKeys?.length
+      ? `Technical / Molecular: ${manualRecordEdit.sections.technical.editedFieldKeys
+          .map(
+            (fieldKey) =>
+              DIRECT_TECHNICAL_EDIT_FIELD_LABELS[fieldKey] || fieldKey
+          )
+          .join(", ")}`
+      : null,
+  ].filter(Boolean);
+  const sharedEditorLabelStyle = {
+    fontSize: 7.8,
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    fontWeight: 700,
+    marginBottom: 4,
+  };
+  const sharedEditorInputStyle = {
+    width: "100%",
+    background: "#071826",
+    border: "1px solid #1E3A52",
+    borderRadius: 8,
+    color: "#E2E8F0",
+    padding: "8px 10px",
+    fontSize: 9.2,
+    outline: "none",
+    boxSizing: "border-box",
+  };
+  const handleSaveCoreEdit = useCallback(() => {
+    const trimmedDisplayName = String(coreEditDraft.displayName || "").trim();
+    const conflictingCatalogName = Object.keys(DB).find((catalogName) => {
+      if (catalogName === name) return false;
+      if (catalogName === trimmedDisplayName) return true;
+      return getMaterialDisplayName(catalogName).trim() === trimmedDisplayName;
+    });
+    if (
+      trimmedDisplayName &&
+      conflictingCatalogName &&
+      typeof window !== "undefined" &&
+      !window.confirm(
+        `Save a browser-local display label of "${trimmedDisplayName}" for ${name}?\n\nThat label already matches ${conflictingCatalogName}. The underlying catalog key stays "${name}", so formulas and builds remain intact, but the visible display name may look duplicated.`
+      )
+    ) {
+      return;
+    }
+    const result = onSaveDirectMaterialRecordEdit({
+      materialName: name,
+      sectionKey: "core",
+      values: coreEditDraft,
+    });
+    setEditorStatus(result?.message || "Core record fields saved.");
+  }, [coreEditDraft, name, onSaveDirectMaterialRecordEdit]);
+  const handleSaveSupplierEdit = useCallback(() => {
+    const result = onSaveDirectSupplierRecordEdit({
+      materialName: name,
+      ...supplierEditDraft,
+    });
+    setEditorStatus(result?.message || "Supplier edit saved.");
+  }, [name, onSaveDirectSupplierRecordEdit, supplierEditDraft]);
+  const handleManualSdsUpload = useCallback((event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (
+      file.type &&
+      file.type !== "application/pdf" &&
+      !file.name.toLowerCase().endsWith(".pdf")
+    ) {
+      setEditorStatus("Manual SDS attachment must be a PDF file.");
+      return;
+    }
+    if (file.size > MAX_MANUAL_SDS_ATTACHMENT_BYTES) {
+      setEditorStatus(
+        `Manual SDS attachment is too large for browser-local storage. Keep it under ${(MAX_MANUAL_SDS_ATTACHMENT_BYTES / 1024 / 1024).toFixed(
+          1
+        )} MB.`
+      );
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || "");
+      if (!dataUrl) {
+        setEditorStatus("The SDS PDF could not be read.");
+        return;
+      }
+      setSupplierEditDraft((prev) => ({
+        ...prev,
+        manualSdsAttachment: {
+          fileName: file.name,
+          mimeType: file.type || "application/pdf",
+          dataUrl,
+          uploadedAt: new Date().toISOString(),
+          sourceType: "manual_pdf_upload",
+        },
+      }));
+      setEditorStatus(
+        "Manual SDS PDF loaded. Save Supplier Data to attach it."
+      );
+    };
+    reader.onerror = () => {
+      setEditorStatus("The SDS PDF could not be read.");
+    };
+    reader.readAsDataURL(file);
+  }, []);
+  const handleMoveSupplierRelationship = useCallback(
+    (nextMaterialName = supplierRelationshipTargetName) => {
+      const result = onReassignDirectSupplierRelationship?.({
+        currentMaterialName: name,
+        supplierName: selectedSupplierEditName,
+        nextMaterialName,
+      });
+      setEditorStatus(
+        result?.message || "Supplier relationship change saved."
+      );
+      if (result?.ok) {
+        setSupplierRelationshipTargetName("");
+      }
+    },
+    [
+      name,
+      onReassignDirectSupplierRelationship,
+      selectedSupplierEditName,
+      supplierRelationshipTargetName,
+    ]
+  );
+  const handleRefreshSupplierPage = useCallback(
+    async (refreshScope, supplierName = selectedSupplierEditName) => {
+      const safeSupplierName = String(supplierName || "").trim();
+      if (!safeSupplierName || typeof onRefreshSupplierPageData !== "function") {
+        setEditorStatus(
+          "Supplier page refresh is not available for this dossier right now."
+        );
+        return;
+      }
+      const loadingKey = `${safeSupplierName}:${refreshScope}`;
+      setSupplierRefreshLoadingKey(loadingKey);
+      setEditorStatus(
+        `${SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label || "Refreshing supplier page"}...`
+      );
+      try {
+        const result = await onRefreshSupplierPageData({
+          materialName: name,
+          supplierName: safeSupplierName,
+          refreshScope,
+        });
+        setEditorStatus(
+          result?.message || "Supplier page refresh finished."
+        );
+      } catch (error) {
+        setEditorStatus(
+          `Supplier page refresh failed: ${String(
+            error?.message || error || "Unknown error"
+          )}`
+        );
+      } finally {
+        setSupplierRefreshLoadingKey("");
+      }
+    },
+    [name, onRefreshSupplierPageData, selectedSupplierEditName]
+  );
+  const handleSaveIdentityEdit = useCallback(() => {
+    const conflictingRows = [
+      ["CAS", d.cas, identityEditDraft.cas],
+      ["Material INCI", d.inci, identityEditDraft.inci],
+      ["Representative odorant", d.rep, identityEditDraft.rep],
+      ["Note role", d.note, identityEditDraft.note],
+      ["Material type", d.type, identityEditDraft.type],
+    ].filter(
+      ([label, currentValue, nextValue]) => {
+        if (
+          label === "CAS" &&
+          String(currentValue || "").trim() &&
+          String(nextValue || "").trim()
+        ) {
+          return !compareMaterialCasSupportValues(currentValue, nextValue);
+        }
+        return (
+          normalizeManualComparableValue(currentValue) &&
+          normalizeManualComparableValue(nextValue) &&
+          normalizeManualComparableValue(currentValue) !==
+            normalizeManualComparableValue(nextValue)
+        );
+      }
+    );
+    if (
+      conflictingRows.length > 0 &&
+      typeof window !== "undefined" &&
+      !window.confirm(
+        `Save manual material identity edits for ${name}?\n\n${conflictingRows
+          .map(
+            ([label, currentValue, nextValue]) =>
+              `${label}: ${currentValue || "—"} -> ${nextValue || "—"}`
+          )
+          .join(
+            "\n"
+          )}\n\nThis saves browser-local direct edits immediately. If no explicit active conflict is attached, the dossier will treat them as strong manual support.`
+      )
+    ) {
+      return;
+    }
+    const result = onSaveDirectMaterialRecordEdit({
+      materialName: name,
+      sectionKey: "identity",
+      values: identityEditDraft,
+    });
+    setEditorStatus(result?.message || "Material identity saved.");
+  }, [d, identityEditDraft, name, onSaveDirectMaterialRecordEdit]);
+  const handleSaveTechnicalEdit = useCallback(() => {
+    const result = onSaveDirectMaterialRecordEdit({
+      materialName: name,
+      sectionKey: "technical",
+      values: technicalEditDraft,
+    });
+    setEditorStatus(result?.message || "Technical / molecular fields saved.");
+  }, [name, onSaveDirectMaterialRecordEdit, technicalEditDraft]);
 
   const substitutionCategoryMeta = {
     cheaper: {
@@ -55421,7 +57140,7 @@ function IngredientDetailPanel({
                   fontWeight: 700,
                 }}
               >
-                {d.note?.toUpperCase()} · {d.type}
+                {noteTypeLabel}
               </span>
               <IfraStateBadge ifraData={ifraData} />
               <CatalogMetadataBadges name={name} compact />
@@ -55449,7 +57168,7 @@ function IngredientDetailPanel({
                 margin: 0,
               }}
             >
-              {name}
+              {materialDisplayName}
             </h2>
             <p
               style={{
@@ -55459,8 +57178,24 @@ function IngredientDetailPanel({
                 fontStyle: "italic",
               }}
             >
-              {d.scentClass} · {d.scentSummary}
+              {scentMetaLine}
             </p>
+            {materialRuntimeKeyCaption ? (
+              <p
+                style={{
+                  fontSize: 10,
+                  color: "#94A3B8",
+                  margin: "6px 0 0",
+                  lineHeight: 1.55,
+                }}
+              >
+                Runtime key stays{" "}
+                <span style={{ fontFamily: "monospace", color: "#CBD5E1" }}>
+                  {materialRuntimeKeyCaption}
+                </span>
+                {" "}so formulas, builds, and saved references remain intact.
+              </p>
+            ) : null}
             {canonicalMaterialKey && (
               <p
                 style={{
@@ -55501,8 +57236,1479 @@ function IngredientDetailPanel({
             border: `1px solid ${BORDER}`,
           }}
         >
-          {d.scentDesc}
+          {dossierDescription}
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 10,
+            flexWrap: "wrap",
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 8.9,
+              color: "#94A3B8",
+              lineHeight: 1.6,
+              maxWidth: 700,
+            }}
+          >
+            Direct record edits save into the current browser runtime immediately.
+            Supplier-page facts stay on the supplier layer, while core,
+            identity, and technical edits remain clearly labeled as manual
+            trusted edits. Display-name changes keep the runtime key stable.
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditorOpen((prev) => !prev);
+              setEditorStatus("");
+            }}
+            style={{
+              background: isEditorOpen
+                ? "#251404"
+                : "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+              border: `1px solid ${
+                isEditorOpen ? "#B45309" : "#22D3EE40"
+              }`,
+              borderRadius: 8,
+              color: isEditorOpen ? "#FCD34D" : "#7DD3FC",
+              padding: "8px 12px",
+              fontSize: 8.8,
+              fontWeight: 700,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isEditorOpen ? "Hide Editor" : "Edit Record"}
+          </button>
+        </div>
+
+        {isLocalDraftMaterial ? (
+          <div
+            style={{
+              background: "#18091A",
+              border: "1px solid #9D174D",
+              borderRadius: 12,
+              padding: "12px 14px",
+              marginBottom: 16,
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 10,
+                flexWrap: "wrap",
+                alignItems: "flex-start",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#F9A8D4",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Local Draft / Manual Trusted Entry
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#FBCFE8",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  This ingredient is usable in this browser runtime right now,
+                  but it is still local-only and review pending. Canonical
+                  truth, IFRA support, and evidence promotion still belong in
+                  the existing Supplier review/export path.
+                </div>
+              </div>
+              <span
+                style={{
+                  background: "#2D0A1F",
+                  border: "1px solid #BE185D",
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                  fontSize: 7.3,
+                  fontWeight: 700,
+                  color: "#F9A8D4",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Review pending
+              </span>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
+                gap: 8,
+              }}
+            >
+              {[
+                ["Source", localDraftSupplierLabel],
+                ["Availability", d.localDraftAvailabilityLabel || "Unknown"],
+                [
+                  "Pack support",
+                  localDraftPricePointCount
+                    ? `${localDraftPricePointCount} saved price point${
+                        localDraftPricePointCount === 1 ? "" : "s"
+                      }`
+                    : "No live pack pricing saved yet",
+                ],
+                [
+                  "IFRA shown on entry",
+                  d.localDraftIfraPercent != null
+                    ? `${d.localDraftIfraPercent}%`
+                    : "Not attached",
+                ],
+                ["Confidence", d.localDraftConfidence || "medium"],
+                ["Updated", localDraftUpdatedLabel || "Just now"],
+              ].map(([label, value]) => (
+                <div
+                  key={`${name}-${label}`}
+                  style={{
+                    background: "#120716",
+                    border: "1px solid #4A1230",
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#BE185D",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {label}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 8.6,
+                      color: "#FBCFE8",
+                      lineHeight: 1.5,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {value}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(d.localDraftSourceUrl ||
+              d.localDraftSdsUrl ||
+              d.localDraftSourceNote ||
+              d.localDraftTechnicalNotes) && (
+              <div
+                style={{
+                  background: "#120716",
+                  border: "1px solid #4A1230",
+                  borderRadius: 10,
+                  padding: "8px 10px",
+                  display: "grid",
+                  gap: 5,
+                  fontSize: 8.4,
+                  color: "#FBCFE8",
+                  lineHeight: 1.55,
+                }}
+              >
+                {d.localDraftSourceUrl ? (
+                  <div>URL: {d.localDraftSourceUrl}</div>
+                ) : null}
+                {d.localDraftSdsUrl ? (
+                  <div>SDS: {d.localDraftSdsUrl}</div>
+                ) : null}
+                {d.localDraftSourceNote ? (
+                  <div>Source note: {d.localDraftSourceNote}</div>
+                ) : null}
+                {d.localDraftTechnicalNotes ? (
+                  <div>Technical notes: {d.localDraftTechnicalNotes}</div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {manualEditSummaryRows.length > 0 ? (
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #0E7490",
+              borderRadius: 12,
+              padding: "12px 14px",
+              marginBottom: 16,
+              display: "grid",
+              gap: 7,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 10,
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 8.5,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Manual Trusted Edit
+              </div>
+              <span
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                  fontSize: 7.4,
+                  fontWeight: 700,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {manualEditUpdatedLabel || "Just updated"}
+              </span>
+            </div>
+            <div
+              style={{
+                fontSize: 8.7,
+                color: "#CBD5E1",
+                lineHeight: 1.55,
+              }}
+            >
+              These fields were updated directly in the dossier and now override
+              the browser-local runtime. When no active conflict is attached,
+              manually verified edits now count as strong practical support.
+            </div>
+            <div style={{ display: "grid", gap: 5 }}>
+              {manualEditSummaryRows.map((summaryRow) => (
+                <div
+                  key={`${name}-manual-summary-${summaryRow}`}
+                  style={{
+                    background: "#060E1E",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                    fontSize: 8.4,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  {summaryRow}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {isEditorOpen ? (
+          <div
+            style={{
+              background: "#060E1E",
+              borderRadius: 14,
+              border: "1px solid #1E3A52",
+              padding: 14,
+              marginBottom: 18,
+              display: "grid",
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.5,
+                    color: "#22D3EE",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Direct Product / Material Edit
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.8,
+                    color: "#94A3B8",
+                    lineHeight: 1.6,
+                    maxWidth: 760,
+                  }}
+                >
+                  Update the visible core record label and description, edit
+                  low-risk supplier-page facts, manage supplier relationships,
+                  or make confirmed manual identity and technical edits without
+                  leaving this dossier. These edits stay browser-local and
+                  visible.
+                </div>
+              </div>
+              {editorStatus ? (
+                <div
+                  style={{
+                    background: editorStatus.toLowerCase().includes("saved")
+                      ? "#052E16"
+                      : "#251404",
+                    border: `1px solid ${
+                      editorStatus.toLowerCase().includes("saved")
+                        ? "#166534"
+                        : "#B45309"
+                    }`,
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                    fontSize: 8.5,
+                    color: editorStatus.toLowerCase().includes("saved")
+                      ? "#86EFAC"
+                      : "#FCD34D",
+                    lineHeight: 1.5,
+                    maxWidth: 360,
+                  }}
+                >
+                  {editorStatus}
+                </div>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              {[
+                ["core", "Edit Core Record"],
+                ["supplier", "Edit Supplier Data"],
+                ["identity", "Edit Material Identity"],
+                ["technical", "Edit Technical / Molecular"],
+              ].map(([tabKey, label]) => (
+                <button
+                  key={`${name}-editor-tab-${tabKey}`}
+                  type="button"
+                  onClick={() => {
+                    setEditorTab(tabKey);
+                    setEditorStatus("");
+                  }}
+                  style={{
+                    background:
+                      editorTab === tabKey ? "#0E4D6E" : "#071826",
+                    border: `1px solid ${
+                      editorTab === tabKey ? "#22D3EE40" : "#1E3A52"
+                    }`,
+                    borderRadius: 999,
+                    color: editorTab === tabKey ? "#7DD3FC" : "#94A3B8",
+                    padding: "6px 12px",
+                    fontSize: 8.2,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {editorTab === "core" ? (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Runtime Key</div>
+                  <input
+                    value={name}
+                    disabled
+                    style={{
+                      ...sharedEditorInputStyle,
+                      color: "#94A3B8",
+                      cursor: "not-allowed",
+                    }}
+                  />
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>
+                    Display / Material Name
+                  </div>
+                  <input
+                    value={coreEditDraft.displayName}
+                    onChange={(event) =>
+                      setCoreEditDraft((prev) => ({
+                        ...prev,
+                        displayName: event.target.value,
+                      }))
+                    }
+                    placeholder={name}
+                    style={sharedEditorInputStyle}
+                  />
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Main Description</div>
+                  <textarea
+                    rows={4}
+                    value={coreEditDraft.scentDesc}
+                    onChange={(event) =>
+                      setCoreEditDraft((prev) => ({
+                        ...prev,
+                        scentDesc: event.target.value,
+                      }))
+                    }
+                    placeholder="Main dossier description for this material"
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.3,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  The visible display label can change here without rewriting
+                  the underlying catalog key. That keeps formulas, builds, and
+                  saved records stable while letting the material read correctly
+                  across the UI.
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoreEditDraft(buildCoreEditDraft());
+                      setEditorStatus("Reloaded current core record values.");
+                    }}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Reload Current Values
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveCoreEdit}
+                    style={{
+                      background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: "#7DD3FC",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save Core Record
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {editorTab === "supplier" ? (
+              <div
+                style={{
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Supplier Row</div>
+                    <select
+                      value={selectedSupplierEditName}
+                      onChange={(event) =>
+                        setSelectedSupplierEditName(event.target.value)
+                      }
+                      style={sharedEditorInputStyle}
+                    >
+                      {(supplierEditOptions.length
+                        ? supplierEditOptions
+                        : [selectedSupplierEditName]
+                      ).map((supplierName) => (
+                        <option
+                          key={`${name}-supplier-edit-option-${supplierName}`}
+                          value={supplierName}
+                        >
+                          {supplierName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>
+                      Supplier / Vendor Context
+                    </div>
+                    <input
+                      value={supplierEditDraft.vendorName}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          vendorName: event.target.value,
+                        }))
+                      }
+                      placeholder="Fraterworks"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Supplier Product URL</div>
+                  <input
+                    value={supplierEditDraft.url}
+                    onChange={(event) =>
+                      setSupplierEditDraft((prev) => ({
+                        ...prev,
+                        url: event.target.value,
+                      }))
+                    }
+                    placeholder="https://supplier.example/product"
+                    style={sharedEditorInputStyle}
+                  />
+                </div>
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div>
+                      <div style={sharedEditorLabelStyle}>
+                        Supplier Page Refresh
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.4,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        Re-read the saved supplier product URL field-by-field.
+                        Supplier facts refresh into the supplier layer first,
+                        while manual trusted edits stay preserved unless you
+                        explicitly replace them.
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.1,
+                        color: "#64748B",
+                        lineHeight: 1.55,
+                        maxWidth: 260,
+                      }}
+                    >
+                      Current live support is Fraterworks product URLs that can
+                      resolve to Shopify product JSON.
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {Object.entries(SUPPLIER_PAGE_REFRESH_SCOPE_META).map(
+                      ([scopeKey, scopeMeta]) => {
+                        const isLoading =
+                          supplierRefreshLoadingKey ===
+                          `${selectedSupplierEditName}:${scopeKey}`;
+                        return (
+                          <button
+                            key={`${name}-supplier-refresh-${scopeKey}`}
+                            type="button"
+                            disabled={
+                              isLoading ||
+                              !String(supplierEditDraft.url || "").trim()
+                            }
+                            onClick={() =>
+                              handleRefreshSupplierPage(
+                                scopeKey,
+                                selectedSupplierEditName
+                              )
+                            }
+                            style={{
+                              background:
+                                isLoading ||
+                                !String(supplierEditDraft.url || "").trim()
+                                  ? "#0F172A"
+                                  : scopeKey === "all_safe"
+                                  ? "#0A2540"
+                                  : "#071826",
+                              border: `1px solid ${
+                                scopeKey === "all_safe"
+                                  ? "#1D4ED8"
+                                  : "#1E3A52"
+                              }`,
+                              borderRadius: 8,
+                              color:
+                                isLoading ||
+                                !String(supplierEditDraft.url || "").trim()
+                                  ? "#475569"
+                                  : scopeKey === "all_safe"
+                                  ? "#7DD3FC"
+                                  : "#CBD5E1",
+                              padding: "7px 10px",
+                              fontSize: 8.3,
+                              fontWeight: 700,
+                              cursor:
+                                isLoading ||
+                                !String(supplierEditDraft.url || "").trim()
+                                  ? "not-allowed"
+                                  : "pointer",
+                            }}
+                          >
+                            {isLoading ? "Refreshing..." : scopeMeta.label}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Availability</div>
+                    <select
+                      value={supplierEditDraft.availabilityStatus}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          availabilityStatus: event.target.value,
+                        }))
+                      }
+                      style={sharedEditorInputStyle}
+                    >
+                      {Object.entries(SUPPLIER_AVAILABILITY_LABELS).map(
+                        ([value, label]) => (
+                          <option
+                            key={`${name}-supplier-availability-${value}`}
+                            value={value}
+                          >
+                            {label}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>IFRA % Shown</div>
+                    <input
+                      value={supplierEditDraft.ifraPercent}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          ifraPercent: event.target.value,
+                        }))
+                      }
+                      placeholder="0.4"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>SDS URL</div>
+                    <input
+                      value={supplierEditDraft.sdsUrl}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          sdsUrl: event.target.value,
+                        }))
+                      }
+                      placeholder="https://supplier.example/sds.pdf"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div>
+                      <div style={sharedEditorLabelStyle}>
+                        Manual SDS PDF Attachment
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.4,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        Use this when the supplier page has no stable SDS URL.
+                        The PDF stays browser-local and reopens from this
+                        dossier after save.
+                      </div>
+                    </div>
+                    <input
+                      ref={manualSdsUploadInputRef}
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      onChange={handleManualSdsUpload}
+                      style={{ display: "none" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => manualSdsUploadInputRef.current?.click()}
+                      style={{
+                        background: "#0A2540",
+                        border: "1px solid #1D4ED8",
+                        borderRadius: 8,
+                        color: "#7DD3FC",
+                        padding: "7px 10px",
+                        fontSize: 8.5,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Upload SDS PDF
+                    </button>
+                  </div>
+                  {supplierEditDraft.manualSdsAttachment ? (
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 10px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#CBD5E1",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div>{supplierEditDraft.manualSdsAttachment.fileName}</div>
+                        <div style={{ color: "#94A3B8" }}>
+                          Manual upload
+                          {supplierEditDraft.manualSdsAttachment.uploadedAt
+                            ? ` · ${new Date(
+                                supplierEditDraft.manualSdsAttachment.uploadedAt
+                              ).toLocaleString()}`
+                            : ""}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <a
+                          href={supplierEditDraft.manualSdsAttachment.dataUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            background: "#052E16",
+                            border: "1px solid #166534",
+                            borderRadius: 8,
+                            color: "#86EFAC",
+                            padding: "7px 10px",
+                            fontSize: 8.5,
+                            fontWeight: 700,
+                            textDecoration: "none",
+                          }}
+                        >
+                          Open PDF
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSupplierEditDraft((prev) => ({
+                              ...prev,
+                              manualSdsAttachment: null,
+                            }))
+                          }
+                          style={{
+                            background: "#251404",
+                            border: "1px solid #B45309",
+                            borderRadius: 8,
+                            color: "#FCD34D",
+                            padding: "7px 10px",
+                            fontSize: 8.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Clear Attachment
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: 8.4,
+                        color: "#64748B",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      No manual SDS PDF is attached to this supplier row yet.
+                    </div>
+                  )}
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>INCI Shown on Page</div>
+                    <input
+                      value={supplierEditDraft.inciShown}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          inciShown: event.target.value,
+                        }))
+                      }
+                      placeholder="Ingredient INCI"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Dilution / Carrier</div>
+                    <input
+                      value={supplierEditDraft.dilutionOrCarrier}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          dilutionOrCarrier: event.target.value,
+                        }))
+                      }
+                      placeholder="10% TEC"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Supplier Description</div>
+                  <textarea
+                    rows={3}
+                    value={supplierEditDraft.productDescription}
+                    onChange={(event) =>
+                      setSupplierEditDraft((prev) => ({
+                        ...prev,
+                        productDescription: event.target.value,
+                      }))
+                    }
+                    placeholder="Readable supplier-page description"
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>
+                      Supplier Scent Summary
+                    </div>
+                    <input
+                      value={supplierEditDraft.scentSummary}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          scentSummary: event.target.value,
+                        }))
+                      }
+                      placeholder="Short scent summary"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>
+                      Origin / Organic Notes
+                    </div>
+                    <input
+                      value={supplierEditDraft.originNote}
+                      onChange={(event) =>
+                        setSupplierEditDraft((prev) => ({
+                          ...prev,
+                          originNote: event.target.value,
+                        }))
+                      }
+                      placeholder="Organic, Madagascar, etc."
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Supplier Notes</div>
+                  <textarea
+                    rows={2}
+                    value={supplierEditDraft.supplierNotes}
+                    onChange={(event) =>
+                      setSupplierEditDraft((prev) => ({
+                        ...prev,
+                        supplierNotes: event.target.value,
+                      }))
+                    }
+                    placeholder="Manual trusted context, owned stock note, or capture note"
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Size / Price Rows</div>
+                  <textarea
+                    rows={3}
+                    value={supplierEditDraft.packLines}
+                    onChange={(event) =>
+                      setSupplierEditDraft((prev) => ({
+                        ...prev,
+                        packLines: event.target.value,
+                      }))
+                    }
+                    placeholder={`15 g 12.5\n30 g 22.0`}
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "10px 12px",
+                    display: "grid",
+                    gap: 8,
+                  }}
+                >
+                  <div style={sharedEditorLabelStyle}>
+                    Supplier Relationship
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.4,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Move this supplier row onto a different material, or detach
+                    it from the current material while preserving the underlying
+                    supplier-layer record.
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <div>
+                      <div style={sharedEditorLabelStyle}>Currently Attached</div>
+                      <input
+                        value={materialDisplayName}
+                        disabled
+                        style={{
+                          ...sharedEditorInputStyle,
+                          color: "#94A3B8",
+                          cursor: "not-allowed",
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div style={sharedEditorLabelStyle}>Move To Material</div>
+                      <input
+                        list={`${name}-supplier-relationship-targets`}
+                        value={supplierRelationshipTargetName}
+                        onChange={(event) =>
+                          setSupplierRelationshipTargetName(event.target.value)
+                        }
+                        placeholder="Start typing another material"
+                        style={sharedEditorInputStyle}
+                      />
+                      <datalist id={`${name}-supplier-relationship-targets`}>
+                        {supplierRelationshipOptions.map((catalogName) => (
+                          <option
+                            key={`${name}-supplier-target-${catalogName}`}
+                            value={catalogName}
+                            label={getMaterialDisplayName(catalogName)}
+                          >
+                            {getMaterialDisplayName(catalogName)}
+                          </option>
+                        ))}
+                      </datalist>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      gap: 8,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleMoveSupplierRelationship("")}
+                      style={{
+                        background: "#251404",
+                        border: "1px solid #B45309",
+                        borderRadius: 8,
+                        color: "#FCD34D",
+                        padding: "7px 10px",
+                        fontSize: 8.5,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Detach Supplier
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!supplierRelationshipTargetName.trim()}
+                      onClick={() =>
+                        handleMoveSupplierRelationship(
+                          supplierRelationshipTargetName
+                        )
+                      }
+                      style={{
+                        background: supplierRelationshipTargetName.trim()
+                          ? "#0A2540"
+                          : "#071826",
+                        border: `1px solid ${
+                          supplierRelationshipTargetName.trim()
+                            ? "#1D4ED8"
+                            : "#1E3A52"
+                        }`,
+                        borderRadius: 8,
+                        color: supplierRelationshipTargetName.trim()
+                          ? "#7DD3FC"
+                          : "#475569",
+                        padding: "7px 10px",
+                        fontSize: 8.5,
+                        fontWeight: 700,
+                        cursor: supplierRelationshipTargetName.trim()
+                          ? "pointer"
+                          : "not-allowed",
+                      }}
+                    >
+                      Attach To Material
+                    </button>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSupplierEditDraft(
+                        buildSupplierEditDraft(selectedSupplierEditName)
+                      );
+                      setEditorStatus("Reloaded current supplier values.");
+                    }}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Reload Current Values
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveSupplierEdit}
+                    style={{
+                      background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: "#7DD3FC",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save Supplier Data
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {editorTab === "identity" ? (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Material Name</div>
+                  <input
+                    value={identityEditDraft.materialName}
+                    disabled
+                    style={{
+                      ...sharedEditorInputStyle,
+                      color: "#94A3B8",
+                      cursor: "not-allowed",
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>CAS</div>
+                    <input
+                      value={identityEditDraft.cas}
+                      onChange={(event) =>
+                        setIdentityEditDraft((prev) => ({
+                          ...prev,
+                          cas: event.target.value,
+                        }))
+                      }
+                      placeholder="123-45-6"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Material INCI</div>
+                    <input
+                      value={identityEditDraft.inci}
+                      onChange={(event) =>
+                        setIdentityEditDraft((prev) => ({
+                          ...prev,
+                          inci: event.target.value,
+                        }))
+                      }
+                      placeholder="Ingredient INCI"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>
+                      Representative Odorant
+                    </div>
+                    <input
+                      value={identityEditDraft.rep}
+                      onChange={(event) =>
+                        setIdentityEditDraft((prev) => ({
+                          ...prev,
+                          rep: event.target.value,
+                        }))
+                      }
+                      placeholder="Representative odorant"
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Note Role</div>
+                    <select
+                      value={identityEditDraft.note}
+                      onChange={(event) =>
+                        setIdentityEditDraft((prev) => ({
+                          ...prev,
+                          note: event.target.value,
+                        }))
+                      }
+                      style={sharedEditorInputStyle}
+                    >
+                      <option value="">Unspecified</option>
+                      <option value="top">Top</option>
+                      <option value="mid">Mid</option>
+                      <option value="base">Base</option>
+                      <option value="carrier">Carrier</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div style={sharedEditorLabelStyle}>Material Type</div>
+                    <input
+                      value={identityEditDraft.type}
+                      onChange={(event) =>
+                        setIdentityEditDraft((prev) => ({
+                          ...prev,
+                          type: event.target.value,
+                        }))
+                      }
+                      placeholder="EO, ABS, SYNTH, etc."
+                      style={sharedEditorInputStyle}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Identity Notes</div>
+                  <textarea
+                    rows={3}
+                    value={identityEditDraft.identityNotes}
+                    onChange={(event) =>
+                      setIdentityEditDraft((prev) => ({
+                        ...prev,
+                        identityNotes: event.target.value,
+                      }))
+                    }
+                    placeholder="Why this direct identity edit was made"
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.3,
+                    color: "#FCD34D",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Identity-sensitive saves will ask for confirmation if they
+                  overwrite an existing CAS, INCI, note-role, or material-type
+                  value.
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIdentityEditDraft(buildIdentityEditDraft());
+                      setEditorStatus("Reloaded current identity values.");
+                    }}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Reload Current Values
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveIdentityEdit}
+                    style={{
+                      background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: "#7DD3FC",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save Material Identity
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {editorTab === "technical" ? (
+              <div style={{ display: "grid", gap: 10 }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                    gap: 10,
+                  }}
+                >
+                  {[
+                    ["MW", "MW"],
+                    ["xLogP", "xLogP"],
+                    ["VP", "Vapor pressure"],
+                    ["ODT", "Odor threshold"],
+                    ["TPSA", "TPSA"],
+                    ["odorThreshold_ngL", "Odor threshold (ng/L)"],
+                  ].map(([fieldKey, label]) => (
+                    <div key={`${name}-technical-edit-${fieldKey}`}>
+                      <div style={sharedEditorLabelStyle}>{label}</div>
+                      <input
+                        value={technicalEditDraft[fieldKey]}
+                        onChange={(event) =>
+                          setTechnicalEditDraft((prev) => ({
+                            ...prev,
+                            [fieldKey]: event.target.value,
+                          }))
+                        }
+                        placeholder="Optional"
+                        style={sharedEditorInputStyle}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div style={sharedEditorLabelStyle}>Technical Notes</div>
+                  <textarea
+                    rows={3}
+                    value={technicalEditDraft.technicalNotes}
+                    onChange={(event) =>
+                      setTechnicalEditDraft((prev) => ({
+                        ...prev,
+                        technicalNotes: event.target.value,
+                      }))
+                    }
+                    placeholder="Manual trusted technical context or source note"
+                    style={{ ...sharedEditorInputStyle, resize: "vertical" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.3,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Technical and molecular edits save directly for local use.
+                  When they are manually verified and no active conflict is
+                  attached, the dossier counts them as strong manual support.
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTechnicalEditDraft(buildTechnicalEditDraft());
+                      setEditorStatus("Reloaded current technical values.");
+                    }}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Reload Current Values
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveTechnicalEdit}
+                    style={{
+                      background: "linear-gradient(135deg,#0E4D6E,#0E6D8E)",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: "#7DD3FC",
+                      padding: "7px 10px",
+                      fontSize: 8.8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Save Technical / Molecular
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div
           style={{
@@ -55585,7 +58791,7 @@ function IngredientDetailPanel({
                   fontWeight: 700,
                 }}
               >
-                Catalog Truth / Completeness
+                Catalog Data Coverage
               </div>
               <div
                 style={{
@@ -55595,8 +58801,7 @@ function IngredientDetailPanel({
                   lineHeight: 1.55,
                 }}
               >
-                {materialCompletenessReport?.headline ||
-                  "Ingredient truth has not been summarized yet for this dossier."}
+                {materialCompletenessPanelContent.summary}
               </div>
             </div>
             <span
@@ -55624,89 +58829,95 @@ function IngredientDetailPanel({
               gap: 8,
             }}
           >
-            {[
-              [
-                "Coverage",
-                materialCompletenessReport?.supportLabel || "No completeness read",
-                "#7DD3FC",
-              ],
-              [
-                "Breakdown",
-                materialCompletenessReport?.breakdownLabel ||
-                  "Waiting on stronger catalog support",
-                "#CBD5E1",
-              ],
-              [
-                "Supplier / Pricing",
-                `${materialCompletenessReport?.supplierVariantCount || 0} variant${
-                  materialCompletenessReport?.supplierVariantCount === 1 ? "" : "s"
-                } · ${
-                  materialCompletenessReport?.livePricingSupplierCount || 0
-                } live-priced`,
-                "#34D399",
-              ],
-              [
-                "Technical / IFRA",
-                `${materialCompletenessReport?.technicalFieldCount || 0}/${
-                  materialCompletenessReport?.technicalFieldTotal || 6
-                } tech fields · ${
-                  materialCompletenessReport?.dimensionByKey?.ifra?.status ===
-                  "confirmed"
-                    ? "IFRA linked"
-                    : materialCompletenessReport?.dimensionByKey?.ifra?.status ===
-                      "inferred"
-                    ? "IFRA partial"
-                    : materialCompletenessReport?.dimensionByKey?.ifra?.status ===
-                      "uncertain"
-                    ? "IFRA uncertain"
-                    : "IFRA missing"
-                }`,
-                "#A78BFA",
-              ],
-            ].map(([label, value, color]) => (
-              <div
-                key={`material-completeness-${label}`}
-                style={{
-                  background: "#071826",
-                  border: "1px solid #1E3A52",
-                  borderRadius: 10,
-                  padding: "8px 10px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 7.8,
-                    color: "#64748B",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    fontWeight: 700,
-                  }}
-                >
-                  {label}
-                </div>
-                <div
-                  style={{
-                    marginTop: 4,
-                    fontSize: label === "Coverage" ? 13 : 8.4,
-                    fontWeight: 700,
-                    color,
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {value}
-                </div>
-              </div>
+            {materialCompletenessPanelContent.cards.map((card) => (
+              <DossierCountCard
+                key={`material-completeness-${card.label}`}
+                label={card.label}
+                value={card.value}
+                meta={card.meta}
+                color={card.color}
+              />
             ))}
           </div>
           <div
             style={{
               marginTop: 8,
-              fontSize: 8.5,
-              color: "#94A3B8",
-              lineHeight: 1.55,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 8,
             }}
           >
-            {materialCompletenessDriver}
+            <DossierGuidanceBlock
+              title="What this means"
+              intro="These labels are meant to explain the score in plain language, not just show internal percentages."
+              items={materialCompletenessPanelContent.meaningLines}
+              accent="#7DD3FC"
+            />
+            <DossierGuidanceBlock
+              title="Category breakdown"
+              intro="Each major data area is grouped by how strong the current support is."
+              items={materialCompletenessPanelContent.bucketRows.map((row) => {
+                const itemLabel = row.count
+                  ? formatHumanList(row.items)
+                  : "None in this bucket right now";
+                return `${row.label} (${row.count}): ${itemLabel}. ${row.description}`;
+              })}
+              accent="#A78BFA"
+            />
+          </div>
+          {materialCompletenessPanelContent.primaryGap ? (
+            <div
+              style={{
+                marginTop: 8,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "9px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.9,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Main thing holding this back
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8.4,
+                  color: "#E2E8F0",
+                  lineHeight: 1.55,
+                }}
+              >
+                {materialCompletenessPanelContent.primaryGap}
+              </div>
+            </div>
+          ) : null}
+          <div
+            style={{
+              marginTop: 8,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 8,
+            }}
+          >
+            <DossierGuidanceBlock
+              title="Why this record has this score"
+              intro="These are the concrete record details shaping the current coverage and confidence read."
+              items={materialCompletenessPanelContent.whyLines}
+              accent="#CBD5E1"
+            />
+            <DossierGuidanceBlock
+              title="To improve this score"
+              intro="These are the fastest ways to make the dossier stronger from its current state."
+              items={materialCompletenessPanelContent.improveLines}
+              accent="#34D399"
+            />
           </div>
           {materialCompletenessReport?.level !== "strong" ? (
             <div
@@ -55720,10 +58931,10 @@ function IngredientDetailPanel({
                 lineHeight: 1.55,
               }}
             >
-              Ingredient-driven cost, substitution, and founder planning reads stay
-              estimate-grade when catalog truth is partial. Tighten pricing,
-              canonical identity, or technical support before treating this as a
-              strong source of truth.
+              Formula advice, substitution notes, and founder planning reads stay
+              more estimate-grade when catalog coverage is partial. Tightening
+              pricing, identity, compliance, or technical support will make this
+              dossier more trustworthy downstream.
             </div>
           ) : null}
         </div>
@@ -55766,8 +58977,7 @@ function IngredientDetailPanel({
                   lineHeight: 1.55,
                 }}
               >
-                {materialTrustSummary?.headline ||
-                  "No active formula/build trust read is attached yet. This dossier falls back to identity, evidence, and pricing context only."}
+                {materialTrustPanelContent.summary}
               </div>
             </div>
             <span
@@ -55797,62 +59007,81 @@ function IngredientDetailPanel({
               gap: 8,
             }}
           >
-            {[
-              [
-                "Coverage",
-                materialTrustSummary?.supportLabel || "No trust read available",
-                "#7DD3FC",
-              ],
-              [
-                "Breakdown",
-                materialTrustSummary?.breakdownLabel ||
-                  "Waiting on stronger pricing/evidence context",
-                "#CBD5E1",
-              ],
-            ].map(([label, value, color]) => (
-              <div
-                key={`material-trust-${label}`}
-                style={{
-                  background: "#071826",
-                  border: "1px solid #1E3A52",
-                  borderRadius: 10,
-                  padding: "8px 10px",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 7.8,
-                    color: "#64748B",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    fontWeight: 700,
-                  }}
-                >
-                  {label}
-                </div>
-                <div
-                  style={{
-                    marginTop: 4,
-                    fontSize: label === "Coverage" ? 13 : 8.4,
-                    fontWeight: 700,
-                    color,
-                    lineHeight: 1.45,
-                  }}
-                >
-                  {value}
-                </div>
-              </div>
+            {materialTrustPanelContent.cards.map((card) => (
+              <DossierCountCard
+                key={`material-trust-${card.label}`}
+                label={card.label}
+                value={card.value}
+                meta={card.meta}
+                color={card.color}
+              />
             ))}
           </div>
           <div
             style={{
               marginTop: 8,
-              fontSize: 8.5,
-              color: "#94A3B8",
-              lineHeight: 1.55,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 8,
             }}
           >
-            {materialTrustDriver}
+            <DossierGuidanceBlock
+              title="What this means"
+              intro="This section is about how much of the current formula/build advice is being driven by resolved support."
+              items={materialTrustPanelContent.meaningLines}
+              accent="#34D399"
+            />
+            <DossierGuidanceBlock
+              title="Why the trust read looks like this"
+              intro="These are the strongest reasons the current trust level landed where it did."
+              items={materialTrustPanelContent.whyLines}
+              accent="#CBD5E1"
+            />
+          </div>
+          {materialTrustPanelContent.primaryGap ? (
+            <div
+              style={{
+                marginTop: 8,
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "9px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.9,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                Main trust caution
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8.4,
+                  color: "#E2E8F0",
+                  lineHeight: 1.55,
+                }}
+              >
+                {materialTrustPanelContent.primaryGap}
+              </div>
+            </div>
+          ) : null}
+          <div
+            style={{
+              marginTop: 8,
+            }}
+          >
+            <DossierGuidanceBlock
+              title="To improve this score"
+              intro="These actions will make the current formula/build trust read stronger from here."
+              items={materialTrustPanelContent.improveLines}
+              accent="#7DD3FC"
+            />
           </div>
           {materialTrustSummary?.dataSparse ? (
             <div
@@ -55863,9 +59092,10 @@ function IngredientDetailPanel({
                 lineHeight: 1.55,
               }}
             >
-              Sparse trust means the dossier can still guide review, but swap and
-              sourcing conclusions should stay provisional until pricing or evidence
-              coverage improves.
+              No formal evidence-review records or sparse trust support should not
+              be read as "totally broken" by itself. It means some of the current
+              advice is still leaning on incomplete supplier, pricing, identity, or
+              compliance inputs.
             </div>
           ) : null}
         </div>
@@ -57063,6 +60293,31 @@ function IngredientDetailPanel({
                 </span>
               </div>
             )}
+            {d.manualIdentityNotes ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 8.6,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                <span
+                  style={{
+                    color: "#7DD3FC",
+                    fontWeight: 700,
+                  }}
+                >
+                  Manual identity note:
+                </span>
+                {" "}
+                {d.manualIdentityNotes}
+              </div>
+            ) : null}
           </div>
 
           <div
@@ -57134,6 +60389,31 @@ function IngredientDetailPanel({
                 </span>
               ))}
             </div>
+            {d.manualTechnicalNotes ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  fontSize: 8.6,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                <span
+                  style={{
+                    color: "#7DD3FC",
+                    fontWeight: 700,
+                  }}
+                >
+                  Manual technical note:
+                </span>
+                {" "}
+                {d.manualTechnicalNotes}
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -57464,6 +60744,52 @@ function IngredientDetailPanel({
                   linkNote,
                   linkedDuplicateOfCatalogName,
                 } = supplierData || {};
+                const supplierLayerRecord =
+                  supplierLayerRecordBySupplier.get(supplierName) || null;
+                const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
+                const supplierAvailabilityStatus =
+                  supplierData?.availabilityStatus ||
+                  supplierPageFacts?.availabilityStatus ||
+                  "unknown";
+                const supplierIfraShown =
+                  supplierData?.ifraPercent ?? supplierPageFacts?.ifraPercent ?? null;
+                const supplierSdsUrl =
+                  supplierData?.sdsUrl || supplierPageFacts?.sdsUrl || "";
+                const supplierManualSdsAttachment =
+                  supplierPageFacts?.manualSdsAttachment || null;
+                const supplierInciShown =
+                  supplierData?.inciShown || supplierPageFacts?.inci || "";
+                const supplierCasShown =
+                  supplierPageFacts?.casShown || "";
+                const supplierDescription =
+                  supplierData?.productDescription ||
+                  supplierPageFacts?.productDescription ||
+                  "";
+                const supplierScentSummary =
+                  supplierData?.scentSummary ||
+                  supplierPageFacts?.scentSummary ||
+                  "";
+                const supplierDilutionCarrier =
+                  supplierData?.dilutionOrCarrier ||
+                  supplierPageFacts?.dilutionOrCarrier ||
+                  "";
+                const supplierVendorName =
+                  supplierData?.supplierVendorName ||
+                  supplierPageFacts?.vendorName ||
+                  "";
+                const supplierOriginNote =
+                  supplierData?.originNote || supplierPageFacts?.originNote || "";
+                const supplierRefreshSummary =
+                  supplierPageFacts?.lastRefreshSummary || "";
+                const supplierRefreshLabel =
+                  supplierPageFacts?.lastRefreshScopeLabel || "";
+                const supplierRefreshUpdatedAt =
+                  supplierPageFacts?.lastRefreshAt || null;
+                const supplierReviewItems = Array.isArray(
+                  supplierLayerRecord?.reviewItems
+                )
+                  ? supplierLayerRecord.reviewItems
+                  : [];
                 const registryMatches = registryProducts.filter(
                   (record) => record.supplierDisplayName === supplierName
                 );
@@ -57558,32 +60884,366 @@ function IngredientDetailPanel({
                             Registry: {record.productTitle || record.urlSlug || "supplier row"}
                           </div>
                         ))}
-                      </div>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        {S.map(([qty, unit, price], index) => (
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            marginTop: 6,
+                          }}
+                        >
+                          {(supplierData?.manualTrustedEdit ||
+                            supplierLayerRecord?.isManualEdit) && (
+                            <span
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #0E7490",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#7DD3FC",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                              }}
+                            >
+                              Manual trusted edit
+                            </span>
+                          )}
                           <span
-                            key={`${supplierName}-${index}`}
                             style={{
-                              background: CARD,
-                              border: `1px solid ${BORDER}`,
-                              borderRadius: 6,
-                              padding: "4px 10px",
-                              fontSize: 11,
-                              color: "#E2E8F0",
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 999,
+                              padding: "2px 8px",
+                              fontSize: 7.8,
+                              fontWeight: 700,
+                              color: "#CBD5E1",
                             }}
                           >
-                            <span style={{ color: ACC, fontWeight: 700 }}>
-                              {qty}
-                              {unit}
-                            </span>
-                            {" · "}
-                            <span style={{ color: "#34D399" }}>
-                              ${price.toFixed(2)}
-                            </span>
+                            {formatSupplierAvailabilityLabel(
+                              supplierAvailabilityStatus
+                            )}
                           </span>
-                        ))}
+                          {supplierIfraShown != null ? (
+                            <span
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#FCD34D",
+                              }}
+                            >
+                              IFRA shown {supplierIfraShown}%
+                            </span>
+                          ) : null}
+                          {supplierSdsUrl ? (
+                            <a
+                              href={supplierSdsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#86EFAC",
+                                textDecoration: "none",
+                              }}
+                            >
+                              SDS
+                            </a>
+                          ) : null}
+                          {supplierManualSdsAttachment?.dataUrl ? (
+                            <a
+                              href={supplierManualSdsAttachment.dataUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                background: "#052E16",
+                                border: "1px solid #166534",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#86EFAC",
+                                textDecoration: "none",
+                              }}
+                            >
+                              Manual SDS PDF
+                            </a>
+                          ) : null}
+                          {supplierInciShown ? (
+                            <span
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#C4B5FD",
+                              }}
+                            >
+                              INCI shown
+                            </span>
+                          ) : null}
+                          {supplierCasShown ? (
+                            <span
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color: "#F9A8D4",
+                              }}
+                            >
+                              CAS shown {supplierCasShown}
+                            </span>
+                          ) : null}
+                        </div>
+                        {supplierDescription ||
+                        supplierScentSummary ||
+                        supplierDilutionCarrier ||
+                        supplierVendorName ||
+                        supplierOriginNote ||
+                        supplierManualSdsAttachment?.fileName ? (
+                          <div
+                            style={{
+                              marginTop: 8,
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              padding: "8px 10px",
+                              display: "grid",
+                              gap: 4,
+                              fontSize: 8.4,
+                              color: "#94A3B8",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {supplierVendorName ? (
+                              <div>Vendor context: {supplierVendorName}</div>
+                            ) : null}
+                            {supplierScentSummary ? (
+                              <div>Scent summary: {supplierScentSummary}</div>
+                            ) : null}
+                            {supplierDilutionCarrier ? (
+                              <div>Dilution / carrier: {supplierDilutionCarrier}</div>
+                            ) : null}
+                            {supplierOriginNote ? (
+                              <div>Origin / note: {supplierOriginNote}</div>
+                            ) : null}
+                            {supplierManualSdsAttachment?.fileName ? (
+                              <div>
+                                Manual SDS PDF: {supplierManualSdsAttachment.fileName}
+                                {supplierManualSdsAttachment.uploadedAt
+                                  ? ` · uploaded ${new Date(
+                                      supplierManualSdsAttachment.uploadedAt
+                                    ).toLocaleString()}`
+                                  : ""}
+                              </div>
+                            ) : null}
+                            {supplierDescription ? (
+                              <div>{supplierDescription}</div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 8,
+                          justifyItems: "end",
+                          minWidth: 220,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          {Object.entries(SUPPLIER_PAGE_REFRESH_SCOPE_META).map(
+                            ([scopeKey, scopeMeta]) => {
+                              const isLoading =
+                                supplierRefreshLoadingKey ===
+                                `${supplierName}:${scopeKey}`;
+                              return (
+                                <button
+                                  key={`${name}-${supplierName}-card-refresh-${scopeKey}`}
+                                  type="button"
+                                  disabled={isLoading || !String(url || "").trim()}
+                                  onClick={() =>
+                                    handleRefreshSupplierPage(
+                                      scopeKey,
+                                      supplierName
+                                    )
+                                  }
+                                  style={{
+                                    background:
+                                      isLoading || !String(url || "").trim()
+                                        ? "#0F172A"
+                                        : scopeKey === "all_safe"
+                                        ? "#0A2540"
+                                        : "#071826",
+                                    border: `1px solid ${
+                                      scopeKey === "all_safe"
+                                        ? "#1D4ED8"
+                                        : "#1E3A52"
+                                    }`,
+                                    borderRadius: 8,
+                                    color:
+                                      isLoading || !String(url || "").trim()
+                                        ? "#475569"
+                                        : scopeKey === "all_safe"
+                                        ? "#7DD3FC"
+                                        : "#CBD5E1",
+                                    padding: "6px 8px",
+                                    fontSize: 7.8,
+                                    fontWeight: 700,
+                                    cursor:
+                                      isLoading || !String(url || "").trim()
+                                        ? "not-allowed"
+                                        : "pointer",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {isLoading ? "Refreshing..." : scopeMeta.label}
+                                </button>
+                              );
+                            }
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            justifyContent: "flex-end",
+                          }}
+                        >
+                          {S.map(([qty, unit, price], index) => (
+                            <span
+                              key={`${supplierName}-${index}`}
+                              style={{
+                                background: CARD,
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: 6,
+                                padding: "4px 10px",
+                                fontSize: 11,
+                                color: "#E2E8F0",
+                              }}
+                            >
+                              <span style={{ color: ACC, fontWeight: 700 }}>
+                                {qty}
+                                {unit}
+                              </span>
+                              {" · "}
+                              <span style={{ color: "#34D399" }}>
+                                ${price.toFixed(2)}
+                              </span>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
+                    {supplierRefreshSummary ? (
+                      <div
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                          fontSize: 8.4,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7.8,
+                            color: "#22D3EE",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {supplierRefreshLabel || "Latest Supplier Refresh"}
+                        </div>
+                        <div>{supplierRefreshSummary}</div>
+                        {supplierRefreshUpdatedAt ? (
+                          <div style={{ marginTop: 4, color: "#64748B" }}>
+                            {new Date(supplierRefreshUpdatedAt).toLocaleString()}
+                          </div>
+                        ) : null}
+                        {Array.isArray(supplierPageFacts?.lastRefreshFieldResults) &&
+                        supplierPageFacts.lastRefreshFieldResults.length > 0 ? (
+                          <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
+                            {supplierPageFacts.lastRefreshFieldResults
+                              .slice(0, 4)
+                              .map((item) => (
+                                <div key={`${supplierName}-refresh-result-${item}`}>
+                                  {item}
+                                </div>
+                              ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {supplierReviewItems.length > 0 ? (
+                      <div
+                        style={{
+                          background: "#2A0F14",
+                          border: "1px solid #7F1D1D",
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                          fontSize: 8.4,
+                          color: "#FCA5A5",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7.8,
+                            color: "#FCA5A5",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                            marginBottom: 4,
+                          }}
+                        >
+                          Review-aware supplier conflict context
+                        </div>
+                        {supplierReviewItems.slice(0, 2).map((reviewItem) => (
+                          <div
+                            key={`${supplierName}-${reviewItem.reviewItemKey}`}
+                            style={{ marginTop: 4 }}
+                          >
+                            <span style={{ color: "#FECACA", fontWeight: 700 }}>
+                              {reviewItem.fieldLabel || reviewItem.issueLabel}:
+                            </span>
+                            {" "}
+                            {reviewItem.currentValue != null ||
+                            reviewItem.supplierValue != null
+                              ? `current ${reviewItem.currentValue || "—"} vs incoming ${
+                                  reviewItem.supplierValue || "—"
+                                }`
+                              : reviewItem.whyItMatters}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
@@ -57953,6 +61613,18 @@ function normalizeEvidenceCandidateReviewStatus(value) {
   return "pending_review";
 }
 
+function getEvidenceCandidateDisplayValue(candidate) {
+  if (candidate?.displayValue) return candidate.displayValue;
+  if (typeof candidate?.candidateValue === "boolean") {
+    return String(candidate.candidateValue);
+  }
+  return candidate?.candidateValue || "—";
+}
+
+function getEvidenceCandidateConfidenceLabel(candidate) {
+  return candidate?.confidenceLabel || candidate?.confidence || "unknown";
+}
+
 function buildEvidenceCandidateSourceSnapshot(candidate) {
   return {
     evidenceCandidateKey: candidate?.evidenceCandidateKey || null,
@@ -58107,11 +61779,120 @@ function buildSupplierImportSourceSnapshot(item) {
     supplier: item?.supplier || null,
     productTitle: item?.productTitle || null,
     url: item?.url || null,
-    proposedCatalogName: item?.proposedCatalogNameRaw || null,
-    proposedEntryKind: item?.proposedEntryKindRaw || null,
-    proposedCanonicalMaterialKey: item?.proposedCanonicalMaterialKeyRaw || null,
+    proposedCatalogName:
+      item?.proposedCatalogNameRaw || item?.proposedCatalogName || null,
+    proposedEntryKind:
+      item?.proposedEntryKindRaw || item?.proposedEntryKind || null,
+    proposedCanonicalMaterialKey:
+      item?.proposedCanonicalMaterialKeyRaw ||
+      item?.proposedCanonicalMaterialKey ||
+      null,
     sourceReviewStatus: item?.sourceReviewStatus || null,
     sourceNormalizationStatus: item?.sourceNormalizationStatus || null,
+    sourceOrigin: item?.sourceOrigin || null,
+    reviewType: item?.reviewType || null,
+    proposedNormalizationAction: item?.proposedNormalizationAction || null,
+    supplierLayerRecordKey: item?.supplierLayerRecordKey || null,
+    trustLane: item?.trustLane || null,
+    trustLaneLabel: item?.trustLaneLabel || null,
+    mappedCatalogName: item?.mappedCatalogName || null,
+    canonicalMaterialKey: item?.canonicalMaterialKey || null,
+    issueType: item?.issueType || null,
+    issueLabel: item?.issueLabel || null,
+    whyItMatters: item?.whyItMatters || null,
+    nextAction: item?.nextAction || null,
+    reason: item?.reason || null,
+    guardrails: Array.isArray(item?.guardrails) ? [...item.guardrails] : [],
+    availabilityStatus: item?.availabilityStatus || null,
+    pricePoints: Array.isArray(item?.pricePoints)
+      ? [...item.pricePoints]
+      : [],
+    ifraPercent:
+      item?.ifraPercent != null && item?.ifraPercent !== ""
+        ? item.ifraPercent
+        : null,
+    sdsUrl: item?.sdsUrl || null,
+    inci: item?.inci || null,
+    productDescription: item?.productDescription || null,
+    sourceNote: item?.sourceNote || null,
+    stagedAt: item?.stagedAt || null,
+  };
+}
+
+function buildSupplierAdapterNewItemReviewStage(reviewItem, sourceRecord) {
+  const supplierProductKey = String(
+    sourceRecord?.supplierProductKey || reviewItem?.supplierProductKey || ""
+  ).trim();
+  const productTitle = String(
+    sourceRecord?.pageFacts?.productTitle || reviewItem?.productTitle || ""
+  ).trim();
+  const proposedCatalogName = String(
+    sourceRecord?.mappedCatalogName ||
+      reviewItem?.mappedCatalogName ||
+      productTitle ||
+      supplierProductKey
+  ).trim();
+  const reason = [
+    reviewItem?.whyItMatters,
+    reviewItem?.nextAction,
+    sourceRecord?.sourceNote ? `Source note: ${sourceRecord.sourceNote}` : null,
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    supplierProductKey: supplierProductKey || null,
+    supplier:
+      sourceRecord?.supplierDisplayName ||
+      reviewItem?.supplier ||
+      "Fraterworks",
+    productTitle: productTitle || supplierProductKey || "Unknown product",
+    url:
+      sourceRecord?.sourceUrl ||
+      sourceRecord?.pageFacts?.url ||
+      reviewItem?.url ||
+      null,
+    proposedCatalogName: proposedCatalogName || null,
+    proposedEntryKind: "supplier_product",
+    proposedCanonicalMaterialKey:
+      sourceRecord?.canonicalMaterialKey || reviewItem?.canonicalMaterialKey || null,
+    proposedNormalizationAction: "staged_supplier_adapter_new_item_review",
+    sourceReviewStatus: "pending_catalog_import",
+    sourceNormalizationStatus:
+      sourceRecord?.mappedCatalogName ? "mapped" : "pending_new_item_review",
+    sourceOrigin: "supplier_adapter_new_item_candidate",
+    reviewType: "new_supplier_product_row",
+    supplierLayerRecordKey: sourceRecord?.recordKey || null,
+    trustLane: sourceRecord?.trustLane || reviewItem?.trustLane || null,
+    trustLaneLabel:
+      sourceRecord?.trustLaneLabel || reviewItem?.trustLaneLabel || null,
+    mappedCatalogName:
+      sourceRecord?.mappedCatalogName || reviewItem?.mappedCatalogName || null,
+    canonicalMaterialKey:
+      sourceRecord?.canonicalMaterialKey || reviewItem?.canonicalMaterialKey || null,
+    issueType: reviewItem?.issueType || "new_item_candidate",
+    issueLabel: reviewItem?.issueLabel || "New item candidate",
+    whyItMatters: reviewItem?.whyItMatters || null,
+    nextAction: reviewItem?.nextAction || null,
+    reason: reason || "Supplier adapter surfaced a new supplier-first item candidate.",
+    guardrails: [
+      "Supplier-first new item candidate staged from the Supplier adapter.",
+      "Do not create live canonical truth directly from supplier page facts alone.",
+      "Keep mapping and canonicalization explicit before approving any draft export.",
+    ],
+    availabilityStatus: sourceRecord?.pageFacts?.availabilityStatus || null,
+    pricePoints: Array.isArray(sourceRecord?.pageFacts?.pricePoints)
+      ? [...sourceRecord.pageFacts.pricePoints]
+      : [],
+    ifraPercent:
+      sourceRecord?.pageFacts?.ifraPercent != null
+        ? sourceRecord.pageFacts.ifraPercent
+        : null,
+    sdsUrl: sourceRecord?.pageFacts?.sdsUrl || null,
+    inci: sourceRecord?.pageFacts?.inci || null,
+    productDescription: sourceRecord?.pageFacts?.productDescription || null,
+    sourceNote: sourceRecord?.sourceNote || null,
   };
 }
 
@@ -59310,6 +63091,125 @@ function buildSourceDocumentEvidenceReviewPayload(localReviewState = {}) {
   };
 }
 
+function buildEmptyFormulaCriticalMissingMaterialDraft() {
+  return {
+    materialName: "",
+    supplierName: "",
+    supplierSourceNote: "",
+    url: "",
+    packLines: "",
+    availabilityStatus: "unknown",
+    ifraPercent: "",
+    sdsUrl: "",
+    cas: "",
+    inci: "",
+    note: "",
+    materialType: "",
+    scentSummary: "",
+    scentDescription: "",
+    technicalNotes: "",
+    MW: "",
+    xLogP: "",
+    TPSA: "",
+    VP: "",
+    ODT: "",
+    confidence: "medium",
+  };
+}
+
+function buildEmptySupplierAdapterDraft() {
+  return {
+    supplierProductKey: "",
+    productTitle: "",
+    url: "",
+    packLines: "",
+    availabilityStatus: "unknown",
+    ifraPercent: "",
+    sdsUrl: "",
+    inci: "",
+    productDescription: "",
+    sourceNote: "",
+  };
+}
+
+function formatSupplierAdapterPricePointsForTextarea(pricePoints = []) {
+  return (Array.isArray(pricePoints) ? pricePoints : [])
+    .map((point) => {
+      const qty = point?.[0];
+      const unit = point?.[1];
+      const price = point?.[2];
+      const dilution = String(point?.[3] || "").trim();
+      if (qty == null || !unit || price == null) return null;
+      return `${qty} ${unit} ${price}${dilution ? ` ${dilution}` : ""}`;
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildEmptyFormulaCriticalCorrectionDraft() {
+  return {
+    fieldKey: FORMULA_CRITICAL_REVIEW_FIELD_ORDER[0] || "ifraMaterialHint",
+    proposedValue: "",
+    sourceNote: "",
+    confidence: "medium",
+  };
+}
+
+function buildFormulaCriticalMaterialContextByName(items, pricesState) {
+  const uniqueNames = Array.from(
+    new Set(
+      (Array.isArray(items) ? items : [])
+        .map((item) => String(item?.name || "").trim())
+        .filter(Boolean)
+    )
+  );
+
+  return Object.fromEntries(
+    uniqueNames.map((name) => {
+      const truthReport = buildIngredientTruthCompletenessReport(name, {
+        record: DB[name] || null,
+        livePricing: getLivePricingForIngredient(name, pricesState, PRICING),
+      });
+
+      return [
+        name,
+        {
+          truthReport,
+          dbRecord: DB[name] || null,
+          canonicalMaterialKey: truthReport?.canonicalMaterialKey || null,
+          relatedCatalogNames: Array.from(
+            new Set(
+              [
+                name,
+                truthReport?.canonicalCatalogName,
+                ...(Array.isArray(truthReport?.sourceDocuments)
+                  ? truthReport.sourceDocuments.flatMap((record) =>
+                      Array.isArray(record?.relatedCatalogNames)
+                        ? record.relatedCatalogNames
+                        : []
+                    )
+                  : []),
+              ].filter(Boolean)
+            )
+          ),
+          supplierVariantCount: truthReport?.supplierVariantCount || 0,
+          livePricingSupplierCount: truthReport?.livePricingSupplierCount || 0,
+          livePricingPackCount: truthReport?.livePricingPackCount || 0,
+          sourceDocumentCount: Array.isArray(truthReport?.sourceDocuments)
+            ? truthReport.sourceDocuments.length
+            : 0,
+          evidenceCandidateCount: Array.isArray(truthReport?.evidenceCandidates)
+            ? truthReport.evidenceCandidates.length
+            : 0,
+          supplierProducts: Array.isArray(truthReport?.supplierProducts)
+            ? truthReport.supplierProducts
+            : [],
+        },
+      ];
+    })
+  );
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN APP
 // ─────────────────────────────────────────────────────────────
@@ -59339,6 +63239,7 @@ export default function App() {
   );
   const apiKeyRef = useRef(apiKey);
   const founderLaunchPlannerRef = useRef(null);
+  const supplierWorkbookInputRef = useRef(null);
   useEffect(() => {
     apiKeyRef.current = apiKey;
   }, [apiKey]);
@@ -59412,6 +63313,65 @@ export default function App() {
     useState(() =>
       readJsonStorage(APP_STORAGE_KEYS.evidenceCandidateLocalReview, {})
     );
+  const [localDraftIngredients, setLocalDraftIngredients] = useState(() =>
+    readJsonStorage(
+      APP_STORAGE_KEYS.localDraftIngredients,
+      LOCAL_DRAFT_INGREDIENTS_BOOTSTRAP
+    )
+  );
+  const [manualRecordEdits, setManualRecordEdits] = useState(() =>
+    readJsonStorage(
+      APP_STORAGE_KEYS.manualRecordEdits,
+      MANUAL_RECORD_EDITS_BOOTSTRAP
+    )
+  );
+  const [supplierLayerPageFacts, setSupplierLayerPageFacts] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.supplierLayerPageFacts, {})
+  );
+  const [supplierAdapterDraft, setSupplierAdapterDraft] = useState(() =>
+    buildEmptySupplierAdapterDraft()
+  );
+  const [supplierAdapterStatus, setSupplierAdapterStatus] = useState("");
+  const [supplierEvidenceReviewFocusKey, setSupplierEvidenceReviewFocusKey] =
+    useState("");
+  const [supplierAdapterExportStatus, setSupplierAdapterExportStatus] =
+    useState("");
+  const [supplierWorkbookImportStatus, setSupplierWorkbookImportStatus] =
+    useState("");
+  const [supplierWorkbookImporting, setSupplierWorkbookImporting] =
+    useState(false);
+  const [supplierWorkbookImportReport, setSupplierWorkbookImportReport] =
+    useState(null);
+  const [supplierWorkbookReferenceExportStatus, setSupplierWorkbookReferenceExportStatus] =
+    useState("");
+  const [supplierFullSyncCreateLocalDrafts, setSupplierFullSyncCreateLocalDrafts] =
+    useState(false);
+  const [supplierFullSyncStatus, setSupplierFullSyncStatus] = useState("");
+  const [supplierFullSyncing, setSupplierFullSyncing] = useState(false);
+  const [supplierFullSyncReport, setSupplierFullSyncReport] = useState(null);
+  const [supplierJsonPasteText, setSupplierJsonPasteText] = useState("");
+  const [supplierJsonCreateLocalDrafts, setSupplierJsonCreateLocalDrafts] =
+    useState(false);
+  const [supplierJsonNormalizeStatus, setSupplierJsonNormalizeStatus] =
+    useState("");
+  const [supplierJsonNormalizePreview, setSupplierJsonNormalizePreview] =
+    useState(null);
+  const [supplierJsonImportStatus, setSupplierJsonImportStatus] = useState("");
+  const [supplierJsonImporting, setSupplierJsonImporting] = useState(false);
+  const [supplierJsonImportReport, setSupplierJsonImportReport] = useState(null);
+  const [supplierExceptionTypeFilter, setSupplierExceptionTypeFilter] =
+    useState("all");
+  const [supplierExceptionProviderFilter, setSupplierExceptionProviderFilter] =
+    useState("all");
+  const [supplierExceptionQuickFilters, setSupplierExceptionQuickFilters] =
+    useState({
+      unresolvedOnly: false,
+      stagedToEvidenceOnly: false,
+      strongDuplicateOnly: false,
+      latestSyncOnly: false,
+    });
+  const [selectedSupplierExceptionKeys, setSelectedSupplierExceptionKeys] =
+    useState([]);
   const [supplierDraftExportStatus, setSupplierDraftExportStatus] =
     useState("");
   const [approvedEvidenceCandidateExportStatus, setApprovedEvidenceCandidateExportStatus] =
@@ -59424,6 +63384,26 @@ export default function App() {
     useState("");
   const [sourceDocumentEvidenceExportStatus, setSourceDocumentEvidenceExportStatus] =
     useState("");
+  const [formulaCriticalSelectedMaterialByScope, setFormulaCriticalSelectedMaterialByScope] =
+    useState({
+      formula: "",
+      build: "",
+    });
+  const [formulaCriticalMissingMaterialDraftByScope, setFormulaCriticalMissingMaterialDraftByScope] =
+    useState(() => ({
+      formula: buildEmptyFormulaCriticalMissingMaterialDraft(),
+      build: buildEmptyFormulaCriticalMissingMaterialDraft(),
+    }));
+  const [formulaCriticalCorrectionDraftByScope, setFormulaCriticalCorrectionDraftByScope] =
+    useState(() => ({
+      formula: buildEmptyFormulaCriticalCorrectionDraft(),
+      build: buildEmptyFormulaCriticalCorrectionDraft(),
+    }));
+  const [formulaCriticalStatusByScope, setFormulaCriticalStatusByScope] =
+    useState({
+      formula: "",
+      build: "",
+    });
   // ── Dilution Calculator ──
   const [dilConc, setDilConc] = useState("100");
   const [dilVolume, setDilVolume] = useState("30");
@@ -60494,6 +64474,24 @@ export default function App() {
       evidenceCandidateLocalReviewState
     );
   }, [evidenceCandidateLocalReviewState]);
+  useEffect(() => {
+    syncLocalDraftIngredientsToRuntime(localDraftIngredients);
+    syncManualRecordEditsToRuntime(manualRecordEdits);
+    writeJsonStorage(
+      APP_STORAGE_KEYS.localDraftIngredients,
+      localDraftIngredients
+    );
+  }, [localDraftIngredients, manualRecordEdits]);
+  useEffect(() => {
+    syncManualRecordEditsToRuntime(manualRecordEdits);
+    writeJsonStorage(APP_STORAGE_KEYS.manualRecordEdits, manualRecordEdits);
+  }, [manualRecordEdits]);
+  useEffect(() => {
+    writeJsonStorage(
+      APP_STORAGE_KEYS.supplierLayerPageFacts,
+      supplierLayerPageFacts
+    );
+  }, [supplierLayerPageFacts]);
   const approvedSupplierDraftRecords = useMemo(
     () =>
       getApprovedSupplierImportDraftRecords(supplierImportLocalReviewState),
@@ -60585,6 +64583,2087 @@ export default function App() {
     () => JSON.stringify(sourceDocumentEvidenceReviewPayload, null, 2),
     [sourceDocumentEvidenceReviewPayload]
   );
+  const supplierLayerRecords = useMemo(
+    () =>
+      Object.values(supplierLayerPageFacts || {})
+        .filter((record) => record?.recordKey)
+        .sort((a, b) => (b.fetchedAt || "").localeCompare(a.fetchedAt || "")),
+    [supplierLayerPageFacts]
+  );
+  const supplierLayerExportPayload = useMemo(
+    () => buildSupplierAdapterExportPayload(supplierLayerRecords),
+    [supplierLayerRecords]
+  );
+  const supplierLayerExportJson = useMemo(
+    () => JSON.stringify(supplierLayerExportPayload, null, 2),
+    [supplierLayerExportPayload]
+  );
+  const supplierLayerReviewItems = useMemo(() => {
+    const laneOrder = {
+      manual_review_conflict: 0,
+      batch_review_mapping: 1,
+      auto_apply_safe: 2,
+    };
+    return supplierLayerRecords
+      .flatMap((record) =>
+        Array.isArray(record?.reviewItems) ? record.reviewItems : []
+      )
+      .sort((a, b) => {
+        const laneDelta =
+          (laneOrder[a.trustLane] ?? 99) - (laneOrder[b.trustLane] ?? 99);
+        if (laneDelta !== 0) return laneDelta;
+        const timeDelta = (b.fetchTimestamp || "").localeCompare(
+          a.fetchTimestamp || ""
+        );
+        if (timeDelta !== 0) return timeDelta;
+        return (a.reviewItemKey || "").localeCompare(b.reviewItemKey || "");
+      });
+  }, [supplierLayerRecords]);
+  const fraterworksSupplierAdapterOptions = useMemo(
+    () =>
+      Object.entries(SUPPLIER_PRODUCT_REGISTRY)
+        .filter(([, record]) => record?.supplierKey === "fraterworks")
+        .map(([supplierProductKey, record]) => ({
+          supplierProductKey,
+          productTitle: record?.productTitle || supplierProductKey,
+          mappedCatalogName: record?.mappedCatalogName || null,
+          canonicalMaterialKey: record?.mappedCanonicalMaterialKey || null,
+        }))
+        .sort((a, b) =>
+          (a.mappedCatalogName || a.productTitle).localeCompare(
+            b.mappedCatalogName || b.productTitle
+          )
+        ),
+    []
+  );
+  const loadSupplierAdapterDraftFromRegistry = useCallback(
+    (supplierProductKey) => {
+      const registryRecord = getSupplierProductRecord(supplierProductKey);
+      if (!registryRecord) {
+        setSupplierAdapterStatus("Known Fraterworks product could not be loaded.");
+        return;
+      }
+
+      const mappedCatalogName = registryRecord?.mappedCatalogName || null;
+      const supplierName = registryRecord?.supplierDisplayName || "Fraterworks";
+      const livePricingEntry = mappedCatalogName
+        ? pricesState?.[mappedCatalogName]?.[supplierName] ||
+          PRICING?.[mappedCatalogName]?.[supplierName] ||
+          null
+        : null;
+      const existingSupplierLayerRecord = Object.values(
+        supplierLayerPageFacts || {}
+      ).find((record) => record?.supplierProductKey === supplierProductKey);
+
+      setSupplierAdapterDraft({
+        supplierProductKey,
+        productTitle:
+          existingSupplierLayerRecord?.pageFacts?.productTitle ||
+          registryRecord?.productTitle ||
+          "",
+        url:
+          existingSupplierLayerRecord?.pageFacts?.url ||
+          livePricingEntry?.url ||
+          registryRecord?.url ||
+          "",
+        packLines: formatSupplierAdapterPricePointsForTextarea(
+          existingSupplierLayerRecord?.pageFacts?.pricePoints ||
+            livePricingEntry?.S ||
+            []
+        ),
+        availabilityStatus:
+          existingSupplierLayerRecord?.pageFacts?.availabilityStatus || "unknown",
+        ifraPercent:
+          existingSupplierLayerRecord?.pageFacts?.ifraPercent != null
+            ? String(existingSupplierLayerRecord.pageFacts.ifraPercent)
+            : "",
+        sdsUrl: existingSupplierLayerRecord?.pageFacts?.sdsUrl || "",
+        inci: existingSupplierLayerRecord?.pageFacts?.inci || "",
+        productDescription:
+          existingSupplierLayerRecord?.pageFacts?.productDescription || "",
+        sourceNote: existingSupplierLayerRecord?.sourceNote || "",
+      });
+      setSupplierAdapterStatus(
+        `Loaded ${registryRecord?.productTitle || supplierProductKey} for Fraterworks supplier-layer intake.`
+      );
+    },
+    [pricesState, supplierLayerPageFacts]
+  );
+  const clearSupplierAdapterDraft = useCallback(() => {
+    setSupplierAdapterDraft(buildEmptySupplierAdapterDraft());
+    setSupplierAdapterStatus("");
+  }, []);
+  const applyTrustedSupplierWorkbookPricePatches = useCallback((pricePatches) => {
+    const safePatches = Array.isArray(pricePatches) ? pricePatches : [];
+    if (!safePatches.length) return;
+    setPricesState((prev) => {
+      const next = { ...prev };
+      safePatches.forEach((patch) => {
+        const catalogName = String(patch?.catalogName || "").trim();
+        const supplierName = String(patch?.supplierName || "").trim();
+        if (!catalogName || !supplierName) return;
+        const existingCatalogRow = next[catalogName] || {};
+        const existingSupplierRow = existingCatalogRow[supplierName] || {
+          url: "",
+          S: [],
+        };
+        next[catalogName] = {
+          ...existingCatalogRow,
+          [supplierName]: {
+            ...existingSupplierRow,
+            url: patch?.url || existingSupplierRow.url || "",
+            S:
+              Array.isArray(patch?.pricePoints) && patch.pricePoints.length > 0
+                ? patch.pricePoints
+                : existingSupplierRow.S || [],
+            availabilityStatus:
+              patch?.availabilityStatus ||
+              existingSupplierRow.availabilityStatus ||
+              null,
+            ifraPercent:
+              patch?.ifraPercent != null
+                ? patch.ifraPercent
+                : existingSupplierRow.ifraPercent ?? null,
+            sdsUrl: patch?.sdsUrl || existingSupplierRow.sdsUrl || "",
+            sourceType: patch?.sourceType || existingSupplierRow.sourceType || null,
+          },
+        };
+      });
+      return next;
+    });
+  }, []);
+  const upsertManualRecordEditSection = useCallback(
+    (materialName, sectionKey, sectionPatch = {}) => {
+      const safeMaterialName = String(materialName || "").trim();
+      if (!safeMaterialName || !sectionKey) {
+        return null;
+      }
+
+      let nextRecord = null;
+      setManualRecordEdits((prev) => {
+        const nowIso = new Date().toISOString();
+        const existingRecord = prev[safeMaterialName] || {
+          materialName: safeMaterialName,
+          createdAt: nowIso,
+          sourceType: "manual_direct_record_edit",
+          sections: {},
+        };
+        const nextRecordSections = {
+          ...(existingRecord.sections || {}),
+          [sectionKey]: {
+            ...((existingRecord.sections || {})[sectionKey] || {}),
+            ...sectionPatch,
+            updatedAt: sectionPatch.updatedAt || nowIso,
+          },
+        };
+        nextRecord = rebuildManualRecordEditRecord(
+          safeMaterialName,
+          existingRecord,
+          nextRecordSections,
+          sectionPatch.updatedAt || nowIso
+        );
+        const next = {
+          ...prev,
+          [safeMaterialName]: nextRecord,
+        };
+        syncManualRecordEditsToRuntime(next);
+        return next;
+      });
+      return nextRecord;
+    },
+    []
+  );
+  const saveDirectSupplierRecordEdit = useCallback(
+    ({
+      materialName,
+      supplierName,
+      url,
+      vendorName,
+      availabilityStatus,
+      ifraPercent,
+      sdsUrl,
+      manualSdsAttachment,
+      inciShown,
+      productDescription,
+      scentSummary,
+      dilutionOrCarrier,
+      supplierNotes,
+      originNote,
+      packLines,
+    }) => {
+      const safeMaterialName = String(materialName || "").trim();
+      if (!safeMaterialName || !DB[safeMaterialName]) {
+        return {
+          ok: false,
+          message: "This material could not be found in the current runtime.",
+        };
+      }
+
+      const safeSupplierName =
+        String(supplierName || "").trim() ||
+        Object.keys(pricesState?.[safeMaterialName] || {})[0] ||
+        DB[safeMaterialName]?.supplier ||
+        "Manual Supplier";
+      const parsedPriceLines = parseSupplierAdapterPackLines(packLines || "");
+      if (parsedPriceLines.errors.length > 0) {
+        return {
+          ok: false,
+          message: parsedPriceLines.errors[0],
+        };
+      }
+
+      const normalizedIfraPercentValue =
+        ifraPercent == null || String(ifraPercent).trim() === ""
+          ? null
+          : Number(ifraPercent);
+      if (
+        ifraPercent != null &&
+        String(ifraPercent).trim() !== "" &&
+        !Number.isFinite(normalizedIfraPercentValue)
+      ) {
+        return {
+          ok: false,
+          message: "IFRA % shown must be numeric if you enter a value.",
+        };
+      }
+
+      const currentSupplierRow =
+        pricesState?.[safeMaterialName]?.[safeSupplierName] ||
+        PRICING?.[safeMaterialName]?.[safeSupplierName] ||
+        {};
+      const currentSupplierLayerRecord = Object.values(
+        supplierLayerPageFacts || {}
+      ).find(
+        (record) =>
+          record?.mappedCatalogName === safeMaterialName &&
+          record?.supplierDisplayName === safeSupplierName
+      );
+      const currentPageFacts = currentSupplierLayerRecord?.pageFacts || {};
+      const normalizedManualSdsAttachment =
+        manualSdsAttachment?.dataUrl && manualSdsAttachment?.fileName
+          ? {
+              fileName: String(manualSdsAttachment.fileName || "manual-sds.pdf"),
+              mimeType:
+                String(manualSdsAttachment.mimeType || "").trim() ||
+                "application/pdf",
+              dataUrl: String(manualSdsAttachment.dataUrl || ""),
+              uploadedAt:
+                String(manualSdsAttachment.uploadedAt || "").trim() ||
+                new Date().toISOString(),
+              sourceType: "manual_pdf_upload",
+            }
+          : null;
+      const normalizedValues = {
+        url: String(url || "").trim(),
+        vendorName: String(vendorName || "").trim(),
+        availabilityStatus:
+          String(availabilityStatus || "unknown").trim().toLowerCase() ||
+          "unknown",
+        ifraPercent: normalizedIfraPercentValue,
+        sdsUrl: String(sdsUrl || "").trim(),
+        manualSdsAttachment: normalizedManualSdsAttachment,
+        inciShown: String(inciShown || "").trim(),
+        productDescription: String(productDescription || "").trim(),
+        scentSummary: String(scentSummary || "").trim(),
+        dilutionOrCarrier: String(dilutionOrCarrier || "").trim(),
+        supplierNotes: String(supplierNotes || "").trim(),
+        originNote: String(originNote || "").trim(),
+        pricePoints: parsedPriceLines.pricePoints,
+      };
+      const changedFieldKeys = getChangedManualFieldKeys(
+        {
+          url: currentSupplierRow?.url || currentPageFacts?.url || "",
+          vendorName:
+            currentSupplierRow?.supplierVendorName ||
+            currentPageFacts?.vendorName ||
+            "",
+          availabilityStatus:
+            currentSupplierRow?.availabilityStatus ||
+            currentPageFacts?.availabilityStatus ||
+            "unknown",
+          ifraPercent:
+            currentSupplierRow?.ifraPercent ??
+            currentPageFacts?.ifraPercent ??
+            null,
+          sdsUrl: currentSupplierRow?.sdsUrl || currentPageFacts?.sdsUrl || "",
+          manualSdsAttachment: currentPageFacts?.manualSdsAttachment || null,
+          inciShown:
+            currentSupplierRow?.inciShown || currentPageFacts?.inci || "",
+          productDescription:
+            currentSupplierRow?.productDescription ||
+            currentPageFacts?.productDescription ||
+            "",
+          scentSummary:
+            currentSupplierRow?.scentSummary ||
+            currentPageFacts?.scentSummary ||
+            "",
+          dilutionOrCarrier:
+            currentSupplierRow?.dilutionOrCarrier ||
+            currentPageFacts?.dilutionOrCarrier ||
+            "",
+          supplierNotes:
+            currentSupplierLayerRecord?.sourceNote ||
+            currentSupplierRow?.supplierNotes ||
+            "",
+          originNote:
+            currentSupplierRow?.originNote ||
+            currentPageFacts?.originNote ||
+            "",
+          pricePoints:
+            currentSupplierRow?.S ||
+            currentPageFacts?.pricePoints ||
+            [],
+        },
+        normalizedValues
+      );
+
+      if (changedFieldKeys.length === 0) {
+        return {
+          ok: false,
+          message: "No supplier-data fields changed.",
+        };
+      }
+
+      const nowIso = new Date().toISOString();
+      upsertManualRecordEditSection(safeMaterialName, "supplier", {
+        supplierName: safeSupplierName,
+        url: normalizedValues.url,
+        vendorName: normalizedValues.vendorName,
+        availabilityStatus: normalizedValues.availabilityStatus,
+        ifraPercent: normalizedValues.ifraPercent,
+        sdsUrl: normalizedValues.sdsUrl,
+        inciShown: normalizedValues.inciShown,
+        productDescription: normalizedValues.productDescription,
+        scentSummary: normalizedValues.scentSummary,
+        dilutionOrCarrier: normalizedValues.dilutionOrCarrier,
+        supplierNotes: normalizedValues.supplierNotes,
+        originNote: normalizedValues.originNote,
+        pricePoints: normalizedValues.pricePoints,
+        editedFieldKeys: changedFieldKeys,
+        updatedAt: nowIso,
+      });
+
+      setPricesState((prev) => {
+        const next = { ...prev };
+        const existingCatalogRow = next[safeMaterialName] || {};
+        const existingSupplierRow = existingCatalogRow[safeSupplierName] || {
+          url: "",
+          S: [],
+        };
+        next[safeMaterialName] = {
+          ...existingCatalogRow,
+          [safeSupplierName]: {
+            ...existingSupplierRow,
+            url: normalizedValues.url || "",
+            S: normalizedValues.pricePoints,
+            availabilityStatus: normalizedValues.availabilityStatus || "unknown",
+            ifraPercent: normalizedValues.ifraPercent,
+            sdsUrl: normalizedValues.sdsUrl || "",
+            inciShown: normalizedValues.inciShown || "",
+            productDescription: normalizedValues.productDescription || "",
+            scentSummary: normalizedValues.scentSummary || "",
+            dilutionOrCarrier: normalizedValues.dilutionOrCarrier || "",
+            supplierVendorName: normalizedValues.vendorName || "",
+            supplierNotes: normalizedValues.supplierNotes || "",
+            originNote: normalizedValues.originNote || "",
+            manualTrustedEdit: true,
+            manualEditUpdatedAt: nowIso,
+            sourceType:
+              existingSupplierRow?.sourceType || "manual_trusted_edit",
+          },
+        };
+        return next;
+      });
+
+      setSupplierLayerPageFacts((prev) => {
+        const existingRecord = Object.values(prev || {}).find(
+          (record) =>
+            record?.mappedCatalogName === safeMaterialName &&
+            record?.supplierDisplayName === safeSupplierName
+        );
+        const normalizedIdentity = resolveIngredientIdentity(safeMaterialName);
+        const normalizationEntry = getMaterialNormalizationEntry(safeMaterialName);
+        const canonicalMaterialKey =
+          DB[safeMaterialName]?.canonicalMaterialKey ||
+          normalizationEntry?.canonicalMaterialKey ||
+          normalizedIdentity?.normalizationEntry?.canonicalMaterialKey ||
+          normalizedIdentity?.canonicalMaterialKey ||
+          null;
+        const recordKey =
+          existingRecord?.recordKey ||
+          buildManualSupplierLayerRecordKey(
+            safeMaterialName,
+            safeSupplierName
+          );
+        return {
+          ...prev,
+          [recordKey]: {
+            ...existingRecord,
+            recordKey,
+            supplierKey:
+              existingRecord?.supplierKey ||
+              safeSupplierName.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+            supplierDisplayName: safeSupplierName,
+            supplierProductKey:
+              existingRecord?.supplierProductKey ||
+              buildSupplierProductKey({
+                supplierKey:
+                  safeSupplierName.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+                url: normalizedValues.url,
+              }) ||
+              `${recordKey}:product`,
+            trustLane: existingRecord?.trustLane || "auto_apply_safe",
+            trustLaneLabel: existingRecord?.trustLaneLabel || "Manual trusted edit",
+            trustLaneDescription:
+              existingRecord?.trustLaneDescription ||
+              "Browser-local direct supplier edit saved from the detail dossier.",
+            mappedCatalogName: safeMaterialName,
+            canonicalMaterialKey,
+            fetchedAt: existingRecord?.fetchedAt || nowIso,
+            updatedAt: nowIso,
+            sourceType: "manual_direct_edit",
+            sourceUrl: normalizedValues.url || "",
+            sourceNote:
+              normalizedValues.supplierNotes ||
+              existingRecord?.sourceNote ||
+              "Direct dossier supplier edit",
+            isManualEdit: true,
+            manualEditUpdatedAt: nowIso,
+            autoAppliedFieldKeys: changedFieldKeys,
+            autoAppliedFieldLabels: changedFieldKeys.map(
+              (fieldKey) =>
+                DIRECT_SUPPLIER_EDIT_FIELD_LABELS[fieldKey] || fieldKey
+            ),
+            pageFacts: {
+              ...(existingRecord?.pageFacts || {}),
+              productTitle:
+                existingRecord?.pageFacts?.productTitle || safeMaterialName,
+              url: normalizedValues.url || "",
+              pricePoints: normalizedValues.pricePoints,
+              availabilityStatus: normalizedValues.availabilityStatus || "unknown",
+              availabilityStatusLabel: formatSupplierAvailabilityLabel(
+                normalizedValues.availabilityStatus
+              ),
+              ifraPercent: normalizedValues.ifraPercent,
+              sdsUrl: normalizedValues.sdsUrl || "",
+              manualSdsAttachment: normalizedValues.manualSdsAttachment,
+              inci: normalizedValues.inciShown || "",
+              productDescription:
+                normalizedValues.productDescription || "",
+              scentSummary: normalizedValues.scentSummary || "",
+              dilutionOrCarrier:
+                normalizedValues.dilutionOrCarrier || "",
+              vendorName: normalizedValues.vendorName || "",
+              originNote: normalizedValues.originNote || "",
+            },
+            notes: [
+              `${changedFieldKeys.length} supplier field${
+                changedFieldKeys.length === 1 ? "" : "s"
+              } were updated directly from the dossier.`,
+              "This stays browser-local and immediately usable without changing canonical identity truth.",
+            ],
+            reviewItems: existingRecord?.reviewItems || [],
+          },
+        };
+      });
+
+      return {
+        ok: true,
+        message: `Saved supplier data for ${safeMaterialName} (${safeSupplierName}).`,
+      };
+    },
+    [pricesState, supplierLayerPageFacts, upsertManualRecordEditSection]
+  );
+  const saveDirectMaterialRecordEdit = useCallback(
+    ({ materialName, sectionKey, values = {} }) => {
+      const safeMaterialName = String(materialName || "").trim();
+      const currentRecord = DB[safeMaterialName];
+      if (!safeMaterialName || !currentRecord) {
+        return {
+          ok: false,
+          message: "This material could not be found in the current runtime.",
+        };
+      }
+
+      const nowIso = new Date().toISOString();
+      if (sectionKey === "core") {
+        const normalizedValues = {
+          displayName: normalizeManualRecordText(values.displayName),
+          scentDesc: normalizeManualRecordText(values.scentDesc),
+        };
+        const changedFieldKeys = getChangedManualFieldKeys(
+          {
+            displayName: currentRecord?.displayName || null,
+            scentDesc: currentRecord?.scentDesc || null,
+          },
+          normalizedValues
+        );
+        if (changedFieldKeys.length === 0) {
+          return {
+            ok: false,
+            message: "No core record fields changed.",
+          };
+        }
+        upsertManualRecordEditSection(safeMaterialName, "core", {
+          ...normalizedValues,
+          editedFieldKeys: changedFieldKeys,
+          updatedAt: nowIso,
+        });
+        return {
+          ok: true,
+          message: `Saved core record label and description for ${safeMaterialName}.`,
+        };
+      }
+      if (sectionKey === "identity") {
+        const normalizedValues = {
+          cas: normalizeManualRecordText(values.cas),
+          inci: normalizeManualRecordText(values.inci),
+          note: normalizeManualRecordText(values.note),
+          type: normalizeManualRecordText(values.type),
+          rep: normalizeManualRecordText(values.rep),
+          identityNotes: normalizeManualRecordText(values.identityNotes),
+        };
+        const changedFieldKeys = getChangedManualFieldKeys(
+          {
+            cas: currentRecord?.cas || null,
+            inci: currentRecord?.inci || null,
+            note: currentRecord?.note || null,
+            type: currentRecord?.type || null,
+            rep: currentRecord?.rep || null,
+            identityNotes: currentRecord?.manualIdentityNotes || null,
+          },
+          normalizedValues
+        );
+        if (changedFieldKeys.length === 0) {
+          return {
+            ok: false,
+            message: "No material-identity fields changed.",
+          };
+        }
+        upsertManualRecordEditSection(safeMaterialName, "identity", {
+          ...normalizedValues,
+          editedFieldKeys: changedFieldKeys,
+          updatedAt: nowIso,
+        });
+        return {
+          ok: true,
+          message: `Saved material identity for ${safeMaterialName}.`,
+        };
+      }
+
+      if (sectionKey === "technical") {
+        const normalizedValues = {
+          MW: normalizeManualRecordNumber(values.MW),
+          xLogP: normalizeManualRecordNumber(values.xLogP),
+          VP: normalizeManualRecordNumber(values.VP),
+          ODT: normalizeManualRecordNumber(values.ODT),
+          TPSA: normalizeManualRecordNumber(values.TPSA),
+          odorThreshold_ngL: normalizeManualRecordNumber(
+            values.odorThreshold_ngL
+          ),
+          technicalNotes: normalizeManualRecordText(values.technicalNotes),
+        };
+        const changedFieldKeys = getChangedManualFieldKeys(
+          {
+            MW: currentRecord?.MW ?? null,
+            xLogP: currentRecord?.xLogP ?? null,
+            VP: currentRecord?.VP ?? null,
+            ODT: currentRecord?.ODT ?? null,
+            TPSA: currentRecord?.TPSA ?? null,
+            odorThreshold_ngL: currentRecord?.odorThreshold_ngL ?? null,
+            technicalNotes: currentRecord?.manualTechnicalNotes || null,
+          },
+          normalizedValues
+        );
+        if (changedFieldKeys.length === 0) {
+          return {
+            ok: false,
+            message: "No technical / molecular fields changed.",
+          };
+        }
+        upsertManualRecordEditSection(safeMaterialName, "technical", {
+          ...normalizedValues,
+          editedFieldKeys: changedFieldKeys,
+          updatedAt: nowIso,
+        });
+        return {
+          ok: true,
+          message: `Saved technical / molecular fields for ${safeMaterialName}.`,
+        };
+      }
+
+      return {
+        ok: false,
+        message: "Unsupported edit section.",
+      };
+    },
+    [upsertManualRecordEditSection]
+  );
+  const reassignDirectSupplierRelationship = useCallback(
+    ({ currentMaterialName, supplierName, nextMaterialName = null }) => {
+      const safeCurrentMaterialName = String(currentMaterialName || "").trim();
+      const safeSupplierName = String(supplierName || "").trim();
+      const safeNextMaterialName = String(nextMaterialName || "").trim();
+      if (!safeCurrentMaterialName || !DB[safeCurrentMaterialName]) {
+        return {
+          ok: false,
+          message: "The current material could not be found in the runtime.",
+        };
+      }
+      if (!safeSupplierName) {
+        return {
+          ok: false,
+          message: "Choose a supplier row before moving or detaching it.",
+        };
+      }
+      if (safeNextMaterialName && !DB[safeNextMaterialName]) {
+        return {
+          ok: false,
+          message: `Target material "${safeNextMaterialName}" is not available in the current runtime.`,
+        };
+      }
+      if (safeNextMaterialName === safeCurrentMaterialName) {
+        return {
+          ok: false,
+          message: "This supplier row is already attached to that material.",
+        };
+      }
+
+      const currentSupplierRow =
+        pricesState?.[safeCurrentMaterialName]?.[safeSupplierName] ||
+        PRICING?.[safeCurrentMaterialName]?.[safeSupplierName] ||
+        null;
+      const existingRecord = Object.values(supplierLayerPageFacts || {}).find(
+        (record) =>
+          record?.mappedCatalogName === safeCurrentMaterialName &&
+          record?.supplierDisplayName === safeSupplierName
+      );
+      const currentPageFacts = existingRecord?.pageFacts || {};
+      if (!currentSupplierRow && !existingRecord) {
+        return {
+          ok: false,
+          message: `No live supplier relationship was found for ${safeSupplierName} on ${safeCurrentMaterialName}.`,
+        };
+      }
+
+      if (
+        safeNextMaterialName &&
+        (pricesState?.[safeNextMaterialName]?.[safeSupplierName] ||
+          PRICING?.[safeNextMaterialName]?.[safeSupplierName])
+      ) {
+        return {
+          ok: false,
+          message: `${safeNextMaterialName} already has a ${safeSupplierName} supplier row. Review that row first before moving this one.`,
+        };
+      }
+
+      const nowIso = new Date().toISOString();
+      const supplierRecordRow = {
+        ...(currentSupplierRow || {}),
+        url:
+          currentSupplierRow?.url ||
+          currentPageFacts?.url ||
+          existingRecord?.sourceUrl ||
+          "",
+        S:
+          (Array.isArray(currentSupplierRow?.S) && currentSupplierRow.S.length > 0
+            ? currentSupplierRow.S
+            : null) ||
+          currentPageFacts?.pricePoints ||
+          [],
+        availabilityStatus:
+          currentSupplierRow?.availabilityStatus ||
+          currentPageFacts?.availabilityStatus ||
+          "unknown",
+        ifraPercent:
+          currentSupplierRow?.ifraPercent ??
+          currentPageFacts?.ifraPercent ??
+          null,
+        sdsUrl: currentSupplierRow?.sdsUrl || currentPageFacts?.sdsUrl || "",
+        inciShown:
+          currentSupplierRow?.inciShown || currentPageFacts?.inci || "",
+        productDescription:
+          currentSupplierRow?.productDescription ||
+          currentPageFacts?.productDescription ||
+          "",
+        scentSummary:
+          currentSupplierRow?.scentSummary ||
+          currentPageFacts?.scentSummary ||
+          "",
+        dilutionOrCarrier:
+          currentSupplierRow?.dilutionOrCarrier ||
+          currentPageFacts?.dilutionOrCarrier ||
+          "",
+        supplierVendorName:
+          currentSupplierRow?.supplierVendorName ||
+          currentPageFacts?.vendorName ||
+          "",
+        supplierNotes:
+          currentSupplierRow?.supplierNotes ||
+          existingRecord?.sourceNote ||
+          "",
+        originNote:
+          currentSupplierRow?.originNote ||
+          currentPageFacts?.originNote ||
+          "",
+        manualTrustedEdit: true,
+        manualEditUpdatedAt: nowIso,
+        sourceType:
+          currentSupplierRow?.sourceType ||
+          existingRecord?.sourceType ||
+          "manual_supplier_relationship_edit",
+      };
+      const nextCanonicalMaterialKey = safeNextMaterialName
+        ? DB[safeNextMaterialName]?.canonicalMaterialKey ||
+          getMaterialNormalizationEntry(safeNextMaterialName)?.canonicalMaterialKey ||
+          resolveIngredientIdentity(safeNextMaterialName)?.normalizationEntry
+            ?.canonicalMaterialKey ||
+          resolveIngredientIdentity(safeNextMaterialName)?.canonicalMaterialKey ||
+          null
+        : null;
+
+      setPricesState((prev) => {
+        const next = { ...prev };
+        const currentCatalogRow = { ...(next[safeCurrentMaterialName] || {}) };
+        delete currentCatalogRow[safeSupplierName];
+        if (Object.keys(currentCatalogRow).length > 0) {
+          next[safeCurrentMaterialName] = currentCatalogRow;
+        } else {
+          delete next[safeCurrentMaterialName];
+        }
+        if (safeNextMaterialName) {
+          next[safeNextMaterialName] = {
+            ...(next[safeNextMaterialName] || {}),
+            [safeSupplierName]: supplierRecordRow,
+          };
+        }
+        return next;
+      });
+
+      setSupplierLayerPageFacts((prev) => {
+        const recordKey =
+          existingRecord?.recordKey ||
+          buildManualSupplierLayerRecordKey(
+            safeNextMaterialName || safeCurrentMaterialName,
+            safeSupplierName
+          );
+        const nextRecord = {
+          ...(existingRecord || {}),
+          recordKey,
+          supplierKey:
+            existingRecord?.supplierKey ||
+            safeSupplierName.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+          supplierDisplayName: safeSupplierName,
+          supplierProductKey:
+            existingRecord?.supplierProductKey ||
+            buildSupplierProductKey({
+              supplierKey:
+                safeSupplierName.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+              url: supplierRecordRow.url || currentPageFacts?.url || "",
+            }) ||
+            `${recordKey}:product`,
+          mappedCatalogName: safeNextMaterialName || null,
+          canonicalMaterialKey: nextCanonicalMaterialKey,
+          detachedFromCatalogName: safeNextMaterialName
+            ? null
+            : safeCurrentMaterialName,
+          remappedFromCatalogName: safeNextMaterialName
+            ? safeCurrentMaterialName
+            : existingRecord?.remappedFromCatalogName || null,
+          updatedAt: nowIso,
+          sourceType:
+            existingRecord?.sourceType || "manual_supplier_relationship_edit",
+          sourceUrl: supplierRecordRow.url || currentPageFacts?.url || "",
+          sourceNote: safeNextMaterialName
+            ? `Manually moved from ${safeCurrentMaterialName} to ${safeNextMaterialName}.`
+            : `Manually detached from ${safeCurrentMaterialName}.`,
+          isManualEdit: true,
+          manualEditUpdatedAt: nowIso,
+          pageFacts: {
+            ...(existingRecord?.pageFacts || {}),
+            productTitle:
+              existingRecord?.pageFacts?.productTitle ||
+              safeCurrentMaterialName,
+            url: supplierRecordRow.url || "",
+            pricePoints: supplierRecordRow.S || [],
+            availabilityStatus: supplierRecordRow.availabilityStatus || "unknown",
+            availabilityStatusLabel: formatSupplierAvailabilityLabel(
+              supplierRecordRow.availabilityStatus
+            ),
+            ifraPercent: supplierRecordRow.ifraPercent,
+            sdsUrl: supplierRecordRow.sdsUrl || "",
+            manualSdsAttachment:
+              currentPageFacts?.manualSdsAttachment || null,
+            inci: supplierRecordRow.inciShown || "",
+            productDescription: supplierRecordRow.productDescription || "",
+            scentSummary: supplierRecordRow.scentSummary || "",
+            dilutionOrCarrier: supplierRecordRow.dilutionOrCarrier || "",
+            vendorName: supplierRecordRow.supplierVendorName || "",
+            originNote: supplierRecordRow.originNote || "",
+          },
+          notes: [
+            safeNextMaterialName
+              ? `${safeSupplierName} was manually reattached from ${safeCurrentMaterialName} to ${safeNextMaterialName}.`
+              : `${safeSupplierName} was manually detached from ${safeCurrentMaterialName}.`,
+            ...(Array.isArray(existingRecord?.notes) ? existingRecord.notes : []),
+          ]
+            .filter(Boolean)
+            .slice(0, 6),
+          reviewItems: existingRecord?.reviewItems || [],
+        };
+        return {
+          ...prev,
+          [recordKey]: nextRecord,
+        };
+      });
+
+      setManualRecordEdits((prev) => {
+        const currentRecord = prev[safeCurrentMaterialName];
+        const currentSupplierSection = currentRecord?.sections?.supplier;
+        if (currentSupplierSection?.supplierName !== safeSupplierName) {
+          return prev;
+        }
+        const next = { ...prev };
+        const currentSections = { ...(currentRecord?.sections || {}) };
+        delete currentSections.supplier;
+        const rebuiltCurrent = rebuildManualRecordEditRecord(
+          safeCurrentMaterialName,
+          currentRecord,
+          currentSections,
+          nowIso
+        );
+        if (rebuiltCurrent.editedFieldKeys.length > 0) {
+          next[safeCurrentMaterialName] = rebuiltCurrent;
+        } else {
+          delete next[safeCurrentMaterialName];
+        }
+        if (safeNextMaterialName) {
+          const targetExisting = next[safeNextMaterialName] || {
+            materialName: safeNextMaterialName,
+            createdAt: nowIso,
+            sourceType: "manual_direct_record_edit",
+            sections: {},
+          };
+          next[safeNextMaterialName] = rebuildManualRecordEditRecord(
+            safeNextMaterialName,
+            targetExisting,
+            {
+              ...(targetExisting.sections || {}),
+              supplier: {
+                ...currentSupplierSection,
+                supplierName: safeSupplierName,
+                updatedAt: nowIso,
+              },
+            },
+            nowIso
+          );
+        }
+        syncManualRecordEditsToRuntime(next);
+        return next;
+      });
+
+      return {
+        ok: true,
+        message: safeNextMaterialName
+          ? `Moved ${safeSupplierName} from ${safeCurrentMaterialName} to ${safeNextMaterialName}.`
+          : `Detached ${safeSupplierName} from ${safeCurrentMaterialName}. The supplier-layer record was preserved for later reattachment.`,
+      };
+    },
+    [pricesState, supplierLayerPageFacts]
+  );
+  const refreshSupplierProductPageData = useCallback(
+    async ({ materialName, supplierName, refreshScope = "all_safe" }) => {
+      const safeMaterialName = String(materialName || "").trim();
+      const safeSupplierName = String(supplierName || "").trim();
+      if (!safeMaterialName || !DB[safeMaterialName]) {
+        return {
+          ok: false,
+          message: "This material could not be found in the current runtime.",
+        };
+      }
+      if (!safeSupplierName) {
+        return {
+          ok: false,
+          message: "Choose a supplier row before refreshing page data.",
+        };
+      }
+
+      const existingSupplierRow =
+        pricesState?.[safeMaterialName]?.[safeSupplierName] ||
+        PRICING?.[safeMaterialName]?.[safeSupplierName] ||
+        null;
+      const existingRecord = Object.values(supplierLayerPageFacts || {}).find(
+        (record) =>
+          record?.mappedCatalogName === safeMaterialName &&
+          record?.supplierDisplayName === safeSupplierName
+      );
+      const existingPageFacts = existingRecord?.pageFacts || {};
+      const sourceUrl =
+        existingSupplierRow?.url ||
+        existingPageFacts?.url ||
+        existingRecord?.sourceUrl ||
+        "";
+      if (!sourceUrl) {
+        return {
+          ok: false,
+          message: `No supplier product URL is saved for ${safeSupplierName} on ${safeMaterialName}.`,
+        };
+      }
+
+      const productJsonUrl = deriveFraterworksProductJsonUrl(sourceUrl);
+      if (!productJsonUrl) {
+        return {
+          ok: false,
+          message:
+            "Field-level supplier refresh currently supports Fraterworks product URLs that can resolve to Shopify product JSON.",
+        };
+      }
+
+      const importedAt = new Date().toISOString();
+      let response;
+      try {
+        response = await fetch(productJsonUrl, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        });
+      } catch (error) {
+        return {
+          ok: false,
+          message: `Supplier page refresh failed: ${String(
+            error?.message || error || "Unknown network error"
+          )}`,
+        };
+      }
+
+      if (!response?.ok) {
+        return {
+          ok: false,
+          message: `Supplier page refresh failed: HTTP ${
+            response?.status || "unknown"
+          } from ${productJsonUrl}.`,
+        };
+      }
+
+      let responseText = "";
+      try {
+        responseText = await response.text();
+      } catch (error) {
+        return {
+          ok: false,
+          message: `Supplier page refresh could not read the product payload: ${String(
+            error?.message || error || "Unknown error"
+          )}`,
+        };
+      }
+
+      const importPlan = buildFraterworksJsonPasteImportPlan(responseText, {
+        db: DB,
+        supplierLayerRecords,
+        localDraftIngredients,
+        supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+        buildSupplierProductKey,
+        getIfraMaterialRecord,
+        importedAt,
+        createLocalDrafts: false,
+      });
+
+      if (importPlan.fatalErrors.length > 0) {
+        return {
+          ok: false,
+          message: importPlan.fatalErrors[0],
+        };
+      }
+
+      const existingSupplierProductKey =
+        existingRecord?.supplierProductKey ||
+        buildSupplierProductKey({
+          supplierKey: "fraterworks",
+          supplierName: safeSupplierName,
+          url: sourceUrl,
+        }) ||
+        null;
+      const refreshedRecord =
+        Object.values(importPlan.supplierLayerRecordMap || {}).find(
+          (record) =>
+            record?.supplierProductKey === existingSupplierProductKey ||
+            record?.sourceUrl === sourceUrl ||
+            record?.pageFacts?.url === sourceUrl
+        ) ||
+        Object.values(importPlan.supplierLayerRecordMap || {})[0] ||
+        null;
+
+      if (!refreshedRecord) {
+        return {
+          ok: false,
+          message:
+            "No refreshable supplier-layer record could be derived from the supplier page payload.",
+        };
+      }
+
+      const scopeFieldKeys = new Set(getSupplierPageRefreshFieldKeys(refreshScope));
+      const manualSupplierSection =
+        manualRecordEdits?.[safeMaterialName]?.sections?.supplier;
+      const manualSupplierFieldSet = new Set(
+        manualSupplierSection?.supplierName === safeSupplierName
+          ? manualSupplierSection?.editedFieldKeys || []
+          : []
+      );
+      const refreshedPageFacts = refreshedRecord?.pageFacts || {};
+      const materialIdentitySection =
+        manualRecordEdits?.[safeMaterialName]?.sections?.identity || null;
+      const currentMaterialCas =
+        materialIdentitySection?.cas || DB[safeMaterialName]?.cas || "";
+      const currentMaterialInci =
+        materialIdentitySection?.inci || DB[safeMaterialName]?.inci || "";
+      const currentMaterialIfra = Number(
+        getIfraMaterialRecord(safeMaterialName)?.limits?.cat4
+      );
+      const nextFieldResults = [];
+      const updatedLabels = [];
+      const preservedLabels = [];
+      const conflictLabels = [];
+      const unchangedLabels = [];
+      const missingLabels = [];
+      const fieldLabelMap = {
+        productTitle: "Supplier product title",
+        url: "Product URL",
+        pricePoints: "Sizes & prices",
+        availabilityStatus: "Availability",
+        vendorName: "Vendor context",
+        productDescription: "Description",
+        scentSummary: "Scent summary",
+        dilutionOrCarrier: "Dilution / carrier",
+        casShown: "CAS shown",
+        inciShown: "INCI shown",
+        ifraPercent: "IFRA shown",
+        sdsUrl: "SDS",
+      };
+      const pushFieldResult = (bucket, fieldKey, detail = "") => {
+        const label = fieldLabelMap[fieldKey] || fieldKey;
+        bucket.push(detail ? `${label} ${detail}` : label);
+        nextFieldResults.push(detail ? `${label}: ${detail}` : label);
+      };
+
+      const setPageFactValue = (fieldKey, nextValue, options = {}) => {
+        const label = fieldLabelMap[fieldKey] || fieldKey;
+        const {
+          manualFieldKey = null,
+          existingValue = null,
+          hasValue = null,
+          apply = null,
+        } = options;
+        const shouldSkipForManualOverride =
+          manualFieldKey && manualSupplierFieldSet.has(manualFieldKey);
+        if (shouldSkipForManualOverride) {
+          pushFieldResult(
+            preservedLabels,
+            fieldKey,
+            "kept manual trusted override"
+          );
+          return existingValue;
+        }
+        const resolvedHasValue =
+          hasValue != null
+            ? hasValue
+            : Array.isArray(nextValue)
+            ? nextValue.length > 0
+            : nextValue != null &&
+              !(typeof nextValue === "string" && nextValue.trim() === "");
+        if (!resolvedHasValue) {
+          pushFieldResult(missingLabels, fieldKey, "not found on supplier page");
+          return existingValue;
+        }
+        if (
+          normalizeManualComparableValue(existingValue) ===
+          normalizeManualComparableValue(nextValue)
+        ) {
+          pushFieldResult(unchangedLabels, fieldKey, "unchanged");
+          return existingValue;
+        }
+        pushFieldResult(updatedLabels, fieldKey, "updated");
+        return typeof apply === "function" ? apply(nextValue, label) : nextValue;
+      };
+
+      const nextSupplierRecord = {
+        ...(existingRecord || {}),
+        recordKey:
+          existingRecord?.recordKey ||
+          refreshedRecord?.recordKey ||
+          buildManualSupplierLayerRecordKey(safeMaterialName, safeSupplierName),
+        supplierKey:
+          existingRecord?.supplierKey ||
+          refreshedRecord?.supplierKey ||
+          safeSupplierName.toLowerCase().replace(/[^a-z0-9]+/g, "_"),
+        supplierDisplayName: safeSupplierName,
+        supplierProductKey:
+          existingRecord?.supplierProductKey ||
+          refreshedRecord?.supplierProductKey ||
+          existingSupplierProductKey ||
+          null,
+        mappedCatalogName: safeMaterialName,
+        canonicalMaterialKey:
+          existingRecord?.canonicalMaterialKey ||
+          refreshedRecord?.canonicalMaterialKey ||
+          DB[safeMaterialName]?.canonicalMaterialKey ||
+          null,
+        sourceOrigin: "fraterworks_supplier_page_refresh",
+        sourceType: "fraterworks_supplier_page_refresh",
+        fetchedAt: importedAt,
+        updatedAt: importedAt,
+        sourceUrl:
+          existingRecord?.sourceUrl ||
+          existingPageFacts?.url ||
+          sourceUrl,
+        sourceNote: "Field-level supplier page refresh from the saved supplier product URL.",
+      };
+      const nextPageFacts = {
+        ...(existingPageFacts || {}),
+        manualSdsAttachment: existingPageFacts?.manualSdsAttachment || null,
+      };
+
+      if (scopeFieldKeys.has("productTitle")) {
+        nextPageFacts.productTitle = setPageFactValue(
+          "productTitle",
+          refreshedPageFacts?.productTitle,
+          {
+            existingValue: existingPageFacts?.productTitle || safeMaterialName,
+          }
+        );
+      }
+      if (scopeFieldKeys.has("url")) {
+        nextPageFacts.url = setPageFactValue("url", refreshedPageFacts?.url, {
+          manualFieldKey: "url",
+          existingValue: existingPageFacts?.url || sourceUrl,
+        });
+      }
+      if (scopeFieldKeys.has("pricePoints")) {
+        nextPageFacts.pricePoints = setPageFactValue(
+          "pricePoints",
+          refreshedPageFacts?.pricePoints || [],
+          {
+            manualFieldKey: "pricePoints",
+            existingValue: existingPageFacts?.pricePoints || [],
+            hasValue: Array.isArray(refreshedPageFacts?.pricePoints),
+          }
+        );
+      }
+      if (scopeFieldKeys.has("availabilityStatus")) {
+        nextPageFacts.availabilityStatus = setPageFactValue(
+          "availabilityStatus",
+          refreshedPageFacts?.availabilityStatus,
+          {
+            manualFieldKey: "availabilityStatus",
+            existingValue: existingPageFacts?.availabilityStatus || "unknown",
+          }
+        );
+        nextPageFacts.availabilityStatusLabel = formatSupplierAvailabilityLabel(
+          nextPageFacts.availabilityStatus
+        );
+      }
+      if (scopeFieldKeys.has("vendorName")) {
+        nextPageFacts.vendorName = setPageFactValue(
+          "vendorName",
+          refreshedPageFacts?.vendorName || refreshedPageFacts?.vendorContext,
+          {
+            manualFieldKey: "vendorName",
+            existingValue:
+              existingPageFacts?.vendorName || existingPageFacts?.vendorContext || "",
+          }
+        );
+      }
+      if (scopeFieldKeys.has("productDescription")) {
+        nextPageFacts.productDescription = setPageFactValue(
+          "productDescription",
+          refreshedPageFacts?.productDescription,
+          {
+            manualFieldKey: "productDescription",
+            existingValue: existingPageFacts?.productDescription || "",
+          }
+        );
+      }
+      if (scopeFieldKeys.has("scentSummary")) {
+        nextPageFacts.scentSummary = setPageFactValue(
+          "scentSummary",
+          refreshedPageFacts?.scentSummary,
+          {
+            manualFieldKey: "scentSummary",
+            existingValue: existingPageFacts?.scentSummary || "",
+          }
+        );
+      }
+      if (scopeFieldKeys.has("dilutionOrCarrier")) {
+        nextPageFacts.dilutionOrCarrier = setPageFactValue(
+          "dilutionOrCarrier",
+          refreshedPageFacts?.dilutionOrCarrier,
+          {
+            manualFieldKey: "dilutionOrCarrier",
+            existingValue: existingPageFacts?.dilutionOrCarrier || "",
+          }
+        );
+      }
+      if (scopeFieldKeys.has("casShown")) {
+        nextPageFacts.casShown = setPageFactValue(
+          "casShown",
+          refreshedPageFacts?.casShown,
+          {
+            existingValue: existingPageFacts?.casShown || "",
+            hasValue:
+              Boolean(
+                String(refreshedPageFacts?.casShown || "").trim()
+              ) ||
+              refreshedPageFacts?.casState === "mixture",
+          }
+        );
+        nextPageFacts.casState =
+          refreshedPageFacts?.casState || nextPageFacts?.casState || "unknown";
+        nextPageFacts.casValues =
+          refreshedPageFacts?.casValues || nextPageFacts?.casValues || [];
+        nextPageFacts.casComparisonKey =
+          refreshedPageFacts?.casComparisonKey ||
+          nextPageFacts?.casComparisonKey ||
+          null;
+        if (
+          String(nextPageFacts.casShown || "").trim() &&
+          currentMaterialCas &&
+          !compareMaterialCasSupportValues(nextPageFacts.casShown, currentMaterialCas)
+        ) {
+          pushFieldResult(
+            conflictLabels,
+            "casShown",
+            `conflicts with material ${formatMaterialCasSupportValue(
+              currentMaterialCas
+            ) || currentMaterialCas}`
+          );
+        }
+      }
+      if (scopeFieldKeys.has("inciShown")) {
+        nextPageFacts.inci = setPageFactValue(
+          "inciShown",
+          refreshedPageFacts?.inci,
+          {
+            manualFieldKey: "inciShown",
+            existingValue: existingPageFacts?.inci || "",
+          }
+        );
+        if (
+          String(nextPageFacts.inci || "").trim() &&
+          String(currentMaterialInci || "").trim() &&
+          normalizeManualComparableValue(nextPageFacts.inci) !==
+            normalizeManualComparableValue(currentMaterialInci)
+        ) {
+          pushFieldResult(
+            conflictLabels,
+            "inciShown",
+            `conflicts with material ${currentMaterialInci}`
+          );
+        }
+      }
+      if (scopeFieldKeys.has("ifraPercent")) {
+        nextPageFacts.ifraPercent = setPageFactValue(
+          "ifraPercent",
+          refreshedPageFacts?.ifraPercent,
+          {
+            manualFieldKey: "ifraPercent",
+            existingValue: existingPageFacts?.ifraPercent ?? null,
+            hasValue: refreshedPageFacts?.ifraPercent != null,
+          }
+        );
+        if (
+          nextPageFacts.ifraPercent != null &&
+          Number.isFinite(currentMaterialIfra) &&
+          Math.abs(Number(nextPageFacts.ifraPercent) - currentMaterialIfra) > 0.05
+        ) {
+          pushFieldResult(
+            conflictLabels,
+            "ifraPercent",
+            `conflicts with Cat 4 ${currentMaterialIfra}%`
+          );
+        }
+      }
+      if (scopeFieldKeys.has("sdsUrl")) {
+        nextPageFacts.sdsUrl = setPageFactValue(
+          "sdsUrl",
+          refreshedPageFacts?.sdsUrl,
+          {
+            manualFieldKey: "sdsUrl",
+            existingValue: existingPageFacts?.sdsUrl || "",
+          }
+        );
+      }
+      nextSupplierRecord.sourceUrl =
+        String(nextPageFacts.url || "").trim() ||
+        String(refreshedPageFacts?.url || "").trim() ||
+        String(existingPageFacts?.url || "").trim() ||
+        String(refreshedRecord?.sourceUrl || "").trim() ||
+        String(existingRecord?.sourceUrl || "").trim() ||
+        String(sourceUrl || "").trim() ||
+        "";
+
+      const reviewTypesByScope = {
+        prices: new Set(),
+        facts: new Set([
+          "mapping_unresolved",
+          "merge_review",
+          "variant_confusion",
+          "organic_variant_mismatch",
+          "origin_variant_mismatch",
+          "dilution_ambiguity",
+        ]),
+        compliance: new Set([
+          "canonical_conflict_cas",
+          "canonical_conflict_inci",
+          "canonical_conflict_ifra",
+        ]),
+        all_safe: new Set([
+          "mapping_unresolved",
+          "merge_review",
+          "variant_confusion",
+          "organic_variant_mismatch",
+          "origin_variant_mismatch",
+          "dilution_ambiguity",
+          "canonical_conflict_cas",
+          "canonical_conflict_inci",
+          "canonical_conflict_ifra",
+        ]),
+      };
+      const relevantReviewTypes =
+        reviewTypesByScope[refreshScope] ||
+        reviewTypesByScope.all_safe;
+      const preservedReviewItems = (Array.isArray(existingRecord?.reviewItems)
+        ? existingRecord.reviewItems
+        : []
+      ).filter((item) => !relevantReviewTypes.has(item?.issueType));
+      const refreshedReviewItems = (Array.isArray(refreshedRecord?.reviewItems)
+        ? refreshedRecord.reviewItems
+        : []
+      ).filter((item) => relevantReviewTypes.has(item?.issueType));
+      const nextReviewItems = [
+        ...preservedReviewItems,
+        ...refreshedReviewItems,
+      ];
+      const nextTrustLane = nextReviewItems.some(
+        (item) => item?.trustLane === "manual_review_conflict"
+      )
+        ? "manual_review_conflict"
+        : nextReviewItems.some(
+            (item) => item?.trustLane === "batch_review_mapping"
+          )
+        ? "batch_review_mapping"
+        : "auto_apply_safe";
+      nextSupplierRecord.trustLane = nextTrustLane;
+      nextSupplierRecord.trustLaneLabel =
+        SUPPLIER_ADAPTER_TRUST_LANE_META[nextTrustLane]?.label || nextTrustLane;
+      nextSupplierRecord.trustLaneDescription =
+        SUPPLIER_ADAPTER_TRUST_LANE_META[nextTrustLane]?.description || null;
+      nextSupplierRecord.pageFacts = {
+        ...nextPageFacts,
+        lastRefreshAt: importedAt,
+        lastRefreshScope: refreshScope,
+        lastRefreshScopeLabel:
+          SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+          SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.label,
+        lastRefreshFieldResults: nextFieldResults.slice(0, 8),
+      };
+      nextSupplierRecord.reviewItems = nextReviewItems;
+
+      const summaryParts = [];
+      if (updatedLabels.length > 0) {
+        summaryParts.push(`updated ${updatedLabels.join(", ")}`);
+      }
+      if (preservedLabels.length > 0) {
+        summaryParts.push(`kept manual overrides for ${preservedLabels.join(", ")}`);
+      }
+      if (conflictLabels.length > 0) {
+        summaryParts.push(conflictLabels.join(" · "));
+      }
+      if (
+        updatedLabels.length === 0 &&
+        preservedLabels.length === 0 &&
+        conflictLabels.length === 0 &&
+        unchangedLabels.length > 0
+      ) {
+        summaryParts.push(`no change in ${unchangedLabels.join(", ")}`);
+      }
+      if (
+        updatedLabels.length === 0 &&
+        preservedLabels.length === 0 &&
+        conflictLabels.length === 0 &&
+        missingLabels.length > 0
+      ) {
+        summaryParts.push(`page did not expose ${missingLabels.join(", ")}`);
+      }
+      const refreshSummary =
+        summaryParts[0] ||
+        "No safe supplier-page updates were applied from this refresh.";
+
+      nextSupplierRecord.pageFacts.lastRefreshSummary = refreshSummary;
+      nextSupplierRecord.notes = [
+        `Field-level supplier refresh (${nextSupplierRecord.pageFacts.lastRefreshScopeLabel}) ${refreshSummary}.`,
+        ...(Array.isArray(existingRecord?.notes) ? existingRecord.notes : []),
+      ]
+        .filter(Boolean)
+        .slice(0, 8);
+
+      setSupplierLayerPageFacts((prev) => ({
+        ...prev,
+        [nextSupplierRecord.recordKey]: nextSupplierRecord,
+      }));
+
+      setPricesState((prev) => {
+        const next = { ...prev };
+        const existingCatalogRow = next[safeMaterialName] || {};
+        const nextSupplierRow = {
+          ...(existingCatalogRow[safeSupplierName] || existingSupplierRow || {}),
+        };
+        if (
+          scopeFieldKeys.has("url") &&
+          !manualSupplierFieldSet.has("url") &&
+          String(nextPageFacts.url || "").trim()
+        ) {
+          nextSupplierRow.url = nextPageFacts.url;
+        }
+        if (
+          scopeFieldKeys.has("pricePoints") &&
+          !manualSupplierFieldSet.has("pricePoints") &&
+          Array.isArray(nextPageFacts.pricePoints)
+        ) {
+          nextSupplierRow.S = nextPageFacts.pricePoints;
+        }
+        if (
+          scopeFieldKeys.has("availabilityStatus") &&
+          !manualSupplierFieldSet.has("availabilityStatus")
+        ) {
+          nextSupplierRow.availabilityStatus =
+            nextPageFacts.availabilityStatus || "unknown";
+        }
+        if (
+          scopeFieldKeys.has("ifraPercent") &&
+          !manualSupplierFieldSet.has("ifraPercent")
+        ) {
+          nextSupplierRow.ifraPercent =
+            nextPageFacts.ifraPercent != null
+              ? nextPageFacts.ifraPercent
+              : nextSupplierRow.ifraPercent ?? null;
+        }
+        if (
+          scopeFieldKeys.has("sdsUrl") &&
+          !manualSupplierFieldSet.has("sdsUrl")
+        ) {
+          nextSupplierRow.sdsUrl = nextPageFacts.sdsUrl || "";
+        }
+        if (
+          scopeFieldKeys.has("inciShown") &&
+          !manualSupplierFieldSet.has("inciShown")
+        ) {
+          nextSupplierRow.inciShown = nextPageFacts.inci || "";
+        }
+        if (
+          scopeFieldKeys.has("productDescription") &&
+          !manualSupplierFieldSet.has("productDescription")
+        ) {
+          nextSupplierRow.productDescription =
+            nextPageFacts.productDescription || "";
+        }
+        if (
+          scopeFieldKeys.has("scentSummary") &&
+          !manualSupplierFieldSet.has("scentSummary")
+        ) {
+          nextSupplierRow.scentSummary = nextPageFacts.scentSummary || "";
+        }
+        if (
+          scopeFieldKeys.has("dilutionOrCarrier") &&
+          !manualSupplierFieldSet.has("dilutionOrCarrier")
+        ) {
+          nextSupplierRow.dilutionOrCarrier =
+            nextPageFacts.dilutionOrCarrier || "";
+        }
+        if (
+          scopeFieldKeys.has("vendorName") &&
+          !manualSupplierFieldSet.has("vendorName")
+        ) {
+          nextSupplierRow.supplierVendorName = nextPageFacts.vendorName || "";
+        }
+        nextSupplierRow.sourceType = "fraterworks_supplier_page_refresh";
+        next[safeMaterialName] = {
+          ...existingCatalogRow,
+          [safeSupplierName]: nextSupplierRow,
+        };
+        return next;
+      });
+
+      return {
+        ok: true,
+        message: `${SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label || "Supplier refresh"} for ${safeSupplierName} on ${safeMaterialName}: ${refreshSummary}.`,
+        reviewItemCount: nextReviewItems.length,
+        fieldResults: nextFieldResults,
+      };
+    },
+    [
+      localDraftIngredients,
+      manualRecordEdits,
+      pricesState,
+      supplierLayerPageFacts,
+      supplierLayerRecords,
+    ]
+  );
+  const applySupplierImportPlan = useCallback(
+    (importPlan) => {
+      if (Object.keys(importPlan?.supplierLayerRecordMap || {}).length > 0) {
+        setSupplierLayerPageFacts((prev) => ({
+          ...prev,
+          ...importPlan.supplierLayerRecordMap,
+        }));
+      }
+      if (Object.keys(importPlan?.localDraftRecordsByName || {}).length > 0) {
+        setLocalDraftIngredients((prev) => {
+          const next = {
+            ...prev,
+            ...importPlan.localDraftRecordsByName,
+          };
+          syncLocalDraftIngredientsToRuntime(next);
+          return next;
+        });
+      }
+      applyTrustedSupplierWorkbookPricePatches(importPlan?.pricePatches);
+    },
+    [applyTrustedSupplierWorkbookPricePatches]
+  );
+  const importTrustedSupplierWorkbook = useCallback(
+    async (file) => {
+      if (!file) return;
+      setSupplierWorkbookImporting(true);
+      setSupplierWorkbookImportStatus("Reading workbook...");
+      try {
+        const workbookBuffer = await file.arrayBuffer();
+        const parsedWorkbook = parseTrustedSupplierWorkbookArrayBuffer(
+          workbookBuffer
+        );
+        const importPlan = buildTrustedSupplierWorkbookImportPlan(parsedWorkbook, {
+          db: DB,
+          supplierLayerRecords,
+          localDraftIngredients,
+          supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+          buildSupplierProductKey,
+          getIfraMaterialRecord,
+          importedAt: new Date().toISOString(),
+        });
+        const report = {
+          ...importPlan.report,
+          metadata: {
+            ...(importPlan.report?.metadata || {}),
+            fileName: file.name || "trusted_supplier_import.xlsx",
+          },
+        };
+        setSupplierWorkbookImportReport(report);
+
+        if (importPlan.fatalErrors.length > 0) {
+          setSupplierWorkbookImportStatus(importPlan.fatalErrors[0]);
+          return;
+        }
+
+        applySupplierImportPlan(importPlan);
+
+        const summary = report?.summary || {};
+        setSupplierWorkbookImportStatus(
+          `Imported ${summary.supplierProductsImported || 0} supplier product${
+            summary.supplierProductsImported === 1 ? "" : "s"
+          }, ${summary.priceRowsImported || 0} price row${
+            summary.priceRowsImported === 1 ? "" : "s"
+          }, created ${summary.localDraftMaterialsCreated || 0} local draft material${
+            summary.localDraftMaterialsCreated === 1 ? "" : "s"
+          }, and surfaced ${summary.itemsSentToReview || 0} exception${
+            summary.itemsSentToReview === 1 ? "" : "s"
+          }.`
+        );
+      } catch (error) {
+        setSupplierWorkbookImportStatus(
+          `Workbook import failed: ${String(
+            error?.message || error || "Unknown error"
+          )}`
+        );
+      } finally {
+        if (supplierWorkbookInputRef.current) {
+          supplierWorkbookInputRef.current.value = "";
+        }
+        setSupplierWorkbookImporting(false);
+      }
+    },
+    [
+      applySupplierImportPlan,
+      localDraftIngredients,
+      supplierLayerRecords,
+    ]
+  );
+  const openTrustedSupplierWorkbookPicker = useCallback(() => {
+    supplierWorkbookInputRef.current?.click();
+  }, []);
+  const normalizePastedFraterworksJson = useCallback(() => {
+    const preview = normalizeFraterworksJsonPastePayload(supplierJsonPasteText);
+    setSupplierJsonNormalizePreview(preview);
+    if (!preview.ok) {
+      setSupplierJsonNormalizeStatus(preview.fatalErrors?.[0] || "JSON normalization failed.");
+      return;
+    }
+    setSupplierJsonNormalizeStatus(
+      preview.strictParsePassed
+        ? `Strict JSON parsed cleanly. Detected ${preview.productsDetected || 0} product${
+            preview.productsDetected === 1 ? "" : "s"
+          } and no formatting repairs were needed.`
+        : `Normalized ${preview.repairCount || 0} formatting issue${
+            preview.repairCount === 1 ? "" : "s"
+          } and detected ${preview.productsDetected || 0} product${
+            preview.productsDetected === 1 ? "" : "s"
+          }.`
+    );
+  }, [supplierJsonPasteText]);
+  const importPastedFraterworksJson = useCallback(() => {
+    setSupplierJsonImporting(true);
+    setSupplierJsonImportStatus("Parsing pasted Fraterworks JSON...");
+    try {
+      const normalizationPreview = normalizeFraterworksJsonPastePayload(
+        supplierJsonPasteText
+      );
+      setSupplierJsonNormalizePreview(normalizationPreview);
+      if (!normalizationPreview.ok) {
+        setSupplierJsonImportReport({
+          metadata: {
+            sourceLabel: "Fraterworks JSON Paste Import",
+          },
+          summary: {
+            productsParsed: normalizationPreview.productsDetected || 0,
+            productsImported: 0,
+            priceRowsCreated: 0,
+            localDraftsCreated: 0,
+            mappedItems: 0,
+            itemsSentToReview: 0,
+            rowsSkippedWithWarnings:
+              normalizationPreview.warnings?.length || 0,
+            repairedIssuesCount: normalizationPreview.repairCount || 0,
+          },
+          fatalErrors: normalizationPreview.fatalErrors || [],
+          warnings: normalizationPreview.warnings || [],
+          resultRows: [],
+        });
+        setSupplierJsonImportStatus(
+          normalizationPreview.fatalErrors?.[0] ||
+            "Fraterworks JSON import failed during normalization."
+        );
+        return;
+      }
+      setSupplierJsonNormalizeStatus(
+        normalizationPreview.strictParsePassed
+          ? "Preview ready. Strict JSON is valid for import."
+          : `Preview ready. ${normalizationPreview.repairCount || 0} formatting issue${
+              normalizationPreview.repairCount === 1 ? "" : "s"
+            } were repaired before import.`
+      );
+
+      const importPlan = buildFraterworksJsonPasteImportPlan(
+        normalizationPreview.normalizedText,
+        {
+          db: DB,
+          supplierLayerRecords,
+          localDraftIngredients,
+          supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+          buildSupplierProductKey,
+          getIfraMaterialRecord,
+          importedAt: new Date().toISOString(),
+          createLocalDrafts: supplierJsonCreateLocalDrafts,
+        }
+      );
+      const report = {
+        ...importPlan.report,
+        metadata: {
+          ...(importPlan.report?.metadata || {}),
+          sourceLabel: "Fraterworks JSON Paste Import",
+        },
+      };
+      setSupplierJsonImportReport(report);
+
+      if (importPlan.fatalErrors.length > 0) {
+        setSupplierJsonImportStatus(importPlan.fatalErrors[0]);
+        return;
+      }
+
+      applySupplierImportPlan(importPlan);
+
+      const summary = report?.summary || {};
+      setSupplierJsonImportStatus(
+        `${report?.metadata?.normalizationApplied ? `Normalized ${summary.repairedIssuesCount || 0} issue${
+          summary.repairedIssuesCount === 1 ? "" : "s"
+        } first. ` : ""}Parsed ${summary.productsParsed || 0} Fraterworks product${
+          summary.productsParsed === 1 ? "" : "s"
+        }, imported ${summary.productsImported || 0}, created ${
+          summary.priceRowsCreated || 0
+        } price row${summary.priceRowsCreated === 1 ? "" : "s"}, created ${
+          summary.localDraftsCreated || 0
+        } local draft material${
+          summary.localDraftsCreated === 1 ? "" : "s"
+        }, and surfaced ${summary.itemsSentToReview || 0} exception${
+          summary.itemsSentToReview === 1 ? "" : "s"
+        }.`
+      );
+    } catch (error) {
+      setSupplierJsonImportStatus(
+        `Fraterworks JSON import failed: ${String(
+          error?.message || error || "Unknown error"
+        )}`
+      );
+    } finally {
+      setSupplierJsonImporting(false);
+    }
+  }, [
+    applySupplierImportPlan,
+    localDraftIngredients,
+    supplierJsonCreateLocalDrafts,
+    supplierJsonPasteText,
+    supplierLayerRecords,
+  ]);
+  const downloadFraterworksReferenceWorkbook = useCallback(() => {
+    try {
+      const exportResult = buildFraterworksReferenceWorkbookExport({
+        db: DB,
+        pricing: PRICING,
+        pricesState,
+        supplierLayerRecords,
+        supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+        buildIngredientTruthReport: buildIngredientTruthCompletenessReport,
+        exportedAt: new Date().toISOString(),
+      });
+      const blob = new Blob([exportResult.workbookArrayBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = exportResult.fileName;
+      link.click();
+      URL.revokeObjectURL(href);
+      setSupplierWorkbookReferenceExportStatus(
+        `Downloaded ${exportResult.fileName} with ${exportResult.summary.fraterworksProductsExported} Fraterworks product${
+          exportResult.summary.fraterworksProductsExported === 1 ? "" : "s"
+        }, ${exportResult.summary.materialsExported} material reference row${
+          exportResult.summary.materialsExported === 1 ? "" : "s"
+        }, and ${exportResult.summary.fraterworksPriceRowsExported} Fraterworks price row${
+          exportResult.summary.fraterworksPriceRowsExported === 1 ? "" : "s"
+        }.`
+      );
+    } catch (error) {
+      setSupplierWorkbookReferenceExportStatus(
+        `Reference export failed: ${String(
+          error?.message || error || "Unknown error"
+        )}`
+      );
+    }
+  }, [pricesState, supplierLayerRecords]);
+  const syncFullFraterworksCatalog = useCallback(async () => {
+    setSupplierFullSyncing(true);
+    setSupplierFullSyncStatus("Fetching Fraterworks catalog pages...");
+    try {
+      const importPlan = await buildFraterworksFullCatalogSyncPlan({
+        fetchImpl: (...args) => fetch(...args),
+        db: DB,
+        supplierLayerRecords,
+        localDraftIngredients,
+        supplierProductRegistry: SUPPLIER_PRODUCT_REGISTRY,
+        buildSupplierProductKey,
+        getIfraMaterialRecord,
+        importedAt: new Date().toISOString(),
+        createLocalDrafts: supplierFullSyncCreateLocalDrafts,
+        onPageFetched: ({ pageNumber, productCount, totalProductsFetched }) => {
+          setSupplierFullSyncStatus(
+            `Fetched Fraterworks page ${pageNumber} with ${productCount} product${
+              productCount === 1 ? "" : "s"
+            } (${totalProductsFetched} total so far)...`
+          );
+        },
+      });
+      const report = {
+        ...importPlan.report,
+        metadata: {
+          ...(importPlan.report?.metadata || {}),
+          sourceLabel: "Fraterworks Full Catalog Sync",
+        },
+      };
+      setSupplierFullSyncReport(report);
+
+      if (importPlan.fatalErrors.length > 0) {
+        setSupplierFullSyncStatus(importPlan.fatalErrors[0]);
+        return;
+      }
+
+      applySupplierImportPlan(importPlan);
+
+      const summary = report?.summary || {};
+      setSupplierFullSyncStatus(
+        `Fetched ${summary.pagesFetched || 0} page${
+          summary.pagesFetched === 1 ? "" : "s"
+        }, merged ${summary.uniqueProductsMerged || 0} unique product${
+          summary.uniqueProductsMerged === 1 ? "" : "s"
+        } from ${summary.totalProductsFetched || 0} fetched row${
+          summary.totalProductsFetched === 1 ? "" : "s"
+        }, refreshed ${summary.existingSupplierProductsRefreshed || 0} existing supplier product${
+          summary.existingSupplierProductsRefreshed === 1 ? "" : "s"
+        }, created ${summary.newSupplierProductsCreated || 0} new supplier product${
+          summary.newSupplierProductsCreated === 1 ? "" : "s"
+        }, updated ${summary.priceRowsCreated || 0} price row${
+          summary.priceRowsCreated === 1 ? "" : "s"
+        }, and surfaced ${summary.itemsSentToReview || 0} exception${
+          summary.itemsSentToReview === 1 ? "" : "s"
+        }.`
+      );
+    } catch (error) {
+      setSupplierFullSyncStatus(
+        `Full Fraterworks sync failed: ${String(
+          error?.message || error || "Unknown error"
+        )}`
+      );
+    } finally {
+      setSupplierFullSyncing(false);
+    }
+  }, [
+    applySupplierImportPlan,
+    localDraftIngredients,
+    supplierFullSyncCreateLocalDrafts,
+    supplierLayerRecords,
+  ]);
+  const ingestFraterworksSupplierPage = useCallback(() => {
+    const parsedPriceLines = parseSupplierAdapterPackLines(
+      supplierAdapterDraft.packLines
+    );
+    if (parsedPriceLines.errors.length > 0) {
+      setSupplierAdapterStatus(parsedPriceLines.errors[0]);
+      return;
+    }
+
+    const derivedSupplierProductKey =
+      String(supplierAdapterDraft.supplierProductKey || "").trim() ||
+      buildSupplierProductKey({
+        supplierKey: "fraterworks",
+        url: supplierAdapterDraft.url,
+      }) ||
+      null;
+    const registryRecord = derivedSupplierProductKey
+      ? getSupplierProductRecord(derivedSupplierProductKey)
+      : null;
+    const mappedCatalogName = registryRecord?.mappedCatalogName || null;
+    const canonicalMaterialKey =
+      registryRecord?.mappedCanonicalMaterialKey || null;
+    const mappedRecord = mappedCatalogName ? DB[mappedCatalogName] || null : null;
+    const relatedSupplierProducts = canonicalMaterialKey
+      ? getSupplierProductsForCanonicalMaterialKey(canonicalMaterialKey).filter(
+          (record) => record?.supplierKey === "fraterworks"
+        )
+      : [];
+    const result = buildFraterworksSupplierAdapterResult({
+      supplierProductKey: derivedSupplierProductKey,
+      productTitle: supplierAdapterDraft.productTitle,
+      url: supplierAdapterDraft.url,
+      pricePoints: parsedPriceLines.pricePoints,
+      availabilityStatus: supplierAdapterDraft.availabilityStatus,
+      ifraPercent: supplierAdapterDraft.ifraPercent,
+      sdsUrl: supplierAdapterDraft.sdsUrl,
+      inci: supplierAdapterDraft.inci,
+      productDescription: supplierAdapterDraft.productDescription,
+      sourceNote: supplierAdapterDraft.sourceNote,
+      fetchTimestamp: new Date().toISOString(),
+      registryRecord,
+      mappedRecord,
+      ifraRecord: mappedCatalogName
+        ? getIfraMaterialRecord(mappedCatalogName)
+        : null,
+      relatedSupplierProducts,
+    });
+
+    setSupplierLayerPageFacts((prev) => ({
+      ...prev,
+      [result.supplierLayerRecord.recordKey]: result.supplierLayerRecord,
+    }));
+
+    if (result?.pricingPatch?.catalogName) {
+      setPricesState((prev) => {
+        const next = { ...prev };
+        const catalogName = result.pricingPatch.catalogName;
+        const supplierName = result.pricingPatch.supplierName || "Fraterworks";
+        const existingCatalogRow = next[catalogName] || {};
+        const existingSupplierRow = existingCatalogRow[supplierName] || {
+          url: "",
+          S: [],
+        };
+        next[catalogName] = {
+          ...existingCatalogRow,
+          [supplierName]: {
+            ...existingSupplierRow,
+            url: result.pricingPatch.url || existingSupplierRow.url || "",
+            S:
+              result.pricingPatch.pricePoints?.length > 0
+                ? result.pricingPatch.pricePoints
+                : existingSupplierRow.S || [],
+          },
+        };
+        return next;
+      });
+    }
+
+    setSupplierAdapterDraft((prev) => ({
+      ...prev,
+      supplierProductKey: result.supplierLayerRecord.supplierProductKey || "",
+    }));
+    setSupplierAdapterStatus(
+      `${result.trustLaneLabel}: captured ${
+        result.autoAppliedFieldKeys.length
+      } supplier-layer field${
+        result.autoAppliedFieldKeys.length === 1 ? "" : "s"
+      } for ${
+        result.supplierLayerRecord.pageFacts?.productTitle ||
+        result.supplierLayerRecord.supplierProductKey
+      }.${
+        result.canAutoApplyToPricing && result.pricingPatch?.catalogName
+          ? ` Live Fraterworks pricing for "${result.pricingPatch.catalogName}" refreshed.`
+          : " Live supplier pricing stayed untouched until mapping review is clear."
+        }`
+    );
+  }, [supplierAdapterDraft]);
+  const openSupplierEvidenceReview = useCallback((evidenceCandidateKey = "") => {
+    if (evidenceCandidateKey) {
+      setSupplierEvidenceReviewFocusKey(evidenceCandidateKey);
+    }
+    if (typeof document === "undefined") return;
+    const revealQueue = () => {
+      document
+        .getElementById("supplier-evidence-review-queue")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    const legacyDiagnostics = document.getElementById(
+      "supplier-legacy-review-diagnostics"
+    );
+    if (legacyDiagnostics) {
+      legacyDiagnostics.open = true;
+    }
+    if (typeof window !== "undefined" && window.requestAnimationFrame) {
+      window.requestAnimationFrame(revealQueue);
+    } else {
+      setTimeout(revealQueue, 0);
+    }
+  }, []);
+  const stageSupplierAdapterConflictReview = useCallback((reviewItem) => {
+    const candidate = buildSupplierAdapterConflictReviewCandidate(reviewItem);
+    if (!candidate?.evidenceCandidateKey) {
+      setSupplierAdapterStatus(
+        "This review item does not map cleanly into an evidence candidate."
+      );
+      return;
+    }
+
+    setSupplierEvidenceReviewFocusKey(candidate.evidenceCandidateKey);
+
+    if (evidenceCandidateLocalReviewState[candidate.evidenceCandidateKey]) {
+      setSupplierAdapterStatus(
+        `This ${reviewItem.fieldLabel || reviewItem.issueLabel} conflict is already staged in Evidence Review.`
+      );
+      openSupplierEvidenceReview(candidate.evidenceCandidateKey);
+      return;
+    }
+
+    setEvidenceCandidateLocalReviewState((prev) => ({
+      ...prev,
+      [candidate.evidenceCandidateKey]: {
+        decision: prev[candidate.evidenceCandidateKey]?.decision || null,
+        reviewStatus:
+          prev[candidate.evidenceCandidateKey]?.reviewStatus || "pending_review",
+        reviewedAt: prev[candidate.evidenceCandidateKey]?.reviewedAt || null,
+        sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+      },
+    }));
+    setSupplierAdapterStatus(
+      `Staged ${reviewItem.issueLabel} into Evidence Review. Compare the current app value against the incoming supplier value below.`
+    );
+    openSupplierEvidenceReview(candidate.evidenceCandidateKey);
+  }, [evidenceCandidateLocalReviewState, openSupplierEvidenceReview]);
+  const stageSupplierAdapterConflictReviewBatch = useCallback(
+    (reviewItems = []) => {
+      const candidates = (Array.isArray(reviewItems) ? reviewItems : [])
+        .map((reviewItem) => buildSupplierAdapterConflictReviewCandidate(reviewItem))
+        .filter((candidate) => candidate?.evidenceCandidateKey);
+      if (candidates.length === 0) {
+        setSupplierAdapterStatus(
+          "No selected correction proposals could be staged into Evidence Review."
+        );
+        return;
+      }
+
+      let newlyStagedCount = 0;
+      setEvidenceCandidateLocalReviewState((prev) => {
+        const next = { ...prev };
+        candidates.forEach((candidate) => {
+          if (!prev[candidate.evidenceCandidateKey]) {
+            newlyStagedCount += 1;
+          }
+          next[candidate.evidenceCandidateKey] = {
+            decision: prev[candidate.evidenceCandidateKey]?.decision || null,
+            reviewStatus:
+              prev[candidate.evidenceCandidateKey]?.reviewStatus ||
+              "pending_review",
+            reviewedAt:
+              prev[candidate.evidenceCandidateKey]?.reviewedAt || null,
+            sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+          };
+        });
+        return next;
+      });
+
+      const lastCandidateKey =
+        candidates[candidates.length - 1]?.evidenceCandidateKey || "";
+      setSupplierEvidenceReviewFocusKey(lastCandidateKey);
+      setSupplierAdapterStatus(
+        newlyStagedCount > 0
+          ? `Staged ${newlyStagedCount} correction proposal${
+              newlyStagedCount === 1 ? "" : "s"
+            } into Evidence Review.`
+          : "The selected correction proposals were already staged in Evidence Review."
+      );
+      openSupplierEvidenceReview(lastCandidateKey);
+    },
+    [openSupplierEvidenceReview]
+  );
+  const exportSupplierLayerRecords = useCallback(() => {
+    const blob = new Blob([supplierLayerExportJson], {
+      type: "application/json",
+    });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = "bb_supplier_layer_page_facts.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 0);
+    setSupplierAdapterExportStatus(
+      `Exported ${supplierLayerExportPayload.metadata.supplierLayerRecordCount} supplier-layer record${
+        supplierLayerExportPayload.metadata.supplierLayerRecordCount === 1
+          ? ""
+          : "s"
+      }.`
+    );
+  }, [supplierLayerExportJson, supplierLayerExportPayload]);
+  const copySupplierLayerRecords = useCallback(async () => {
+    if (!navigator?.clipboard?.writeText) {
+      setSupplierAdapterExportStatus("Copy unavailable in this browser.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(supplierLayerExportJson);
+      setSupplierAdapterExportStatus(
+        `Copied ${supplierLayerExportPayload.metadata.supplierLayerRecordCount} supplier-layer record${
+          supplierLayerExportPayload.metadata.supplierLayerRecordCount === 1
+            ? ""
+            : "s"
+        } to clipboard.`
+      );
+    } catch (e) {
+      setSupplierAdapterExportStatus("Copy failed.");
+    }
+  }, [supplierLayerExportJson, supplierLayerExportPayload]);
   const exportApprovedSupplierDrafts = useCallback(() => {
     const blob = new Blob([approvedSupplierDraftExportJson], {
       type: "application/json",
@@ -60726,6 +66805,229 @@ export default function App() {
       return next;
     });
   }, []);
+  const stageFormulaCriticalReviewCandidates = useCallback(
+    (scopeKey, candidates, successMessage) => {
+      const validCandidates = (Array.isArray(candidates) ? candidates : []).filter(
+        (candidate) => candidate?.evidenceCandidateKey
+      );
+      if (!validCandidates.length) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "No review candidate could be staged from this finalization action.",
+        }));
+        return false;
+      }
+      setEvidenceCandidateLocalReviewState((prev) => {
+        const next = { ...prev };
+        validCandidates.forEach((candidate) => {
+          next[candidate.evidenceCandidateKey] = {
+            decision: prev[candidate.evidenceCandidateKey]?.decision || null,
+            reviewStatus:
+              prev[candidate.evidenceCandidateKey]?.reviewStatus ||
+              "pending_review",
+            reviewedAt: prev[candidate.evidenceCandidateKey]?.reviewedAt || null,
+            sourceSnapshot: buildEvidenceCandidateSourceSnapshot(candidate),
+          };
+        });
+        return next;
+      });
+      setFormulaCriticalStatusByScope((prev) => ({
+        ...prev,
+        [scopeKey]:
+          successMessage ||
+          `Staged ${validCandidates.length} formula-critical review candidate${
+            validCandidates.length === 1 ? "" : "s"
+          } into the Supplier evidence queue.`,
+      }));
+      return true;
+    },
+    []
+  );
+  const openFormulaCriticalWorkbench = useCallback((materialName) => {
+    const normalizedName = String(materialName || "").trim();
+    if (!normalizedName) return;
+    setBackfillWorkbenchTargets([normalizedName]);
+    setMainTab("founder");
+  }, []);
+  const quickAddFormulaCriticalLocalDraft = useCallback(
+    (scopeKey, contextLabel) => {
+      const draft = formulaCriticalMissingMaterialDraftByScope[scopeKey];
+      const normalizedMaterialName = String(draft?.materialName || "").trim();
+      if (!normalizedMaterialName) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "Enter a material name first so the local draft ingredient can be saved.",
+        }));
+        return;
+      }
+
+      if (BASE_CATALOG_NAMES.has(normalizedMaterialName)) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            `"${normalizedMaterialName}" already exists in the live catalog. Use the correction/review path instead of creating a local draft duplicate.`,
+        }));
+        return;
+      }
+
+      const parsedPackLines = parseSupplierAdapterPackLines(draft?.packLines || "");
+      if (parsedPackLines.errors.length > 0) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]: parsedPackLines.errors[0],
+        }));
+        return;
+      }
+
+      const existingLocalDraft = localDraftIngredients[normalizedMaterialName] || null;
+      const artifacts = buildLocalDraftIngredientArtifacts({
+        ...draft,
+        materialName: normalizedMaterialName,
+        pricePoints: parsedPackLines.pricePoints,
+        createdAt: existingLocalDraft?.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      if (!artifacts?.name) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "The local draft could not be normalized. Check the manual fields and try again.",
+        }));
+        return;
+      }
+
+      setLocalDraftIngredients((prev) => {
+        const next = {
+          ...prev,
+          [artifacts.name]: artifacts.localDraftRecord,
+        };
+        syncLocalDraftIngredientsToRuntime(next);
+        return next;
+      });
+      setPricesState((prev) => ({
+        ...prev,
+        [artifacts.name]: artifacts.pricingBySupplier,
+      }));
+      setFormulaCriticalSelectedMaterialByScope((prev) => ({
+        ...prev,
+        [scopeKey]: artifacts.name,
+      }));
+      setFormulaCriticalMissingMaterialDraftByScope((prev) => ({
+        ...prev,
+        [scopeKey]: buildEmptyFormulaCriticalMissingMaterialDraft(),
+      }));
+      setFormulaCriticalStatusByScope((prev) => ({
+        ...prev,
+        [scopeKey]:
+          `Saved "${artifacts.name}" as a local draft ingredient for ${contextLabel}. It is usable now in Catalog, formula editing, and Build, but still marked as manual draft / review pending.`,
+      }));
+    },
+    [formulaCriticalMissingMaterialDraftByScope, localDraftIngredients]
+  );
+  const stageFormulaCriticalMissingMaterial = useCallback(
+    (scopeKey, contextLabel) => {
+      const draft = formulaCriticalMissingMaterialDraftByScope[scopeKey];
+      const normalizedMaterialName = String(draft?.materialName || "").trim();
+      if (!normalizedMaterialName) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "Enter a material name first so the missing-material intake can be staged.",
+        }));
+        return;
+      }
+      const candidates = buildFormulaMissingMaterialReviewCandidates({
+        ...draft,
+        materialName: normalizedMaterialName,
+        contextLabel,
+        createdAt: new Date().toISOString(),
+      });
+      const staged = stageFormulaCriticalReviewCandidates(
+        scopeKey,
+        candidates,
+        `Staged ${candidates.length} missing-material review artifact${
+          candidates.length === 1 ? "" : "s"
+        } for ${normalizedMaterialName}. Review/export stays in the Supplier evidence queue.`
+      );
+      if (staged) {
+        setFormulaCriticalMissingMaterialDraftByScope((prev) => ({
+          ...prev,
+          [scopeKey]: buildEmptyFormulaCriticalMissingMaterialDraft(),
+        }));
+      }
+    },
+    [
+      formulaCriticalMissingMaterialDraftByScope,
+      stageFormulaCriticalReviewCandidates,
+    ]
+  );
+  const stageFormulaCriticalCorrection = useCallback(
+    (scopeKey, audit, materialContextByName) => {
+      const materialName = String(
+        formulaCriticalSelectedMaterialByScope[scopeKey] || ""
+      ).trim();
+      const draft = formulaCriticalCorrectionDraftByScope[scopeKey];
+      const proposedValue = String(draft?.proposedValue || "").trim();
+      if (!materialName) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "Select a material from this formula/build before staging a correction proposal.",
+        }));
+        return;
+      }
+      if (!proposedValue) {
+        setFormulaCriticalStatusByScope((prev) => ({
+          ...prev,
+          [scopeKey]:
+            "Add the proposed correction value before staging the manual review candidate.",
+        }));
+        return;
+      }
+      const materialContext = materialContextByName[materialName] || {};
+      const auditRow =
+        audit?.rows?.find((row) => row.name === materialName) || null;
+      const candidate = buildFormulaFieldCorrectionReviewCandidate({
+        materialName,
+        canonicalMaterialKey: materialContext.canonicalMaterialKey || null,
+        relatedCatalogNames:
+          materialContext.relatedCatalogNames?.length > 0
+            ? materialContext.relatedCatalogNames
+            : [materialName],
+        fieldKey: draft?.fieldKey,
+        proposedValue,
+        confidence: draft?.confidence || "medium",
+        contextLabel: audit?.contextLabel || "Formula-Critical Review",
+        sourceNote: draft?.sourceNote || "",
+        currentWeakness: auditRow?.currentWeakness || audit?.guardrail || "",
+        recommendedAction: auditRow?.nextAction || audit?.guardrail || "",
+        createdAt: new Date().toISOString(),
+      });
+      const staged = stageFormulaCriticalReviewCandidates(
+        scopeKey,
+        candidate ? [candidate] : [],
+        `Staged a trusted-correction proposal for ${materialName}. Review/export stays in the Supplier evidence queue.`
+      );
+      if (staged) {
+        setFormulaCriticalCorrectionDraftByScope((prev) => ({
+          ...prev,
+          [scopeKey]: {
+            ...prev[scopeKey],
+            proposedValue: "",
+            sourceNote: "",
+          },
+        }));
+      }
+    },
+    [
+      formulaCriticalCorrectionDraftByScope,
+      formulaCriticalSelectedMaterialByScope,
+      stageFormulaCriticalReviewCandidates,
+    ]
+  );
   const toggleBackfillWorkbenchTarget = useCallback((materialName) => {
     const normalizedName = String(materialName || "").trim();
     if (!normalizedName) return;
@@ -61121,6 +67423,10 @@ export default function App() {
     () => getFormulaIfraRows(formula.ingredients, "cat4"),
     [formula]
   );
+  const buildCritiqueIfraRows = useMemo(
+    () => getFormulaIfraRows(buildItems, ifraCategory),
+    [buildItems, ifraCategory]
+  );
   const formulaChemistrySummary = useMemo(
     () => summarizeComputedChemistry(chem),
     [chem]
@@ -61197,6 +67503,133 @@ export default function App() {
       selectedFormulaBasket,
     ]
   );
+  const buildCritiqueReport = useMemo(
+    () =>
+      buildItems.length
+        ? buildFormulaCritiqueReport({
+            formula: {
+              formulaKey: "build-current",
+              name: buildName.trim() || "Current Build",
+              ingredients: buildItems,
+            },
+            chemistry: buildChem,
+            performance: buildScore,
+            performanceModel: buildPerformanceModel,
+            basket: selectedBuildBasket,
+            cheapestBasket: buildBasketStrategies.cheapest || null,
+            basketModeMeta: selectedBasketModeMeta,
+            ifraRows: buildCritiqueIfraRows,
+            lens: critiqueLens,
+            db: DB,
+          })
+        : null,
+    [
+      buildBasketStrategies,
+      buildChem,
+      buildCritiqueIfraRows,
+      buildItems,
+      buildName,
+      buildPerformanceModel,
+      buildScore,
+      critiqueLens,
+      selectedBasketModeMeta,
+      selectedBuildBasket,
+    ]
+  );
+  const formulaCriticalMaterialContextByName = useMemo(
+    () =>
+      buildFormulaCriticalMaterialContextByName(
+        formula?.ingredients || [],
+        pricesState
+      ),
+    [formula, pricesState]
+  );
+  const buildCriticalMaterialContextByName = useMemo(
+    () => buildFormulaCriticalMaterialContextByName(buildItems, pricesState),
+    [buildItems, pricesState]
+  );
+  const currentBuildLabel = buildName.trim() || "Current Build";
+  const formulaCriticalDataAudit = useMemo(
+    () =>
+      buildFormulaCriticalDataAudit({
+        contextLabel: selectedFormulaLabel,
+        contextKind: "formula",
+        items: formula?.ingredients || [],
+        basket: selectedFormulaBasket,
+        evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+        intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
+        materialContextByName: formulaCriticalMaterialContextByName,
+        critiqueReport: formulaCritiqueReport,
+        performanceModel: formulaPerformanceModel,
+        finishedProductGuidance: formulaFinishedProductGuidance,
+      }),
+    [
+      formula,
+      formulaCriticalMaterialContextByName,
+      formulaCritiqueReport,
+      formulaFinishedProductGuidance,
+      formulaPerformanceModel,
+      selectedFormulaBasket,
+      selectedFormulaLabel,
+      sourceDocumentEvidenceReviewPayload,
+    ]
+  );
+  const buildCriticalDataAudit = useMemo(
+    () =>
+      buildFormulaCriticalDataAudit({
+        contextLabel: currentBuildLabel,
+        contextKind: "build",
+        items: buildItems,
+        basket: selectedBuildBasket,
+        evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
+        intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
+        materialContextByName: buildCriticalMaterialContextByName,
+        critiqueReport: buildCritiqueReport,
+        performanceModel: buildPerformanceModel,
+        finishedProductGuidance: buildFinishedProductGuidance,
+      }),
+    [
+      buildCriticalMaterialContextByName,
+      buildCritiqueReport,
+      buildFinishedProductGuidance,
+      buildItems,
+      buildPerformanceModel,
+      currentBuildLabel,
+      selectedBuildBasket,
+      sourceDocumentEvidenceReviewPayload,
+    ]
+  );
+  useEffect(() => {
+    const availableNames = formulaCriticalDataAudit.availableMaterialNames || [];
+    const fallbackName =
+      formulaCriticalDataAudit.rows[0]?.name || availableNames[0] || "";
+    setFormulaCriticalSelectedMaterialByScope((prev) => {
+      const nextFormulaSelection = availableNames.includes(prev.formula)
+        ? prev.formula
+        : fallbackName;
+      return nextFormulaSelection === prev.formula
+        ? prev
+        : {
+            ...prev,
+            formula: nextFormulaSelection,
+          };
+    });
+  }, [formulaCriticalDataAudit]);
+  useEffect(() => {
+    const availableNames = buildCriticalDataAudit.availableMaterialNames || [];
+    const fallbackName = buildCriticalDataAudit.rows[0]?.name || availableNames[0] || "";
+    setFormulaCriticalSelectedMaterialByScope((prev) => {
+      const nextBuildSelection = availableNames.includes(prev.build)
+        ? prev.build
+        : fallbackName;
+      return nextBuildSelection === prev.build
+        ? prev
+        : {
+            ...prev,
+            build: nextBuildSelection,
+          };
+    });
+  }, [buildCriticalDataAudit]);
   const substitutionReviewSourceFormula = useMemo(
     () =>
       substitutionReviewState?.sourceFormulaKey
@@ -64528,6 +70961,1487 @@ export default function App() {
     </div>
   );
 
+  const formulaCriticalIssueToneByKey = {
+    missing_catalog_ingredient: {
+      bg: "#1E1B4B",
+      border: "#4338CA",
+      color: "#C4B5FD",
+    },
+    conflicting_staged_truth: {
+      bg: "#2A0F14",
+      border: "#7F1D1D",
+      color: "#FCA5A5",
+    },
+    pricing_distortion: {
+      bg: "#2A1A00",
+      border: "#78350F",
+      color: "#FDE68A",
+    },
+    technical_distortion: {
+      bg: "#071826",
+      border: "#1E3A52",
+      color: "#7DD3FC",
+    },
+    compliance_distortion: {
+      bg: "#2A1806",
+      border: "#92400E",
+      color: "#FCD34D",
+    },
+    identity_distortion: {
+      bg: "#120C26",
+      border: "#4338CA",
+      color: "#A78BFA",
+    },
+    evidence_distortion: {
+      bg: "#052E16",
+      border: "#166534",
+      color: "#86EFAC",
+    },
+    partial_truth: {
+      bg: "#0A1628",
+      border: "#1E3A52",
+      color: "#CBD5E1",
+    },
+  };
+  const getFormulaCriticalIssueTone = (issueTypeKey) =>
+    formulaCriticalIssueToneByKey[issueTypeKey] ||
+    formulaCriticalIssueToneByKey.partial_truth;
+  const renderFormulaCriticalWarningCard = (
+    audit,
+    { scopeKey = "formula", showOpenButton = false, compact = false } = {}
+  ) => {
+    if (!audit) return null;
+    const hasIssues = audit.rows.length > 0;
+    const summaryTone = hasIssues
+      ? {
+          bg: "#2A1A00",
+          border: "#78350F",
+          color: "#FDE68A",
+          badge: `${audit.summary.weakMaterialCount} weak material${
+            audit.summary.weakMaterialCount === 1 ? "" : "s"
+          }`,
+        }
+      : {
+          bg: "#052E16",
+          border: "#166534",
+          color: "#86EFAC",
+          badge: "No major distortion flags",
+        };
+    const metricRows = [
+      ["Critique", audit.summary.critiqueDistortionCount, "#7DD3FC"],
+      ["Performance", audit.summary.performanceDistortionCount, "#93C5FD"],
+      ["Compliance", audit.summary.complianceDistortionCount, "#FCD34D"],
+      ["Cost", audit.summary.costDistortionCount, "#34D399"],
+    ];
+
+    return (
+      <div
+        style={{
+          background: hasIssues
+            ? "linear-gradient(135deg,#2A1A00,#1A2434)"
+            : "linear-gradient(135deg,#052E16,#071826)",
+          border: `1px solid ${summaryTone.border}`,
+          borderRadius: 14,
+          padding: compact ? 12 : 14,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ minWidth: 0, flex: "1 1 280px" }}>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: summaryTone.color,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Formula-Critical Truth Guardrail
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: compact ? 11.5 : 12.5,
+                fontWeight: 700,
+                color: "#E2E8F0",
+                lineHeight: 1.5,
+              }}
+            >
+              {audit.headline}
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: 8.8,
+                color: "#CBD5E1",
+                lineHeight: 1.6,
+              }}
+            >
+              {audit.guardrail}
+            </div>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gap: 8,
+              justifyItems: "end",
+              minWidth: 180,
+            }}
+          >
+            <span
+              style={{
+                background: summaryTone.bg,
+                border: `1px solid ${summaryTone.border}`,
+                borderRadius: 999,
+                padding: "3px 10px",
+                fontSize: 8,
+                fontWeight: 700,
+                color: summaryTone.color,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {summaryTone.badge}
+            </span>
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+              }}
+            >
+              {showOpenButton ? (
+                <button
+                  type="button"
+                  onClick={() => setSubTab("finalize")}
+                  style={{
+                    background: "#0A1628",
+                    border: "1px solid #1D4ED8",
+                    borderRadius: 8,
+                    color: "#93C5FD",
+                    padding: "6px 10px",
+                    fontSize: 8.4,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Open Finalization
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setMainTab("suppliers")}
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  color: "#CBD5E1",
+                  padding: "6px 10px",
+                  fontSize: 8.4,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Open Review Queue
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+            gap: 8,
+          }}
+        >
+          {metricRows.map(([label, value, color]) => (
+            <div
+              key={`${scopeKey}-${label}`}
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                {label}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color,
+                }}
+              >
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+        {audit.guardrailNotes?.length ? (
+          <div style={{ display: "grid", gap: 6 }}>
+            {audit.guardrailNotes.map((note) => (
+              <div
+                key={`${scopeKey}-${note}`}
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "7px 9px",
+                  fontSize: 8.4,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
+  const renderFormulaCriticalFinalizationPanel = (
+    audit,
+    { scopeKey = "formula", materialContextByName = {}, compact = false } = {}
+  ) => {
+    if (!audit) return null;
+    const selectedMaterial =
+      formulaCriticalSelectedMaterialByScope[scopeKey] || "";
+    const correctionDraft =
+      formulaCriticalCorrectionDraftByScope[scopeKey] ||
+      buildEmptyFormulaCriticalCorrectionDraft();
+    const missingDraft =
+      formulaCriticalMissingMaterialDraftByScope[scopeKey] ||
+      buildEmptyFormulaCriticalMissingMaterialDraft();
+    const statusMessage = formulaCriticalStatusByScope[scopeKey] || "";
+    const selectedCorrectionFieldMeta =
+      FORMULA_CRITICAL_REVIEW_FIELD_META[correctionDraft.fieldKey] ||
+      FORMULA_CRITICAL_REVIEW_FIELD_META.ifraMaterialHint;
+    const selectedAuditRow =
+      audit.rows.find((row) => row.name === selectedMaterial) || null;
+    const sharedInputStyle = {
+      width: "100%",
+      background: "#0A1628",
+      border: "1px solid #1E3A52",
+      borderRadius: 8,
+      color: "#E2E8F0",
+      padding: "8px 10px",
+      fontSize: 9.5,
+      boxSizing: "border-box",
+      outline: "none",
+    };
+    const sharedLabelStyle = {
+      fontSize: 8,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      fontWeight: 700,
+      marginBottom: 5,
+    };
+    const updateMissingDraftField = (fieldKey, value) =>
+      setFormulaCriticalMissingMaterialDraftByScope((prev) => ({
+        ...prev,
+        [scopeKey]: {
+          ...prev[scopeKey],
+          [fieldKey]: value,
+        },
+      }));
+
+    return (
+      <div
+        style={{
+          background: CARD,
+          borderRadius: 14,
+          border: `1px solid ${BORDER}`,
+          padding: compact ? 12 : 14,
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 14,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ minWidth: 0, flex: "1 1 360px" }}>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#F59E0B",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Formula-Critical Data Finalization
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: compact ? 11.5 : 12.5,
+                fontWeight: 700,
+                color: "#E2E8F0",
+                lineHeight: 1.5,
+              }}
+            >
+              {audit.contextLabel}
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.6,
+              }}
+            >
+              {audit.guardrail}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => setMainTab("suppliers")}
+              style={{
+                background: "#0A1628",
+                border: "1px solid #1D4ED8",
+                borderRadius: 8,
+                color: "#93C5FD",
+                padding: "6px 10px",
+                fontSize: 8.5,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Open Supplier Review Queue
+            </button>
+            {audit.summary.topPriorityMaterialName ? (
+              <button
+                type="button"
+                onClick={() =>
+                  openFormulaCriticalWorkbench(
+                    audit.summary.topPriorityMaterialName
+                  )
+                }
+                style={{
+                  background: "#0A2E1A",
+                  border: "1px solid #166534",
+                  borderRadius: 8,
+                  color: "#86EFAC",
+                  padding: "6px 10px",
+                  fontSize: 8.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Open Top Workbench Target
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+            gap: 8,
+          }}
+        >
+          {[
+            [
+              "Weak materials",
+              audit.summary.weakMaterialCount,
+              "#F59E0B",
+              "Most likely to distort advice",
+            ],
+            [
+              "Missing catalog",
+              audit.summary.missingCatalogIngredientCount,
+              "#C4B5FD",
+              "Need review-first intake",
+            ],
+            [
+              "Staged review",
+              audit.summary.stagedCandidateCount,
+              "#7DD3FC",
+              "Already in the queue",
+            ],
+            [
+              "Manual follow-up",
+              audit.summary.manualFollowUpCount,
+              "#A78BFA",
+              "High-impact fields still weak",
+            ],
+            [
+              "Conflicts",
+              audit.summary.conflictCount,
+              "#FCA5A5",
+              "Competing staged truth",
+            ],
+          ].map(([label, value, color, meta]) => (
+            <div
+              key={`${scopeKey}-${label}`}
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                }}
+              >
+                {label}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color,
+                }}
+              >
+                {value}
+              </div>
+              <div
+                style={{
+                  marginTop: 3,
+                  fontSize: 8,
+                  color: "#94A3B8",
+                  lineHeight: 1.45,
+                }}
+              >
+                {meta}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          {audit.rows.length === 0 ? (
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "10px 12px",
+                fontSize: 9,
+                color: "#86EFAC",
+                lineHeight: 1.65,
+              }}
+            >
+              No ranked formula-critical weak materials are currently standing
+              out for this context. You can still use the manual intake and
+              correction paths below if you know a missing or clearly wrong
+              record is affecting advice.
+            </div>
+          ) : (
+            audit.rows.map((row) => {
+              const truthMeta =
+                MATERIAL_COMPLETENESS_LEVEL_META[row.truthLevel] ||
+                MATERIAL_COMPLETENESS_LEVEL_META.partial;
+              const issueTone = getFormulaCriticalIssueTone(row.issueTypeKey);
+              const missingFieldList =
+                row.target?.intakeTarget?.stillMissingFields?.length > 0
+                  ? row.target.intakeTarget.stillMissingFields.join(", ")
+                  : row.target?.manualFollowUpRows?.length > 0
+                  ? row.target.manualFollowUpRows
+                      .map((item) => item.fieldLabel)
+                      .slice(0, 4)
+                      .join(", ")
+                  : "No specific next field list is attached yet.";
+
+              return (
+                <div
+                  key={`${scopeKey}-${row.name}`}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    display: "grid",
+                    gap: 9,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 320px" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          {row.name}
+                        </div>
+                        <span
+                          style={{
+                            background: issueTone.bg,
+                            border: `1px solid ${issueTone.border}`,
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                            fontSize: 7.4,
+                            fontWeight: 700,
+                            color: issueTone.color,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {row.issueType}
+                        </span>
+                        <span
+                          style={{
+                            background: truthMeta.bg,
+                            border: `1px solid ${truthMeta.border}`,
+                            borderRadius: 999,
+                            padding: "2px 8px",
+                            fontSize: 7.4,
+                            fontWeight: 700,
+                            color: truthMeta.color,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {truthMeta.label}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 5,
+                          fontSize: 8.5,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {row.whyItMatters}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.4,
+                        color: "#FCD34D",
+                        fontWeight: 700,
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {row.priorityScore.toFixed(0)}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "minmax(0,1fr) minmax(220px,0.8fr)",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "8px 10px",
+                      }}
+                    >
+                      <div style={sharedLabelStyle}>Why It Matters</div>
+                      <div
+                        style={{
+                          fontSize: 8.7,
+                          color: "#CBD5E1",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {row.currentWeakness}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 6,
+                          fontSize: 8.2,
+                          color: "#94A3B8",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        Next action: {row.nextAction}
+                      </div>
+                      <div
+                        style={{
+                          marginTop: 7,
+                          display: "flex",
+                          gap: 5,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {row.distortionTags.map((tag) => (
+                          <span
+                            key={`${row.name}-${tag}`}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 999,
+                              padding: "2px 7px",
+                              fontSize: 7.3,
+                              fontWeight: 700,
+                              color: "#CBD5E1",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "8px 10px",
+                        display: "grid",
+                        gap: 5,
+                      }}
+                    >
+                      {[
+                        ["Support", row.supportLabel || "—", "#7DD3FC"],
+                        ["Staged", row.stagedCandidateCount, "#93C5FD"],
+                        ["Promotion-safe", row.promotionSafeCount, "#34D399"],
+                        ["Manual follow-up", row.manualFollowUpCount, "#A78BFA"],
+                      ].map(([label, value, color]) => (
+                        <div
+                          key={`${row.name}-${label}`}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 8,
+                            alignItems: "center",
+                            fontSize: 8,
+                          }}
+                        >
+                          <span style={{ color: "#64748B" }}>{label}</span>
+                          <span
+                            style={{
+                              color,
+                              fontWeight: 700,
+                              fontFamily:
+                                typeof value === "number"
+                                  ? "monospace"
+                                  : "inherit",
+                            }}
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                      <div
+                        style={{
+                          marginTop: 4,
+                          fontSize: 8,
+                          color: "#94A3B8",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Missing next fields: {missingFieldList}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      disabled={!row.canOpenDossier}
+                      onClick={() => row.canOpenDossier && setDetailName(row.name)}
+                      style={{
+                        background: row.canOpenDossier ? "#0A1628" : "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        color: row.canOpenDossier ? "#CBD5E1" : "#475569",
+                        padding: "5px 9px",
+                        fontSize: 8.2,
+                        fontWeight: 700,
+                        cursor: row.canOpenDossier ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      Open Dossier
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openFormulaCriticalWorkbench(row.name)}
+                      style={{
+                        background: "#0A2E1A",
+                        border: "1px solid #166534",
+                        borderRadius: 8,
+                        color: "#86EFAC",
+                        padding: "5px 9px",
+                        fontSize: 8.2,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Open Workbench
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormulaCriticalSelectedMaterialByScope((prev) => ({
+                          ...prev,
+                          [scopeKey]: row.name,
+                        }));
+                        setFormulaCriticalCorrectionDraftByScope((prev) => ({
+                          ...prev,
+                          [scopeKey]: {
+                            ...prev[scopeKey],
+                            fieldKey:
+                              row.target?.manualFollowUpRows?.[0]?.fieldKey ||
+                              prev[scopeKey]?.fieldKey ||
+                              "ifraMaterialHint",
+                          },
+                        }));
+                      }}
+                      style={{
+                        background: "#0A1628",
+                        border: "1px solid #1D4ED8",
+                        borderRadius: 8,
+                        color: "#93C5FD",
+                        padding: "5px 9px",
+                        fontSize: 8.2,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Use in Correction Form
+                    </button>
+                    {row.missingCatalogRecord ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormulaCriticalMissingMaterialDraftByScope((prev) => ({
+                            ...prev,
+                            [scopeKey]: {
+                              ...prev[scopeKey],
+                              materialName: row.name,
+                            },
+                          }))
+                        }
+                        style={{
+                          background: "#120C26",
+                          border: "1px solid #4338CA",
+                          borderRadius: 8,
+                          color: "#C4B5FD",
+                          padding: "5px 9px",
+                          fontSize: 8.2,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Use in Missing Intake
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: "10px 12px",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.8,
+                    color: "#C4B5FD",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Manual Missing-Material Intake
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.3,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Use the same draft once in either lane: save a live local
+                  draft ingredient for immediate runtime use, or keep the
+                  existing review-first intake for later canonical promotion.
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <span
+                  style={{
+                    background: "#2D0A1F",
+                    border: "1px solid #BE185D",
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 7.3,
+                    fontWeight: 700,
+                    color: "#F9A8D4",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Immediate local use
+                </span>
+                <span
+                  style={{
+                    background: "#120C26",
+                    border: "1px solid #4338CA",
+                    borderRadius: 999,
+                    padding: "2px 8px",
+                    fontSize: 7.3,
+                    fontWeight: 700,
+                    color: "#C4B5FD",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  Review-first still available
+                </span>
+              </div>
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Material Name</div>
+              <input
+                value={missingDraft.materialName}
+                onChange={(e) =>
+                  updateMissingDraftField("materialName", e.target.value)
+                }
+                placeholder="Algenone"
+                style={sharedInputStyle}
+              />
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div style={sharedLabelStyle}>Supplier</div>
+                <input
+                  value={missingDraft.supplierName}
+                  onChange={(e) =>
+                    updateMissingDraftField("supplierName", e.target.value)
+                  }
+                  placeholder="Fraterworks"
+                  style={sharedInputStyle}
+                />
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>Supplier / Source Note</div>
+                <input
+                  value={missingDraft.supplierSourceNote}
+                  onChange={(e) =>
+                    updateMissingDraftField(
+                      "supplierSourceNote",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Owned bottle on hand"
+                  style={sharedInputStyle}
+                />
+              </div>
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Product URL</div>
+              <input
+                value={missingDraft.url}
+                onChange={(e) => updateMissingDraftField("url", e.target.value)}
+                placeholder="https://supplier.example/material"
+                style={sharedInputStyle}
+              />
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Sizes / Prices</div>
+              <textarea
+                value={missingDraft.packLines}
+                onChange={(e) =>
+                  updateMissingDraftField("packLines", e.target.value)
+                }
+                rows={3}
+                placeholder={`15 g 12.5\n30 g 22.0`}
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div style={sharedLabelStyle}>Availability</div>
+                <select
+                  value={missingDraft.availabilityStatus}
+                  onChange={(e) =>
+                    updateMissingDraftField(
+                      "availabilityStatus",
+                      e.target.value
+                    )
+                  }
+                  style={sharedInputStyle}
+                >
+                  {[
+                    ["unknown", "Unknown"],
+                    ["in stock", "In stock"],
+                    ["limited stock", "Limited stock"],
+                    ["request only", "Request / quote"],
+                    ["sold out", "Sold out"],
+                    ["discontinued", "Discontinued"],
+                  ].map(([value, label]) => (
+                    <option
+                      key={`${scopeKey}-missing-availability-${value}`}
+                      value={value}
+                    >
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>IFRA % Shown</div>
+                <input
+                  value={missingDraft.ifraPercent}
+                  onChange={(e) =>
+                    updateMissingDraftField("ifraPercent", e.target.value)
+                  }
+                  placeholder="0.4"
+                  style={sharedInputStyle}
+                />
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>SDS URL</div>
+                <input
+                  value={missingDraft.sdsUrl}
+                  onChange={(e) =>
+                    updateMissingDraftField("sdsUrl", e.target.value)
+                  }
+                  placeholder="https://supplier.example/sds.pdf"
+                  style={sharedInputStyle}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div style={sharedLabelStyle}>CAS</div>
+                <input
+                  value={missingDraft.cas}
+                  onChange={(e) => updateMissingDraftField("cas", e.target.value)}
+                  placeholder="123-45-6"
+                  style={sharedInputStyle}
+                />
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>INCI</div>
+                <input
+                  value={missingDraft.inci}
+                  onChange={(e) =>
+                    updateMissingDraftField("inci", e.target.value)
+                  }
+                  placeholder="Ingredient INCI"
+                  style={sharedInputStyle}
+                />
+              </div>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3,minmax(0,1fr))",
+                gap: 8,
+              }}
+            >
+              <div>
+                <div style={sharedLabelStyle}>Note</div>
+                <select
+                  value={missingDraft.note}
+                  onChange={(e) => updateMissingDraftField("note", e.target.value)}
+                  style={sharedInputStyle}
+                >
+                  <option value="">Unspecified</option>
+                  {["top", "mid", "base", "carrier"].map((option) => (
+                    <option
+                      key={`${scopeKey}-missing-note-${option}`}
+                      value={option}
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>Material Type</div>
+                <select
+                  value={missingDraft.materialType}
+                  onChange={(e) =>
+                    updateMissingDraftField("materialType", e.target.value)
+                  }
+                  style={sharedInputStyle}
+                >
+                  <option value="">Unspecified</option>
+                  {["EO", "ABS", "CO2", "SYNTH", "CARRIER"].map((option) => (
+                    <option
+                      key={`${scopeKey}-missing-type-${option}`}
+                      value={option}
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div style={sharedLabelStyle}>Confidence</div>
+                <select
+                  value={missingDraft.confidence}
+                  onChange={(e) =>
+                    updateMissingDraftField("confidence", e.target.value)
+                  }
+                  style={sharedInputStyle}
+                >
+                  {["low", "medium", "high"].map((option) => (
+                    <option
+                      key={`${scopeKey}-missing-confidence-${option}`}
+                      value={option}
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Scent Summary</div>
+              <textarea
+                value={missingDraft.scentSummary}
+                onChange={(e) =>
+                  updateMissingDraftField("scentSummary", e.target.value)
+                }
+                rows={3}
+                placeholder="Optional scent summary"
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Scent Description</div>
+              <textarea
+                value={missingDraft.scentDescription}
+                onChange={(e) =>
+                  updateMissingDraftField("scentDescription", e.target.value)
+                }
+                rows={3}
+                placeholder="Optional longer description or usage note"
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Technical Notes</div>
+              <textarea
+                value={missingDraft.technicalNotes}
+                onChange={(e) =>
+                  updateMissingDraftField("technicalNotes", e.target.value)
+                }
+                rows={3}
+                placeholder="Optional technical notes or molecular caveats"
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(5,minmax(0,1fr))",
+                gap: 8,
+              }}
+            >
+              {[
+                ["MW", "MW", "156.2"],
+                ["xLogP", "xLogP", "2.1"],
+                ["TPSA", "TPSA", "20.5"],
+                ["VP", "VP", "0.003"],
+                ["ODT", "ODT", "12"],
+              ].map(([fieldKey, label, placeholder]) => (
+                <div key={`${scopeKey}-local-draft-${fieldKey}`}>
+                  <div style={sharedLabelStyle}>{label}</div>
+                  <input
+                    value={missingDraft[fieldKey]}
+                    onChange={(e) =>
+                      updateMissingDraftField(fieldKey, e.target.value)
+                    }
+                    placeholder={placeholder}
+                    style={sharedInputStyle}
+                  />
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                fontSize: 8.2,
+                color: "#94A3B8",
+                lineHeight: 1.6,
+              }}
+            >
+              Quick Add saves a browser-local draft ingredient that is usable
+              immediately in Catalog, Build, formula editing, and finalization,
+              while still wearing explicit draft/review-pending trust signals.
+              Stage Missing-Material Intake keeps the current review-first
+              Supplier evidence path intact for later promotion.
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() =>
+                  quickAddFormulaCriticalLocalDraft(
+                    scopeKey,
+                    audit.contextLabel
+                  )
+                }
+                style={{
+                  background: "#2D0A1F",
+                  border: "1px solid #BE185D",
+                  borderRadius: 9,
+                  color: "#F9A8D4",
+                  padding: "8px 12px",
+                  fontSize: 8.7,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Quick Add Trusted Material
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  stageFormulaCriticalMissingMaterial(scopeKey, audit.contextLabel)
+                }
+                style={{
+                  background: "#120C26",
+                  border: "1px solid #4338CA",
+                  borderRadius: 9,
+                  color: "#DDD6FE",
+                  padding: "8px 12px",
+                  fontSize: 8.7,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Stage Missing-Material Intake
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 12,
+              padding: "10px 12px",
+              display: "grid",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 8.8,
+                    color: "#7DD3FC",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 700,
+                  }}
+                >
+                  Trusted Correction Proposal
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 8.3,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                  }}
+                >
+                  Stage high-impact field corrections without writing live truth
+                  directly.
+                </div>
+              </div>
+              <span
+                style={{
+                  background: "#0A1628",
+                  border: "1px solid #1D4ED8",
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                  fontSize: 7.3,
+                  fontWeight: 700,
+                  color: "#93C5FD",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Manual review
+              </span>
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Material</div>
+              <select
+                value={selectedMaterial}
+                onChange={(e) =>
+                  setFormulaCriticalSelectedMaterialByScope((prev) => ({
+                    ...prev,
+                    [scopeKey]: e.target.value,
+                  }))
+                }
+                style={sharedInputStyle}
+              >
+                <option value="">Select a material</option>
+                {audit.availableMaterialNames.map((name) => (
+                  <option key={`${scopeKey}-material-${name}`} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Field</div>
+              <select
+                value={correctionDraft.fieldKey}
+                onChange={(e) =>
+                  setFormulaCriticalCorrectionDraftByScope((prev) => ({
+                    ...prev,
+                    [scopeKey]: {
+                      ...prev[scopeKey],
+                      fieldKey: e.target.value,
+                    },
+                  }))
+                }
+                style={sharedInputStyle}
+              >
+                {FORMULA_CRITICAL_REVIEW_FIELD_ORDER.map((fieldKey) => (
+                  <option key={`${scopeKey}-field-${fieldKey}`} value={fieldKey}>
+                    {FORMULA_CRITICAL_REVIEW_FIELD_META[fieldKey]?.label || fieldKey}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                fontSize: 8.2,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+              }}
+            >
+              {selectedCorrectionFieldMeta?.guidance}
+              {selectedAuditRow?.currentWeakness ? (
+                <div style={{ marginTop: 5, color: "#CBD5E1" }}>
+                  Current weakness: {selectedAuditRow.currentWeakness}
+                </div>
+              ) : null}
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Proposed Value / Correction</div>
+              <textarea
+                value={correctionDraft.proposedValue}
+                onChange={(e) =>
+                  setFormulaCriticalCorrectionDraftByScope((prev) => ({
+                    ...prev,
+                    [scopeKey]: {
+                      ...prev[scopeKey],
+                      proposedValue: e.target.value,
+                    },
+                  }))
+                }
+                rows={4}
+                placeholder="Describe the corrected IFRA, pricing, CAS / INCI, dilution, or technical support value"
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Source Note</div>
+              <textarea
+                value={correctionDraft.sourceNote}
+                onChange={(e) =>
+                  setFormulaCriticalCorrectionDraftByScope((prev) => ({
+                    ...prev,
+                    [scopeKey]: {
+                      ...prev[scopeKey],
+                      sourceNote: e.target.value,
+                    },
+                  }))
+                }
+                rows={3}
+                placeholder="Trusted supplier SDS reviewed manually"
+                style={{ ...sharedInputStyle, resize: "vertical" }}
+              />
+            </div>
+            <div>
+              <div style={sharedLabelStyle}>Confidence</div>
+              <select
+                value={correctionDraft.confidence}
+                onChange={(e) =>
+                  setFormulaCriticalCorrectionDraftByScope((prev) => ({
+                    ...prev,
+                    [scopeKey]: {
+                      ...prev[scopeKey],
+                      confidence: e.target.value,
+                    },
+                  }))
+                }
+                style={sharedInputStyle}
+              >
+                {["low", "medium", "high"].map((option) => (
+                  <option
+                    key={`${scopeKey}-correction-confidence-${option}`}
+                    value={option}
+                  >
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              disabled={!audit.availableMaterialNames.length}
+              onClick={() =>
+                stageFormulaCriticalCorrection(
+                  scopeKey,
+                  audit,
+                  materialContextByName
+                )
+              }
+              style={{
+                background: audit.availableMaterialNames.length
+                  ? "#0A1628"
+                  : "#060E1E",
+                border: "1px solid #1D4ED8",
+                borderRadius: 9,
+                color: audit.availableMaterialNames.length
+                  ? "#93C5FD"
+                  : "#475569",
+                padding: "8px 12px",
+                fontSize: 8.7,
+                fontWeight: 700,
+                cursor: audit.availableMaterialNames.length
+                  ? "pointer"
+                  : "not-allowed",
+              }}
+            >
+              Stage Correction Proposal
+            </button>
+          </div>
+        </div>
+        {statusMessage ? (
+          <div
+            style={{
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 10,
+              padding: "8px 10px",
+              fontSize: 8.6,
+              color: "#CBD5E1",
+              lineHeight: 1.55,
+            }}
+          >
+            {statusMessage}
+          </div>
+        ) : null}
+      </div>
+    );
+  };
   const founderDashboardContent = useMemo(() => {
     if (!founderInsightsEnabled) return null;
     const dashboardItems = founderDashboardSummary.sortedItems;
@@ -65246,15 +73160,6 @@ export default function App() {
       }
       return "#94A3B8";
     };
-    const getEvidenceCandidateDisplayValue = (candidate) => {
-      if (candidate?.displayValue) return candidate.displayValue;
-      if (typeof candidate?.candidateValue === "boolean") {
-        return String(candidate.candidateValue);
-      }
-      return candidate?.candidateValue || "—";
-    };
-    const getEvidenceCandidateConfidenceLabel = (candidate) =>
-      candidate?.confidenceLabel || candidate?.confidence || "unknown";
     const renderFormulaTypeLabel = (entry) =>
       entry?.isLocked
         ? "Locked Version"
@@ -73457,7 +81362,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 5, marginTop: 12 }}>
-                  {["formula", "compare", "edit", "cost", "chemistry", "analysis", "timeline", "odormap", "notes", "critique"].map(
+                  {["formula", "finalize", "compare", "edit", "cost", "chemistry", "analysis", "timeline", "odormap", "notes", "critique"].map(
                     (k) => (
                       <button
                         key={k}
@@ -73483,6 +81388,8 @@ export default function App() {
                       >
                         {k === "formula"
                           ? "📋 Formula"
+                          : k === "finalize"
+                          ? "🧭 Finalize"
                           : k === "compare"
                           ? "🔀 Compare"
                           : k === "edit"
@@ -73512,153 +81419,163 @@ export default function App() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "300px 1fr",
-                      gap: 14,
+                      gap: 12,
                     }}
                   >
-                    <div>
-                      <PyramidSVG ingredients={formula.ingredients} />
-                      {(() => {
-                        const cats = [
-                          "Citrus",
-                          "Floral",
-                          "Woody",
-                          "Musk",
-                          "Amber",
-                          "Marine",
-                          "Oriental",
-                          "Gourmand",
-                          "Spicy",
-                          "Green",
-                        ];
-                        const total =
-                          formula.ingredients.reduce((s, i) => s + i.g, 0) || 1;
-                        const radarData = cats
-                          .map((cat) => {
-                            const score = formula.ingredients.reduce(
-                              (s, ing) => {
-                                const d = DB[ing.name];
-                                if (!d || !d.scentClass) return s;
-                                const sc = d.scentClass || "";
-                                if (sc === cat)
-                                  return s + (ing.g / total) * 100;
-                                // partial matches (e.g. "Woody" matches "Woody-Mossy")
-                                if (sc.includes(cat))
-                                  return s + (ing.g / total) * 60;
-                                return s;
-                              },
-                              0
-                            );
-                            return {
-                              subject: cat,
-                              A: Math.min(100, Math.round(score)),
-                            };
-                          })
-                          .filter((d) => d.A > 0);
-                        return radarData.length > 0 ? (
-                          <div
-                            style={{
-                              marginTop: 10,
-                              background: "#060E1E",
-                              borderRadius: 10,
-                              border: "1px solid #1E3A52",
-                              padding: "10px 6px 4px",
-                            }}
-                          >
+                    {renderFormulaCriticalWarningCard(formulaCriticalDataAudit, {
+                      scopeKey: "formula",
+                      showOpenButton: true,
+                    })}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "300px 1fr",
+                        gap: 14,
+                      }}
+                    >
+                      <div>
+                        <PyramidSVG ingredients={formula.ingredients} />
+                        {(() => {
+                          const cats = [
+                            "Citrus",
+                            "Floral",
+                            "Woody",
+                            "Musk",
+                            "Amber",
+                            "Marine",
+                            "Oriental",
+                            "Gourmand",
+                            "Spicy",
+                            "Green",
+                          ];
+                          const total =
+                            formula.ingredients.reduce((s, i) => s + i.g, 0) || 1;
+                          const radarData = cats
+                            .map((cat) => {
+                              const score = formula.ingredients.reduce(
+                                (s, ing) => {
+                                  const d = DB[ing.name];
+                                  if (!d || !d.scentClass) return s;
+                                  const sc = d.scentClass || "";
+                                  if (sc === cat)
+                                    return s + (ing.g / total) * 100;
+                                  if (sc.includes(cat))
+                                    return s + (ing.g / total) * 60;
+                                  return s;
+                                },
+                                0
+                              );
+                              return {
+                                subject: cat,
+                                A: Math.min(100, Math.round(score)),
+                              };
+                            })
+                            .filter((d) => d.A > 0);
+                          return radarData.length > 0 ? (
                             <div
                               style={{
-                                fontSize: 9,
-                                fontWeight: 700,
-                                color: "#475569",
-                                textTransform: "uppercase",
-                                letterSpacing: "0.1em",
-                                textAlign: "center",
-                                marginBottom: 4,
+                                marginTop: 10,
+                                background: "#060E1E",
+                                borderRadius: 10,
+                                border: "1px solid #1E3A52",
+                                padding: "10px 6px 4px",
                               }}
                             >
-                              Scent Profile
-                            </div>
-                            <ResponsiveContainer width="100%" height={180}>
-                              <RadarChart
-                                data={radarData}
-                                margin={{
-                                  top: 4,
-                                  right: 20,
-                                  bottom: 4,
-                                  left: 20,
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  fontWeight: 700,
+                                  color: "#475569",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.1em",
+                                  textAlign: "center",
+                                  marginBottom: 4,
                                 }}
                               >
-                                <PolarGrid stroke="#1E3A52" />
-                                <PolarAngleAxis
-                                  dataKey="subject"
-                                  tick={{ fill: "#475569", fontSize: 8 }}
-                                />
-                                <Radar
-                                  name="profile"
-                                  dataKey="A"
-                                  stroke="#22D3EE"
-                                  fill="#22D3EE"
-                                  fillOpacity={0.25}
-                                  strokeWidth={1.5}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    background: "#0A1628",
-                                    border: "1px solid #1E3A52",
-                                    borderRadius: 6,
-                                    fontSize: 9,
+                                Scent Profile
+                              </div>
+                              <ResponsiveContainer width="100%" height={180}>
+                                <RadarChart
+                                  data={radarData}
+                                  margin={{
+                                    top: 4,
+                                    right: 20,
+                                    bottom: 4,
+                                    left: 20,
                                   }}
-                                  formatter={(v) => [v + "%", "Weight"]}
-                                />
-                              </RadarChart>
-                            </ResponsiveContainer>
-                          </div>
-                        ) : null;
-                      })()}
-                      <div style={{ marginTop: 10 }}>
-                        {renderPerformanceModelCard(formulaPerformanceModel, {
-                          title: `Performance Model Estimate — ${selectedFormulaLabel}`,
-                        })}
+                                >
+                                  <PolarGrid stroke="#1E3A52" />
+                                  <PolarAngleAxis
+                                    dataKey="subject"
+                                    tick={{ fill: "#475569", fontSize: 8 }}
+                                  />
+                                  <Radar
+                                    name="profile"
+                                    dataKey="A"
+                                    stroke="#22D3EE"
+                                    fill="#22D3EE"
+                                    fillOpacity={0.25}
+                                    strokeWidth={1.5}
+                                  />
+                                  <Tooltip
+                                    contentStyle={{
+                                      background: "#0A1628",
+                                      border: "1px solid #1E3A52",
+                                      borderRadius: 6,
+                                      fontSize: 9,
+                                    }}
+                                    formatter={(v) => [v + "%", "Weight"]}
+                                  />
+                                </RadarChart>
+                              </ResponsiveContainer>
+                            </div>
+                          ) : null;
+                        })()}
+                        <div style={{ marginTop: 10 }}>
+                          {renderPerformanceModelCard(formulaPerformanceModel, {
+                            title: `Performance Model Estimate — ${selectedFormulaLabel}`,
+                          })}
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ overflowX: "auto" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: 8,
-                        }}
-                      >
-                        <span
+                      <div style={{ overflowX: "auto" }}>
+                        <div
                           style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "#64748B",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.1em",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 8,
                           }}
                         >
-                          Ingredient Breakdown
-                        </span>
-                        <span style={{ fontSize: 9, color: "#334155" }}>
-                          Click grams to edit · helper IFRA state shown · 🔍
-                          click name for detail
-                        </span>
-                      </div>
-                      <table
-                        style={{
-                          width: "100%",
-                          fontSize: 10.5,
-                          borderCollapse: "collapse",
-                        }}
-                      >
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.1em",
+                            }}
+                          >
+                            Ingredient Breakdown
+                          </span>
+                          <span style={{ fontSize: 9, color: "#334155" }}>
+                            Click grams to edit · helper IFRA state shown · 🔍
+                            click name for detail
+                          </span>
+                        </div>
+                        <table
+                          style={{
+                            width: "100%",
+                            fontSize: 10.5,
+                            borderCollapse: "collapse",
+                          }}
+                        >
                         <thead>
                           <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                             {[
                               "Note",
                               "Ingredient",
                               "Supplier",
+                              "IFRA %",
                               "Type",
                               "g",
                               "% Conc",
@@ -73688,6 +81605,20 @@ export default function App() {
                             const d = DB[ing.name];
                             const nc = NC[ing.note] || NC.carrier;
                             const ifraData = getIngredientIfraData(ing.name);
+                            const ifraVisibility =
+                              getIngredientIfraVisibility(ing.name);
+                            const displayName = getMaterialDisplayName(
+                              ing.name,
+                              d
+                            );
+                            const runtimeKeyCaption =
+                              getMaterialRuntimeKeyCaption(ing.name, d);
+                            const primarySupplierName =
+                              Object.keys(
+                                pricesState?.[ing.name] || PRICING?.[ing.name] || {}
+                              )[0] ||
+                              d?.supplier ||
+                              "—";
                             const key = `${selFrag}-${ii}`;
                             const total = formula.ingredients.reduce(
                               (s, i) => s + i.g,
@@ -73706,9 +81637,9 @@ export default function App() {
                                 }
                               >
                                 <td style={{ padding: "4px 6px" }}>
-                                  <span
-                                    style={{
-                                      background: nc.light,
+                                    <span
+                                      style={{
+                                        background: nc.light,
                                       color: nc.text,
                                       border: `1px solid ${nc.bg}50`,
                                       padding: "1px 6px",
@@ -73737,20 +81668,82 @@ export default function App() {
                                       flexWrap: "wrap",
                                     }}
                                   >
-                                    <span>{ing.name}</span>
+                                    <span>{displayName}</span>
                                     <IfraStateBadge ifraData={ifraData} compact />
                                     <CatalogMetadataBadges name={ing.name} compact />
                                   </div>
+                                  {runtimeKeyCaption ? (
+                                    <div
+                                      style={{
+                                        fontSize: 8.2,
+                                        color: "#64748B",
+                                        marginTop: 3,
+                                        fontFamily: "monospace",
+                                      }}
+                                    >
+                                      key: {runtimeKeyCaption}
+                                    </div>
+                                  ) : null}
                                 </td>
                                 <td
                                   style={{
                                     padding: "4px 6px",
                                     color:
-                                      SUPPLIER_COLORS[d?.supplier] || "#475569",
+                                      SUPPLIER_COLORS[primarySupplierName] ||
+                                      "#475569",
                                     fontSize: 9.5,
                                   }}
                                 >
-                                  {d?.supplier || "—"}
+                                  {primarySupplierName}
+                                </td>
+                                <td style={{ padding: "4px 6px" }}>
+                                  <div
+                                    style={{
+                                      display: "grid",
+                                      gap: 2,
+                                      minWidth: 70,
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        color:
+                                          ifraVisibility.limitLabel === "—"
+                                            ? "#64748B"
+                                            : "#FCD34D",
+                                        fontFamily: "monospace",
+                                        fontWeight: 700,
+                                        fontSize: 9,
+                                      }}
+                                    >
+                                      {ifraVisibility.limitLabel}
+                                    </span>
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: 4,
+                                        flexWrap: "wrap",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <IfraStateBadge
+                                        ifraData={ifraData}
+                                        compact
+                                      />
+                                      {ifraVisibility.hasManualEdit ? (
+                                        <span
+                                          style={{
+                                            fontSize: 7.5,
+                                            color: "#7DD3FC",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.08em",
+                                            fontWeight: 700,
+                                          }}
+                                        >
+                                          Manual
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </div>
                                 </td>
                                 <td
                                   style={{
@@ -73917,7 +81910,16 @@ export default function App() {
                       </table>
                     </div>
                   </div>
+                  </div>
                 )}
+                {subTab === "finalize" &&
+                  renderFormulaCriticalFinalizationPanel(
+                    formulaCriticalDataAudit,
+                    {
+                      scopeKey: "formula",
+                      materialContextByName: formulaCriticalMaterialContextByName,
+                    }
+                  )}
                 {subTab === "compare" && (
                   <div style={{ display: "grid", gap: 12 }}>
                     <div
@@ -75347,6 +83349,12 @@ export default function App() {
                                 >
                                   {matches.map((nm) => {
                                     const d = DB[nm];
+                                    const displayName = getMaterialDisplayName(
+                                      nm,
+                                      d
+                                    );
+                                    const runtimeKeyCaption =
+                                      getMaterialRuntimeKeyCaption(nm, d);
                                     const nc = {
                                       top: "#34D399",
                                       mid: "#A78BFA",
@@ -75401,7 +83409,7 @@ export default function App() {
                                               color: "#E2E8F0",
                                             }}
                                           >
-                                            {nm}
+                                            {displayName}
                                           </div>
                                           <div
                                             style={{
@@ -75413,6 +83421,16 @@ export default function App() {
                                               alignItems: "center",
                                             }}
                                           >
+                                            {runtimeKeyCaption ? (
+                                              <span
+                                                style={{
+                                                  fontFamily: "monospace",
+                                                  color: "#64748B",
+                                                }}
+                                              >
+                                                {runtimeKeyCaption}
+                                              </span>
+                                            ) : null}
                                             <span>
                                               {d?.scentClass} · {d?.type || ""}
                                             </span>
@@ -75657,6 +83675,7 @@ export default function App() {
                           {[
                             "Note",
                             "Ingredient",
+                            "IFRA %",
                             "g (of formula total)",
                             "Supplier Override",
                             "",
@@ -75685,6 +83704,20 @@ export default function App() {
                             0
                           );
                           const pct = ((ing.g / total) * 100).toFixed(1);
+                          const ingredientRecord = DB[ing.name];
+                          const ingredientIfraData =
+                            getIngredientIfraData(ing.name);
+                          const ingredientIfraVisibility =
+                            getIngredientIfraVisibility(ing.name);
+                          const ingredientDisplayName = getMaterialDisplayName(
+                            ing.name,
+                            ingredientRecord
+                          );
+                          const ingredientRuntimeKeyCaption =
+                            getMaterialRuntimeKeyCaption(
+                              ing.name,
+                              ingredientRecord
+                            );
                           const formulaGramDraftKey = buildFormulaGramDraftKey(
                             formula.formulaKey,
                             ii,
@@ -75788,6 +83821,30 @@ export default function App() {
                                     outline: "none",
                                   }}
                                 />
+                                {ingredientDisplayName !== ing.name ? (
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8.2,
+                                      color: "#7DD3FC",
+                                      lineHeight: 1.45,
+                                    }}
+                                  >
+                                    Display: {ingredientDisplayName}
+                                  </div>
+                                ) : null}
+                                {ingredientRuntimeKeyCaption ? (
+                                  <div
+                                    style={{
+                                      marginTop: 2,
+                                      fontSize: 7.9,
+                                      color: "#64748B",
+                                      fontFamily: "monospace",
+                                    }}
+                                  >
+                                    key: {ingredientRuntimeKeyCaption}
+                                  </div>
+                                ) : null}
                                 {!DB[ing.name] && (
                                   <span
                                     style={{
@@ -75799,6 +83856,55 @@ export default function App() {
                                     ⚠ unknown
                                   </span>
                                 )}
+                              </td>
+                              <td style={{ padding: "5px 8px" }}>
+                                <div
+                                  style={{
+                                    display: "grid",
+                                    gap: 2,
+                                    minWidth: 70,
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      color:
+                                        ingredientIfraVisibility.limitLabel === "—"
+                                          ? "#64748B"
+                                          : "#FCD34D",
+                                      fontFamily: "monospace",
+                                      fontWeight: 700,
+                                      fontSize: 9,
+                                    }}
+                                  >
+                                    {ingredientIfraVisibility.limitLabel}
+                                  </span>
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 4,
+                                      flexWrap: "wrap",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <IfraStateBadge
+                                      ifraData={ingredientIfraData}
+                                      compact
+                                    />
+                                    {ingredientIfraVisibility.hasManualEdit ? (
+                                      <span
+                                        style={{
+                                          fontSize: 7.5,
+                                          color: "#7DD3FC",
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.08em",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Manual
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </div>
                               </td>
                               <td style={{ padding: "5px 8px" }}>
                                 <div
@@ -76074,6 +84180,11 @@ export default function App() {
                 {/* ── AI CRITIQUE SUB-TAB ── */}
                 {subTab === "critique" && (
                   <div style={{ maxWidth: 920, display: "grid", gap: 12 }}>
+                    {renderFormulaCriticalWarningCard(formulaCriticalDataAudit, {
+                      scopeKey: "formula-critique",
+                      showOpenButton: true,
+                      compact: true,
+                    })}
                     {renderCritiqueLensSelector("critique")}
                     {critiqueLens === "compliance" &&
                       renderFinishedProductIfraGuidanceCard(
@@ -76233,6 +84344,11 @@ export default function App() {
                     )}
                     {buildResults.map((name) => {
                       const d = DB[name];
+                      const displayName = getMaterialDisplayName(name, d);
+                      const runtimeKeyCaption = getMaterialRuntimeKeyCaption(
+                        name,
+                        d
+                      );
                       const nc = NC[d?.note] || NC.carrier;
                       const alreadyIn = buildItems.some((i) => i.name === name);
                       return (
@@ -76269,7 +84385,7 @@ export default function App() {
                                 color: "#E2E8F0",
                               }}
                             >
-                              {name}
+                              {displayName}
                             </div>
                             <div
                               style={{
@@ -76281,6 +84397,16 @@ export default function App() {
                                 alignItems: "center",
                               }}
                             >
+                              {runtimeKeyCaption ? (
+                                <span
+                                  style={{
+                                    fontFamily: "monospace",
+                                    color: "#64748B",
+                                  }}
+                                >
+                                  {runtimeKeyCaption}
+                                </span>
+                              ) : null}
                               <span>
                                 {d?.scentSummary?.slice(0, 50) || ""}…
                               </span>
@@ -76361,6 +84487,9 @@ export default function App() {
                             >
                               {ings.map((name) => {
                                 const d = DB[name];
+                                const displayName = getMaterialDisplayName(name, d);
+                                const runtimeKeyCaption =
+                                  getMaterialRuntimeKeyCaption(name, d);
                                 const alreadyIn = buildItems.some(
                                   (i) => i.name === name
                                 );
@@ -76394,7 +84523,7 @@ export default function App() {
                                         style={{
                                           fontSize: 10,
                                           fontWeight: 600,
-                                          color: alreadyIn
+                                        color: alreadyIn
                                             ? "#334155"
                                             : "#CBD5E1",
                                           whiteSpace: "nowrap",
@@ -76403,7 +84532,7 @@ export default function App() {
                                         }}
                                       >
                                         {alreadyIn ? "✓ " : ""}
-                                        {name}
+                                        {displayName}
                                       </div>
                                       <div
                                         style={{
@@ -76415,6 +84544,16 @@ export default function App() {
                                           alignItems: "center",
                                         }}
                                       >
+                                        {runtimeKeyCaption ? (
+                                          <span
+                                            style={{
+                                              fontFamily: "monospace",
+                                              color: "#64748B",
+                                            }}
+                                          >
+                                            {runtimeKeyCaption}
+                                          </span>
+                                        ) : null}
                                         <span
                                           style={{
                                             whiteSpace: "nowrap",
@@ -76498,6 +84637,18 @@ export default function App() {
                     </button>
                   </div>
                   {buildItems.map((item) => {
+                    const buildRecord = DB[item.name];
+                    const buildDisplayName = getMaterialDisplayName(
+                      item.name,
+                      buildRecord
+                    );
+                    const buildRuntimeKeyCaption = getMaterialRuntimeKeyCaption(
+                      item.name,
+                      buildRecord
+                    );
+                    const buildIfraVisibility =
+                      getIngredientIfraVisibility(item.name);
+                    const buildIfraData = buildIfraVisibility.ifraData;
                     const basketLine =
                       selectedBuildBasketLineMap.get(item.name) || null;
                     const basketLineStatus =
@@ -76531,7 +84682,7 @@ export default function App() {
                             }}
                             onClick={() => setDetailName(item.name)}
                           >
-                            {item.name}
+                            {buildDisplayName}
                           </span>
                           <button
                             onClick={() => removeBuildItem(item.name)}
@@ -76546,6 +84697,18 @@ export default function App() {
                             ✕
                           </button>
                         </div>
+                        {buildRuntimeKeyCaption ? (
+                          <div
+                            style={{
+                              marginBottom: 6,
+                              fontSize: 8.1,
+                              color: "#64748B",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            key: {buildRuntimeKeyCaption}
+                          </div>
+                        ) : null}
                         <div
                           style={{
                             display: "flex",
@@ -76608,6 +84771,46 @@ export default function App() {
                               </option>
                             ))}
                           </select>
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                              marginLeft: "auto",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: "#0A1628",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 999,
+                                padding: "2px 7px",
+                                fontSize: 7.8,
+                                fontWeight: 700,
+                                color:
+                                  buildIfraVisibility.limitLabel === "—"
+                                    ? "#64748B"
+                                    : "#FCD34D",
+                              }}
+                            >
+                              IFRA {buildIfraVisibility.limitLabel}
+                            </span>
+                            <IfraStateBadge ifraData={buildIfraData} compact />
+                            {buildIfraVisibility.hasManualEdit ? (
+                              <span
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#7DD3FC",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Manual
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
                         {basketLine && (
                           <div
@@ -76779,6 +84982,15 @@ export default function App() {
                 </div>
               ) : (
                 <div style={{ display: "grid", gap: 12 }}>
+                  {renderFormulaCriticalWarningCard(buildCriticalDataAudit, {
+                    scopeKey: "build",
+                    compact: true,
+                  })}
+                  {renderFormulaCriticalFinalizationPanel(buildCriticalDataAudit, {
+                    scopeKey: "build",
+                    materialContextByName: buildCriticalMaterialContextByName,
+                    compact: true,
+                  })}
                   <div
                     style={{
                       display: "grid",
@@ -76950,7 +85162,7 @@ export default function App() {
                     </div>
                   </div>
                   {(() => {
-                    const rows = getFormulaIfraRows(buildItems, ifraCategory);
+                    const rows = buildCritiqueIfraRows;
                     if (!buildItems.length) return null;
                     const anyActiveAdjusted = rows.some(r => r.usesActivePercent);
                     const allOk =
@@ -77387,6 +85599,8 @@ export default function App() {
             >
               {filteredCat.map((name) => {
                 const d = DB[name];
+                const displayName = getMaterialDisplayName(name, d);
+                const runtimeKeyCaption = getMaterialRuntimeKeyCaption(name, d);
                 const p = pricesState[name];
                 const nc = NC[d.note] || NC.carrier;
                 const ifraData = getIngredientIfraData(name);
@@ -77468,8 +85682,20 @@ export default function App() {
                           }}
                           onClick={() => setDetailName(name)}
                         >
-                          {name}
+                          {displayName}
                         </div>
+                        {runtimeKeyCaption ? (
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              fontFamily: "monospace",
+                              marginBottom: 4,
+                            }}
+                          >
+                            key: {runtimeKeyCaption}
+                          </div>
+                        ) : null}
                         <div
                           style={{
                             fontSize: 10,
@@ -77521,7 +85747,10 @@ export default function App() {
                         VP: <span style={{ color: "#A78BFA" }}>{d.VP}</span>
                       </span>
                       <span>
-                        CAS: <span style={{ color: "#334155" }}>{d.cas}</span>
+                        CAS:{" "}
+                        <span style={{ color: "#334155" }}>
+                          {formatMaterialCasSupportValue(d.cas) || d.cas}
+                        </span>
                       </span>
                       <span>
                         ODT: <span style={{ color: "#F59E0B" }}>{d.ODT}</span>
@@ -78233,7 +86462,215 @@ export default function App() {
                   .includes(supplierSearch.toLowerCase());
               return matchSup && matchSearch;
             });
-            const supplierImportQueueRows = getPendingSupplierImportItems()
+            const normalizeSupplierHubProviderKey = (value) =>
+              String(value || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "");
+            const supplierOnboardingOutcomeMeta = {
+              create_supplier_product: {
+                label: "Supplier product created",
+                buttonLabel: "Create Supplier Product",
+                reviewStatus: "resolved_supplier_product_created",
+              },
+              link_existing_material: {
+                label: "Linked to existing material",
+                buttonLabel: "Link to Existing Material",
+                reviewStatus: "resolved_linked_existing_material",
+              },
+              create_local_draft: {
+                label: "Local draft created",
+                buttonLabel: "Create Local Draft",
+                reviewStatus: "resolved_local_draft_created",
+              },
+              ignore: {
+                label: "Ignored",
+                buttonLabel: "Ignore",
+                reviewStatus: "ignored_local",
+              },
+            };
+            const getSupplierImportExceptionMeta = (item) => {
+              const reasonHaystack = [
+                item?.reviewType,
+                item?.sourceNormalizationStatus,
+                item?.sourceReason,
+                item?.reason,
+                item?.issueType,
+                item?.issueLabel,
+              ]
+                .map((value) => String(value || "").trim().toLowerCase())
+                .filter(Boolean)
+                .join(" ");
+              if (
+                reasonHaystack.includes("duplicate") ||
+                reasonHaystack.includes("variant") ||
+                reasonHaystack.includes("merge")
+              ) {
+                return {
+                  key: "duplicate_variant_conflict",
+                  label: "Duplicate / variant conflict",
+                  bucketKey: "possible_duplicate",
+                  bucketLabel: "Possible duplicate",
+                };
+              }
+              if (
+                reasonHaystack.includes("identity") ||
+                reasonHaystack.includes("canonical_conflict") ||
+                reasonHaystack.includes("cas") ||
+                reasonHaystack.includes("inci")
+              ) {
+                return {
+                  key: "risky_identity_conflict",
+                  label: "Risky identity conflict",
+                  bucketKey: "conflict",
+                  bucketLabel: "Conflict",
+                };
+              }
+              if (
+                reasonHaystack.includes("carrier") ||
+                reasonHaystack.includes("dilution")
+              ) {
+                return {
+                  key: "carrier_dilution_issue",
+                  label: "Unresolved carrier / dilution issue",
+                  bucketKey: "needs_mapping",
+                  bucketLabel: "Needs mapping",
+                };
+              }
+              if (
+                reasonHaystack.includes("new_item") ||
+                reasonHaystack.includes("new supplier") ||
+                reasonHaystack.includes("new-item") ||
+                reasonHaystack.includes("supplier-first")
+              ) {
+                return {
+                  key: "new_supplier_product",
+                  label: "New supplier product",
+                  bucketKey: "expected_create_state",
+                  bucketLabel: "Expected create-state",
+                };
+              }
+              return {
+                key: "ambiguous_mapping",
+                label: "Ambiguous mapping",
+                bucketKey: "needs_mapping",
+                bucketLabel: "Needs mapping",
+              };
+            };
+            const buildSupplierImportResolutionDraftItem = (
+              item,
+              resolutionType
+            ) => {
+              const proposedCatalogName = String(
+                item?.mappedCatalogName ||
+                  item?.proposedCatalogNameRaw ||
+                  item?.productTitle ||
+                  item?.supplierProductKey ||
+                  ""
+              ).trim();
+              const liveTargetRecord = proposedCatalogName
+                ? DB[proposedCatalogName] || null
+                : null;
+              if (resolutionType === "link_existing_material") {
+                return {
+                  ...item,
+                  proposedCatalogNameRaw: proposedCatalogName || null,
+                  proposedCatalogName: proposedCatalogName || item?.proposedCatalogName,
+                  proposedEntryKindRaw: "supplier_product",
+                  proposedEntryKind: "supplier_product",
+                  proposedCanonicalMaterialKeyRaw:
+                    liveTargetRecord?.canonicalMaterialKey ||
+                    item?.proposedCanonicalMaterialKeyRaw ||
+                    item?.proposedCanonicalMaterialKey ||
+                    item?.canonicalMaterialKey ||
+                    null,
+                  proposedCanonicalMaterialKey:
+                    liveTargetRecord?.canonicalMaterialKey ||
+                    item?.proposedCanonicalMaterialKey ||
+                    item?.canonicalMaterialKey ||
+                    null,
+                };
+              }
+              if (resolutionType === "create_local_draft") {
+                return {
+                  ...item,
+                  proposedCatalogNameRaw: proposedCatalogName || null,
+                  proposedCatalogName: proposedCatalogName || item?.proposedCatalogName,
+                  proposedEntryKindRaw: "local_draft",
+                  proposedEntryKind: "local_draft",
+                  proposedCanonicalMaterialKeyRaw: null,
+                  proposedCanonicalMaterialKey: null,
+                };
+              }
+              return {
+                ...item,
+                proposedCatalogNameRaw: proposedCatalogName || null,
+                proposedCatalogName: proposedCatalogName || item?.proposedCatalogName,
+                proposedEntryKindRaw: "supplier_product",
+                proposedEntryKind: "supplier_product",
+                proposedCanonicalMaterialKeyRaw:
+                  item?.proposedCanonicalMaterialKeyRaw ||
+                  item?.proposedCanonicalMaterialKey ||
+                  item?.canonicalMaterialKey ||
+                  null,
+                proposedCanonicalMaterialKey:
+                  item?.proposedCanonicalMaterialKey ||
+                  item?.canonicalMaterialKey ||
+                  null,
+              };
+            };
+            const supplierImportSourceItems = getPendingSupplierImportItems();
+            const supplierImportSourceKeys = new Set(
+              supplierImportSourceItems.map((item) => item?.supplierProductKey)
+            );
+            const stagedSupplierAdapterImportItems = Object.entries(
+              supplierImportLocalReviewState || {}
+            )
+              .filter(([supplierProductKey, localReview]) => {
+                if (!supplierProductKey || supplierImportSourceKeys.has(supplierProductKey)) {
+                  return false;
+                }
+                return (
+                  localReview?.sourceSnapshot?.sourceOrigin ===
+                  "supplier_adapter_new_item_candidate"
+                );
+              })
+              .map(([supplierProductKey, localReview]) => {
+                const sourceSnapshot = localReview?.sourceSnapshot || {};
+                return {
+                  supplierProductKey,
+                  supplier: sourceSnapshot?.supplier || "Fraterworks",
+                  productTitle: sourceSnapshot?.productTitle || supplierProductKey,
+                  url: sourceSnapshot?.url || "",
+                  proposedCatalogName: sourceSnapshot?.proposedCatalogName || null,
+                  proposedEntryKind:
+                    sourceSnapshot?.proposedEntryKind || "supplier_product",
+                  proposedCanonicalMaterialKey:
+                    sourceSnapshot?.proposedCanonicalMaterialKey || null,
+                  reviewStatus:
+                    localReview?.reviewStatus ||
+                    sourceSnapshot?.sourceReviewStatus ||
+                    "pending_catalog_import",
+                  reviewType:
+                    sourceSnapshot?.reviewType || "new_supplier_product_row",
+                  reason:
+                    sourceSnapshot?.reason ||
+                    "Supplier adapter staged a new supplier-first item candidate.",
+                  sourceReviewStatus:
+                    sourceSnapshot?.sourceReviewStatus ||
+                    "pending_catalog_import",
+                  sourceNormalizationStatus:
+                    sourceSnapshot?.sourceNormalizationStatus ||
+                    "pending_new_item_review",
+                  sourceOrigin:
+                    sourceSnapshot?.sourceOrigin ||
+                    "supplier_adapter_new_item_candidate",
+                };
+              });
+            const supplierImportQueueRows = [
+              ...supplierImportSourceItems,
+              ...stagedSupplierAdapterImportItems,
+            ]
               .map((item) => {
                 const registryRecord = getSupplierProductRecord(
                   item.supplierProductKey
@@ -78241,8 +86678,17 @@ export default function App() {
                 const localReview =
                   supplierImportLocalReviewState[item.supplierProductKey] ||
                   null;
-                const sourceReviewStatus = item.reviewStatus || "unknown";
+                const hasLocalDecision =
+                  localReview?.decision === "approved" ||
+                  localReview?.decision === "rejected";
+                const sourceSnapshot = localReview?.sourceSnapshot || null;
+                const sourceReviewStatus =
+                  item.reviewStatus ||
+                  sourceSnapshot?.sourceReviewStatus ||
+                  "unknown";
                 const sourceNormalizationStatus =
+                  item.sourceNormalizationStatus ||
+                  sourceSnapshot?.sourceNormalizationStatus ||
                   registryRecord?.normalizationStatus ||
                   registryRecord?.registryStatus ||
                   "unknown";
@@ -78251,12 +86697,77 @@ export default function App() {
                 )
                   .split(":")[0]
                   .replace(/_/g, " ");
+                const sourceOrigin =
+                  item.sourceOrigin ||
+                  sourceSnapshot?.sourceOrigin ||
+                  "registry_pending_review";
+                const explicitQueueState = String(
+                  localReview?.queueState || ""
+                )
+                  .trim()
+                  .toLowerCase();
+                const queueState =
+                  explicitQueueState === "resolved" ||
+                  explicitQueueState === "ignored" ||
+                  explicitQueueState === "archived" ||
+                  explicitQueueState === "active"
+                    ? explicitQueueState
+                    : localReview?.decision === "ignored" ||
+                      String(localReview?.reviewStatus || "")
+                        .trim()
+                        .toLowerCase()
+                        .startsWith("ignored")
+                    ? "ignored"
+                    : String(localReview?.reviewStatus || "")
+                        .trim()
+                        .toLowerCase()
+                        .startsWith("archived")
+                    ? "archived"
+                    : localReview?.decision === "approved" ||
+                      String(localReview?.reviewStatus || "")
+                        .trim()
+                        .toLowerCase()
+                        .startsWith("resolved_") ||
+                      localReview?.reviewStatus === "approved_local_draft"
+                    ? "resolved"
+                    : "active";
+                const exceptionMeta = getSupplierImportExceptionMeta({
+                  ...item,
+                  sourceNormalizationStatus,
+                });
+                const resolutionType =
+                  localReview?.resolutionType ||
+                  (queueState === "resolved"
+                    ? "create_supplier_product"
+                    : queueState === "ignored"
+                    ? "ignore"
+                    : null);
+                const resolutionMeta = resolutionType
+                  ? supplierOnboardingOutcomeMeta[resolutionType] || null
+                  : null;
+                const providerKey = normalizeSupplierHubProviderKey(
+                  item?.supplier ||
+                    sourceSnapshot?.supplier ||
+                    registryRecord?.supplierDisplayName ||
+                    supplierFromKey
+                );
                 return {
                   supplierProductKey: item.supplierProductKey || "unknown",
                   supplier:
-                    registryRecord?.supplierDisplayName || supplierFromKey,
-                  productTitle: registryRecord?.productTitle || "Unknown product",
-                  url: registryRecord?.url || "",
+                    item.supplier ||
+                    sourceSnapshot?.supplier ||
+                    registryRecord?.supplierDisplayName ||
+                    supplierFromKey,
+                  productTitle:
+                    item.productTitle ||
+                    sourceSnapshot?.productTitle ||
+                    registryRecord?.productTitle ||
+                    "Unknown product",
+                  url:
+                    item.url ||
+                    sourceSnapshot?.url ||
+                    registryRecord?.url ||
+                    "",
                   proposedCatalogNameRaw: item.proposedCatalogName || null,
                   proposedCatalogName: item.proposedCatalogName || "—",
                   proposedEntryKindRaw: item.proposedEntryKind || null,
@@ -78269,10 +86780,24 @@ export default function App() {
                   reviewStatus:
                     localReview?.reviewStatus || sourceReviewStatus,
                   localDecision: localReview?.decision || null,
-                  reviewedAt: localReview?.reviewedAt || null,
-                  canReview: !localReview,
+                  queueState,
+                  providerKey,
+                  exceptionTypeKey: exceptionMeta.key,
+                  exceptionTypeLabel: exceptionMeta.label,
+                  warningBucketKey: exceptionMeta.bucketKey,
+                  warningBucketLabel: exceptionMeta.bucketLabel,
+                  resolutionType,
+                  resolutionLabel:
+                    localReview?.resolutionLabel ||
+                    resolutionMeta?.label ||
+                    null,
+                  reviewedAt:
+                    localReview?.reviewedAt || localReview?.stagedAt || null,
+                  archivedAt: localReview?.archivedAt || null,
+                  canReview: queueState === "active",
+                  isDeferred: localReview?.decision === "deferred",
                   normalizationStatus:
-                    localReview?.decision === "approved"
+                    queueState === "resolved"
                       ? "draft_ready"
                       : sourceNormalizationStatus,
                   sourceNormalizationStatus,
@@ -78280,19 +86805,82 @@ export default function App() {
                     localReview?.supplierProductRowDraft || null,
                   normalizationEntryDraft:
                     localReview?.normalizationEntryDraft || null,
+                  sourceOrigin,
+                  sourceReason: item.reason || sourceSnapshot?.reason || null,
+                  sourceNote: sourceSnapshot?.sourceNote || null,
+                  guardrails: Array.isArray(sourceSnapshot?.guardrails)
+                    ? [...sourceSnapshot.guardrails]
+                    : [],
                 };
               })
               .sort((a, b) => {
-                if (a.canReview !== b.canReview) {
-                  return a.canReview ? -1 : 1;
+                const queueStateOrder = {
+                  active: 0,
+                  resolved: 1,
+                  ignored: 2,
+                  archived: 3,
+                };
+                const queueStateDelta =
+                  (queueStateOrder[a.queueState] ?? 99) -
+                  (queueStateOrder[b.queueState] ?? 99);
+                if (queueStateDelta !== 0) {
+                  return queueStateDelta;
+                }
+                if (a.isDeferred !== b.isDeferred) {
+                  return a.isDeferred ? 1 : -1;
                 }
                 return a.supplierProductKey.localeCompare(b.supplierProductKey);
               });
+            const activeSupplierImportQueueRows = supplierImportQueueRows.filter(
+              (item) => item.queueState === "active"
+            );
+            const resolvedSupplierImportQueueRows =
+              supplierImportQueueRows.filter(
+                (item) => item.queueState === "resolved"
+              );
+            const ignoredSupplierImportQueueRows = supplierImportQueueRows.filter(
+              (item) => item.queueState === "ignored"
+            );
+            const archivedSupplierImportQueueRows =
+              supplierImportQueueRows.filter(
+                (item) => item.queueState === "archived"
+              );
+            const supplierImportHistoryRows = [
+              ...resolvedSupplierImportQueueRows,
+              ...ignoredSupplierImportQueueRows,
+              ...archivedSupplierImportQueueRows,
+            ].sort((a, b) =>
+              String(b.reviewedAt || b.archivedAt || "").localeCompare(
+                String(a.reviewedAt || a.archivedAt || "")
+              )
+            );
             const hasSupplierImportQueueItems =
-              supplierImportQueueRows.length > 0;
-            const pendingSupplierImportCount = supplierImportQueueRows.filter(
-              (item) => item.canReview
-            ).length;
+              activeSupplierImportQueueRows.length > 0;
+            const pendingSupplierImportCount =
+              activeSupplierImportQueueRows.filter((item) => !item.isDeferred)
+                .length;
+            const deferredSupplierImportCount =
+              activeSupplierImportQueueRows.filter((item) => item.isDeferred)
+                .length;
+            const stagedSupplierAdapterReviewKeys = new Set(
+              supplierImportQueueRows
+                .filter(
+                  (item) =>
+                    item.sourceOrigin === "supplier_adapter_new_item_candidate"
+                )
+                .map((item) => item.supplierProductKey)
+            );
+            const visibleSupplierLayerReviewItems = supplierLayerReviewItems.filter(
+              (reviewItem) =>
+                !(
+                  reviewItem?.issueType === "new_item_candidate" &&
+                  stagedSupplierAdapterReviewKeys.has(
+                    reviewItem?.supplierProductKey
+                  )
+                )
+            );
+            const stagedSupplierAdapterNewItemCount =
+              supplierLayerReviewItems.length - visibleSupplierLayerReviewItems.length;
             const evidenceCandidateReviewRows = [
               ...sourceDocumentEvidenceReviewPayload.evidenceCandidates,
             ].sort((a, b) => {
@@ -78310,22 +86898,1582 @@ export default function App() {
                 )
               );
             });
+            const formatSupplierReviewContextValue = (value) => {
+              if (Array.isArray(value)) {
+                const parts = value
+                  .map((item) => String(item || "").trim())
+                  .filter(Boolean);
+                return parts.length > 0 ? parts.join(" · ") : "—";
+              }
+              const normalizedValue = String(value ?? "").trim();
+              return normalizedValue || "—";
+            };
+            const getSupplierAdapterEvidenceStageMeta = (reviewItem) => {
+              const candidate =
+                buildSupplierAdapterConflictReviewCandidate(reviewItem);
+              if (!candidate?.evidenceCandidateKey) return null;
+              const evidenceRow =
+                evidenceCandidateReviewRows.find(
+                  (row) =>
+                    row.evidenceCandidateKey === candidate.evidenceCandidateKey
+                ) || null;
+              const localReview =
+                evidenceCandidateLocalReviewState[candidate.evidenceCandidateKey] ||
+                null;
+              const reviewStatus =
+                evidenceRow?.reviewStatus ||
+                localReview?.reviewStatus ||
+                "pending_review";
+              const localDecision = evidenceRow?.localDecision || null;
+              const statusLabel =
+                localDecision === "deferred"
+                  ? "Deferred in Evidence Review"
+                  : reviewStatus === "approved_for_promotion"
+                  ? "Approved in Evidence Review"
+                  : reviewStatus === "rejected"
+                  ? "Rejected in Evidence Review"
+                  : "Staged to Evidence Review";
 
-            const approveSupplierImport = (item) => {
-              if (!item?.canReview) return;
-              const approvedAt = new Date().toISOString();
-              const draft = buildApprovedSupplierImportDraft(item);
+              return {
+                candidate,
+                evidenceRow,
+                localReview,
+                evidenceCandidateKey: candidate.evidenceCandidateKey,
+                isStaged: Boolean(localReview || evidenceRow),
+                statusLabel,
+              };
+            };
+            const focusedEvidenceReviewCandidate = supplierEvidenceReviewFocusKey
+              ? evidenceCandidateReviewRows.find(
+                  (candidate) =>
+                    candidate.evidenceCandidateKey ===
+                    supplierEvidenceReviewFocusKey
+                ) || null
+              : null;
+            const supplierAdapterLaneSummary =
+              SUPPLIER_ADAPTER_TRUST_LANE_ORDER.map((laneKey) => ({
+                laneKey,
+                meta: SUPPLIER_ADAPTER_TRUST_LANE_META[laneKey],
+                count: supplierLayerRecords.filter(
+                  (record) => record.trustLane === laneKey
+                ).length,
+              }));
+            const latestSupplierLayerRecords = supplierLayerRecords.slice(0, 6);
+            const supplierProviderConfigs = [
+              {
+                key: "fraterworks",
+                label: "Fraterworks",
+                accent: "#22D3EE",
+                description: "Full sync, workbook import, pasted JSON, and manual capture are live.",
+                statusLabel: "Active",
+              },
+              {
+                key: "edenbotanicals",
+                label: "Eden Botanicals",
+                accent: "#34D399",
+                description: "Provider layout reserved. Sync adapter can slot in later.",
+                statusLabel: "Future provider",
+              },
+              {
+                key: "perfumersapprentice",
+                label: "Perfumer's Apprentice",
+                accent: "#F59E0B",
+                description: "Provider layout reserved. Shared exception lifecycle already applies.",
+                statusLabel: "Future provider",
+              },
+              {
+                key: "libertynatural",
+                label: "Liberty Natural",
+                accent: "#A78BFA",
+                description: "Provider layout reserved. Shared onboarding queue is provider-agnostic.",
+                statusLabel: "Future provider",
+              },
+            ];
+            const knownSupplierProductKeysByProvider = new Map();
+            Object.entries(SUPPLIER_PRODUCT_REGISTRY || {}).forEach(
+              ([supplierProductKey, record]) => {
+                if (supplierProductKey === "metadata") return;
+                const providerKey = normalizeSupplierHubProviderKey(
+                  record?.supplierKey ||
+                    record?.supplierDisplayName ||
+                    String(supplierProductKey || "").split(":")[0]
+                );
+                if (!providerKey) return;
+                const existing = knownSupplierProductKeysByProvider.get(providerKey) || new Set();
+                existing.add(supplierProductKey);
+                knownSupplierProductKeysByProvider.set(providerKey, existing);
+              }
+            );
+            supplierLayerRecords.forEach((record) => {
+              const providerKey = normalizeSupplierHubProviderKey(
+                record?.supplierKey ||
+                  record?.supplierDisplayName ||
+                  String(record?.supplierProductKey || "").split(":")[0]
+              );
+              if (!providerKey || !record?.supplierProductKey) return;
+              const existing = knownSupplierProductKeysByProvider.get(providerKey) || new Set();
+              existing.add(record.supplierProductKey);
+              knownSupplierProductKeysByProvider.set(providerKey, existing);
+            });
+            const fraterworksSyncSummary = supplierFullSyncReport?.summary || {};
+            const fraterworksLatestSyncAt =
+              supplierFullSyncReport?.metadata?.importedAt ||
+              supplierJsonImportReport?.metadata?.importedAt ||
+              null;
+            const getSupplierReviewProviderKey = (reviewItem) =>
+              normalizeSupplierHubProviderKey(
+                reviewItem?.supplier ||
+                  reviewItem?.supplierDisplayName ||
+                  String(reviewItem?.supplierProductKey || "").split(":")[0]
+              );
+            const getSupplierQueueProviderKey = (queueItem) =>
+              queueItem?.providerKey ||
+              normalizeSupplierHubProviderKey(
+                queueItem?.supplier ||
+                  String(queueItem?.supplierProductKey || "").split(":")[0]
+              );
+            const getActiveSupplierExceptionCountForProvider = (providerKey) =>
+              activeSupplierImportQueueRows.filter(
+                (item) => getSupplierQueueProviderKey(item) === providerKey
+              ).length +
+              visibleSupplierLayerReviewItems.filter(
+                (reviewItem) =>
+                  getSupplierReviewProviderKey(reviewItem) === providerKey
+              ).length;
+            const activeSupplierExceptionCount =
+              activeSupplierImportQueueRows.length +
+              visibleSupplierLayerReviewItems.length;
+            const supplierProviderCards = supplierProviderConfigs.map((provider) => {
+              const knownCount =
+                knownSupplierProductKeysByProvider.get(provider.key)?.size || 0;
+              const reviewExceptions =
+                getActiveSupplierExceptionCountForProvider(provider.key);
+              return {
+                ...provider,
+                lastSyncLabel:
+                  provider.key === "fraterworks" && fraterworksLatestSyncAt
+                    ? new Date(fraterworksLatestSyncAt).toLocaleString()
+                    : "Not yet synced",
+                knownCount,
+                refreshedCount:
+                  provider.key === "fraterworks"
+                    ? fraterworksSyncSummary.existingSupplierProductsRefreshed || 0
+                    : 0,
+                newCount:
+                  provider.key === "fraterworks"
+                    ? fraterworksSyncSummary.newSupplierProductsCreated || 0
+                    : 0,
+                reviewExceptions,
+              };
+            });
+            const fraterworksProviderCard =
+              supplierProviderCards.find((provider) => provider.key === "fraterworks") ||
+              null;
+            const normalizeSupplierDuplicateText = (value) =>
+              String(value || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, " ")
+                .trim();
+            const SUPPLIER_DUPLICATE_STOP_WORDS = new Set([
+              "absolute",
+              "accord",
+              "base",
+              "blend",
+              "bourbon",
+              "extract",
+              "fragrance",
+              "fraterworks",
+              "material",
+              "oil",
+              "organic",
+              "pure",
+              "resinoid",
+              "synthetic",
+            ]);
+            const getSupplierDuplicateTokens = (value) =>
+              normalizeSupplierDuplicateText(value)
+                .split(" ")
+                .filter(
+                  (token) =>
+                    token.length > 2 &&
+                    !SUPPLIER_DUPLICATE_STOP_WORDS.has(token)
+                );
+            const getSupplierHandleFamily = ({
+              supplierProductKey = "",
+              url = "",
+            } = {}) => {
+              const urlHandle = String(url || "").match(/\/products\/([^/?#]+)/i)?.[1];
+              const keyHandle = String(supplierProductKey || "")
+                .split(":")
+                .slice(1)
+                .join(":");
+              return String(urlHandle || keyHandle || "")
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+            };
+            const getSupplierVariantFamily = (...values) => {
+              for (const value of values) {
+                const normalizedValue = String(value || "").trim();
+                if (!normalizedValue) continue;
+                const dilutionMatch = normalizedValue.match(
+                  /(\d+(?:\.\d+)?)\s*%\s*([a-z0-9]+)/i
+                );
+                if (dilutionMatch) {
+                  return `${dilutionMatch[1]}% ${dilutionMatch[2].toLowerCase()}`;
+                }
+                if (/100%\s*pure/i.test(normalizedValue)) {
+                  return "100% pure";
+                }
+              }
+              return "";
+            };
+            const normalizeSupplierCasCandidate = (value) => {
+              const match = String(value || "")
+                .trim()
+                .match(/(\d{2,7}-\d{2}-\d)/);
+              return match?.[1] || null;
+            };
+            const supplierDuplicateCandidateMap = new Map();
+            Object.entries(SUPPLIER_PRODUCT_REGISTRY || {}).forEach(
+              ([supplierProductKey, record]) => {
+                if (supplierProductKey === "metadata") return;
+                supplierDuplicateCandidateMap.set(supplierProductKey, {
+                  supplierProductKey,
+                  supplierDisplayName:
+                    record?.supplierDisplayName ||
+                    record?.supplierKey ||
+                    String(supplierProductKey || "").split(":")[0],
+                  providerKey: normalizeSupplierHubProviderKey(
+                    record?.supplierKey ||
+                      record?.supplierDisplayName ||
+                      String(supplierProductKey || "").split(":")[0]
+                  ),
+                  productTitle: record?.productTitle || "",
+                  mappedCatalogName: record?.mappedCatalogName || null,
+                  canonicalMaterialKey: record?.mappedCanonicalMaterialKey || null,
+                  url: record?.url || "",
+                  casCandidate: normalizeSupplierCasCandidate(
+                    record?.casShown ||
+                      record?.cas ||
+                      record?.candidateCas ||
+                      record?.identitySupport?.casShown ||
+                      ""
+                  ),
+                });
+              }
+            );
+            supplierLayerRecords.forEach((record) => {
+              const supplierProductKey = String(
+                record?.supplierProductKey || ""
+              ).trim();
+              if (!supplierProductKey) return;
+              const existingCandidate =
+                supplierDuplicateCandidateMap.get(supplierProductKey) || {};
+              supplierDuplicateCandidateMap.set(supplierProductKey, {
+                ...existingCandidate,
+                supplierProductKey,
+                supplierDisplayName:
+                  record?.supplierDisplayName ||
+                  existingCandidate.supplierDisplayName ||
+                  record?.supplierKey ||
+                  String(supplierProductKey).split(":")[0],
+                providerKey: normalizeSupplierHubProviderKey(
+                  record?.supplierKey ||
+                    record?.supplierDisplayName ||
+                    existingCandidate.supplierDisplayName ||
+                    String(supplierProductKey).split(":")[0]
+                ),
+                productTitle:
+                  record?.pageFacts?.productTitle ||
+                  existingCandidate.productTitle ||
+                  supplierProductKey,
+                mappedCatalogName:
+                  record?.mappedCatalogName || existingCandidate.mappedCatalogName || null,
+                canonicalMaterialKey:
+                  record?.canonicalMaterialKey ||
+                  existingCandidate.canonicalMaterialKey ||
+                  null,
+                url:
+                  record?.sourceUrl ||
+                  record?.pageFacts?.url ||
+                  existingCandidate.url ||
+                  "",
+                casCandidate:
+                  normalizeSupplierCasCandidate(
+                    record?.pageFacts?.casShown ||
+                      existingCandidate.casCandidate ||
+                      ""
+                  ) || null,
+              });
+            });
+            const supplierDuplicateCandidatePool = Array.from(
+              supplierDuplicateCandidateMap.values()
+            );
+            const getSupplierDuplicateContext = (item) => {
+              const sourceSupplierProductKey = String(
+                item?.supplierProductKey || ""
+              ).trim();
+              const sourceProviderKey = normalizeSupplierHubProviderKey(
+                item?.supplier ||
+                  item?.supplierDisplayName ||
+                  String(sourceSupplierProductKey || "").split(":")[0]
+              );
+              const sourceTitle = String(item?.productTitle || "").trim();
+              const sourceNormalizedTitle =
+                normalizeSupplierDuplicateText(sourceTitle);
+              const sourceTitleTokens = getSupplierDuplicateTokens(sourceTitle);
+              const sourceCandidate =
+                supplierDuplicateCandidateMap.get(sourceSupplierProductKey) || null;
+              const sourceHandleFamily = getSupplierHandleFamily({
+                supplierProductKey: sourceSupplierProductKey,
+                url: item?.url || "",
+              });
+              const sourceVariantFamily = getSupplierVariantFamily(
+                item?.productTitle,
+                item?.url,
+                item?.supplierProductKey
+              );
+              const sourceMappedCatalogName = String(
+                item?.mappedCatalogName ||
+                  item?.proposedCatalogNameRaw ||
+                  item?.proposedCatalogName ||
+                  ""
+              ).trim();
+              const sourceCanonicalMaterialKey = String(
+                item?.canonicalMaterialKey ||
+                  item?.proposedCanonicalMaterialKeyRaw ||
+                  item?.proposedCanonicalMaterialKey ||
+                  ""
+              ).trim();
+              const sourceCasCandidate = normalizeSupplierCasCandidate(
+                item?.casShown || item?.cas || sourceCandidate?.casCandidate || ""
+              );
+              const candidates = supplierDuplicateCandidatePool
+                .flatMap((candidate) => {
+                  if (
+                    !candidate?.supplierProductKey ||
+                    candidate.supplierProductKey === sourceSupplierProductKey
+                  ) {
+                    return [];
+                  }
+                  const sameProvider =
+                    sourceProviderKey &&
+                    candidate.providerKey === sourceProviderKey;
+                  const reasons = [];
+                  const candidateTitle = String(candidate.productTitle || "").trim();
+                  const candidateNormalizedTitle =
+                    normalizeSupplierDuplicateText(candidateTitle);
+                  const candidateTitleTokens =
+                    getSupplierDuplicateTokens(candidateTitle);
+                  const candidateHandleFamily = getSupplierHandleFamily(candidate);
+                  const candidateVariantFamily = getSupplierVariantFamily(
+                    candidate.productTitle,
+                    candidate.url,
+                    candidate.supplierProductKey
+                  );
+                  if (
+                    sourceNormalizedTitle &&
+                    candidateNormalizedTitle &&
+                    sourceNormalizedTitle === candidateNormalizedTitle
+                  ) {
+                    reasons.push("same normalized title");
+                  }
+                  if (
+                    sourceHandleFamily &&
+                    candidateHandleFamily &&
+                    sourceHandleFamily === candidateHandleFamily
+                  ) {
+                    reasons.push("same handle/key family");
+                  }
+                  if (
+                    sourceCanonicalMaterialKey &&
+                    candidate.canonicalMaterialKey &&
+                    sourceCanonicalMaterialKey === candidate.canonicalMaterialKey
+                  ) {
+                    reasons.push("same mapped canonical family");
+                  } else if (
+                    sourceMappedCatalogName &&
+                    candidate.mappedCatalogName &&
+                    sourceMappedCatalogName === candidate.mappedCatalogName
+                  ) {
+                    reasons.push("same mapped material");
+                  }
+                  if (
+                    sourceCasCandidate &&
+                    candidate.casCandidate &&
+                    sourceCasCandidate === candidate.casCandidate
+                  ) {
+                    const sharedTokens = sourceTitleTokens.filter((token) =>
+                      candidateTitleTokens.includes(token)
+                    );
+                    const titleSimilarityStrong =
+                      sourceNormalizedTitle === candidateNormalizedTitle ||
+                      (sharedTokens.length >= 2 &&
+                        sourceTitleTokens.length > 0 &&
+                        candidateTitleTokens.length > 0 &&
+                        sharedTokens.length /
+                          Math.max(
+                            sourceTitleTokens.length,
+                            candidateTitleTokens.length
+                          ) >=
+                          0.6);
+                    if (titleSimilarityStrong) {
+                      reasons.push("same CAS candidate + very similar name");
+                    }
+                  }
+                  if (
+                    sourceVariantFamily &&
+                    candidateVariantFamily &&
+                    sourceVariantFamily === candidateVariantFamily &&
+                    reasons.length > 0
+                  ) {
+                    reasons.push("same concentration/variant family");
+                  }
+                  if (
+                    !sameProvider &&
+                    !reasons.includes("same mapped canonical family") &&
+                    !reasons.includes("same mapped material") &&
+                    !reasons.includes("same CAS candidate + very similar name") &&
+                    !reasons.includes("same handle/key family")
+                  ) {
+                    return [];
+                  }
+                  if (reasons.length === 0) return [];
+                  return [
+                    {
+                      ...candidate,
+                      reasons,
+                      reasonSummary: reasons.join(" · "),
+                    },
+                  ];
+                })
+                .sort((a, b) => {
+                  if (b.reasons.length !== a.reasons.length) {
+                    return b.reasons.length - a.reasons.length;
+                  }
+                  if (
+                    normalizeSupplierDuplicateText(a.productTitle) ===
+                      sourceNormalizedTitle &&
+                    normalizeSupplierDuplicateText(b.productTitle) !==
+                      sourceNormalizedTitle
+                  ) {
+                    return -1;
+                  }
+                  if (
+                    normalizeSupplierDuplicateText(b.productTitle) ===
+                      sourceNormalizedTitle &&
+                    normalizeSupplierDuplicateText(a.productTitle) !==
+                      sourceNormalizedTitle
+                  ) {
+                    return 1;
+                  }
+                  return String(a.productTitle || a.supplierProductKey).localeCompare(
+                    String(b.productTitle || b.supplierProductKey)
+                  );
+                })
+                .slice(0, 3);
+              return {
+                candidates,
+                hasCandidates: candidates.length > 0,
+              };
+            };
+            const supplierLatestSyncReports = [
+              {
+                key: "full_sync",
+                label: "Fraterworks full sync",
+                importedAt: supplierFullSyncReport?.metadata?.importedAt || null,
+                report: supplierFullSyncReport,
+              },
+              {
+                key: "json_import",
+                label: "Fraterworks JSON import",
+                importedAt: supplierJsonImportReport?.metadata?.importedAt || null,
+                report: supplierJsonImportReport,
+              },
+              {
+                key: "workbook_import",
+                label: "Trusted supplier workbook import",
+                importedAt:
+                  supplierWorkbookImportReport?.metadata?.importedAt || null,
+                report: supplierWorkbookImportReport,
+              },
+            ]
+              .filter((entry) => entry.importedAt && entry.report)
+              .sort((a, b) =>
+                String(b.importedAt || "").localeCompare(
+                  String(a.importedAt || "")
+                )
+              );
+            const latestSupplierSyncReportEntry =
+              supplierLatestSyncReports[0] || null;
+            const latestSupplierSyncSupplierProductKeys = new Set(
+              (latestSupplierSyncReportEntry?.report?.resultRows || [])
+                .flatMap((row) => [
+                  row?.supplierProductKey,
+                  row?.sourceSupplierProductKey,
+                  row?.supplierLayerRecord?.supplierProductKey,
+                  row?.pricingPatch?.supplierProductKey,
+                ])
+                .map((value) => String(value || "").trim())
+                .filter(Boolean)
+            );
+            const strongSupplierDuplicateReasons = new Set([
+              "same normalized title",
+              "same handle/key family",
+              "same CAS candidate + very similar name",
+            ]);
+            const hasStrongSupplierDuplicateCandidate = (duplicateContext) =>
+              Boolean(
+                duplicateContext?.candidates?.some((candidate) =>
+                  Array.isArray(candidate?.reasons)
+                    ? candidate.reasons.some((reason) =>
+                        strongSupplierDuplicateReasons.has(reason)
+                      )
+                    : false
+                )
+              );
+            const supplierWorkflowStatusMeta = {
+              not_started: {
+                label: "Not started",
+                color: "#94A3B8",
+                background: "#020810",
+                borderColor: "#1E293B",
+              },
+              in_progress: {
+                label: "In progress",
+                color: "#93C5FD",
+                background: "#0A1628",
+                borderColor: "#1D4ED8",
+              },
+              needs_attention: {
+                label: "Needs attention",
+                color: "#FDE68A",
+                background: "#2A1A00",
+                borderColor: "#78350F",
+              },
+              complete: {
+                label: "Complete",
+                color: "#86EFAC",
+                background: "#0A2E1A",
+                borderColor: "#166534",
+              },
+            };
+            const getSupplierWorkflowStatus = ({
+              complete = false,
+              needsAttention = false,
+              started = false,
+            } = {}) => {
+              if (complete) return "complete";
+              if (needsAttention) return "needs_attention";
+              if (started) return "in_progress";
+              return "not_started";
+            };
+            const scrollToSupplierWorkflowStep = (stepKey) => {
+              if (!stepKey || typeof document === "undefined") return;
+              document
+                .getElementById(`supplier-step-${stepKey}`)
+                ?.scrollIntoView({ behavior: "smooth", block: "start" });
+            };
+            const getSupplierAdapterDossierTarget = (reviewItem) => {
+              const directCandidates = [
+                reviewItem?.mappedCatalogName,
+                reviewItem?.productTitle,
+              ]
+                .map((value) => String(value || "").trim())
+                .filter(Boolean);
+              const resolvedIdentity = resolveIngredientIdentity(
+                reviewItem?.mappedCatalogName ||
+                  reviewItem?.productTitle ||
+                  reviewItem?.supplierProductKey ||
+                  ""
+              );
+              const resolvedCandidates = [
+                resolvedIdentity?.sourceCatalogName,
+                resolvedIdentity?.inheritedFromCatalogName,
+              ]
+                .map((value) => String(value || "").trim())
+                .filter(Boolean);
+
+              return [...directCandidates, ...resolvedCandidates].find(
+                (candidate) => candidate && DB[candidate]
+              );
+            };
+            const getSupplierAdapterPrimaryActionMeta = (reviewItem) => {
+              if (!reviewItem) return null;
+              if (reviewItem.canStageToEvidence) {
+                return {
+                  key: "stage_correction_proposal",
+                  label: reviewItem.fieldKey
+                    ? "Stage Correction Proposal"
+                    : "Stage Evidence",
+                  helperText:
+                    "Send this conflict into the existing evidence-review lane before any truth changes are promoted.",
+                  recommendedStepKey: "stage-reviewable-updates",
+                  background: "#2A0F14",
+                  borderColor: "#7F1D1D",
+                  color: "#FCA5A5",
+                };
+              }
+              if (reviewItem.issueType === "new_item_candidate") {
+                return {
+                  key: "review_new_item",
+                  label: "Stage New Item Review",
+                  helperText:
+                    "Create a persistent onboarding exception in Step 4 so this supplier-first item can be reviewed without looping back to capture.",
+                  recommendedStepKey: "review-mapping",
+                  background: "#0A1628",
+                  borderColor: "#1D4ED8",
+                  color: "#93C5FD",
+                };
+              }
+              return {
+                key: "resolve_mapping",
+                label: "Resolve Mapping",
+                helperText:
+                  "Reload this supplier capture into the mapping lane before you stage any downstream evidence or export payloads.",
+                recommendedStepKey: "review-mapping",
+                background: "#0A1628",
+                borderColor: "#1D4ED8",
+                color: "#93C5FD",
+              };
+            };
+            const buildSupplierReviewExceptionEntry = (reviewItem) => {
+              const duplicateContext = getSupplierDuplicateContext(reviewItem);
+              const evidenceStageMeta =
+                getSupplierAdapterEvidenceStageMeta(reviewItem);
+              const primaryActionMeta =
+                getSupplierAdapterPrimaryActionMeta(reviewItem);
+              const categoryKey = reviewItem?.canStageToEvidence
+                ? "identity_conflict"
+                : duplicateContext.hasCandidates
+                ? "possible_duplicate"
+                : reviewItem?.issueType === "new_item_candidate"
+                ? "mapping_ambiguity"
+                : "mapping_ambiguity";
+
+              return {
+                key: `review:${reviewItem.reviewItemKey}`,
+                kind: "review",
+                providerKey: getSupplierReviewProviderKey(reviewItem) || "unknown",
+                reviewItem,
+                duplicateContext,
+                evidenceStageMeta,
+                primaryActionMeta,
+                categoryKey,
+                isDeferred: false,
+                isHistory: false,
+                isStagedToEvidence: Boolean(evidenceStageMeta?.isStaged),
+                hasStrongDuplicateCandidate:
+                  hasStrongSupplierDuplicateCandidate(duplicateContext),
+                isLatestSyncItem: latestSupplierSyncSupplierProductKeys.has(
+                  String(reviewItem?.supplierProductKey || "").trim()
+                ),
+              };
+            };
+            const buildSupplierOnboardingExceptionEntry = (item) => {
+              const liveTargetRecord = item?.proposedCatalogNameRaw
+                ? DB[item.proposedCatalogNameRaw] || null
+                : null;
+              const canLinkExisting = Boolean(
+                item?.mappedCatalogName || liveTargetRecord
+              );
+              const duplicateContext = getSupplierDuplicateContext(item);
+              const isDuplicateReview =
+                item?.warningBucketKey === "possible_duplicate" ||
+                duplicateContext.hasCandidates;
+              const categoryKey = item?.queueState === "ignored"
+                ? "ignored"
+                : item?.queueState === "resolved" || item?.queueState === "archived"
+                ? "resolved_archived"
+                : item?.isDeferred
+                ? "deferred"
+                : item?.warningBucketKey === "conflict"
+                ? "identity_conflict"
+                : isDuplicateReview
+                ? "possible_duplicate"
+                : item?.exceptionTypeKey === "new_supplier_product"
+                ? "new_supplier_product"
+                : "mapping_ambiguity";
+
+              return {
+                key: `import:${item.supplierProductKey}`,
+                kind: "onboarding",
+                providerKey: getSupplierQueueProviderKey(item) || "unknown",
+                item,
+                canLinkExisting,
+                duplicateContext,
+                isDuplicateReview,
+                categoryKey,
+                isDeferred: Boolean(item?.isDeferred),
+                isHistory:
+                  item?.queueState === "resolved" ||
+                  item?.queueState === "ignored" ||
+                  item?.queueState === "archived",
+                isStagedToEvidence: false,
+                hasStrongDuplicateCandidate:
+                  hasStrongSupplierDuplicateCandidate(duplicateContext),
+                isLatestSyncItem: latestSupplierSyncSupplierProductKeys.has(
+                  String(item?.supplierProductKey || "").trim()
+                ),
+              };
+            };
+            const supplierReviewExceptionEntries = visibleSupplierLayerReviewItems.map(
+              buildSupplierReviewExceptionEntry
+            );
+            const supplierOnboardingExceptionEntries = supplierImportQueueRows.map(
+              buildSupplierOnboardingExceptionEntry
+            );
+            const activeSupplierOnboardingExceptionEntries =
+              supplierOnboardingExceptionEntries.filter((entry) => !entry.isHistory);
+            const historySupplierOnboardingExceptionEntries =
+              supplierOnboardingExceptionEntries.filter((entry) => entry.isHistory);
+            const matchesSupplierExceptionTypeFilter = (entry, filterKey) => {
+              if (!entry) return false;
+              switch (filterKey) {
+                case "new_supplier_product":
+                case "possible_duplicate":
+                case "mapping_ambiguity":
+                case "identity_conflict":
+                  return (
+                    !entry.isHistory &&
+                    !entry.isDeferred &&
+                    entry.categoryKey === filterKey
+                  );
+                case "deferred":
+                  return entry.kind === "onboarding" && entry.isDeferred;
+                case "ignored":
+                  return entry.kind === "onboarding" && entry.item?.queueState === "ignored";
+                case "resolved_archived":
+                  return (
+                    entry.kind === "onboarding" &&
+                    (entry.item?.queueState === "resolved" ||
+                      entry.item?.queueState === "archived")
+                  );
+                case "all":
+                default:
+                  return !entry.isHistory;
+              }
+            };
+            const matchesSupplierExceptionQuickFilters = (entry) => {
+              if (!entry) return false;
+              if (
+                supplierExceptionQuickFilters.unresolvedOnly &&
+                (entry.isHistory ||
+                  (entry.kind === "onboarding" && entry.isDeferred))
+              ) {
+                return false;
+              }
+              if (
+                supplierExceptionQuickFilters.stagedToEvidenceOnly &&
+                !entry.isStagedToEvidence
+              ) {
+                return false;
+              }
+              if (
+                supplierExceptionQuickFilters.strongDuplicateOnly &&
+                !entry.hasStrongDuplicateCandidate
+              ) {
+                return false;
+              }
+              if (
+                supplierExceptionQuickFilters.latestSyncOnly &&
+                !entry.isLatestSyncItem
+              ) {
+                return false;
+              }
+              return true;
+            };
+            const matchesSupplierExceptionProviderFilter = (entry) =>
+              supplierExceptionProviderFilter === "all" ||
+              entry?.providerKey === supplierExceptionProviderFilter;
+            const providerScopedSupplierExceptionEntries = [
+              ...supplierReviewExceptionEntries,
+              ...supplierOnboardingExceptionEntries,
+            ].filter(matchesSupplierExceptionProviderFilter);
+            const providerScopedActiveSupplierExceptionCount =
+              providerScopedSupplierExceptionEntries.filter(
+                (entry) => !entry.isHistory
+              ).length;
+            const providerScopedHistorySupplierExceptionCount =
+              providerScopedSupplierExceptionEntries.filter(
+                (entry) => entry.isHistory
+              ).length;
+            const supplierExceptionFilterOptions = [
+              { key: "all", label: "All exceptions" },
+              {
+                key: "new_supplier_product",
+                label: "New supplier product decisions",
+              },
+              { key: "possible_duplicate", label: "Possible duplicates" },
+              { key: "mapping_ambiguity", label: "Mapping ambiguity" },
+              { key: "identity_conflict", label: "CAS / identity conflicts" },
+              { key: "deferred", label: "Deferred" },
+              { key: "ignored", label: "Ignored" },
+              { key: "resolved_archived", label: "Resolved / archived" },
+            ].map((option) => ({
+              ...option,
+              count: providerScopedSupplierExceptionEntries.filter((entry) =>
+                matchesSupplierExceptionTypeFilter(entry, option.key)
+              ).length,
+            }));
+            const filteredSupplierReviewEntries = supplierReviewExceptionEntries.filter(
+              (entry) =>
+                matchesSupplierExceptionProviderFilter(entry) &&
+                matchesSupplierExceptionTypeFilter(
+                  entry,
+                  supplierExceptionTypeFilter
+                ) &&
+                matchesSupplierExceptionQuickFilters(entry)
+            );
+            const filteredActiveSupplierOnboardingExceptionEntries =
+              activeSupplierOnboardingExceptionEntries.filter(
+                (entry) =>
+                  matchesSupplierExceptionProviderFilter(entry) &&
+                  matchesSupplierExceptionTypeFilter(
+                    entry,
+                    supplierExceptionTypeFilter
+                  ) &&
+                  matchesSupplierExceptionQuickFilters(entry)
+              );
+            const filteredHistorySupplierOnboardingExceptionEntries =
+              historySupplierOnboardingExceptionEntries.filter(
+                (entry) =>
+                  matchesSupplierExceptionProviderFilter(entry) &&
+                  (supplierExceptionTypeFilter === "all" ||
+                    matchesSupplierExceptionTypeFilter(
+                      entry,
+                      supplierExceptionTypeFilter
+                    )) &&
+                  matchesSupplierExceptionQuickFilters(entry)
+              );
+            const filteredSupplierExceptionActiveCount =
+              filteredSupplierReviewEntries.length +
+              filteredActiveSupplierOnboardingExceptionEntries.length;
+            const filteredSupplierExceptionHistoryCount =
+              filteredHistorySupplierOnboardingExceptionEntries.length;
+            const shouldForceOpenSupplierHistory =
+              supplierExceptionTypeFilter === "ignored" ||
+              supplierExceptionTypeFilter === "resolved_archived";
+            const filteredSelectableSupplierExceptionEntries = [
+              ...filteredSupplierReviewEntries,
+              ...filteredActiveSupplierOnboardingExceptionEntries,
+            ];
+            const selectedVisibleSupplierExceptionEntries =
+              filteredSelectableSupplierExceptionEntries.filter((entry) =>
+                selectedSupplierExceptionKeys.includes(entry.key)
+              );
+            const selectedVisibleSupplierReviewEntries =
+              selectedVisibleSupplierExceptionEntries.filter(
+                (entry) => entry.kind === "review"
+              );
+            const selectedVisibleSupplierOnboardingEntries =
+              selectedVisibleSupplierExceptionEntries.filter(
+                (entry) => entry.kind === "onboarding"
+              );
+            const selectedVisibleSupplierExceptionCount =
+              selectedVisibleSupplierExceptionEntries.length;
+            const selectedSupplierExceptionHasMixedKinds =
+              selectedVisibleSupplierReviewEntries.length > 0 &&
+              selectedVisibleSupplierOnboardingEntries.length > 0;
+            const canBulkStageSupplierCorrectionProposals =
+              !selectedSupplierExceptionHasMixedKinds &&
+              selectedVisibleSupplierReviewEntries.length > 0 &&
+              selectedVisibleSupplierReviewEntries.every(
+                (entry) => entry.reviewItem?.canStageToEvidence
+              );
+            const canBulkCreateSupplierProducts =
+              !selectedSupplierExceptionHasMixedKinds &&
+              selectedVisibleSupplierOnboardingEntries.length > 0 &&
+              selectedVisibleSupplierOnboardingEntries.every((entry) => {
+                if (!entry.item?.canReview || entry.item?.warningBucketKey === "conflict") {
+                  return false;
+                }
+                if (entry.isDuplicateReview) return false;
+                if (
+                  entry.item?.exceptionTypeKey !== "new_supplier_product" &&
+                  entry.item?.warningBucketKey !== "expected_create_state"
+                ) {
+                  return false;
+                }
+                return !entry.canLinkExisting;
+              });
+            const canBulkKeepSeparateSupplierProducts =
+              !selectedSupplierExceptionHasMixedKinds &&
+              selectedVisibleSupplierOnboardingEntries.length > 0 &&
+              selectedVisibleSupplierOnboardingEntries.every(
+                (entry) => entry.item?.canReview && entry.isDuplicateReview
+              );
+            const canBulkDeferSupplierExceptions =
+              !selectedSupplierExceptionHasMixedKinds &&
+              selectedVisibleSupplierOnboardingEntries.length > 0 &&
+              selectedVisibleSupplierOnboardingEntries.every(
+                (entry) => entry.item?.canReview
+              );
+            const canBulkIgnoreSupplierExceptions =
+              !selectedSupplierExceptionHasMixedKinds &&
+              selectedVisibleSupplierOnboardingEntries.length > 0 &&
+              selectedVisibleSupplierOnboardingEntries.every(
+                (entry) => entry.item?.canReview
+              );
+            const supplierBulkActionHint =
+              selectedVisibleSupplierExceptionCount === 0
+                ? "Select one or more visible exception rows to unlock safe bulk actions."
+                : selectedSupplierExceptionHasMixedKinds
+                ? "Bulk actions only work on one lane at a time. Select either mapping/conflict rows or onboarding rows."
+                : selectedVisibleSupplierReviewEntries.length > 0 &&
+                  !canBulkStageSupplierCorrectionProposals
+                ? "The selected mapping rows do not share a safe bulk action."
+                : selectedVisibleSupplierOnboardingEntries.length > 0 &&
+                  !(
+                    canBulkCreateSupplierProducts ||
+                    canBulkKeepSeparateSupplierProducts ||
+                    canBulkDeferSupplierExceptions ||
+                    canBulkIgnoreSupplierExceptions
+                  )
+                ? "The selected onboarding rows mix incompatible or higher-risk outcomes, so only row-level actions remain."
+                : "";
+            const supplierAdapterStageableReviewCount = visibleSupplierLayerReviewItems.filter(
+              (reviewItem) =>
+                getSupplierAdapterPrimaryActionMeta(reviewItem)
+                  ?.recommendedStepKey === "stage-reviewable-updates"
+            ).length;
+            const supplierAdapterPrimaryReviewItem =
+              visibleSupplierLayerReviewItems[0] || null;
+            const supplierAdapterPrimaryActionMeta =
+              getSupplierAdapterPrimaryActionMeta(
+                supplierAdapterPrimaryReviewItem
+              );
+            const hasSupplierSourceSelection = Boolean(
+              String(supplierAdapterDraft.supplierProductKey || "").trim() ||
+                String(supplierAdapterDraft.productTitle || "").trim() ||
+                String(supplierAdapterDraft.url || "").trim() ||
+                supplierLayerRecords.length > 0
+            );
+            const hasSupplierFactDraft = Boolean(
+              String(supplierAdapterDraft.packLines || "").trim() ||
+                String(supplierAdapterDraft.ifraPercent || "").trim() ||
+                String(supplierAdapterDraft.inci || "").trim() ||
+                String(supplierAdapterDraft.productDescription || "").trim() ||
+                String(supplierAdapterDraft.sourceNote || "").trim() ||
+                String(supplierAdapterDraft.sdsUrl || "").trim() ||
+                supplierLayerRecords.length > 0
+            );
+            const pendingEvidenceCandidateCount = evidenceCandidateReviewRows.filter(
+              (candidate) =>
+                candidate.reviewStatus === "pending_review" &&
+                candidate.localDecision !== "deferred"
+            ).length;
+            const latestSupplierLayerRecord = supplierLayerRecords[0] || null;
+            const latestSupplierLayerPrimaryReviewItem = latestSupplierLayerRecord
+              ? visibleSupplierLayerReviewItems.find(
+                  (reviewItem) =>
+                    reviewItem?.supplierProductKey ===
+                    latestSupplierLayerRecord?.supplierProductKey
+                ) || null
+              : null;
+            const latestSupplierLayerPrimaryActionMeta =
+              getSupplierAdapterPrimaryActionMeta(
+                latestSupplierLayerPrimaryReviewItem
+              );
+            const latestSupplierLayerReviewCount = latestSupplierLayerRecord
+              ? visibleSupplierLayerReviewItems.filter(
+                  (reviewItem) =>
+                    reviewItem?.supplierProductKey ===
+                    latestSupplierLayerRecord?.supplierProductKey
+                ).length
+              : 0;
+            const latestSupplierLayerPendingImportRow = latestSupplierLayerRecord
+              ? supplierImportQueueRows.find(
+                  (item) =>
+                    item.supplierProductKey ===
+                      latestSupplierLayerRecord?.supplierProductKey && item.canReview
+                ) || null
+              : null;
+            const exportReadyCount =
+              supplierLayerRecords.length +
+              approvedSupplierDraftRecords.length +
+              approvedEvidenceCandidateRecords.length +
+              generatedSupplierCatalogRowDraftRecords.length +
+              generatedSupplierPriceDraftRecords.length;
+            const exportStatusTouched = Boolean(
+              supplierAdapterExportStatus ||
+                supplierDraftExportStatus ||
+                approvedEvidenceCandidateExportStatus ||
+                supplierCatalogDraftExportStatus ||
+                supplierPriceDraftExportStatus ||
+                sourceDocumentEvidenceExportStatus
+            );
+            const supplierWorkflowSteps = [
+              {
+                key: "select-source",
+                number: 1,
+                title: "Select Source",
+                purpose:
+                  "Start from a known Fraterworks-linked item or a manual page capture before any facts are staged.",
+                status: getSupplierWorkflowStatus({
+                  complete: hasSupplierSourceSelection,
+                  started: hasSupplierSourceSelection,
+                }),
+                summary: hasSupplierSourceSelection
+                  ? supplierAdapterDraft.supplierProductKey
+                    ? "Known Fraterworks mapping loaded into the intake draft."
+                    : supplierLayerRecords.length > 0
+                    ? `${supplierLayerRecords.length} supplier-layer capture${
+                        supplierLayerRecords.length === 1 ? "" : "s"
+                      } already exist.`
+                    : "Manual supplier page selected for intake."
+                  : "Choose a known Fraterworks item or start a manual page.",
+                nextStepKey: "capture-facts",
+                nextStepLabel: "Go to Capture Facts",
+              },
+              {
+                key: "capture-facts",
+                number: 2,
+                title: "Capture Facts",
+                purpose:
+                  "Collect trusted page-native fields into the supplier layer without mutating canonical material truth.",
+                status: getSupplierWorkflowStatus({
+                  complete: supplierLayerRecords.length > 0,
+                  started: hasSupplierFactDraft,
+                }),
+                summary:
+                  supplierLayerRecords.length > 0
+                    ? `${supplierLayerRecords.length} supplier-layer record${
+                        supplierLayerRecords.length === 1 ? "" : "s"
+                      } captured from trusted first-party pages.`
+                    : hasSupplierFactDraft
+                    ? "Draft fields are filled and ready for auto-ingest."
+                    : "Capture URL, packs, pricing, IFRA %, SDS, INCI, and description.",
+                nextStepKey: "review-mapping",
+                nextStepLabel: "Go to Review Mapping",
+              },
+              {
+                key: "review-mapping",
+                number: 3,
+                title: "Review Mapping",
+                purpose:
+                  "Resolve mapping ambiguity, merge risk, and new-item decisions before supplier facts affect canonical lanes.",
+                status: getSupplierWorkflowStatus({
+                  complete:
+                    supplierLayerRecords.length > 0 &&
+                    visibleSupplierLayerReviewItems.length === 0,
+                  needsAttention: visibleSupplierLayerReviewItems.length > 0,
+                  started: supplierLayerRecords.length > 0,
+                }),
+                summary:
+                  supplierAdapterStageableReviewCount > 0
+                    ? `${supplierAdapterStageableReviewCount} adapter review item${
+                        supplierAdapterStageableReviewCount === 1 ? "" : "s"
+                      } can move straight into reviewable updates once staged.`
+                    : visibleSupplierLayerReviewItems.length > 0
+                    ? `${visibleSupplierLayerReviewItems.length} adapter review item${
+                        visibleSupplierLayerReviewItems.length === 1 ? "" : "s"
+                      } still need mapping review before they can advance.`
+                    : stagedSupplierAdapterNewItemCount > 0
+                    ? `${stagedSupplierAdapterNewItemCount} new-item candidate${
+                        stagedSupplierAdapterNewItemCount === 1 ? "" : "s"
+                      } already moved into the onboarding exceptions queue.`
+                    : supplierLayerRecords.length > 0
+                    ? "Current supplier-layer captures are mapped cleanly."
+                    : "No supplier-layer captures are waiting on mapping review yet.",
+                nextStepKey: "stage-reviewable-updates",
+                nextStepLabel: "Go to Stage Reviewable Updates",
+              },
+              {
+                key: "stage-reviewable-updates",
+                number: 4,
+                title: "Stage Reviewable Updates",
+                purpose:
+                  "Send high-risk or evidence-backed changes through the existing review queue instead of applying them directly.",
+                status: getSupplierWorkflowStatus({
+                  complete:
+                    (supplierImportQueueRows.length > 0 ||
+                      sourceDocumentEvidenceReviewPayload.summary
+                      .sourceDocumentCount > 0 ||
+                      approvedSupplierDraftRecords.length > 0 ||
+                      approvedEvidenceCandidateRecords.length > 0) &&
+                    pendingSupplierImportCount === 0 &&
+                    pendingEvidenceCandidateCount === 0,
+                  needsAttention:
+                    supplierAdapterStageableReviewCount > 0 ||
+                    pendingSupplierImportCount > 0 ||
+                    pendingEvidenceCandidateCount > 0 ||
+                    sourceDocumentEvidenceReviewPayload.summary
+                      .awaitingDocumentTargetCount > 0,
+                  started:
+                    supplierAdapterStageableReviewCount > 0 ||
+                    supplierImportQueueRows.length > 0 ||
+                    sourceDocumentEvidenceReviewPayload.summary
+                      .sourceDocumentCount > 0 ||
+                    sourceDocumentEvidenceReviewPayload.summary
+                      .evidenceCandidateCount > 0 ||
+                    approvedSupplierDraftRecords.length > 0 ||
+                    approvedEvidenceCandidateRecords.length > 0,
+                }),
+                  summary:
+                    supplierAdapterStageableReviewCount > 0
+                      ? `${supplierAdapterStageableReviewCount} adapter conflict row${
+                          supplierAdapterStageableReviewCount === 1 ? "" : "s"
+                        } are ready to stage into the existing evidence-review path.`
+                    : pendingSupplierImportCount > 0
+                    ? `${pendingSupplierImportCount} supplier discover${
+                        pendingSupplierImportCount === 1 ? "y is" : "ies are"
+                      } staged and waiting for explicit onboarding decisions.`
+                    : pendingEvidenceCandidateCount > 0
+                    ? `${pendingEvidenceCandidateCount} evidence candidate${
+                        pendingEvidenceCandidateCount === 1 ? "" : "s"
+                      } still need a review decision.`
+                    : approvedSupplierDraftRecords.length > 0 ||
+                      approvedEvidenceCandidateRecords.length > 0
+                    ? `${approvedSupplierDraftRecords.length} approved supplier draft${
+                        approvedSupplierDraftRecords.length === 1 ? "" : "s"
+                      } and ${approvedEvidenceCandidateRecords.length} approved evidence candidate${
+                        approvedEvidenceCandidateRecords.length === 1 ? "" : "s"
+                      } are staged.`
+                    : "Use the existing evidence review lane for conflicts and higher-risk updates.",
+                nextStepKey: "export-approved-updates",
+                nextStepLabel: "Go to Export Approved Updates",
+              },
+              {
+                key: "export-approved-updates",
+                number: 5,
+                title: "Export Approved Updates",
+                purpose:
+                  "Export the supplier-layer payloads and approved review artifacts without bypassing the current review-first architecture.",
+                status: getSupplierWorkflowStatus({
+                  complete: exportStatusTouched,
+                  needsAttention: exportReadyCount > 0 && !exportStatusTouched,
+                  started: exportReadyCount > 0 || exportStatusTouched,
+                }),
+                summary: exportStatusTouched
+                  ? "An export or copy action already ran in this session."
+                  : exportReadyCount > 0
+                  ? `${exportReadyCount} portable payload${
+                      exportReadyCount === 1 ? "" : "s"
+                    } are ready to export or copy.`
+                  : "Export payloads appear here once supplier facts or approved reviews are ready.",
+                nextStepKey: null,
+                nextStepLabel: null,
+              },
+            ];
+            const supplierWorkflowFallbackRecommendedStep =
+              supplierWorkflowSteps.find(
+                (step) => step.status === "needs_attention"
+              ) ||
+              supplierWorkflowSteps.find(
+                (step) => step.status === "in_progress"
+              ) ||
+              supplierWorkflowSteps.find(
+                (step) => step.status === "not_started"
+              ) ||
+              supplierWorkflowSteps[supplierWorkflowSteps.length - 1];
+            const supplierWorkflowRecommendedStep =
+              supplierAdapterPrimaryActionMeta?.recommendedStepKey
+                ? supplierWorkflowSteps.find(
+                    (step) =>
+                      step.key ===
+                      supplierAdapterPrimaryActionMeta.recommendedStepKey
+                  ) || supplierWorkflowFallbackRecommendedStep
+                : supplierWorkflowFallbackRecommendedStep;
+            const supplierWorkflowProgressUnits = supplierWorkflowSteps.reduce(
+              (sum, step) =>
+                sum +
+                (step.status === "complete"
+                  ? 1
+                  : step.status === "in_progress" ||
+                    step.status === "needs_attention"
+                  ? 0.5
+                  : 0),
+              0
+            );
+            const supplierWorkflowProgressPercent = Math.round(
+              (supplierWorkflowProgressUnits / supplierWorkflowSteps.length) * 100
+            );
+            const supplierHubSectionCards = [
+              {
+                key: "provider-sync",
+                title: "Provider Sync",
+                summary: fraterworksLatestSyncAt
+                  ? `Last Fraterworks sync/import: ${new Date(
+                      fraterworksLatestSyncAt
+                    ).toLocaleString()}.`
+                  : "Run a provider sync, workbook import, pasted JSON import, or manual capture.",
+                status: getSupplierWorkflowStatus({
+                  complete: Boolean(fraterworksLatestSyncAt),
+                  started:
+                    Boolean(fraterworksLatestSyncAt) ||
+                    supplierFullSyncing ||
+                    supplierWorkbookImporting ||
+                    supplierJsonImporting,
+                }),
+                targetStepKey: "select-source",
+                buttonLabel: "Open Sync",
+              },
+              {
+                key: "sync-results",
+                title: "Sync Results",
+                summary: latestSupplierSyncReportEntry
+                  ? `${latestSupplierSyncReportEntry.label} recorded ${
+                      latestSupplierSyncReportEntry.report?.resultRows?.length || 0
+                    } result row${
+                      (latestSupplierSyncReportEntry.report?.resultRows?.length ||
+                        0) === 1
+                        ? ""
+                        : "s"
+                    }.`
+                  : "Inspect the latest provider changes here after a sync or import runs.",
+                status: getSupplierWorkflowStatus({
+                  complete: Boolean(latestSupplierSyncReportEntry),
+                  started:
+                    Boolean(latestSupplierSyncReportEntry) ||
+                    supplierLayerRecords.length > 0,
+                }),
+                targetStepKey: "sync-results",
+                buttonLabel: "Open Results",
+              },
+              {
+                key: "exceptions",
+                title: "Exceptions Queue",
+                summary:
+                  activeSupplierExceptionCount > 0
+                    ? `${activeSupplierExceptionCount} active exception${
+                        activeSupplierExceptionCount === 1 ? "" : "s"
+                      } are visible below and can be acted on directly.`
+                    : "No active exceptions are waiting on mapping, duplicate, or onboarding review.",
+                status: getSupplierWorkflowStatus({
+                  complete:
+                    supplierLayerRecords.length > 0 &&
+                    activeSupplierExceptionCount === 0,
+                  needsAttention: activeSupplierExceptionCount > 0,
+                  started:
+                    supplierLayerRecords.length > 0 ||
+                    activeSupplierExceptionCount > 0,
+                }),
+                targetStepKey: "review-mapping",
+                buttonLabel:
+                  activeSupplierExceptionCount > 0
+                    ? `View ${activeSupplierExceptionCount} exception${
+                        activeSupplierExceptionCount === 1 ? "" : "s"
+                      }`
+                    : "Open Exceptions",
+              },
+            ];
+            const supplierHubRecommendedCard =
+              supplierHubSectionCards.find(
+                (section) => section.status === "needs_attention"
+              ) ||
+              supplierHubSectionCards.find(
+                (section) => section.status === "in_progress"
+              ) ||
+              supplierHubSectionCards.find(
+                (section) => section.status === "not_started"
+              ) ||
+              supplierHubSectionCards[0];
+            const latestSupplierWorkflowResult = latestSupplierLayerRecord
+              ? (() => {
+                  const latestTitle =
+                    latestSupplierLayerRecord.pageFacts?.productTitle ||
+                    latestSupplierLayerRecord.mappedCatalogName ||
+                    latestSupplierLayerRecord.supplierProductKey;
+                  const nextStepKey = latestSupplierLayerReviewCount > 0
+                    ? latestSupplierLayerPrimaryActionMeta?.recommendedStepKey ||
+                      "review-mapping"
+                    : latestSupplierLayerPendingImportRow
+                    ? "stage-reviewable-updates"
+                    : pendingEvidenceCandidateCount > 0
+                    ? "stage-reviewable-updates"
+                    : "export-approved-updates";
+
+                  return {
+                    title: latestTitle,
+                    outcome:
+                      latestSupplierLayerRecord.trustLaneLabel ||
+                      "Supplier-layer capture stored",
+                    happened: [
+                      latestSupplierLayerRecord.notes?.[0],
+                      latestSupplierLayerRecord.notes?.[1],
+                    ]
+                      .filter(Boolean)
+                      .join(" "),
+                    nextAction: latestSupplierLayerReviewCount > 0
+                      ? latestSupplierLayerPrimaryActionMeta?.recommendedStepKey ===
+                        "stage-reviewable-updates"
+                        ? `Use ${latestSupplierLayerPrimaryActionMeta?.label || "Stage Correction Proposal"} on the review row below to push this conflict into the reviewable-updates lane.`
+                        : `${latestSupplierLayerPrimaryActionMeta?.label || "Resolve Mapping"} on the review row below before relying on the capture downstream.`
+                      : latestSupplierLayerPendingImportRow
+                      ? "This supplier-first new item is now staged in Exceptions Queue. Continue with an explicit onboarding decision there."
+                      : pendingEvidenceCandidateCount > 0
+                      ? "Stage and decide the remaining evidence-review items before final export."
+                      : "Export the supplier-layer record or approved review payloads when you are ready to move the capture forward.",
+                    nextStepKey,
+                    nextStepLabel:
+                      nextStepKey === "review-mapping"
+                        ? "Go to Review Mapping"
+                        : nextStepKey === "stage-reviewable-updates"
+                        ? "Go to Stage Reviewable Updates"
+                        : "Go to Export Approved Updates",
+                  };
+                })()
+              : null;
+
+            const loadSupplierAdapterReviewItemIntoDraft = (reviewItem) => {
+              const sourceRecord = supplierLayerRecords.find(
+                (record) =>
+                  record?.supplierProductKey === reviewItem?.supplierProductKey
+              );
+              if (!sourceRecord) {
+                setSupplierAdapterStatus(
+                  "This supplier-layer record could not be reloaded into the intake draft."
+                );
+                return false;
+              }
+
+              setSupplierAdapterDraft({
+                supplierProductKey: sourceRecord.supplierProductKey || "",
+                productTitle: sourceRecord.pageFacts?.productTitle || "",
+                url: sourceRecord.pageFacts?.url || "",
+                packLines: formatSupplierAdapterPricePointsForTextarea(
+                  sourceRecord.pageFacts?.pricePoints || []
+                ),
+                availabilityStatus:
+                  sourceRecord.pageFacts?.availabilityStatus || "unknown",
+                ifraPercent:
+                  sourceRecord.pageFacts?.ifraPercent != null
+                    ? String(sourceRecord.pageFacts.ifraPercent)
+                    : "",
+                sdsUrl: sourceRecord.pageFacts?.sdsUrl || "",
+                inci: sourceRecord.pageFacts?.inci || "",
+                productDescription:
+                  sourceRecord.pageFacts?.productDescription || "",
+                sourceNote: sourceRecord.sourceNote || "",
+              });
+              return true;
+            };
+
+            const reloadSupplierAdapterReviewItemIntoDraft = (
+              reviewItem,
+              statusMessage
+            ) => {
+              const loaded = loadSupplierAdapterReviewItemIntoDraft(reviewItem);
+              if (!loaded) return false;
+              setSupplierAdapterStatus(
+                statusMessage ||
+                  "Loaded this supplier-layer capture back into Capture Facts so you can refine the source details."
+              );
+              scrollToSupplierWorkflowStep("capture-facts");
+              return true;
+            };
+
+            const reloadSupplierImportItemIntoDraft = (item) => {
+              const localReview =
+                supplierImportLocalReviewState[item?.supplierProductKey] || null;
+              const sourceSnapshot = localReview?.sourceSnapshot || null;
+              if (
+                sourceSnapshot?.sourceOrigin !==
+                "supplier_adapter_new_item_candidate"
+              ) {
+                setSupplierAdapterStatus(
+                  "This staged review item does not have a Supplier adapter capture to reload."
+                );
+                return false;
+              }
+
+              setSupplierAdapterDraft({
+                supplierProductKey: item?.supplierProductKey || "",
+                productTitle:
+                  sourceSnapshot?.productTitle || item?.productTitle || "",
+                url: sourceSnapshot?.url || item?.url || "",
+                packLines: formatSupplierAdapterPricePointsForTextarea(
+                  sourceSnapshot?.pricePoints || []
+                ),
+                availabilityStatus:
+                  sourceSnapshot?.availabilityStatus || "unknown",
+                ifraPercent:
+                  sourceSnapshot?.ifraPercent != null
+                    ? String(sourceSnapshot.ifraPercent)
+                    : "",
+                sdsUrl: sourceSnapshot?.sdsUrl || "",
+                inci: sourceSnapshot?.inci || "",
+                productDescription: sourceSnapshot?.productDescription || "",
+                sourceNote: sourceSnapshot?.sourceNote || "",
+              });
+              setSupplierAdapterStatus(
+                `Reloaded ${sourceSnapshot?.productTitle || item?.supplierProductKey} back into Capture Facts.`
+              );
+              scrollToSupplierWorkflowStep("capture-facts");
+              return true;
+            };
+
+            const stageSupplierAdapterNewItemReview = (reviewItem) => {
+              const sourceRecord = supplierLayerRecords.find(
+                (record) =>
+                  record?.supplierProductKey === reviewItem?.supplierProductKey
+              );
+              if (!sourceRecord) {
+                setSupplierAdapterStatus(
+                  "This supplier-layer record could not be moved into the onboarding exceptions queue."
+                );
+                return false;
+              }
+
+              const stagedItem = buildSupplierAdapterNewItemReviewStage(
+                reviewItem,
+                sourceRecord
+              );
+              if (!stagedItem?.supplierProductKey || !stagedItem?.proposedCatalogName) {
+                setSupplierAdapterStatus(
+                  "This supplier-first new item is still missing a usable staged review identity."
+                );
+                return false;
+              }
+
+              const existingLocalReview =
+                supplierImportLocalReviewState[stagedItem.supplierProductKey] ||
+                null;
+              if (
+                existingLocalReview?.sourceSnapshot?.sourceOrigin ===
+                "supplier_adapter_new_item_candidate"
+              ) {
+                setSupplierAdapterStatus(
+                  existingLocalReview?.decision
+                    ? `This supplier-first new item is already ${existingLocalReview.decision} in the onboarding exceptions queue.`
+                    : `This supplier-first new item is already staged in the onboarding exceptions queue.`
+                );
+                return true;
+              }
+
+              const stagedAt = new Date().toISOString();
               setSupplierImportLocalReviewState((prev) => ({
                 ...prev,
-                [item.supplierProductKey]: {
-                  decision: "approved",
-                  reviewStatus: "approved_local_draft",
-                  reviewedAt: approvedAt,
-                  sourceSnapshot: buildSupplierImportSourceSnapshot(item),
-                  supplierProductRowDraft: draft.supplierProductRowDraft,
-                  normalizationEntryDraft: draft.normalizationEntryDraft,
+                [stagedItem.supplierProductKey]: {
+                  decision: null,
+                  reviewStatus: "pending_catalog_import",
+                  reviewedAt: null,
+                  stagedAt,
+                  sourceSnapshot: buildSupplierImportSourceSnapshot({
+                    ...stagedItem,
+                    stagedAt,
+                  }),
+                  supplierProductRowDraft: null,
+                  normalizationEntryDraft: null,
                 },
               }));
+              setSupplierAdapterStatus(
+                `Staged ${stagedItem.productTitle} into the onboarding exceptions queue. Continue with an explicit onboarding action in Exceptions Queue.`
+              );
+              return true;
+            };
+
+            const openSupplierAdapterDossier = (reviewItem) => {
+              const targetName = getSupplierAdapterDossierTarget(reviewItem);
+              if (!targetName) {
+                setSupplierAdapterStatus(
+                  "This review item is not mapped to a live dossier target yet."
+                );
+                return;
+              }
+              setDetailName(targetName);
+            };
+
+            const runSupplierAdapterPrimaryAction = (reviewItem) => {
+              const actionMeta = getSupplierAdapterPrimaryActionMeta(reviewItem);
+              if (!actionMeta) return;
+
+              if (actionMeta.key === "stage_correction_proposal") {
+                stageSupplierAdapterConflictReview(reviewItem);
+                return;
+              }
+
+              if (actionMeta.key === "review_new_item") {
+                const staged = stageSupplierAdapterNewItemReview(reviewItem);
+                if (!staged) return;
+                scrollToSupplierWorkflowStep("stage-reviewable-updates");
+                return;
+              } else {
+                reloadSupplierAdapterReviewItemIntoDraft(
+                  reviewItem,
+                  "Loaded this supplier-layer capture back into the intake draft so you can resolve the mapping or variant question before staging downstream updates."
+                );
+              }
+            };
+
+            const openSupplierAdapterWorkbench = (reviewItem) => {
+              const targetName = String(
+                reviewItem?.mappedCatalogName || reviewItem?.productTitle || ""
+              ).trim();
+              if (!targetName) {
+                setSupplierAdapterStatus(
+                  "No material target is available for the Founder workbench yet."
+                );
+                return;
+              }
+              setBackfillWorkbenchTargets([targetName]);
+              setMainTab("founder");
+            };
+
+            const resolveSupplierImport = (item, resolutionType) => {
+              if (!item?.canReview) return;
+              const reviewedAt = new Date().toISOString();
+              const resolutionMeta =
+                supplierOnboardingOutcomeMeta[resolutionType] ||
+                supplierOnboardingOutcomeMeta.create_supplier_product;
+              const draftSource = buildSupplierImportResolutionDraftItem(
+                item,
+                resolutionType
+              );
+              const draft = buildApprovedSupplierImportDraft(draftSource);
+              setSupplierImportLocalReviewState((prev) => {
+                const existingLocalReview =
+                  prev[item.supplierProductKey] || null;
+                return {
+                  ...prev,
+                  [item.supplierProductKey]: {
+                    decision: "approved",
+                    queueState: "resolved",
+                    resolutionType,
+                    resolutionLabel: resolutionMeta.label,
+                    reviewStatus: resolutionMeta.reviewStatus,
+                    reviewedAt,
+                    stagedAt: existingLocalReview?.stagedAt || null,
+                    sourceSnapshot: {
+                      ...(existingLocalReview?.sourceSnapshot || {}),
+                      ...buildSupplierImportSourceSnapshot(draftSource),
+                    },
+                    supplierProductRowDraft: draft.supplierProductRowDraft,
+                    normalizationEntryDraft: draft.normalizationEntryDraft,
+                  },
+                };
+              });
+            };
+
+            const deferSupplierImport = (item) => {
+              if (!item?.canReview) return;
+              const reviewedAt = new Date().toISOString();
+              setSupplierImportLocalReviewState((prev) => {
+                const existingLocalReview =
+                  prev[item.supplierProductKey] || null;
+                return {
+                  ...prev,
+                  [item.supplierProductKey]: {
+                    decision: "deferred",
+                    queueState: "active",
+                    resolutionType: null,
+                    resolutionLabel: null,
+                    reviewStatus: "deferred_local",
+                    reviewedAt,
+                    stagedAt: existingLocalReview?.stagedAt || null,
+                    sourceSnapshot: {
+                      ...(existingLocalReview?.sourceSnapshot || {}),
+                      ...buildSupplierImportSourceSnapshot(item),
+                    },
+                    supplierProductRowDraft: null,
+                    normalizationEntryDraft: null,
+                  },
+                };
+              });
             };
 
             const approveEvidenceCandidate = (candidate) => {
@@ -78379,20 +88527,165 @@ export default function App() {
               });
             };
 
-            const rejectSupplierImport = (item) => {
+            const ignoreSupplierImport = (item) => {
               if (!item?.canReview) return;
-              const rejectedAt = new Date().toISOString();
-              setSupplierImportLocalReviewState((prev) => ({
+              const reviewedAt = new Date().toISOString();
+              setSupplierImportLocalReviewState((prev) => {
+                const existingLocalReview =
+                  prev[item.supplierProductKey] || null;
+                return {
+                  ...prev,
+                  [item.supplierProductKey]: {
+                    decision: "ignored",
+                    queueState: "ignored",
+                    resolutionType: "ignore",
+                    resolutionLabel:
+                      supplierOnboardingOutcomeMeta.ignore.label,
+                    reviewStatus: supplierOnboardingOutcomeMeta.ignore.reviewStatus,
+                    reviewedAt,
+                    stagedAt: existingLocalReview?.stagedAt || null,
+                    sourceSnapshot: {
+                      ...(existingLocalReview?.sourceSnapshot || {}),
+                      ...buildSupplierImportSourceSnapshot(item),
+                    },
+                    supplierProductRowDraft: null,
+                    normalizationEntryDraft: null,
+                  },
+                };
+              });
+            };
+
+            const archiveSupplierImport = (item) => {
+              if (!item?.supplierProductKey) return;
+              const archivedAt = new Date().toISOString();
+              setSupplierImportLocalReviewState((prev) => {
+                const existingLocalReview =
+                  prev[item.supplierProductKey] || null;
+                if (!existingLocalReview) return prev;
+                return {
+                  ...prev,
+                  [item.supplierProductKey]: {
+                    ...existingLocalReview,
+                    queueState: "archived",
+                    archivedAt,
+                    reviewStatus:
+                      existingLocalReview.reviewStatus === "ignored_local"
+                        ? "archived_ignored"
+                        : "archived_resolved",
+                  },
+                };
+              });
+            };
+            const resetSupplierExceptionFilters = () => {
+              setSupplierExceptionTypeFilter("all");
+              setSupplierExceptionProviderFilter("all");
+              setSupplierExceptionQuickFilters({
+                unresolvedOnly: false,
+                stagedToEvidenceOnly: false,
+                strongDuplicateOnly: false,
+                latestSyncOnly: false,
+              });
+              setSelectedSupplierExceptionKeys([]);
+            };
+            const setSupplierExceptionTypeFilterWithReset = (filterKey) => {
+              setSupplierExceptionTypeFilter(filterKey);
+              setSelectedSupplierExceptionKeys([]);
+            };
+            const setSupplierExceptionProviderFilterWithReset = (providerKey) => {
+              setSupplierExceptionProviderFilter(providerKey);
+              setSelectedSupplierExceptionKeys([]);
+            };
+            const toggleSupplierExceptionQuickFilter = (filterKey) => {
+              setSupplierExceptionQuickFilters((prev) => ({
                 ...prev,
-                [item.supplierProductKey]: {
-                  decision: "rejected",
-                  reviewStatus: "rejected_local",
-                  reviewedAt: rejectedAt,
-                  sourceSnapshot: buildSupplierImportSourceSnapshot(item),
-                  supplierProductRowDraft: null,
-                  normalizationEntryDraft: null,
-                },
+                [filterKey]: !prev[filterKey],
               }));
+              setSelectedSupplierExceptionKeys([]);
+            };
+            const toggleSupplierExceptionSelection = (entryKey) => {
+              if (!entryKey) return;
+              setSelectedSupplierExceptionKeys((prev) =>
+                prev.includes(entryKey)
+                  ? prev.filter((key) => key !== entryKey)
+                  : [...prev, entryKey]
+              );
+            };
+            const selectAllVisibleSupplierExceptions = () => {
+              setSelectedSupplierExceptionKeys(
+                filteredSelectableSupplierExceptionEntries.map((entry) => entry.key)
+              );
+            };
+            const clearSelectedSupplierExceptions = () => {
+              setSelectedSupplierExceptionKeys([]);
+            };
+            const bulkCreateSelectedSupplierProducts = () => {
+              const entries = selectedVisibleSupplierOnboardingEntries.filter(
+                (entry) =>
+                  entry.item?.canReview &&
+                  !entry.isDuplicateReview &&
+                  !entry.canLinkExisting &&
+                  (entry.item?.exceptionTypeKey === "new_supplier_product" ||
+                    entry.item?.warningBucketKey === "expected_create_state")
+              );
+              if (!entries.length) return;
+              entries.forEach((entry) =>
+                resolveSupplierImport(entry.item, "create_supplier_product")
+              );
+              setSelectedSupplierExceptionKeys([]);
+              setSupplierAdapterStatus(
+                `Resolved ${entries.length} selected exception${
+                  entries.length === 1 ? "" : "s"
+                } as supplier products.`
+              );
+            };
+            const bulkKeepSelectedSupplierProductsSeparate = () => {
+              const entries = selectedVisibleSupplierOnboardingEntries.filter(
+                (entry) => entry.item?.canReview && entry.isDuplicateReview
+              );
+              if (!entries.length) return;
+              entries.forEach((entry) =>
+                resolveSupplierImport(entry.item, "create_supplier_product")
+              );
+              setSelectedSupplierExceptionKeys([]);
+              setSupplierAdapterStatus(
+                `Kept ${entries.length} duplicate-style supplier exception${
+                  entries.length === 1 ? "" : "s"
+                } separate by creating supplier products instead of linking live materials.`
+              );
+            };
+            const bulkDeferSelectedSupplierExceptions = () => {
+              const entries = selectedVisibleSupplierOnboardingEntries.filter(
+                (entry) => entry.item?.canReview
+              );
+              if (!entries.length) return;
+              entries.forEach((entry) => deferSupplierImport(entry.item));
+              setSelectedSupplierExceptionKeys([]);
+              setSupplierAdapterStatus(
+                `Deferred ${entries.length} selected onboarding exception${
+                  entries.length === 1 ? "" : "s"
+                }.`
+              );
+            };
+            const bulkIgnoreSelectedSupplierExceptions = () => {
+              const entries = selectedVisibleSupplierOnboardingEntries.filter(
+                (entry) => entry.item?.canReview
+              );
+              if (!entries.length) return;
+              entries.forEach((entry) => ignoreSupplierImport(entry.item));
+              setSelectedSupplierExceptionKeys([]);
+              setSupplierAdapterStatus(
+                `Ignored ${entries.length} selected onboarding exception${
+                  entries.length === 1 ? "" : "s"
+                }.`
+              );
+            };
+            const bulkStageSelectedCorrectionProposals = () => {
+              const reviewItems = selectedVisibleSupplierReviewEntries
+                .map((entry) => entry.reviewItem)
+                .filter((reviewItem) => reviewItem?.canStageToEvidence);
+              if (!reviewItems.length) return;
+              stageSupplierAdapterConflictReviewBatch(reviewItems);
+              setSelectedSupplierExceptionKeys([]);
             };
 
             const saveUrl = (ing, sup, newUrl) => {
@@ -78480,206 +88773,4975 @@ export default function App() {
 
             return (
               <div>
-                {/* Header */}
                 <div
+                  style={{
+                    marginBottom: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#E2E8F0",
+                    }}
+                  >
+                    Provider Sync
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.5,
+                      color: "#64748B",
+                      marginTop: 3,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Run provider syncs, targeted imports, or manual capture
+                    here. Clean trusted supplier products can land directly in
+                    the supplier layer; only meaningful exceptions continue to
+                    onboarding review below.
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: "#06111E",
+                    border: "1px solid #0EA5E940",
+                    borderRadius: 16,
+                    padding: "14px 16px",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 14,
+                      flexWrap: "wrap",
+                      justifyContent: "space-between",
+                      marginBottom: 12,
+                    }}
+                    >
+                      <div style={{ maxWidth: 760 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                          fontWeight: 800,
+                          color: "#E2E8F0",
+                        }}
+                      >
+                        Supplier Sync Hub
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 9.5,
+                          color: "#64748B",
+                          marginTop: 4,
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        Sync trusted providers, inspect what changed, and only
+                        review real exceptions. Clean supplier-layer updates can
+                        land automatically; only mapping ambiguity and stronger
+                        truth conflicts stay in review-first lanes.
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        minWidth: 220,
+                        flex: "1 1 260px",
+                        maxWidth: 340,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 4,
+                        }}
+                      >
+                        Hub status
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: "#E2E8F0",
+                          lineHeight: 1.6,
+                          marginBottom: 6,
+                        }}
+                      >
+                        Recommended now: {supplierHubRecommendedCard?.title}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {latestSupplierSyncReportEntry
+                          ? `Latest activity: ${latestSupplierSyncReportEntry.label}.`
+                          : "No provider sync or intake report has run in this session yet."}{" "}
+                        {activeSupplierExceptionCount > 0
+                          ? `${activeSupplierExceptionCount} active exception${
+                              activeSupplierExceptionCount === 1 ? "" : "s"
+                            } are visible below.`
+                          : "Exceptions are currently clear."}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      background: "#07121F",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ maxWidth: 820 }}>
+                        <div
+                          style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          Exceptions Queue Filters
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 4,
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Showing {filteredSupplierExceptionActiveCount} active
+                          exception
+                          {filteredSupplierExceptionActiveCount === 1 ? "" : "s"}
+                          {providerScopedActiveSupplierExceptionCount !==
+                          filteredSupplierExceptionActiveCount
+                            ? ` of ${providerScopedActiveSupplierExceptionCount} in this provider view`
+                            : ""}
+                          {filteredSupplierExceptionHistoryCount > 0
+                            ? ` · ${filteredSupplierExceptionHistoryCount} history match${
+                                filteredSupplierExceptionHistoryCount === 1
+                                  ? ""
+                                  : "es"
+                              }`
+                            : providerScopedHistorySupplierExceptionCount > 0 &&
+                              supplierExceptionTypeFilter === "all"
+                            ? ` · ${providerScopedHistorySupplierExceptionCount} history row${
+                                providerScopedHistorySupplierExceptionCount === 1
+                                  ? ""
+                                  : "s"
+                              } available below`
+                            : ""}
+                          .
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <button
+                          onClick={selectAllVisibleSupplierExceptions}
+                          disabled={
+                            filteredSelectableSupplierExceptionEntries.length === 0
+                          }
+                          style={{
+                            background:
+                              filteredSelectableSupplierExceptionEntries.length > 0
+                                ? "#0A1628"
+                                : "#020810",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color:
+                              filteredSelectableSupplierExceptionEntries.length > 0
+                                ? "#93C5FD"
+                                : "#475569",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor:
+                              filteredSelectableSupplierExceptionEntries.length > 0
+                                ? "pointer"
+                                : "not-allowed",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Select Visible
+                        </button>
+                        <button
+                          onClick={resetSupplierExceptionFilters}
+                          style={{
+                            background: "#020810",
+                            border: "1px solid #334155",
+                            borderRadius: 7,
+                            color: "#CBD5E1",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Clear Filters
+                        </button>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        marginTop: 10,
+                      }}
+                    >
+                      {supplierExceptionFilterOptions.map((option) => {
+                        const active = supplierExceptionTypeFilter === option.key;
+                        return (
+                          <button
+                            key={option.key}
+                            onClick={() =>
+                              setSupplierExceptionTypeFilterWithReset(option.key)
+                            }
+                            style={{
+                              background: active ? "#0A1628" : "#020810",
+                              border: `1px solid ${
+                                active ? "#1D4ED8" : "#334155"
+                              }`,
+                              borderRadius: 999,
+                              color: active ? "#93C5FD" : "#CBD5E1",
+                              padding: "4px 9px",
+                              fontSize: 7.7,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {option.label} · {option.count}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        marginTop: 10,
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 8,
+                          color: "#94A3B8",
+                        }}
+                      >
+                        Provider
+                        <select
+                          value={supplierExceptionProviderFilter}
+                          onChange={(event) =>
+                            setSupplierExceptionProviderFilterWithReset(
+                              event.target.value
+                            )
+                          }
+                          style={{
+                            background: "#020810",
+                            color: "#E2E8F0",
+                            border: "1px solid #334155",
+                            borderRadius: 7,
+                            padding: "5px 8px",
+                            fontSize: 8,
+                          }}
+                        >
+                          <option value="all">All providers</option>
+                          {supplierProviderCards.map((provider) => (
+                            <option key={provider.key} value={provider.key}>
+                              {provider.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {[
+                        ["unresolvedOnly", "Only unresolved"],
+                        ["stagedToEvidenceOnly", "Only staged to evidence review"],
+                        ["strongDuplicateOnly", "Only strong duplicate candidates"],
+                        ["latestSyncOnly", "Only items from latest sync"],
+                      ].map(([filterKey, label]) => {
+                        const enabled =
+                          supplierExceptionQuickFilters[filterKey];
+                        return (
+                          <button
+                            key={filterKey}
+                            onClick={() =>
+                              toggleSupplierExceptionQuickFilter(filterKey)
+                            }
+                            style={{
+                              background: enabled ? "#1E1435" : "#020810",
+                              border: `1px solid ${
+                                enabled ? "#6D28D9" : "#334155"
+                              }`,
+                              borderRadius: 999,
+                              color: enabled ? "#DDD6FE" : "#CBD5E1",
+                              padding: "4px 9px",
+                              fontSize: 7.7,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 10,
+                        padding: "8px 10px",
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8.2,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          {selectedVisibleSupplierExceptionCount} selected
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 7.5,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                            maxWidth: 620,
+                          }}
+                        >
+                          {supplierBulkActionHint ||
+                            "Use bulk actions for safe repeated decisions, then keep row-level actions for anything nuanced."}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                        }}
+                      >
+                        {canBulkCreateSupplierProducts ? (
+                          <button
+                            onClick={bulkCreateSelectedSupplierProducts}
+                            style={{
+                              background: "#0A2E1A",
+                              border: "1px solid #166534",
+                              borderRadius: 7,
+                              color: "#86EFAC",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Create Supplier Product
+                          </button>
+                        ) : null}
+                        {canBulkKeepSeparateSupplierProducts ? (
+                          <button
+                            onClick={bulkKeepSelectedSupplierProductsSeparate}
+                            style={{
+                              background: "#0A2E1A",
+                              border: "1px solid #166534",
+                              borderRadius: 7,
+                              color: "#86EFAC",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Keep Separate
+                          </button>
+                        ) : null}
+                        {canBulkStageSupplierCorrectionProposals ? (
+                          <button
+                            onClick={bulkStageSelectedCorrectionProposals}
+                            style={{
+                              background: "#2A0F14",
+                              border: "1px solid #7F1D1D",
+                              borderRadius: 7,
+                              color: "#FCA5A5",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Stage to Evidence Review
+                          </button>
+                        ) : null}
+                        {canBulkDeferSupplierExceptions ? (
+                          <button
+                            onClick={bulkDeferSelectedSupplierExceptions}
+                            style={{
+                              background: "#020810",
+                              border: "1px solid #334155",
+                              borderRadius: 7,
+                              color: "#CBD5E1",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Defer Selected
+                          </button>
+                        ) : null}
+                        {canBulkIgnoreSupplierExceptions ? (
+                          <button
+                            onClick={bulkIgnoreSelectedSupplierExceptions}
+                            style={{
+                              background: "#2A0F14",
+                              border: "1px solid #7F1D1D",
+                              borderRadius: 7,
+                              color: "#FCA5A5",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Ignore Selected
+                          </button>
+                        ) : null}
+                        <button
+                          onClick={clearSelectedSupplierExceptions}
+                          style={{
+                            background: "#020810",
+                            border: "1px solid #334155",
+                            borderRadius: 7,
+                            color: "#CBD5E1",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Clear Selection
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(180px, 1fr))",
+                      gap: 8,
+                    }}
+                  >
+                    {supplierHubSectionCards.map((section) => {
+                      const stepMeta =
+                        supplierWorkflowStatusMeta[section.status] ||
+                        supplierWorkflowStatusMeta.not_started;
+                      const isRecommended =
+                        supplierHubRecommendedCard?.key === section.key;
+                      return (
+                        <div
+                          key={section.key}
+                          style={{
+                            background: isRecommended
+                              ? "#071826"
+                              : stepMeta.background,
+                            border: `1px solid ${
+                              isRecommended
+                                ? "#0EA5E940"
+                                : stepMeta.borderColor
+                            }`,
+                            borderRadius: 10,
+                            padding: "10px 12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              marginBottom: 8,
+                            }}
+                          >
+                            <div>
+                              <div
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  marginBottom: 4,
+                                }}
+                              >
+                                Main section
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  color: "#E2E8F0",
+                                }}
+                              >
+                                {section.title}
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                alignSelf: "flex-start",
+                                background: stepMeta.background,
+                                border: `1px solid ${stepMeta.borderColor}`,
+                                borderRadius: 999,
+                                color: stepMeta.color,
+                                padding: "2px 7px",
+                                fontSize: 7,
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {stepMeta.label}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.25,
+                              color: "#94A3B8",
+                              lineHeight: 1.6,
+                              minHeight: 54,
+                            }}
+                          >
+                            {section.summary}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              marginTop: 8,
+                              alignItems: "center",
+                            }}
+                          >
+                            {isRecommended ? (
+                              <span
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#7DD3FC",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Recommended next
+                              </span>
+                            ) : (
+                              <span />
+                            )}
+                            <button
+                              onClick={() =>
+                                scrollToSupplierWorkflowStep(
+                                  section.targetStepKey
+                                )
+                              }
+                              style={{
+                                background: "#0A1628",
+                                border: "1px solid #1D4ED8",
+                                borderRadius: 7,
+                                color: "#93C5FD",
+                                padding: "5px 10px",
+                                fontSize: 8,
+                                cursor: "pointer",
+                                fontWeight: 700,
+                              }}
+                            >
+                              {section.buttonLabel}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: "1px solid #1E293B",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        alignItems: "flex-end",
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          Provider Sync
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#64748B",
+                            marginTop: 3,
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Provider cards stay future-friendly while sharing the
+                          same supplier-layer, exception queue, and export
+                          lifecycle underneath.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#475569",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        Multi-provider layout
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 8,
+                      }}
+                    >
+                      {supplierProviderCards.map((provider) => (
+                        <div
+                          key={provider.key}
+                          style={{
+                            background: "#020810",
+                            border: `1px solid ${provider.accent}40`,
+                            borderRadius: 10,
+                            padding: "10px 12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 8,
+                              alignItems: "flex-start",
+                              marginBottom: 8,
+                            }}
+                          >
+                            <div>
+                              <div
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  color: "#E2E8F0",
+                                }}
+                              >
+                                {provider.label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 8,
+                                  color: provider.accent,
+                                  marginTop: 3,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {provider.statusLabel}
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                background: "#06111E",
+                                border: `1px solid ${provider.accent}40`,
+                                borderRadius: 999,
+                                color: provider.accent,
+                                padding: "2px 8px",
+                                fontSize: 7.5,
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {provider.reviewExceptions} exception
+                              {provider.reviewExceptions === 1 ? "" : "s"}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.2,
+                              color: "#94A3B8",
+                              lineHeight: 1.6,
+                              minHeight: 40,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {provider.description}
+                          </div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit, minmax(90px, 1fr))",
+                              gap: 6,
+                              marginBottom: 8,
+                            }}
+                          >
+                            {[
+                              ["Known", provider.knownCount],
+                              ["Refreshed", provider.refreshedCount],
+                              ["New", provider.newCount],
+                              ["Exceptions", provider.reviewExceptions],
+                            ].map(([label, value]) => (
+                              <div
+                                key={`${provider.key}-${label}`}
+                                style={{
+                                  background: "#06111E",
+                                  border: "1px solid #1E293B",
+                                  borderRadius: 8,
+                                  padding: "6px 8px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: 7,
+                                    color: "#64748B",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.08em",
+                                    marginBottom: 2,
+                                  }}
+                                >
+                                  {label}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    color: "#E2E8F0",
+                                  }}
+                                >
+                                  {value || 0}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 7.8,
+                              color: "#64748B",
+                              lineHeight: 1.5,
+                              marginBottom: 8,
+                            }}
+                          >
+                            Last sync: {provider.lastSyncLabel}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            {provider.key === "fraterworks" ? (
+                              <>
+                                <button
+                                  onClick={syncFullFraterworksCatalog}
+                                  disabled={supplierFullSyncing}
+                                  style={{
+                                    background: supplierFullSyncing
+                                      ? "#020810"
+                                      : "#0A1628",
+                                    border: "1px solid #1D4ED8",
+                                    borderRadius: 7,
+                                    color: supplierFullSyncing
+                                      ? "#475569"
+                                      : "#93C5FD",
+                                    padding: "5px 10px",
+                                    fontSize: 8,
+                                    cursor: supplierFullSyncing
+                                      ? "not-allowed"
+                                      : "pointer",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {supplierFullSyncing ? "Syncing..." : "Sync now"}
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    scrollToSupplierWorkflowStep("sync-results")
+                                  }
+                                  style={{
+                                    background: "#06111E",
+                                    border: "1px solid #334155",
+                                    borderRadius: 7,
+                                    color: "#CBD5E1",
+                                    padding: "5px 10px",
+                                    fontSize: 8,
+                                    cursor: "pointer",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  View results
+                                </button>
+                                {provider.reviewExceptions > 0 ? (
+                                  <button
+                                    onClick={() =>
+                                      scrollToSupplierWorkflowStep(
+                                        "review-mapping"
+                                      )
+                                    }
+                                    style={{
+                                      background: "#2A1A00",
+                                      border: "1px solid #78350F",
+                                      borderRadius: 7,
+                                      color: "#FDE68A",
+                                      padding: "5px 10px",
+                                      fontSize: 8,
+                                      cursor: "pointer",
+                                      fontWeight: 700,
+                                    }}
+                                  >
+                                    View {provider.reviewExceptions} exception
+                                    {provider.reviewExceptions === 1 ? "" : "s"}
+                                  </button>
+                                ) : (
+                                  <span
+                                    style={{
+                                      fontSize: 7.8,
+                                      color: "#86EFAC",
+                                      fontWeight: 700,
+                                      alignSelf: "center",
+                                    }}
+                                  >
+                                    No active exceptions
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <button
+                                disabled
+                                style={{
+                                  background: "#020810",
+                                  border: "1px solid #1E293B",
+                                  borderRadius: 7,
+                                  color: "#475569",
+                                  padding: "5px 10px",
+                                  fontSize: 8,
+                                  cursor: "not-allowed",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Provider coming soon
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <details
                   style={{
                     background: CARD,
                     borderRadius: 12,
                     border: `1px solid ${BORDER}`,
-                    padding: "12px 16px",
                     marginBottom: 12,
-                    display: "flex",
-                    gap: 10,
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    padding: "10px 14px",
                   }}
                 >
-                  <div>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 800,
-                        color: "#E2E8F0",
-                        margin: 0,
-                      }}
-                    >
-                      ⚙️ Supplier URL & Price Hub
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 9.5,
-                        color: "#475569",
-                        margin: "3px 0 0",
-                      }}
-                    >
-                      Edit URLs when suppliers change links · Data saved to your
-                      browser · Export/import as JSON for backup
-                    </p>
-                    <p
-                      style={{
-                        fontSize: 8.5,
-                        color: "#334155",
-                        margin: "3px 0 0",
-                      }}
-                    >
-                      Import/export and scraper buttons here only manage live
-                      supplier URL/price overrides. New supplier discoveries
-                      stay in the review queue until approved.
-                    </p>
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    <button
-                      onClick={importData}
-                      style={{
-                        background: "#0A1628",
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: 8,
-                        color: "#CBD5E1",
-                        padding: "6px 14px",
-                        fontSize: 10,
-                        cursor: "pointer",
-                        fontWeight: 600,
-                      }}
-                    >
-                      📥 Import JSON
-                    </button>
-                    <button
-                      onClick={exportData}
-                      style={{
-                        background: "#0A1628",
-                        border: `1px solid ${BORDER}`,
-                        borderRadius: 8,
-                        color: ACC,
-                        padding: "6px 14px",
-                        fontSize: 10,
-                        cursor: "pointer",
-                        fontWeight: 600,
-                      }}
-                    >
-                      📤 Export JSON
-                    </button>
-                    <button
-                      onClick={resetToDefaults}
-                      style={{
-                        background: "#0A1628",
-                        border: `1px solid #F8717140`,
-                        borderRadius: 8,
-                        color: "#F87171",
-                        padding: "6px 14px",
-                        fontSize: 10,
-                        cursor: "pointer",
-                        fontWeight: 600,
-                      }}
-                    >
-                      🔄 Reset Defaults
-                    </button>
-                  </div>
-                </div>
-
-                {/* API Key for AI Price Refresh */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 10,
-                    padding: "8px 12px",
-                    background: "#0A1628",
-                    border: `1px solid #F59E0B40`,
-                    borderRadius: 8,
-                  }}
-                >
-                  <span
+                  <summary
                     style={{
-                      fontSize: 10,
-                      color: "#F59E0B",
-                      fontWeight: 700,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    🔑 AI REFRESH KEY
-                  </span>
-                  <input
-                    type="password"
-                    placeholder="sk-ant-... (required for 🔄 price refresh)"
-                    value={apiKey}
-                    onChange={(e) => {
-                      setApiKey(e.target.value);
-                      writeTextStorage(APP_STORAGE_KEYS.apiKey, e.target.value);
-                    }}
-                    style={{
-                      flex: 1,
-                      background: "#060E1E",
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: 6,
+                      cursor: "pointer",
                       color: "#CBD5E1",
-                      padding: "5px 10px",
                       fontSize: 10,
-                      outline: "none",
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 9,
-                      color: "#475569",
-                      whiteSpace: "nowrap",
+                      fontWeight: 700,
                     }}
                   >
-                    Saved locally
-                  </span>
-                </div>
+                    Advanced Tools / Diagnostics: Live Supplier Overrides, Search, and Refresh
+                  </summary>
+                  <div style={{ marginTop: 10 }}>
+                    {/* Header */}
+                    <div
+                      style={{
+                        background: CARD,
+                        borderRadius: 12,
+                        border: `1px solid ${BORDER}`,
+                        padding: "12px 16px",
+                        marginBottom: 12,
+                        display: "flex",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <div>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 800,
+                            color: "#E2E8F0",
+                            margin: 0,
+                          }}
+                        >
+                          ⚙️ Supplier URL & Price Hub
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 9.5,
+                            color: "#475569",
+                            margin: "3px 0 0",
+                          }}
+                        >
+                          Edit URLs when suppliers change links · Data saved to
+                          your browser · Export/import as JSON for backup
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 8.5,
+                            color: "#334155",
+                            margin: "3px 0 0",
+                          }}
+                        >
+                          Import/export and scraper buttons here only manage
+                          live supplier URL/price overrides. New supplier
+                          discoveries stay in the onboarding queue until
+                          explicitly resolved.
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button
+                          onClick={importData}
+                          style={{
+                            background: "#0A1628",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            padding: "6px 14px",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          📥 Import JSON
+                        </button>
+                        <button
+                          onClick={exportData}
+                          style={{
+                            background: "#0A1628",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: ACC,
+                            padding: "6px 14px",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          📤 Export JSON
+                        </button>
+                        <button
+                          onClick={resetToDefaults}
+                          style={{
+                            background: "#0A1628",
+                            border: `1px solid #F8717140`,
+                            borderRadius: 8,
+                            color: "#F87171",
+                            padding: "6px 14px",
+                            fontSize: 10,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          🔄 Reset Defaults
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Filters */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 8,
-                    marginBottom: 10,
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                  }}
-                >
-                  <input
-                    value={supplierSearch}
-                    onChange={(e) => setSupplierSearch(e.target.value)}
-                    placeholder="🔍 Search ingredient or supplier…"
-                    style={{
-                      flex: 1,
-                      minWidth: 200,
-                      background: CARD,
-                      border: `1px solid ${BORDER}`,
-                      borderRadius: 8,
-                      color: "#E2E8F0",
-                      padding: "7px 12px",
-                      fontSize: 11,
-                    }}
-                  />
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {["All", ...suppliersInUse, "(none)"].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setSupplierFilter(s)}
+                    {/* API Key for AI Price Refresh */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginBottom: 10,
+                        padding: "8px 12px",
+                        background: "#0A1628",
+                        border: `1px solid #F59E0B40`,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <span
                         style={{
-                          background: supplierFilter === s ? "#0E4D6E" : CARD,
-                          border: `1px solid ${
-                            supplierFilter === s ? ACC : BORDER
-                          }`,
-                          borderRadius: 16,
-                          color: supplierFilter === s ? ACC : "#475569",
-                          padding: "4px 12px",
-                          fontSize: 9.5,
-                          cursor: "pointer",
-                          fontWeight: 600,
+                          fontSize: 10,
+                          color: "#F59E0B",
+                          fontWeight: 700,
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        {s}
-                      </button>
+                        🔑 AI REFRESH KEY
+                      </span>
+                      <input
+                        type="password"
+                        placeholder="sk-ant-... (required for 🔄 price refresh)"
+                        value={apiKey}
+                        onChange={(e) => {
+                          setApiKey(e.target.value);
+                          writeTextStorage(
+                            APP_STORAGE_KEYS.apiKey,
+                            e.target.value
+                          );
+                        }}
+                        style={{
+                          flex: 1,
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 6,
+                          color: "#CBD5E1",
+                          padding: "5px 10px",
+                          fontSize: 10,
+                          outline: "none",
+                        }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 9,
+                          color: "#475569",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Saved locally
+                      </span>
+                    </div>
+
+                    {/* Filters */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        marginBottom: 2,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <input
+                        value={supplierSearch}
+                        onChange={(e) => setSupplierSearch(e.target.value)}
+                        placeholder="🔍 Search ingredient or supplier…"
+                        style={{
+                          flex: 1,
+                          minWidth: 200,
+                          background: CARD,
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 8,
+                          color: "#E2E8F0",
+                          padding: "7px 12px",
+                          fontSize: 11,
+                        }}
+                      />
+                      <div
+                        style={{ display: "flex", gap: 4, flexWrap: "wrap" }}
+                      >
+                        {["All", ...suppliersInUse, "(none)"].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setSupplierFilter(s)}
+                            style={{
+                              background:
+                                supplierFilter === s ? "#0E4D6E" : CARD,
+                              border: `1px solid ${
+                                supplierFilter === s ? ACC : BORDER
+                              }`,
+                              borderRadius: 16,
+                              color:
+                                supplierFilter === s ? ACC : "#475569",
+                              padding: "4px 12px",
+                              fontSize: 9.5,
+                              cursor: "pointer",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                      <span style={{ fontSize: 9.5, color: "#334155" }}>
+                        {filtRows.length} rows
+                      </span>
+                    </div>
+                  </div>
+                </details>
+
+                <div
+                  style={{
+                    background: "#06111E",
+                    border: "1px solid #0EA5E940",
+                    borderRadius: 12,
+                    padding: "12px 14px",
+                    marginBottom: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: "#7DD3FC",
+                          }}
+                        >
+                        Fraterworks Provider Intake
+                        </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#64748B",
+                          marginTop: 3,
+                          lineHeight: 1.6,
+                          maxWidth: 760,
+                        }}
+                      >
+                        Trusted Fraterworks page facts land in a supplier layer
+                        first. Mapping, merge, and truth conflicts stay in
+                        review lanes instead of silently mutating canonical app
+                        truth.
+                      </div>
+                    </div>
+                    <details>
+                      <summary
+                        style={{
+                          cursor: "pointer",
+                          color: "#CBD5E1",
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                        }}
+                      >
+                        Portable supplier-layer export
+                      </summary>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          flexWrap: "wrap",
+                          marginTop: 8,
+                        }}
+                      >
+                        <button
+                          onClick={exportSupplierLayerRecords}
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #0EA5E940",
+                            borderRadius: 8,
+                            color: "#7DD3FC",
+                            padding: "6px 12px",
+                            fontSize: 9,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          📤 Export Supplier Layer
+                        </button>
+                        <button
+                          onClick={copySupplierLayerRecords}
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 8,
+                            color: "#93C5FD",
+                            padding: "6px 12px",
+                            fontSize: 9,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          📋 Copy JSON
+                        </button>
+                      </div>
+                    </details>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+                      gap: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    {supplierAdapterLaneSummary.map((item) => (
+                      <div
+                        key={item.laneKey}
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${item.meta?.borderColor || "#1E293B"}`,
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7.5,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          {item.meta?.label || item.laneKey}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: item.meta?.color || "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          {item.count}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#475569",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {item.meta?.description}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  <span style={{ fontSize: 9.5, color: "#334155" }}>
-                    {filtRows.length} rows
-                  </span>
+
+                  <div
+                    id="supplier-step-select-source"
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Step 1
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Select Source
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            maxWidth: 760,
+                          }}
+                        >
+                          Choose a known Fraterworks-linked item or start a
+                          manual page so the supplier-layer capture stays tied
+                          to the existing registry and review lanes.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[0].status
+                              ].background,
+                            border: `1px solid ${
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[0].status
+                              ].borderColor
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[0].status
+                              ].color,
+                            padding: "2px 8px",
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[0].status
+                            ].label
+                          }
+                        </span>
+                        <button
+                          onClick={() =>
+                            scrollToSupplierWorkflowStep("capture-facts")
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color: "#93C5FD",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Go to Capture Facts
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <input
+                    ref={supplierWorkbookInputRef}
+                    type="file"
+                    accept=".xlsx"
+                    onChange={(e) =>
+                      importTrustedSupplierWorkbook(e.target.files?.[0] || null)
+                    }
+                    style={{ display: "none" }}
+                  />
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(220px, 1fr))",
+                      gap: 10,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Trusted supplier workbook
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#CBD5E1",
+                          lineHeight: 1.7,
+                          marginBottom: 10,
+                        }}
+                      >
+                        Import the `Supplier_Products_Import`,
+                        `Supplier_Prices_Import`, and `Material_Mapping`
+                        sheets to create supplier-layer records, refresh mapped
+                        pricing, and create local draft ingredients when the
+                        workbook asks for them. Export the current Fraterworks
+                        reference workbook here when a contractor needs a
+                        side-by-side app snapshot before capturing new page
+                        truth.
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <button
+                          onClick={openTrustedSupplierWorkbookPicker}
+                          disabled={supplierWorkbookImporting}
+                          style={{
+                            background: supplierWorkbookImporting
+                              ? "#020810"
+                              : "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color: supplierWorkbookImporting
+                              ? "#475569"
+                              : "#93C5FD",
+                            padding: "6px 10px",
+                            fontSize: 8.5,
+                            cursor: supplierWorkbookImporting
+                              ? "not-allowed"
+                              : "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {supplierWorkbookImporting
+                            ? "Importing workbook..."
+                            : "Import XLSX Template"}
+                        </button>
+                        <button
+                          onClick={downloadFraterworksReferenceWorkbook}
+                          style={{
+                            background: "#06111E",
+                            border: "1px solid #475569",
+                            borderRadius: 7,
+                            color: "#E2E8F0",
+                            padding: "6px 10px",
+                            fontSize: 8.5,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Download Reference Workbook
+                        </button>
+                      </div>
+                      {supplierWorkbookReferenceExportStatus ? (
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {supplierWorkbookReferenceExportStatus}
+                        </div>
+                      ) : null}
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#475569",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Fast path for trusted manual capture. Only unresolved
+                        mapping and high-risk conflicts stay in review lanes.
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Full Fraterworks sync
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#CBD5E1",
+                          lineHeight: 1.7,
+                          marginBottom: 10,
+                        }}
+                      >
+                        Fetch every paginated Fraterworks
+                        `products.json?limit=250&page=N` page, merge the full
+                        catalog, then run the same supplier-layer, pricing, and
+                        review import path used by pasted JSON. This is the
+                        bulk-refresh lane, not the one-page paste tool below.
+                      </div>
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 8,
+                          fontSize: 8.1,
+                          color: "#CBD5E1",
+                          lineHeight: 1.6,
+                          marginBottom: 10,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={supplierFullSyncCreateLocalDrafts}
+                          onChange={(e) =>
+                            setSupplierFullSyncCreateLocalDrafts(
+                              e.target.checked
+                            )
+                          }
+                        />
+                        Create local drafts for clearly new products during
+                        full sync.
+                      </label>
+                      <button
+                        onClick={syncFullFraterworksCatalog}
+                        disabled={supplierFullSyncing}
+                        style={{
+                          background: supplierFullSyncing
+                            ? "#020810"
+                            : "#0A1628",
+                          border: "1px solid #1D4ED8",
+                          borderRadius: 7,
+                          color: supplierFullSyncing ? "#475569" : "#93C5FD",
+                          padding: "6px 10px",
+                          fontSize: 8.5,
+                          cursor: supplierFullSyncing
+                            ? "not-allowed"
+                            : "pointer",
+                          fontWeight: 700,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {supplierFullSyncing
+                          ? "Syncing full catalog..."
+                          : "Sync Full Fraterworks Catalog"}
+                      </button>
+                      {supplierFullSyncStatus ? (
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            marginBottom: 8,
+                          }}
+                        >
+                          {supplierFullSyncStatus}
+                        </div>
+                      ) : null}
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#475569",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Default is supplier-layer sync only for clean new items.
+                        Leave local drafts off for bulk refresh unless you want
+                        immediate draft material creation too.
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Known Fraterworks item
+                      </div>
+                      <select
+                        value={supplierAdapterDraft.supplierProductKey}
+                        onChange={(e) => {
+                          const nextKey = e.target.value;
+                          if (!nextKey) {
+                            setSupplierAdapterDraft((prev) => ({
+                              ...prev,
+                              supplierProductKey: "",
+                            }));
+                            return;
+                          }
+                          loadSupplierAdapterDraftFromRegistry(nextKey);
+                        }}
+                        style={{
+                          width: "100%",
+                          background: "#06111E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <option value="">Manual / new Fraterworks page…</option>
+                        {fraterworksSupplierAdapterOptions.map((option) => (
+                          <option
+                            key={option.supplierProductKey}
+                            value={option.supplierProductKey}
+                          >
+                            {option.mappedCatalogName
+                              ? `${option.mappedCatalogName} · ${option.productTitle}`
+                              : option.productTitle}
+                          </option>
+                        ))}
+                      </select>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#475569",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Load a known linked item to prefill URL and current
+                        Fraterworks pack sizes. Leave it blank to capture a new
+                        or unmapped page.
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Safe page-native fields
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#CBD5E1",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        URL, supplier product name, sizes, prices, stock /
+                        request status, IFRA % shown, SDS URL, INCI shown, and
+                        supplier description.
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          marginBottom: 6,
+                        }}
+                      >
+                        Review-only risks
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.5,
+                          color: "#CBD5E1",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        Explicit unresolved mapping, exact duplicate / variant
+                        collisions, malformed rows, and stronger INCI or IFRA
+                        conflicts stay in the queue below.
+                      </div>
+                    </div>
+                  </div>
+
+                  {(supplierFullSyncStatus || supplierFullSyncReport) && (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 4,
+                            }}
+                          >
+                            Fraterworks Full Catalog Sync Result
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {supplierFullSyncReport?.metadata?.sourceLabel ||
+                              "Fraterworks Full Catalog Sync"}
+                          </div>
+                          {supplierFullSyncStatus ? (
+                            <div
+                              style={{
+                                marginTop: 6,
+                                fontSize: 8.1,
+                                color: "#CBD5E1",
+                                lineHeight: 1.6,
+                                maxWidth: 760,
+                              }}
+                            >
+                              {supplierFullSyncStatus}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div
+                          style={{
+                            background:
+                              supplierFullSyncReport?.fatalErrors?.length > 0
+                                ? "#2A0F14"
+                                : "#0A2E1A",
+                            border: `1px solid ${
+                              supplierFullSyncReport?.fatalErrors?.length > 0
+                                ? "#7F1D1D"
+                                : "#166534"
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierFullSyncReport?.fatalErrors?.length > 0
+                                ? "#FCA5A5"
+                                : "#86EFAC",
+                            padding: "4px 10px",
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {supplierFullSyncReport?.fatalErrors?.length > 0
+                            ? "Needs attention"
+                            : "Sync complete"}
+                        </div>
+                      </div>
+
+                      {supplierFullSyncReport?.summary ? (
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fit, minmax(120px, 1fr))",
+                            gap: 8,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {[
+                            [
+                              "Pages",
+                              supplierFullSyncReport.summary.pagesFetched,
+                              "#7DD3FC",
+                            ],
+                            [
+                              "Fetched",
+                              supplierFullSyncReport.summary.totalProductsFetched,
+                              "#93C5FD",
+                            ],
+                            [
+                              "Unique",
+                              supplierFullSyncReport.summary.uniqueProductsMerged,
+                              "#E2E8F0",
+                            ],
+                            [
+                              "Refreshed",
+                              supplierFullSyncReport.summary
+                                .existingSupplierProductsRefreshed,
+                              "#86EFAC",
+                            ],
+                            [
+                              "New",
+                              supplierFullSyncReport.summary
+                                .newSupplierProductsCreated,
+                              "#FDE68A",
+                            ],
+                            [
+                              "Price rows",
+                              supplierFullSyncReport.summary.priceRowsCreated,
+                              "#C4B5FD",
+                            ],
+                            [
+                              "Active exceptions",
+                              fraterworksProviderCard?.reviewExceptions || 0,
+                              "#F59E0B",
+                            ],
+                            [
+                              "Warnings",
+                              supplierFullSyncReport.summary.rowsSkippedWithWarnings,
+                              "#94A3B8",
+                            ],
+                          ].map(([label, value, color]) => (
+                            <div
+                              key={`supplier-full-sync-summary-${label}`}
+                              style={{
+                                background: "#06111E",
+                                border: "1px solid #1E293B",
+                                borderRadius: 8,
+                                padding: "8px 10px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  marginBottom: 3,
+                                }}
+                              >
+                                {label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  color,
+                                }}
+                              >
+                                {value || 0}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                          marginBottom: 10,
+                        }}
+                      >
+                        <button
+                          onClick={() =>
+                            scrollToSupplierWorkflowStep("sync-results")
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color: "#93C5FD",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          View sync results
+                        </button>
+                        {fraterworksProviderCard?.reviewExceptions > 0 ? (
+                          <button
+                            onClick={() =>
+                              scrollToSupplierWorkflowStep("review-mapping")
+                            }
+                            style={{
+                              background: "#2A1A00",
+                              border: "1px solid #78350F",
+                              borderRadius: 7,
+                              color: "#FDE68A",
+                              padding: "5px 10px",
+                              fontSize: 8,
+                              cursor: "pointer",
+                              fontWeight: 700,
+                            }}
+                          >
+                            View {fraterworksProviderCard.reviewExceptions} exception
+                            {fraterworksProviderCard.reviewExceptions === 1
+                              ? ""
+                              : "s"}
+                          </button>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: 8,
+                              color: "#86EFAC",
+                              fontWeight: 700,
+                            }}
+                          >
+                            Exceptions clear
+                          </span>
+                        )}
+                      </div>
+
+                      {supplierFullSyncReport?.fatalErrors?.length > 0 ? (
+                        <div
+                          style={{
+                            background: "#120716",
+                            border: "1px solid #7F1D1D",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            display: "grid",
+                            gap: 4,
+                            fontSize: 8.3,
+                            color: "#FCA5A5",
+                            lineHeight: 1.6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {supplierFullSyncReport.fatalErrors.map((error) => (
+                            <div key={error}>{error}</div>
+                          ))}
+                        </div>
+                      ) : null}
+
+                      {supplierFullSyncReport?.resultRows?.length > 0 ? (
+                        <div style={{ overflowX: "auto", marginBottom: 10 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.3,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Product",
+                                  "Status",
+                                  "Mapped to",
+                                  "Price rows",
+                                  "Review items",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {supplierFullSyncReport.resultRows
+                                .slice(0, 12)
+                                .map((row, idx, rows) => (
+                                  <tr
+                                    key={`supplier-full-sync-row-${row.supplierProductKey}`}
+                                    style={{
+                                      borderBottom:
+                                        idx === rows.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{ padding: "7px", color: "#E2E8F0" }}
+                                    >
+                                      {row.productTitle}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.status}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#94A3B8" }}
+                                    >
+                                      {row.mappedCatalogName || "Review / supplier-layer only"}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.priceRowCount || 0}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.reviewItemCount || 0}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+
+                      {supplierFullSyncReport?.warnings?.length > 0 ? (
+                        <details>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontSize: 8.3,
+                              color: "#CBD5E1",
+                              fontWeight: 700,
+                            }}
+                          >
+                            View warnings ({supplierFullSyncReport.warnings.length})
+                          </summary>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              display: "grid",
+                              gap: 4,
+                              fontSize: 8,
+                              color: "#94A3B8",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {supplierFullSyncReport.warnings
+                              .slice(0, 20)
+                              .map((warning, idx) => (
+                                <div
+                                  key={`supplier-full-sync-warning-${idx}`}
+                                >
+                                  {warning?.message || String(warning)}
+                                </div>
+                              ))}
+                          </div>
+                        </details>
+                      ) : null}
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Paste Fraterworks JSON
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#CBD5E1",
+                            lineHeight: 1.7,
+                            maxWidth: 760,
+                          }}
+                        >
+                          Paste Shopify-style Fraterworks JSON with a top-level
+                          `products` array, then import it straight into the
+                          existing supplier-layer, pricing, local-draft, and
+                          review lanes without building a spreadsheet first.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          background: "#06111E",
+                          border: "1px solid #1D4ED8",
+                          borderRadius: 999,
+                          color: "#93C5FD",
+                          padding: "4px 10px",
+                          fontSize: 7.5,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        Copy / paste / import
+                      </div>
+                    </div>
+                    <textarea
+                      value={supplierJsonPasteText}
+                      onChange={(e) => {
+                        setSupplierJsonPasteText(e.target.value);
+                        setSupplierJsonNormalizeStatus("");
+                        setSupplierJsonNormalizePreview(null);
+                      }}
+                      placeholder={`{\n  "products": [\n    {\n      "title": "Ylang-Ylang Extra Oil, Comoros",\n      "handle": "ylang-ylang-extra-oil-comoros",\n      "body_html": "<p>Bright floral oil...</p>",\n      "variants": [\n        { "title": "15g / 10% TEC", "price": "12.50", "available": true }\n      ]\n    }\n  ]\n}`}
+                      style={{
+                        width: "100%",
+                        minHeight: 180,
+                        background: "#06111E",
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: 8,
+                        color: "#E2E8F0",
+                        padding: "10px 12px",
+                        fontSize: 8.3,
+                        fontFamily:
+                          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                        lineHeight: 1.6,
+                        resize: "vertical",
+                        marginBottom: 10,
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontSize: 8.3,
+                          color: "#CBD5E1",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={supplierJsonCreateLocalDrafts}
+                          onChange={(e) =>
+                            setSupplierJsonCreateLocalDrafts(e.target.checked)
+                          }
+                        />
+                        Create local drafts for clearly new products when no
+                        live mapping exists
+                      </label>
+                      <button
+                        onClick={normalizePastedFraterworksJson}
+                        disabled={!String(supplierJsonPasteText || "").trim()}
+                        style={{
+                          background: !String(supplierJsonPasteText || "").trim()
+                            ? "#020810"
+                            : "#06111E",
+                          border: "1px solid #475569",
+                          borderRadius: 7,
+                          color: !String(supplierJsonPasteText || "").trim()
+                            ? "#475569"
+                            : "#E2E8F0",
+                          padding: "6px 10px",
+                          fontSize: 8.5,
+                          cursor: !String(supplierJsonPasteText || "").trim()
+                            ? "not-allowed"
+                            : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Normalize + Preview JSON
+                      </button>
+                      <button
+                        onClick={importPastedFraterworksJson}
+                        disabled={
+                          supplierJsonImporting ||
+                          !String(supplierJsonPasteText || "").trim()
+                        }
+                        style={{
+                          background:
+                            supplierJsonImporting ||
+                            !String(supplierJsonPasteText || "").trim()
+                              ? "#020810"
+                              : "#0A1628",
+                          border: "1px solid #1D4ED8",
+                          borderRadius: 7,
+                          color:
+                            supplierJsonImporting ||
+                            !String(supplierJsonPasteText || "").trim()
+                              ? "#475569"
+                              : "#93C5FD",
+                          padding: "6px 10px",
+                          fontSize: 8.5,
+                          cursor:
+                            supplierJsonImporting ||
+                            !String(supplierJsonPasteText || "").trim()
+                              ? "not-allowed"
+                              : "pointer",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {supplierJsonImporting
+                          ? "Importing Fraterworks JSON..."
+                          : "Import Pasted JSON"}
+                      </button>
+                    </div>
+                    {supplierJsonNormalizeStatus ? (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          fontSize: 8,
+                          color: "#CBD5E1",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {supplierJsonNormalizeStatus}
+                      </div>
+                    ) : null}
+                    {supplierJsonImportStatus ? (
+                      <div
+                        style={{
+                          marginTop: 8,
+                          fontSize: 8,
+                          color: "#94A3B8",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {supplierJsonImportStatus}
+                      </div>
+                    ) : null}
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 8,
+                        color: "#475569",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      `title`, `handle`, `body_html`, `vendor`, `product_type`,
+                      `tags`, `variants`, `images`, and `options` are converted
+                      into the same supplier import plan the workbook path uses.
+                    </div>
+                  </div>
+
+                  {supplierJsonNormalizePreview ? (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 4,
+                            }}
+                          >
+                            Fraterworks JSON Normalize Preview
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {supplierJsonNormalizePreview.ok
+                              ? supplierJsonNormalizePreview.strictParsePassed
+                                ? "Strict JSON ready to import"
+                                : "Repaired JSON ready to import"
+                              : "Normalization needs attention"}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: supplierJsonNormalizePreview.readyToImport
+                              ? "#0A2E1A"
+                              : "#2A0F14",
+                            border: `1px solid ${
+                              supplierJsonNormalizePreview.readyToImport
+                                ? "#166534"
+                                : "#7F1D1D"
+                            }`,
+                            borderRadius: 999,
+                            color: supplierJsonNormalizePreview.readyToImport
+                              ? "#86EFAC"
+                              : "#FCA5A5",
+                            padding: "4px 10px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {supplierJsonNormalizePreview.readyToImport
+                            ? "Ready to import"
+                            : "Review parse error"}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(130px, 1fr))",
+                          gap: 8,
+                          marginBottom: 10,
+                        }}
+                      >
+                        {[
+                          [
+                            "Products",
+                            supplierJsonNormalizePreview.productsDetected || 0,
+                            "#7DD3FC",
+                          ],
+                          [
+                            "Repairs",
+                            supplierJsonNormalizePreview.repairCount || 0,
+                            "#FDE68A",
+                          ],
+                          [
+                            "Warnings",
+                            supplierJsonNormalizePreview.warnings?.length || 0,
+                            "#F59E0B",
+                          ],
+                          [
+                            "Status",
+                            supplierJsonNormalizePreview.strictParsePassed
+                              ? "Strict"
+                              : supplierJsonNormalizePreview.readyToImport
+                              ? "Repaired"
+                              : "Blocked",
+                            "#CBD5E1",
+                          ],
+                        ].map(([label, value, color]) => (
+                          <div
+                            key={`supplier-json-preview-summary-${label}`}
+                            style={{
+                              background: "#06111E",
+                              border: "1px solid #1E293B",
+                              borderRadius: 8,
+                              padding: "8px 10px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 7.5,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                marginBottom: 3,
+                              }}
+                            >
+                              {label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color,
+                              }}
+                            >
+                              {value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {supplierJsonNormalizePreview.repairMessages?.length > 0 ? (
+                        <div
+                          style={{
+                            background: "#06111E",
+                            border: "1px solid #1E293B",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            display: "grid",
+                            gap: 4,
+                            fontSize: 8.1,
+                            color: "#CBD5E1",
+                            lineHeight: 1.6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {supplierJsonNormalizePreview.repairMessages.map((message) => (
+                            <div key={message}>{message}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierJsonNormalizePreview.fatalErrors?.length > 0 ? (
+                        <div
+                          style={{
+                            background: "#120716",
+                            border: "1px solid #7F1D1D",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            display: "grid",
+                            gap: 4,
+                            fontSize: 8.3,
+                            color: "#FCA5A5",
+                            lineHeight: 1.6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {supplierJsonNormalizePreview.fatalErrors.map((error) => (
+                            <div key={error}>{error}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierJsonNormalizePreview.previewRows?.length > 0 ? (
+                        <div style={{ overflowX: "auto", marginBottom: 10 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.3,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Product",
+                                  "Handle",
+                                  "Vendor",
+                                  "Variants",
+                                  "Availability",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {supplierJsonNormalizePreview.previewRows.map(
+                                (row, idx, rows) => (
+                                  <tr
+                                    key={row.rowKey}
+                                    style={{
+                                      borderBottom:
+                                        idx === rows.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{ padding: "7px", color: "#E2E8F0" }}
+                                    >
+                                      {row.title}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#94A3B8" }}
+                                    >
+                                      {row.handle || "Missing"}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.vendor}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.variantCount}
+                                    </td>
+                                    <td
+                                      style={{ padding: "7px", color: "#CBD5E1" }}
+                                    >
+                                      {row.availability}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                      {(supplierJsonNormalizePreview.warnings?.length || 0) > 0 ? (
+                        <details style={{ marginBottom: 10 }}>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontSize: 8.3,
+                              color: "#CBD5E1",
+                              fontWeight: 700,
+                            }}
+                          >
+                            View normalization warnings (
+                            {supplierJsonNormalizePreview.warnings.length})
+                          </summary>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              display: "grid",
+                              gap: 6,
+                            }}
+                          >
+                            {supplierJsonNormalizePreview.warnings
+                              .slice(0, 12)
+                              .map((warning, idx) => (
+                                <div
+                                  key={`${warning.sheetName}-${warning.rowNumber}-${idx}`}
+                                  style={{
+                                    background: "#06111E",
+                                    border: "1px solid #1E293B",
+                                    borderRadius: 8,
+                                    padding: "7px 9px",
+                                    fontSize: 8,
+                                    color: "#94A3B8",
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <strong style={{ color: "#CBD5E1" }}>
+                                    {warning.sheetName}
+                                    {warning.rowNumber
+                                      ? ` row ${warning.rowNumber}`
+                                      : ""}
+                                  </strong>
+                                  : {warning.message}
+                                </div>
+                              ))}
+                          </div>
+                        </details>
+                      ) : null}
+                      {supplierJsonNormalizePreview.normalizedText ? (
+                        <details>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontSize: 8.3,
+                              color: "#CBD5E1",
+                              fontWeight: 700,
+                              marginBottom: 8,
+                            }}
+                          >
+                            View normalized strict JSON
+                          </summary>
+                          <textarea
+                            readOnly
+                            value={supplierJsonNormalizePreview.normalizedText}
+                            style={{
+                              width: "100%",
+                              minHeight: 180,
+                              background: "#06111E",
+                              border: `1px solid ${BORDER}`,
+                              borderRadius: 8,
+                              color: "#E2E8F0",
+                              padding: "10px 12px",
+                              fontSize: 8.1,
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              lineHeight: 1.6,
+                              resize: "vertical",
+                            }}
+                          />
+                        </details>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {(supplierWorkbookImportStatus || supplierWorkbookImportReport) && (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 4,
+                            }}
+                          >
+                            Trusted Supplier Import Result
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {supplierWorkbookImportReport?.metadata?.fileName ||
+                              "Workbook import"}
+                          </div>
+                          {supplierWorkbookImportStatus ? (
+                            <div
+                              style={{
+                                marginTop: 4,
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {supplierWorkbookImportStatus}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div
+                          style={{
+                            background:
+                              supplierWorkbookImportReport?.fatalErrors?.length > 0
+                                ? "#2A0F14"
+                                : "#0A2E1A",
+                            border: `1px solid ${
+                              supplierWorkbookImportReport?.fatalErrors?.length > 0
+                                ? "#7F1D1D"
+                                : "#166534"
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierWorkbookImportReport?.fatalErrors?.length > 0
+                                ? "#FCA5A5"
+                                : "#86EFAC",
+                            padding: "4px 10px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {supplierWorkbookImportReport?.fatalErrors?.length > 0
+                            ? "Import blocked"
+                            : "Import applied"}
+                        </div>
+                      </div>
+                      {supplierWorkbookImportReport?.summary ? (
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fit, minmax(130px, 1fr))",
+                            gap: 8,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {[
+                            [
+                              "Products",
+                              supplierWorkbookImportReport.summary
+                                .supplierProductsImported,
+                              "#7DD3FC",
+                            ],
+                            [
+                              "Price rows",
+                              supplierWorkbookImportReport.summary.priceRowsImported,
+                              "#34D399",
+                            ],
+                            [
+                              "Local drafts",
+                              supplierWorkbookImportReport.summary
+                                .localDraftMaterialsCreated,
+                              "#F9A8D4",
+                            ],
+                            [
+                              "Mappings",
+                              supplierWorkbookImportReport.summary.mappingsResolved,
+                              "#FDE68A",
+                            ],
+                            [
+                              "Review items",
+                              supplierWorkbookImportReport.summary.itemsSentToReview,
+                              "#F59E0B",
+                            ],
+                            [
+                              "Warnings",
+                              supplierWorkbookImportReport.summary
+                                .rowsSkippedWithWarnings,
+                              "#CBD5E1",
+                            ],
+                          ].map(([label, value, color]) => (
+                            <div
+                              key={`supplier-workbook-summary-${label}`}
+                              style={{
+                                background: "#06111E",
+                                border: "1px solid #1E293B",
+                                borderRadius: 8,
+                                padding: "8px 10px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  marginBottom: 3,
+                                }}
+                              >
+                                {label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  color,
+                                }}
+                              >
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierWorkbookImportReport?.fatalErrors?.length > 0 ? (
+                        <div
+                          style={{
+                            background: "#120716",
+                            border: "1px solid #7F1D1D",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            display: "grid",
+                            gap: 4,
+                            fontSize: 8.3,
+                            color: "#FCA5A5",
+                            lineHeight: 1.6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {supplierWorkbookImportReport.fatalErrors.map((error) => (
+                            <div key={error}>{error}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierWorkbookImportReport?.resultRows?.length > 0 ? (
+                        <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.3,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Supplier Product",
+                                  "Outcome",
+                                  "Mapped To",
+                                  "Review",
+                                  "Notes",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {supplierWorkbookImportReport.resultRows
+                                .slice(0, 8)
+                                .map((row, idx, rows) => (
+                                  <tr
+                                    key={row.supplierProductKey}
+                                    style={{
+                                      borderBottom:
+                                        idx === rows.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#E2E8F0",
+                                        minWidth: 220,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {row.productTitle}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          fontSize: 7.3,
+                                          color: "#64748B",
+                                          fontFamily:
+                                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                        }}
+                                      >
+                                        {row.supplierProductKey}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 120,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {row.trustLaneLabel}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          color: "#64748B",
+                                          fontSize: 7.3,
+                                        }}
+                                      >
+                                        {row.status}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 160,
+                                      }}
+                                    >
+                                      {row.mappedCatalogName || "Review first"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color:
+                                          row.reviewItemCount > 0
+                                            ? "#F59E0B"
+                                            : "#86EFAC",
+                                        minWidth: 90,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {row.reviewItemCount > 0
+                                        ? `${row.reviewItemCount} queued`
+                                        : "Clear"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#94A3B8",
+                                        minWidth: 280,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {row.note}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                      {supplierWorkbookImportReport?.warnings?.length > 0 ? (
+                        <details>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontSize: 8.3,
+                              color: "#CBD5E1",
+                              fontWeight: 700,
+                            }}
+                          >
+                            View warnings ({supplierWorkbookImportReport.warnings.length})
+                          </summary>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              display: "grid",
+                              gap: 6,
+                            }}
+                          >
+                            {supplierWorkbookImportReport.warnings
+                              .slice(0, 12)
+                              .map((warning, idx) => (
+                                <div
+                                  key={`${warning.sheetName}-${warning.rowNumber}-${idx}`}
+                                  style={{
+                                    background: "#06111E",
+                                    border: "1px solid #1E293B",
+                                    borderRadius: 8,
+                                    padding: "7px 9px",
+                                    fontSize: 8,
+                                    color: "#94A3B8",
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <strong style={{ color: "#CBD5E1" }}>
+                                    {warning.sheetName}
+                                    {warning.rowNumber
+                                      ? ` row ${warning.rowNumber}`
+                                      : ""}
+                                  </strong>
+                                  : {warning.message}
+                                </div>
+                              ))}
+                          </div>
+                        </details>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {(supplierJsonImportStatus || supplierJsonImportReport) && (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 4,
+                            }}
+                          >
+                            Fraterworks JSON Import Result
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                            }}
+                          >
+                            {supplierJsonImportReport?.metadata?.sourceLabel ||
+                              "Fraterworks JSON paste import"}
+                          </div>
+                          {supplierJsonImportStatus ? (
+                            <div
+                              style={{
+                                marginTop: 4,
+                                fontSize: 8.5,
+                                color: "#94A3B8",
+                                lineHeight: 1.6,
+                              }}
+                            >
+                              {supplierJsonImportStatus}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div
+                          style={{
+                            background:
+                              supplierJsonImportReport?.fatalErrors?.length > 0
+                                ? "#2A0F14"
+                                : "#0A2E1A",
+                            border: `1px solid ${
+                              supplierJsonImportReport?.fatalErrors?.length > 0
+                                ? "#7F1D1D"
+                                : "#166534"
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierJsonImportReport?.fatalErrors?.length > 0
+                                ? "#FCA5A5"
+                                : "#86EFAC",
+                            padding: "4px 10px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {supplierJsonImportReport?.fatalErrors?.length > 0
+                            ? "Import blocked"
+                            : "Import applied"}
+                        </div>
+                      </div>
+                      {supplierJsonImportReport?.summary ? (
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns:
+                              "repeat(auto-fit, minmax(130px, 1fr))",
+                            gap: 8,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {[
+                            [
+                              "Parsed",
+                              supplierJsonImportReport.summary.productsParsed,
+                              "#7DD3FC",
+                            ],
+                            [
+                              "Imported",
+                              supplierJsonImportReport.summary.productsImported,
+                              "#93C5FD",
+                            ],
+                            [
+                              "Price rows",
+                              supplierJsonImportReport.summary.priceRowsCreated,
+                              "#34D399",
+                            ],
+                            [
+                              "Local drafts",
+                              supplierJsonImportReport.summary.localDraftsCreated,
+                              "#F9A8D4",
+                            ],
+                            [
+                              "Mappings",
+                              supplierJsonImportReport.summary.mappedItems,
+                              "#FDE68A",
+                            ],
+                            [
+                              "Review items",
+                              supplierJsonImportReport.summary.itemsSentToReview,
+                              "#F59E0B",
+                            ],
+                            [
+                              "Warnings",
+                              supplierJsonImportReport.summary.rowsSkippedWithWarnings,
+                              "#CBD5E1",
+                            ],
+                          ].map(([label, value, color]) => (
+                            <div
+                              key={`supplier-json-summary-${label}`}
+                              style={{
+                                background: "#06111E",
+                                border: "1px solid #1E293B",
+                                borderRadius: 8,
+                                padding: "8px 10px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 7.5,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  marginBottom: 3,
+                                }}
+                              >
+                                {label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 700,
+                                  color,
+                                }}
+                              >
+                                {value}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierJsonImportReport?.fatalErrors?.length > 0 ? (
+                        <div
+                          style={{
+                            background: "#120716",
+                            border: "1px solid #7F1D1D",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            display: "grid",
+                            gap: 4,
+                            fontSize: 8.3,
+                            color: "#FCA5A5",
+                            lineHeight: 1.6,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {supplierJsonImportReport.fatalErrors.map((error) => (
+                            <div key={error}>{error}</div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {supplierJsonImportReport?.resultRows?.length > 0 ? (
+                        <div style={{ overflowX: "auto", marginBottom: 8 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.3,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Supplier Product",
+                                  "Outcome",
+                                  "Mapped To",
+                                  "Review",
+                                  "Notes",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {supplierJsonImportReport.resultRows
+                                .slice(0, 8)
+                                .map((row, idx, rows) => (
+                                  <tr
+                                    key={row.supplierProductKey}
+                                    style={{
+                                      borderBottom:
+                                        idx === rows.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#E2E8F0",
+                                        minWidth: 220,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {row.productTitle}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          fontSize: 7.3,
+                                          color: "#64748B",
+                                          fontFamily:
+                                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                        }}
+                                      >
+                                        {row.supplierProductKey}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 120,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {row.trustLaneLabel}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          color: "#64748B",
+                                          fontSize: 7.3,
+                                        }}
+                                      >
+                                        {row.status}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 160,
+                                      }}
+                                    >
+                                      {row.mappedCatalogName || "Review first"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color:
+                                          row.reviewItemCount > 0
+                                            ? "#F59E0B"
+                                            : "#86EFAC",
+                                        minWidth: 90,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {row.reviewItemCount > 0
+                                        ? `${row.reviewItemCount} queued`
+                                        : "Clear"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#94A3B8",
+                                        minWidth: 280,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {row.note}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+                      {supplierJsonImportReport?.warnings?.length > 0 ? (
+                        <details>
+                          <summary
+                            style={{
+                              cursor: "pointer",
+                              fontSize: 8.3,
+                              color: "#CBD5E1",
+                              fontWeight: 700,
+                            }}
+                          >
+                            View warnings ({supplierJsonImportReport.warnings.length})
+                          </summary>
+                          <div
+                            style={{
+                              marginTop: 8,
+                              display: "grid",
+                              gap: 6,
+                            }}
+                          >
+                            {supplierJsonImportReport.warnings
+                              .slice(0, 12)
+                              .map((warning, idx) => (
+                                <div
+                                  key={`${warning.sheetName}-${warning.rowNumber}-${idx}`}
+                                  style={{
+                                    background: "#06111E",
+                                    border: "1px solid #1E293B",
+                                    borderRadius: 8,
+                                    padding: "7px 9px",
+                                    fontSize: 8,
+                                    color: "#94A3B8",
+                                    lineHeight: 1.6,
+                                  }}
+                                >
+                                  <strong style={{ color: "#CBD5E1" }}>
+                                    {warning.sheetName}
+                                    {warning.rowNumber
+                                      ? ` row ${warning.rowNumber}`
+                                      : ""}
+                                  </strong>
+                                  : {warning.message}
+                                </div>
+                              ))}
+                          </div>
+                        </details>
+                      ) : null}
+                    </div>
+                  )}
+
+                  <div
+                    id="supplier-step-capture-facts"
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Step 2
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Capture Facts
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            maxWidth: 760,
+                          }}
+                        >
+                          Capture supplier-page facts into the supplier layer,
+                          then let the trust lane tell you whether live pricing
+                          was refreshed safely or held for review.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[1].status
+                              ].background,
+                            border: `1px solid ${
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[1].status
+                              ].borderColor
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[1].status
+                              ].color,
+                            padding: "2px 8px",
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[1].status
+                            ].label
+                          }
+                        </span>
+                        <button
+                          onClick={() =>
+                            scrollToSupplierWorkflowStep("review-mapping")
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color: "#93C5FD",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Go to Review Mapping
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      Supplier product name
+                      <input
+                        value={supplierAdapterDraft.productTitle}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            productTitle: e.target.value,
+                          }))
+                        }
+                        placeholder="Ylang-Ylang Extra Oil, Comoros"
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      />
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      Product URL
+                      <input
+                        value={supplierAdapterDraft.url}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            url: e.target.value,
+                          }))
+                        }
+                        placeholder="https://fraterworks.com/products/..."
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      />
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      Availability
+                      <select
+                        value={supplierAdapterDraft.availabilityStatus}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            availabilityStatus: e.target.value,
+                          }))
+                        }
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      >
+                        <option value="unknown">Unknown</option>
+                        <option value="in_stock">In stock</option>
+                        <option value="limited_stock">Limited stock</option>
+                        <option value="request_only">Request / quote</option>
+                        <option value="sold_out">Sold out</option>
+                        <option value="discontinued">Discontinued</option>
+                      </select>
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      IFRA % shown on page
+                      <input
+                        value={supplierAdapterDraft.ifraPercent}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            ifraPercent: e.target.value,
+                          }))
+                        }
+                        placeholder="0.4"
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      />
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      SDS URL
+                      <input
+                        value={supplierAdapterDraft.sdsUrl}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            sdsUrl: e.target.value,
+                          }))
+                        }
+                        placeholder="https://cdn.shopify.com/..."
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      />
+                    </label>
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      INCI shown on page
+                      <input
+                        value={supplierAdapterDraft.inci}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            inci: e.target.value,
+                          }))
+                        }
+                        placeholder="Cananga Odorata Flower Oil"
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "7px 10px",
+                          fontSize: 9,
+                        }}
+                      />
+                    </label>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(260px, 1fr))",
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <label
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                        fontSize: 8.5,
+                        color: "#94A3B8",
+                      }}
+                    >
+                      Sizes / prices
+                      <textarea
+                        value={supplierAdapterDraft.packLines}
+                        onChange={(e) =>
+                          setSupplierAdapterDraft((prev) => ({
+                            ...prev,
+                            packLines: e.target.value,
+                          }))
+                        }
+                        placeholder={`15 g 12.5\n30 g 22.0\n100 g 58.0`}
+                        rows={5}
+                        style={{
+                          background: "#020810",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 7,
+                          color: "#E2E8F0",
+                          padding: "8px 10px",
+                          fontSize: 9,
+                          resize: "vertical",
+                        }}
+                      />
+                    </label>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateRows: "1fr 1fr",
+                        gap: 8,
+                      }}
+                    >
+                      <label
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 5,
+                          fontSize: 8.5,
+                          color: "#94A3B8",
+                        }}
+                      >
+                        Supplier description
+                        <textarea
+                          value={supplierAdapterDraft.productDescription}
+                          onChange={(e) =>
+                            setSupplierAdapterDraft((prev) => ({
+                              ...prev,
+                              productDescription: e.target.value,
+                            }))
+                          }
+                          placeholder="Page-native description or summary"
+                          rows={3}
+                          style={{
+                            background: "#020810",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 7,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 9,
+                            resize: "vertical",
+                          }}
+                        />
+                      </label>
+                      <label
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 5,
+                          fontSize: 8.5,
+                          color: "#94A3B8",
+                        }}
+                      >
+                        Source note
+                        <textarea
+                          value={supplierAdapterDraft.sourceNote}
+                          onChange={(e) =>
+                            setSupplierAdapterDraft((prev) => ({
+                              ...prev,
+                              sourceNote: e.target.value,
+                            }))
+                          }
+                          placeholder="Optional capture note or fetch context"
+                          rows={3}
+                          style={{
+                            background: "#020810",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 7,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 9,
+                            resize: "vertical",
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <button
+                      onClick={ingestFraterworksSupplierPage}
+                      style={{
+                        background: "linear-gradient(135deg,#0E4D6E,#0E7490)",
+                        border: "1px solid #0EA5E940",
+                        borderRadius: 8,
+                        color: "#E0F2FE",
+                        padding: "7px 14px",
+                        fontSize: 9,
+                        cursor: "pointer",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Auto-ingest Fraterworks facts
+                    </button>
+                    <button
+                      onClick={clearSupplierAdapterDraft}
+                      style={{
+                        background: "#0A1628",
+                        border: `1px solid ${BORDER}`,
+                        borderRadius: 8,
+                        color: "#94A3B8",
+                        padding: "7px 14px",
+                        fontSize: 9,
+                        cursor: "pointer",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Clear Draft
+                    </button>
+                    <div
+                      style={{
+                        fontSize: 8.5,
+                        color: "#64748B",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Pack sizes accept one line per row: `qty unit price` with
+                      optional dilution at the end.
+                    </div>
+                  </div>
+
+                  {(supplierAdapterStatus || supplierAdapterExportStatus) && (
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 8,
+                        padding: "8px 10px",
+                        marginBottom: 10,
+                        fontSize: 8.5,
+                        color: "#CBD5E1",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {supplierAdapterStatus}
+                      {supplierAdapterStatus && supplierAdapterExportStatus
+                        ? " "
+                        : ""}
+                      {supplierAdapterExportStatus}
+                    </div>
+                  )}
+
+                  <div
+                    id="supplier-step-sync-results"
+                    style={{
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "#E2E8F0",
+                      }}
+                    >
+                      Sync Results
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.5,
+                        color: "#64748B",
+                        marginTop: 3,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Inspect what the latest provider sync or intake changed
+                      in the supplier layer before you decide whether any
+                      exceptions need follow-up.
+                    </div>
+                  </div>
+
+                  {latestSupplierWorkflowResult && (
+                    <div
+                      style={{
+                        background: "#071826",
+                        border: "1px solid #0EA5E940",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 10,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <div style={{ maxWidth: 760 }}>
+                          <div
+                            style={{
+                              fontSize: 8,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              marginBottom: 4,
+                            }}
+                          >
+                            Latest Ingest Result
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: "#E2E8F0",
+                              marginBottom: 4,
+                            }}
+                          >
+                            {latestSupplierWorkflowResult.title}
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              flexWrap: "wrap",
+                              alignItems: "center",
+                              marginBottom: 6,
+                            }}
+                          >
+                            <span
+                              style={{
+                                background:
+                                  latestSupplierLayerRecord?.canAutoApplyToPricing
+                                    ? "#0A2E1A"
+                                    : "#2A1A00",
+                                border: `1px solid ${
+                                  latestSupplierLayerRecord?.canAutoApplyToPricing
+                                    ? "#166534"
+                                    : "#78350F"
+                                }`,
+                                borderRadius: 999,
+                                color:
+                                  latestSupplierLayerRecord?.canAutoApplyToPricing
+                                    ? "#86EFAC"
+                                    : "#FDE68A",
+                                padding: "2px 8px",
+                                fontSize: 7.5,
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                              }}
+                            >
+                              {latestSupplierWorkflowResult.outcome}
+                            </span>
+                            {latestSupplierLayerReviewCount > 0 ? (
+                              <span
+                                style={{
+                                  color: "#FDE68A",
+                                  fontSize: 8,
+                                }}
+                              >
+                                {latestSupplierLayerReviewCount} review item
+                                {latestSupplierLayerReviewCount === 1 ? "" : "s"}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#CBD5E1",
+                              lineHeight: 1.7,
+                              marginBottom: 6,
+                            }}
+                          >
+                            {latestSupplierWorkflowResult.happened}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#94A3B8",
+                              lineHeight: 1.7,
+                            }}
+                          >
+                            What next: {latestSupplierWorkflowResult.nextAction}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() =>
+                            scrollToSupplierWorkflowStep(
+                              latestSupplierWorkflowResult.nextStepKey
+                            )
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 8,
+                            color: "#93C5FD",
+                            padding: "6px 12px",
+                            fontSize: 8.5,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {latestSupplierWorkflowResult.nextStepLabel}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    id="supplier-step-review-mapping"
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginBottom: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Step 3
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Exceptions Queue
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            maxWidth: 760,
+                          }}
+                        >
+                          All held supplier-layer items funnel here for
+                          mapping, duplicate, variant, and onboarding
+                          decisions, so the main review path stays in one
+                          place instead of splitting across side sections.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[2].status
+                              ].background,
+                            border: `1px solid ${
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[2].status
+                              ].borderColor
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[2].status
+                              ].color,
+                            padding: "2px 8px",
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[2].status
+                            ].label
+                          }
+                        </span>
+                        {supplierAdapterPrimaryActionMeta ? (
+                          supplierAdapterPrimaryActionMeta.recommendedStepKey ===
+                          "stage-reviewable-updates" ? (
+                            <button
+                              onClick={() =>
+                                scrollToSupplierWorkflowStep(
+                                  "stage-reviewable-updates"
+                                )
+                              }
+                              style={{
+                                background: "#0A1628",
+                                border: "1px solid #1D4ED8",
+                                borderRadius: 7,
+                                color: "#93C5FD",
+                                padding: "5px 10px",
+                                fontSize: 8,
+                                cursor: "pointer",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Go to Stage Reviewable Updates
+                            </button>
+                          ) : (
+                            <span
+                              style={{
+                                fontSize: 7.5,
+                                color: "#93C5FD",
+                                fontWeight: 700,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                              }}
+                            >
+                              Primary row action:{" "}
+                              {supplierAdapterPrimaryActionMeta.label}
+                            </span>
+                          )
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(280px, 1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          Recent supplier updates
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#475569",
+                          }}
+                        >
+                          {supplierLayerRecords.length} captured
+                        </div>
+                      </div>
+                      {latestSupplierLayerRecords.length > 0 ? (
+                        <div style={{ overflowX: "auto" }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.5,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Product",
+                                  "Lane",
+                                  "Mapped Catalog",
+                                  "Auto-applied Fields",
+                                  "Live Status",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {latestSupplierLayerRecords.map((record, idx) => {
+                                const laneMeta =
+                                  SUPPLIER_ADAPTER_TRUST_LANE_META[
+                                    record.trustLane
+                                  ] || null;
+                                const heldReviewCount = Array.isArray(
+                                  record.reviewItems
+                                )
+                                  ? record.reviewItems.length
+                                  : 0;
+                                return (
+                                  <tr
+                                    key={record.recordKey}
+                                    style={{
+                                      borderBottom:
+                                        idx === latestSupplierLayerRecords.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#E2E8F0",
+                                        minWidth: 180,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {record.pageFacts?.productTitle ||
+                                          record.supplierProductKey}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          fontSize: 7.5,
+                                          color: "#475569",
+                                        }}
+                                      >
+                                        {record.sourceUrl
+                                          ? record.sourceUrl.replace(
+                                              /^https?:\/\/(www\.)?/,
+                                              ""
+                                            )
+                                          : record.supplierProductKey}
+                                      </div>
+                                    </td>
+                                    <td style={{ padding: "7px" }}>
+                                      <span
+                                        style={{
+                                          background:
+                                            laneMeta?.background || "#0A1628",
+                                          border: `1px solid ${
+                                            laneMeta?.borderColor || BORDER
+                                          }`,
+                                          borderRadius: 999,
+                                          color: laneMeta?.color || "#CBD5E1",
+                                          padding: "2px 8px",
+                                          fontSize: 7.5,
+                                          fontWeight: 700,
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {record.trustLaneLabel || record.trustLane}
+                                      </span>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 150,
+                                      }}
+                                    >
+                                      {record.mappedCatalogName || "Review first"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 220,
+                                      }}
+                                    >
+                                      {record.autoAppliedFieldLabels?.length > 0
+                                        ? record.autoAppliedFieldLabels.join(", ")
+                                        : "—"}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: record.canAutoApplyToPricing
+                                          ? "#86EFAC"
+                                          : "#FDE68A",
+                                      }}
+                                    >
+                                      {record.canAutoApplyToPricing ? (
+                                        record.pricingAutoApplyCatalogName ||
+                                        "Updated"
+                                      ) : (
+                                        <div
+                                          style={{
+                                            display: "grid",
+                                            gap: 5,
+                                            lineHeight: 1.5,
+                                          }}
+                                        >
+                                          <div>Held for review</div>
+                                          {heldReviewCount > 0 ? (
+                                            <>
+                                              <div
+                                                style={{
+                                                  color: "#94A3B8",
+                                                  fontSize: 7.5,
+                                                }}
+                                              >
+                                                {heldReviewCount} actionable
+                                                exception
+                                                {heldReviewCount === 1 ? "" : "s"}
+                                              </div>
+                                              <button
+                                                onClick={() =>
+                                                  scrollToSupplierWorkflowStep(
+                                                    "review-mapping"
+                                                  )
+                                                }
+                                                style={{
+                                                  background: "#0A1628",
+                                                  border: "1px solid #1D4ED8",
+                                                  borderRadius: 6,
+                                                  color: "#93C5FD",
+                                                  padding: "4px 8px",
+                                                  fontSize: 7.5,
+                                                  cursor: "pointer",
+                                                  fontWeight: 700,
+                                                  width: "fit-content",
+                                                }}
+                                              >
+                                                Open in Exceptions
+                                              </button>
+                                            </>
+                                          ) : (
+                                            <div
+                                              style={{
+                                                color: "#94A3B8",
+                                                fontSize: 7.5,
+                                              }}
+                                            >
+                                              This record still needs review
+                                              before live ownership can update.
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#475569",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          No Fraterworks supplier-layer facts have been
+                          captured yet.
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        background: "#020810",
+                        border: "1px solid #1E293B",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          Exceptions Queue · Mapping & Conflict Review
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#475569",
+                          }}
+                        >
+                          {filteredSupplierReviewEntries.length} matching review item
+                          {filteredSupplierReviewEntries.length === 1 ? "" : "s"}
+                          {filteredSupplierReviewEntries.length !==
+                          visibleSupplierLayerReviewItems.length
+                            ? ` of ${visibleSupplierLayerReviewItems.length} active`
+                            : ""}
+                          {stagedSupplierAdapterNewItemCount > 0
+                            ? ` · ${stagedSupplierAdapterNewItemCount} staged to Step 4`
+                            : ""}
+                        </div>
+                      </div>
+                      {filteredSupplierReviewEntries.length > 0 ? (
+                        <div style={{ overflowX: "auto", maxHeight: 340 }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              fontSize: 8.5,
+                              borderCollapse: "collapse",
+                            }}
+                          >
+                            <thead>
+                              <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                                {[
+                                  "Select",
+                                  "Issue",
+                                  "Material",
+                                  "Why",
+                                  "Next Action",
+                                  "Actions",
+                                ].map((label) => (
+                                  <th
+                                    key={label}
+                                    style={{
+                                      textAlign: "left",
+                                      padding: "6px 7px",
+                                      color: "#64748B",
+                                      fontSize: 7.5,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.08em",
+                                    }}
+                                  >
+                                    {label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredSupplierReviewEntries.map((entry, idx) => {
+                                const reviewItem = entry.reviewItem;
+                                const laneMeta =
+                                  SUPPLIER_ADAPTER_TRUST_LANE_META[
+                                    reviewItem.trustLane
+                                  ] || null;
+                                const primaryActionMeta = entry.primaryActionMeta;
+                                const dossierTarget =
+                                  getSupplierAdapterDossierTarget(reviewItem);
+                                const duplicateContext = entry.duplicateContext;
+                                const evidenceStageMeta = entry.evidenceStageMeta;
+                                return (
+                                  <tr
+                                    key={reviewItem.reviewItemKey}
+                                    style={{
+                                      borderBottom:
+                                        idx ===
+                                        filteredSupplierReviewEntries.length - 1
+                                          ? "none"
+                                          : "1px solid #0F172A",
+                                    }}
+                                  >
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        width: 36,
+                                      }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedSupplierExceptionKeys.includes(
+                                          entry.key
+                                        )}
+                                        onChange={() =>
+                                          toggleSupplierExceptionSelection(
+                                            entry.key
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        minWidth: 150,
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          color: laneMeta?.color || "#CBD5E1",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {reviewItem.issueLabel}
+                                      </div>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          fontSize: 7.5,
+                                          color: "#475569",
+                                        }}
+                                      >
+                                        {reviewItem.trustLaneLabel}
+                                      </div>
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 160,
+                                      }}
+                                    >
+                                      <div style={{ fontWeight: 700 }}>
+                                        {reviewItem.mappedCatalogName ||
+                                          reviewItem.productTitle ||
+                                          reviewItem.supplierProductKey}
+                                      </div>
+                                      {reviewItem.fieldLabel && (
+                                        <div
+                                          style={{
+                                            marginTop: 4,
+                                            fontSize: 7.5,
+                                            color: "#94A3B8",
+                                          }}
+                                        >
+                                          {reviewItem.fieldLabel}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#CBD5E1",
+                                        minWidth: 220,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      <div>{reviewItem.whyItMatters}</div>
+                                      {duplicateContext.hasCandidates ? (
+                                        <details style={{ marginTop: 6 }}>
+                                          <summary
+                                            style={{
+                                              cursor: "pointer",
+                                              color: "#DDD6FE",
+                                              fontSize: 7.5,
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Possible matches (
+                                            {duplicateContext.candidates.length})
+                                          </summary>
+                                          <div
+                                            style={{
+                                              marginTop: 6,
+                                              display: "grid",
+                                              gap: 6,
+                                            }}
+                                          >
+                                            {duplicateContext.candidates.map(
+                                              (candidate) => (
+                                                <div
+                                                  key={`${reviewItem.reviewItemKey}:${candidate.supplierProductKey}`}
+                                                  style={{
+                                                    background: "#06111E",
+                                                    border: "1px solid #1E293B",
+                                                    borderRadius: 8,
+                                                    padding: "7px 8px",
+                                                    fontSize: 7.5,
+                                                    color: "#CBD5E1",
+                                                    lineHeight: 1.5,
+                                                  }}
+                                                >
+                                                  <div
+                                                    style={{
+                                                      fontWeight: 700,
+                                                      color: "#E2E8F0",
+                                                    }}
+                                                  >
+                                                    {candidate.productTitle ||
+                                                      candidate.supplierProductKey}
+                                                  </div>
+                                                  <div
+                                                    style={{
+                                                      color: "#64748B",
+                                                      marginTop: 2,
+                                                    }}
+                                                  >
+                                                    {candidate.supplierDisplayName} ·{" "}
+                                                    {candidate.supplierProductKey}
+                                                  </div>
+                                                  {candidate.mappedCatalogName ? (
+                                                    <div
+                                                      style={{
+                                                        color: "#94A3B8",
+                                                        marginTop: 2,
+                                                      }}
+                                                    >
+                                                      Mapped:{" "}
+                                                      {candidate.mappedCatalogName}
+                                                    </div>
+                                                  ) : null}
+                                                  <div
+                                                    style={{
+                                                      color: "#C4B5FD",
+                                                      marginTop: 3,
+                                                    }}
+                                                  >
+                                                    {candidate.reasonSummary}
+                                                  </div>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        </details>
+                                      ) : null}
+                                      {primaryActionMeta?.key ===
+                                      "stage_correction_proposal" ? (
+                                        <div
+                                          style={{
+                                            marginTop: 6,
+                                            padding: "7px 8px",
+                                            background: "#071826",
+                                            border: "1px solid #1E3A52",
+                                            borderRadius: 8,
+                                            fontSize: 7.5,
+                                            color: "#CBD5E1",
+                                            lineHeight: 1.55,
+                                          }}
+                                        >
+                                          <div>
+                                            Current app value:{" "}
+                                            <span style={{ color: "#FDE68A" }}>
+                                              {formatSupplierReviewContextValue(
+                                                reviewItem.currentValue
+                                              )}
+                                            </span>
+                                          </div>
+                                          <div>
+                                            Incoming provider value:{" "}
+                                            <span style={{ color: "#FCA5A5" }}>
+                                              {formatSupplierReviewContextValue(
+                                                reviewItem.supplierValue
+                                              )}
+                                            </span>
+                                          </div>
+                                          <div style={{ color: "#94A3B8" }}>
+                                            Source:{" "}
+                                            {reviewItem.supplierDisplayName ||
+                                              reviewItem.supplier ||
+                                              "Trusted supplier sync"}
+                                          </div>
+                                        </div>
+                                      ) : null}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        color: "#94A3B8",
+                                        minWidth: 220,
+                                        lineHeight: 1.6,
+                                      }}
+                                    >
+                                      {primaryActionMeta ? (
+                                        <div
+                                          style={{
+                                            color: primaryActionMeta.color,
+                                            fontWeight: 700,
+                                            marginBottom: 4,
+                                          }}
+                                        >
+                                          Primary: {primaryActionMeta.label}
+                                        </div>
+                                      ) : null}
+                                      {evidenceStageMeta?.isStaged ? (
+                                        <div
+                                          style={{
+                                            background: "#0A2E1A",
+                                            border: "1px solid #166534",
+                                            borderRadius: 999,
+                                            color: "#86EFAC",
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            padding: "2px 8px",
+                                            fontSize: 7.5,
+                                            fontWeight: 700,
+                                            marginBottom: 5,
+                                          }}
+                                        >
+                                          {evidenceStageMeta.statusLabel}
+                                        </div>
+                                      ) : null}
+                                      <div>{reviewItem.nextAction}</div>
+                                      {primaryActionMeta?.helperText ? (
+                                        <div
+                                          style={{
+                                            color: "#64748B",
+                                            fontSize: 7.5,
+                                            marginTop: 4,
+                                          }}
+                                        >
+                                          {primaryActionMeta.helperText}
+                                        </div>
+                                      ) : null}
+                                      {duplicateContext.hasCandidates ? (
+                                        <div
+                                          style={{
+                                            color: "#DDD6FE",
+                                            fontSize: 7.5,
+                                            marginTop: 4,
+                                          }}
+                                        >
+                                          Compare the likely duplicate matches
+                                          here, then decide whether to link an
+                                          existing product or keep this supplier
+                                          row separate downstream.
+                                        </div>
+                                      ) : null}
+                                      {primaryActionMeta?.key ===
+                                        "stage_correction_proposal" &&
+                                      evidenceStageMeta?.candidate
+                                        ?.sourceSummary ? (
+                                        <div
+                                          style={{
+                                            color: "#94A3B8",
+                                            fontSize: 7.5,
+                                            marginTop: 4,
+                                          }}
+                                        >
+                                          Review target:{" "}
+                                          {
+                                            evidenceStageMeta.candidate
+                                              .sourceSummary
+                                          }
+                                        </div>
+                                      ) : null}
+                                    </td>
+                                    <td
+                                      style={{
+                                        padding: "7px",
+                                        minWidth: 210,
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          display: "flex",
+                                          gap: 6,
+                                          flexWrap: "wrap",
+                                        }}
+                                      >
+                                        {primaryActionMeta ? (
+                                          <button
+                                            onClick={() =>
+                                              runSupplierAdapterPrimaryAction(
+                                                reviewItem
+                                              )
+                                            }
+                                            style={{
+                                              background:
+                                                primaryActionMeta.background,
+                                              border: `1px solid ${primaryActionMeta.borderColor}`,
+                                              borderRadius: 6,
+                                              color: primaryActionMeta.color,
+                                              padding: "4px 8px",
+                                              fontSize: 8,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            {primaryActionMeta.label}
+                                          </button>
+                                        ) : null}
+                                        {primaryActionMeta?.key ===
+                                          "stage_correction_proposal" &&
+                                        evidenceStageMeta?.isStaged &&
+                                        evidenceStageMeta?.evidenceCandidateKey ? (
+                                          <button
+                                            onClick={() =>
+                                              openSupplierEvidenceReview(
+                                                evidenceStageMeta.evidenceCandidateKey
+                                              )
+                                            }
+                                            style={{
+                                              background: "#0A2E1A",
+                                              border: "1px solid #166534",
+                                              borderRadius: 6,
+                                              color: "#86EFAC",
+                                              padding: "4px 8px",
+                                              fontSize: 8,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Open Evidence Review
+                                          </button>
+                                        ) : null}
+                                        {primaryActionMeta?.key === "review_new_item" ? (
+                                          <button
+                                            onClick={() =>
+                                              reloadSupplierAdapterReviewItemIntoDraft(
+                                                reviewItem,
+                                                "Reloaded this supplier-layer capture into Capture Facts so you can adjust the new-item intake before staging it."
+                                              )
+                                            }
+                                            style={{
+                                              background: "#020810",
+                                              border: "1px solid #334155",
+                                              borderRadius: 6,
+                                              color: "#CBD5E1",
+                                              padding: "4px 8px",
+                                              fontSize: 8,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Reload Capture
+                                          </button>
+                                        ) : null}
+                                        <button
+                                          onClick={() =>
+                                            openSupplierAdapterWorkbench(reviewItem)
+                                          }
+                                          style={{
+                                            background: "#0A1628",
+                                            border: "1px solid #1D4ED8",
+                                            borderRadius: 6,
+                                            color: "#93C5FD",
+                                            padding: "4px 8px",
+                                            fontSize: 8,
+                                            cursor: "pointer",
+                                            fontWeight: 700,
+                                          }}
+                                        >
+                                          Founder
+                                        </button>
+                                        {dossierTarget ? (
+                                          <button
+                                            onClick={() =>
+                                              openSupplierAdapterDossier(reviewItem)
+                                            }
+                                            style={{
+                                              background: "#0A1628",
+                                              border: "1px solid #0EA5E940",
+                                              borderRadius: 6,
+                                              color: "#7DD3FC",
+                                              padding: "4px 8px",
+                                              fontSize: 8,
+                                              cursor: "pointer",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            Dossier
+                                          </button>
+                                        ) : (
+                                          <span
+                                            style={{
+                                              fontSize: 7.5,
+                                              color: "#64748B",
+                                              lineHeight: 1.5,
+                                            }}
+                                          >
+                                            Dossier unlocks after a live catalog
+                                            target exists.
+                                          </span>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#475569",
+                            lineHeight: 1.7,
+                          }}
+                        >
+                          {visibleSupplierLayerReviewItems.length > 0
+                            ? "No mapping or conflict review rows match the current filter set."
+                            : "No mapping, merge, duplicate, or unstaged new-item exceptions are active for captured supplier-layer facts."}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Pending supplier-first review items */}
@@ -78710,7 +93772,7 @@ export default function App() {
                           color: "#C4B5FD",
                         }}
                       >
-                        🧾 Pending Supplier Discoveries
+                        Exceptions Queue · Supplier Onboarding
                       </div>
                       <div
                         style={{
@@ -78719,30 +93781,28 @@ export default function App() {
                           marginTop: 3,
                         }}
                       >
-                        Supplier-first imports wait here for review before any
-                        catalog-row creation or normalization change.
+                        Clean provider syncs already created supplier-layer
+                        facts. Only onboarding exceptions stay active here, and
+                        resolved items move into history instead of living in
+                        the pending queue forever.
                       </div>
                     </div>
                     <div
                       style={{
-                        background: hasSupplierImportQueueItems
-                          ? pendingSupplierImportCount > 0
+                        background:
+                          activeSupplierImportQueueRows.length > 0
                             ? "#2A1A00"
-                            : "#0A2E1A"
-                          : "#0A2E1A",
+                            : "#0A2E1A",
                         border: `1px solid ${
-                          hasSupplierImportQueueItems
-                            ? pendingSupplierImportCount > 0
-                              ? "#78350F"
-                              : "#166534"
+                          activeSupplierImportQueueRows.length > 0
+                            ? "#78350F"
                             : "#166534"
                         }`,
                         borderRadius: 999,
-                        color: hasSupplierImportQueueItems
-                          ? pendingSupplierImportCount > 0
+                        color:
+                          activeSupplierImportQueueRows.length > 0
                             ? "#F59E0B"
-                            : "#86EFAC"
-                          : "#86EFAC",
+                            : "#86EFAC",
                         padding: "4px 10px",
                         fontSize: 8.5,
                         fontWeight: 700,
@@ -78750,14 +93810,25 @@ export default function App() {
                         textTransform: "uppercase",
                       }}
                     >
-                      {hasSupplierImportQueueItems
-                        ? pendingSupplierImportCount > 0
-                          ? `${pendingSupplierImportCount} pending / ${supplierImportQueueRows.length} total`
-                          : `${supplierImportQueueRows.length} reviewed`
+                      {filteredActiveSupplierOnboardingExceptionEntries.length > 0
+                        ? `${filteredActiveSupplierOnboardingExceptionEntries.length} matching${
+                            filteredActiveSupplierOnboardingExceptionEntries.length !==
+                            activeSupplierImportQueueRows.length
+                              ? ` of ${activeSupplierImportQueueRows.length} active`
+                              : ""
+                          }${
+                            deferredSupplierImportCount > 0 &&
+                            filteredActiveSupplierOnboardingExceptionEntries.length ===
+                              activeSupplierImportQueueRows.length
+                              ? ` · ${deferredSupplierImportCount} deferred`
+                              : ""
+                          }`
+                        : activeSupplierImportQueueRows.length > 0
+                        ? `0 matching of ${activeSupplierImportQueueRows.length} active`
                         : "queue clear"}
                     </div>
                   </div>
-                  {hasSupplierImportQueueItems ? (
+                  {filteredActiveSupplierOnboardingExceptionEntries.length > 0 ? (
                     <div style={{ overflowX: "auto" }}>
                       <table
                         style={{
@@ -78769,15 +93840,11 @@ export default function App() {
                         <thead>
                           <tr style={{ borderBottom: "1px solid #1E293B" }}>
                             {[
-                              "Supplier Product Key",
-                              "Supplier",
-                              "Product Title",
-                              "URL",
-                              "Proposed Catalog",
-                              "Entry Kind",
-                              "Canonical Key",
-                              "Review Status",
-                              "Normalization",
+                              "Select",
+                              "Provider / Product",
+                              "Exception",
+                              "Suggested Outcome",
+                              "Queue State",
                               "Actions",
                             ].map((label) => (
                               <th
@@ -78799,190 +93866,173 @@ export default function App() {
                           </tr>
                         </thead>
                         <tbody>
-                          {supplierImportQueueRows.map((item, idx) => (
-                            <tr
-                              key={item.supplierProductKey}
-                              style={{
-                                borderBottom:
-                                  idx === supplierImportQueueRows.length - 1
-                                    ? "none"
-                                    : "1px solid #0F172A",
-                              }}
-                            >
-                              <td
+                          {filteredActiveSupplierOnboardingExceptionEntries.map(
+                            (entry, idx) => {
+                            const item = entry.item;
+                            const canLinkExisting = entry.canLinkExisting;
+                            const duplicateContext = entry.duplicateContext;
+                            const isDuplicateReview = entry.isDuplicateReview;
+                            const primaryOutcomeLabel = isDuplicateReview
+                              ? canLinkExisting
+                                ? "Link to likely duplicate"
+                                : "Keep separate supplier product"
+                              : canLinkExisting
+                              ? "Link to existing material"
+                              : "Create supplier product";
+                            const primaryActionLabel = isDuplicateReview
+                              ? canLinkExisting
+                                ? "Link to This Existing Product"
+                                : "Keep Separate"
+                              : canLinkExisting
+                              ? "Link to Existing Material"
+                              : "Create Supplier Product";
+                            return (
+                              <tr
+                                key={item.supplierProductKey}
                                 style={{
-                                  padding: "8px",
-                                  color: "#CBD5E1",
-                                  fontFamily:
-                                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                  whiteSpace: "nowrap",
+                                  borderBottom:
+                                    idx ===
+                                    filteredActiveSupplierOnboardingExceptionEntries.length - 1
+                                      ? "none"
+                                      : "1px solid #0F172A",
                                 }}
                               >
-                                {item.supplierProductKey}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "8px",
-                                  color: "#CBD5E1",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.supplier}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "8px",
-                                  color: "#E2E8F0",
-                                  minWidth: 170,
-                                }}
-                              >
-                                {item.productTitle}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "8px",
-                                  minWidth: 220,
-                                }}
-                              >
-                                {item.url ? (
-                                  <a
-                                    href={item.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                      color: "#38BDF8",
-                                      textDecoration: "none",
-                                      wordBreak: "break-word",
-                                    }}
-                                  >
-                                    {item.url.replace(
-                                      /^https?:\/\/(www\.)?/,
-                                      ""
-                                    )}
-                                  </a>
-                                ) : (
-                                  <span style={{ color: "#475569" }}>—</span>
-                                )}
-                              </td>
-                              <td style={{ padding: "8px", color: "#CBD5E1" }}>
-                                {item.proposedCatalogName}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "8px",
-                                  color: "#94A3B8",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.proposedEntryKind}
-                              </td>
-                              <td
-                                style={{
-                                  padding: "8px",
-                                  color: "#94A3B8",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {item.proposedCanonicalMaterialKey}
-                              </td>
-                              <td style={{ padding: "8px" }}>
-                                <span
+                                <td
                                   style={{
-                                    background:
-                                      item.reviewStatus ===
-                                      "pending_catalog_import"
-                                        ? "#2A1A00"
-                                        : item.reviewStatus ===
-                                          "approved_local_draft"
-                                        ? "#0A2E1A"
-                                        : item.reviewStatus ===
-                                          "rejected_local"
-                                        ? "#2A0F14"
-                                        : "#0A1628",
-                                    border: `1px solid ${
-                                      item.reviewStatus ===
-                                      "pending_catalog_import"
-                                        ? "#78350F"
-                                        : item.reviewStatus ===
-                                          "approved_local_draft"
-                                        ? "#166534"
-                                        : item.reviewStatus ===
-                                          "rejected_local"
-                                        ? "#7F1D1D"
-                                        : BORDER
-                                    }`,
-                                    borderRadius: 999,
-                                    color:
-                                      item.reviewStatus ===
-                                      "pending_catalog_import"
-                                        ? "#F59E0B"
-                                        : item.reviewStatus ===
-                                          "approved_local_draft"
-                                        ? "#86EFAC"
-                                        : item.reviewStatus ===
-                                          "rejected_local"
-                                        ? "#FCA5A5"
-                                        : "#94A3B8",
-                                    padding: "2px 8px",
-                                    fontSize: 8,
-                                    fontWeight: 700,
-                                    whiteSpace: "nowrap",
+                                    padding: "8px",
+                                    width: 36,
                                   }}
                                 >
-                                  {item.reviewStatus}
-                                </span>
-                                {item.reviewedAt && (
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedSupplierExceptionKeys.includes(
+                                      entry.key
+                                    )}
+                                    onChange={() =>
+                                      toggleSupplierExceptionSelection(entry.key)
+                                    }
+                                  />
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#E2E8F0",
+                                    minWidth: 220,
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 700 }}>
+                                    {item.supplier} · {item.productTitle}
+                                  </div>
                                   <div
                                     style={{
                                       marginTop: 4,
-                                      fontSize: 7.5,
-                                      color: "#475569",
+                                      fontSize: 7.3,
+                                      color: "#64748B",
+                                      fontFamily:
+                                        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                    }}
+                                  >
+                                    {item.supplierProductKey}
+                                  </div>
+                                  {item.sourceOrigin ===
+                                  "supplier_adapter_new_item_candidate" ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#93C5FD",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      Staged from Adapter Review Queue
+                                    </div>
+                                  ) : null}
+                                  {item.url ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#38BDF8",
+                                        lineHeight: 1.5,
+                                        wordBreak: "break-word",
+                                      }}
+                                    >
+                                      {item.url.replace(
+                                        /^https?:\/\/(www\.)?/,
+                                        ""
+                                      )}
+                                    </div>
+                                  ) : null}
+                                  {item.sourceReason ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#64748B",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {item.sourceReason}
+                                    </div>
+                                  ) : null}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    minWidth: 220,
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      background:
+                                        item.warningBucketKey ===
+                                        "expected_create_state"
+                                          ? "#0A2E1A"
+                                          : item.warningBucketKey ===
+                                            "possible_duplicate"
+                                          ? "#1E1435"
+                                          : item.warningBucketKey ===
+                                            "needs_mapping"
+                                          ? "#2A1A00"
+                                          : item.warningBucketKey === "conflict"
+                                          ? "#2A0F14"
+                                          : "#0A1628",
+                                      border: `1px solid ${
+                                        item.warningBucketKey ===
+                                        "expected_create_state"
+                                          ? "#166534"
+                                          : item.warningBucketKey ===
+                                            "possible_duplicate"
+                                          ? "#6D28D9"
+                                          : item.warningBucketKey ===
+                                            "needs_mapping"
+                                          ? "#78350F"
+                                          : item.warningBucketKey === "conflict"
+                                          ? "#7F1D1D"
+                                          : BORDER
+                                      }`,
+                                      borderRadius: 999,
+                                      color:
+                                        item.warningBucketKey ===
+                                        "expected_create_state"
+                                          ? "#86EFAC"
+                                          : item.warningBucketKey ===
+                                            "possible_duplicate"
+                                          ? "#DDD6FE"
+                                          : item.warningBucketKey ===
+                                            "needs_mapping"
+                                          ? "#F59E0B"
+                                          : item.warningBucketKey === "conflict"
+                                          ? "#FCA5A5"
+                                          : "#94A3B8",
+                                      padding: "2px 8px",
+                                      fontSize: 8,
+                                      fontWeight: 700,
                                       whiteSpace: "nowrap",
                                     }}
                                   >
-                                    {new Date(item.reviewedAt).toLocaleString()}
-                                  </div>
-                                )}
-                              </td>
-                              <td style={{ padding: "8px" }}>
-                                <span
-                                  style={{
-                                    background:
-                                      item.normalizationStatus === "mapped"
-                                        ? "#0A2E1A"
-                                        : "#0A1628",
-                                    border: `1px solid ${
-                                      item.normalizationStatus === "mapped"
-                                        ? "#166534"
-                                        : BORDER
-                                    }`,
-                                    borderRadius: 999,
-                                    color:
-                                      item.normalizationStatus === "mapped"
-                                        ? "#86EFAC"
-                                        : "#94A3B8",
-                                    padding: "2px 8px",
-                                    fontSize: 8,
-                                    fontWeight: 700,
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {item.normalizationStatus}
-                                </span>
-                                {item.localDecision === "approved" && (
-                                  <div
-                                    style={{
-                                      marginTop: 4,
-                                      fontSize: 7.5,
-                                      color: "#86EFAC",
-                                      lineHeight: 1.5,
-                                    }}
-                                  >
-                                    Draft supplier row + normalization entry
-                                    ready
-                                  </div>
-                                )}
-                                {item.localDecision === "rejected" && (
+                                    {item.exceptionTypeLabel}
+                                  </span>
                                   <div
                                     style={{
                                       marginTop: 4,
@@ -78991,40 +94041,312 @@ export default function App() {
                                       lineHeight: 1.5,
                                     }}
                                   >
-                                    Source preserved, no draft created
+                                    {item.warningBucketLabel}
                                   </div>
-                                )}
-                              </td>
-                              <td style={{ padding: "8px", whiteSpace: "nowrap" }}>
-                                {item.canReview ? (
+                                  {item.guardrails?.length > 0 ? (
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#64748B",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {item.guardrails[0]}
+                                    </div>
+                                  ) : null}
+                                  {duplicateContext.hasCandidates ? (
+                                    <details
+                                      style={{
+                                        marginTop: 6,
+                                      }}
+                                    >
+                                      <summary
+                                        style={{
+                                          cursor: "pointer",
+                                          fontSize: 7.5,
+                                          color: "#C4B5FD",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Possible matches (
+                                        {duplicateContext.candidates.length})
+                                      </summary>
+                                      <div
+                                        style={{
+                                          marginTop: 6,
+                                          display: "grid",
+                                          gap: 6,
+                                        }}
+                                      >
+                                        {duplicateContext.candidates.map(
+                                          (candidate) => (
+                                            <div
+                                              key={candidate.supplierProductKey}
+                                              style={{
+                                                background: "#0B1220",
+                                                border: "1px solid #312E81",
+                                                borderRadius: 8,
+                                                padding: "6px 7px",
+                                              }}
+                                            >
+                                              <div
+                                                style={{
+                                                  fontSize: 7.8,
+                                                  color: "#E2E8F0",
+                                                  fontWeight: 700,
+                                                  lineHeight: 1.5,
+                                                }}
+                                              >
+                                                {candidate.productTitle ||
+                                                  candidate.supplierProductKey}
+                                              </div>
+                                              <div
+                                                style={{
+                                                  marginTop: 3,
+                                                  fontSize: 7.2,
+                                                  color: "#94A3B8",
+                                                  lineHeight: 1.5,
+                                                }}
+                                              >
+                                                {candidate.supplierDisplayName ||
+                                                  "Supplier"}{" "}
+                                                · {candidate.supplierProductKey}
+                                              </div>
+                                              {candidate.mappedCatalogName ? (
+                                                <div
+                                                  style={{
+                                                    marginTop: 3,
+                                                    fontSize: 7.2,
+                                                    color: "#7DD3FC",
+                                                    lineHeight: 1.5,
+                                                  }}
+                                                >
+                                                  Mapped:{" "}
+                                                  {candidate.mappedCatalogName}
+                                                </div>
+                                              ) : null}
+                                              <div
+                                                style={{
+                                                  marginTop: 3,
+                                                  fontSize: 7.2,
+                                                  color: "#C4B5FD",
+                                                  lineHeight: 1.5,
+                                                }}
+                                              >
+                                                Why:{" "}
+                                                {candidate.reasonSummary ||
+                                                  "Possible duplicate"}
+                                              </div>
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </details>
+                                  ) : null}
+                                </td>
+                                <td style={{ padding: "8px" }}>
+                                  <div
+                                    style={{
+                                      fontSize: 8.3,
+                                      color: "#CBD5E1",
+                                      minWidth: 210,
+                                      lineHeight: 1.6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        fontWeight: 700,
+                                        color: "#E2E8F0",
+                                      }}
+                                    >
+                                      {primaryOutcomeLabel}
+                                    </div>
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#94A3B8",
+                                        lineHeight: 1.5,
+                                      }}
+                                      >
+                                        Target:{" "}
+                                      {item.mappedCatalogName ||
+                                        item.proposedCatalogNameRaw ||
+                                        item.productTitle ||
+                                        "Review first"}
+                                    </div>
+                                    <div
+                                      style={{
+                                        marginTop: 4,
+                                        fontSize: 7.5,
+                                        color: "#64748B",
+                                        lineHeight: 1.5,
+                                      }}
+                                      >
+                                      Draft type:{" "}
+                                      {isDuplicateReview
+                                        ? canLinkExisting
+                                          ? "possible duplicate against a live material target"
+                                          : "review whether this should stay separate before creating it"
+                                        : canLinkExisting
+                                        ? "supplier_product linked to live material"
+                                        : "supplier_product or local draft"}
+                                    </div>
+                                    {duplicateContext.hasCandidates ? (
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          fontSize: 7.5,
+                                          color: "#C4B5FD",
+                                          lineHeight: 1.5,
+                                        }}
+                                      >
+                                        Compare the likely duplicate matches
+                                        before linking an existing product or
+                                        keeping this supplier row separate.
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                </td>
+                                <td style={{ padding: "8px" }}>
+                                  <div
+                                    style={{
+                                      display: "grid",
+                                      gap: 6,
+                                      minWidth: 120,
+                                    }}
+                                  >
+                                    <span
+                                      style={{
+                                        background: item.isDeferred
+                                          ? "#0A1628"
+                                          : "#2A1A00",
+                                        border: `1px solid ${
+                                          item.isDeferred ? "#1D4ED8" : "#78350F"
+                                        }`,
+                                        borderRadius: 999,
+                                        color: item.isDeferred
+                                          ? "#93C5FD"
+                                          : "#F59E0B",
+                                        padding: "2px 8px",
+                                        fontSize: 8,
+                                        fontWeight: 700,
+                                        whiteSpace: "nowrap",
+                                        width: "fit-content",
+                                      }}
+                                    >
+                                      {item.isDeferred ? "Deferred" : "Active"}
+                                    </span>
+                                    <div
+                                      style={{
+                                        fontSize: 7.5,
+                                        color: "#94A3B8",
+                                        lineHeight: 1.5,
+                                      }}
+                                    >
+                                      {item.normalizationStatus === "mapped"
+                                        ? "Mapped path exists"
+                                        : item.normalizationStatus}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
                                   <div
                                     style={{
                                       display: "flex",
                                       gap: 6,
                                       alignItems: "center",
+                                      flexWrap: "wrap",
                                     }}
                                   >
+                                    {canLinkExisting ? (
+                                      <button
+                                        onClick={() =>
+                                          resolveSupplierImport(
+                                            item,
+                                            "link_existing_material"
+                                          )
+                                        }
+                                        style={{
+                                          background: "#0A2E1A",
+                                          border: "1px solid #166534",
+                                          borderRadius: 6,
+                                          color: "#86EFAC",
+                                          padding: "4px 8px",
+                                          fontSize: 8.5,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {primaryActionLabel}
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() =>
+                                          resolveSupplierImport(
+                                            item,
+                                            "create_supplier_product"
+                                          )
+                                        }
+                                        style={{
+                                          background: "#0A2E1A",
+                                          border: "1px solid #166534",
+                                          borderRadius: 6,
+                                          color: "#86EFAC",
+                                          padding: "4px 8px",
+                                          fontSize: 8.5,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {primaryActionLabel}
+                                      </button>
+                                    )}
+                                    {!canLinkExisting ? (
+                                      <button
+                                        onClick={() =>
+                                          resolveSupplierImport(
+                                            item,
+                                            "create_local_draft"
+                                          )
+                                        }
+                                        style={{
+                                          background: "#0A1628",
+                                          border: "1px solid #6D28D9",
+                                          borderRadius: 6,
+                                          color: "#DDD6FE",
+                                          padding: "4px 8px",
+                                          fontSize: 8.5,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Create Local Draft
+                                      </button>
+                                    ) : null}
                                     <button
-                                      onClick={() =>
-                                        approveSupplierImport(item)
-                                      }
+                                      onClick={() => deferSupplierImport(item)}
                                       style={{
-                                        background: "#0A2E1A",
-                                        border: "1px solid #166534",
+                                        background: "#020810",
+                                        border: "1px solid #334155",
                                         borderRadius: 6,
-                                        color: "#86EFAC",
+                                        color: "#CBD5E1",
                                         padding: "4px 8px",
                                         fontSize: 8.5,
                                         cursor: "pointer",
                                         fontWeight: 700,
                                       }}
                                     >
-                                      Approve
+                                      Defer
                                     </button>
                                     <button
-                                      onClick={() =>
-                                        rejectSupplierImport(item)
-                                      }
+                                      onClick={() => ignoreSupplierImport(item)}
                                       style={{
                                         background: "#2A0F14",
                                         border: "1px solid #7F1D1D",
@@ -79036,26 +94358,33 @@ export default function App() {
                                         fontWeight: 700,
                                       }}
                                     >
-                                      Reject
+                                      Ignore
                                     </button>
+                                    {item.sourceOrigin ===
+                                    "supplier_adapter_new_item_candidate" ? (
+                                      <button
+                                        onClick={() =>
+                                          reloadSupplierImportItemIntoDraft(item)
+                                        }
+                                        style={{
+                                          background: "#020810",
+                                          border: "1px solid #334155",
+                                          borderRadius: 6,
+                                          color: "#CBD5E1",
+                                          padding: "4px 8px",
+                                          fontSize: 8.5,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Reload Capture
+                                      </button>
+                                    ) : null}
                                   </div>
-                                ) : (
-                                  <div
-                                    style={{
-                                      fontSize: 8,
-                                      color: "#64748B",
-                                      lineHeight: 1.5,
-                                      minWidth: 120,
-                                    }}
-                                  >
-                                    {item.localDecision === "approved"
-                                      ? "Approved locally. Drafts are kept outside the live catalog."
-                                      : "Rejected locally. Source record remains in queue history."}
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -79067,17 +94396,260 @@ export default function App() {
                         lineHeight: 1.7,
                       }}
                     >
-                      No supplier-first discoveries are currently waiting in the
-                      review queue.
+                      {activeSupplierImportQueueRows.length > 0
+                        ? "No onboarding exceptions match the current filter set."
+                        : "No supplier onboarding exceptions are active. Clean syncs have already created supplier-layer records, and resolved decisions now live in history instead of staying pending."}
                     </div>
                   )}
-                  <div
+                  <details
+                    id="supplier-legacy-review-diagnostics"
+                    open={shouldForceOpenSupplierHistory}
                     style={{
                       marginTop: 12,
-                      paddingTop: 12,
                       borderTop: "1px solid #1E293B",
+                      paddingTop: 12,
                     }}
                   >
+                    <summary
+                      style={{
+                        cursor: "pointer",
+                        color: "#CBD5E1",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Resolved / Ignored History (
+                      {filteredHistorySupplierOnboardingExceptionEntries.length}
+                      {filteredHistorySupplierOnboardingExceptionEntries.length !==
+                      supplierImportHistoryRows.length
+                        ? ` of ${supplierImportHistoryRows.length}`
+                        : ""}
+                      )
+                    </summary>
+                    {filteredHistorySupplierOnboardingExceptionEntries.length > 0 ? (
+                      <div style={{ overflowX: "auto", marginTop: 10 }}>
+                        <table
+                          style={{
+                            width: "100%",
+                            fontSize: 8.5,
+                            borderCollapse: "collapse",
+                          }}
+                        >
+                          <thead>
+                            <tr style={{ borderBottom: "1px solid #1E293B" }}>
+                              {[
+                                "Product",
+                                "Outcome",
+                                "State",
+                                "Reviewed",
+                                "Actions",
+                              ].map((label) => (
+                                <th
+                                  key={label}
+                                  style={{
+                                    textAlign: "left",
+                                    padding: "7px 8px",
+                                    color: "#64748B",
+                                    fontSize: 8,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.08em",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {label}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredHistorySupplierOnboardingExceptionEntries.map(
+                              (entry, idx) => {
+                                const item = entry.item;
+                                return (
+                              <tr
+                                key={`history-${item.supplierProductKey}`}
+                                style={{
+                                  borderBottom:
+                                    idx ===
+                                    filteredHistorySupplierOnboardingExceptionEntries.length - 1
+                                      ? "none"
+                                      : "1px solid #0F172A",
+                                }}
+                              >
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#E2E8F0",
+                                    minWidth: 220,
+                                  }}
+                                >
+                                  <div style={{ fontWeight: 700 }}>
+                                    {item.supplier} · {item.productTitle}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 7.3,
+                                      color: "#64748B",
+                                      fontFamily:
+                                        'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                    }}
+                                  >
+                                    {item.supplierProductKey}
+                                  </div>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#CBD5E1",
+                                    minWidth: 180,
+                                  }}
+                                >
+                                  {item.resolutionLabel || item.reviewStatus}
+                                </td>
+                                <td style={{ padding: "8px" }}>
+                                  <span
+                                    style={{
+                                      background:
+                                        item.queueState === "resolved"
+                                          ? "#0A2E1A"
+                                          : item.queueState === "ignored"
+                                          ? "#2A0F14"
+                                          : "#0A1628",
+                                      border: `1px solid ${
+                                        item.queueState === "resolved"
+                                          ? "#166534"
+                                          : item.queueState === "ignored"
+                                          ? "#7F1D1D"
+                                          : "#1D4ED8"
+                                      }`,
+                                      borderRadius: 999,
+                                      color:
+                                        item.queueState === "resolved"
+                                          ? "#86EFAC"
+                                          : item.queueState === "ignored"
+                                          ? "#FCA5A5"
+                                          : "#93C5FD",
+                                      padding: "2px 8px",
+                                      fontSize: 8,
+                                      fontWeight: 700,
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {item.queueState}
+                                  </span>
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    color: "#94A3B8",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {item.archivedAt || item.reviewedAt
+                                    ? new Date(
+                                        item.archivedAt || item.reviewedAt
+                                      ).toLocaleString()
+                                    : "—"}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "8px",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: 6,
+                                      alignItems: "center",
+                                      flexWrap: "wrap",
+                                    }}
+                                  >
+                                    {item.queueState !== "archived" ? (
+                                      <button
+                                        onClick={() =>
+                                          archiveSupplierImport(item)
+                                        }
+                                        style={{
+                                          background: "#020810",
+                                          border: "1px solid #334155",
+                                          borderRadius: 6,
+                                          color: "#CBD5E1",
+                                          padding: "4px 8px",
+                                          fontSize: 8,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Archive
+                                      </button>
+                                    ) : null}
+                                    {item.sourceOrigin ===
+                                    "supplier_adapter_new_item_candidate" ? (
+                                      <button
+                                        onClick={() =>
+                                          reloadSupplierImportItemIntoDraft(item)
+                                        }
+                                        style={{
+                                          background: "#020810",
+                                          border: "1px solid #334155",
+                                          borderRadius: 6,
+                                          color: "#CBD5E1",
+                                          padding: "4px 8px",
+                                          fontSize: 8,
+                                          cursor: "pointer",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Reload Capture
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                              }
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          fontSize: 8.5,
+                          color: "#475569",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {supplierImportHistoryRows.length > 0
+                          ? "No history rows match the current filter set."
+                          : "No resolved, ignored, or archived onboarding rows are stored yet."}
+                      </div>
+                    )}
+                  </details>
+                  <details
+                    style={{
+                      marginTop: 12,
+                      borderTop: "1px solid #1E293B",
+                      paddingTop: 12,
+                    }}
+                  >
+                    <summary
+                      style={{
+                        cursor: "pointer",
+                        color: "#CBD5E1",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        marginBottom: 10,
+                      }}
+                    >
+                      Diagnostics: Supplier Coverage Audit
+                    </summary>
+                    <div>
                     <div
                       style={{
                         display: "flex",
@@ -79372,6 +94944,151 @@ export default function App() {
                         boxSizing: "border-box",
                       }}
                     />
+                    </div>
+                  </details>
+                  <details
+                    style={{
+                      marginTop: 12,
+                      borderTop: "1px solid #1E293B",
+                      paddingTop: 12,
+                    }}
+                  >
+                    <summary
+                      style={{
+                        cursor: "pointer",
+                        color: "#CBD5E1",
+                        fontSize: 9,
+                        fontWeight: 700,
+                        marginBottom: 10,
+                      }}
+                  >
+                    Legacy / Internal Diagnostics: Review, Evidence, and Draft Plumbing
+                  </summary>
+                    <div style={{ marginTop: 10 }}>
+                  <div
+                    style={{
+                      fontSize: 8.3,
+                      color: "#64748B",
+                      lineHeight: 1.7,
+                      marginBottom: 10,
+                    }}
+                  >
+                    These legacy review and export surfaces remain available for
+                    compatibility, but they are not part of the day-to-day
+                    trusted-provider sync flow.
+                  </div>
+                  <div
+                    id="supplier-step-stage-reviewable-updates"
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginTop: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Step 4
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Stage Reviewable Updates
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            maxWidth: 760,
+                          }}
+                        >
+                          Keep high-risk or evidence-backed changes in the
+                          current evidence-review lane until they are approved
+                          for promotion or draft export.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 8,
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span
+                          style={{
+                            background:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[3].status
+                              ].background,
+                            border: `1px solid ${
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[3].status
+                              ].borderColor
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              supplierWorkflowStatusMeta[
+                                supplierWorkflowSteps[3].status
+                              ].color,
+                            padding: "2px 8px",
+                            fontSize: 7.5,
+                            fontWeight: 700,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          {
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[3].status
+                            ].label
+                          }
+                        </span>
+                        <button
+                          onClick={() =>
+                            scrollToSupplierWorkflowStep(
+                              "export-approved-updates"
+                            )
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 7,
+                            color: "#93C5FD",
+                            padding: "5px 10px",
+                            fontSize: 8,
+                            cursor: "pointer",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Go to Export Approved Updates
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <div
                     style={{
@@ -79398,7 +95115,7 @@ export default function App() {
                             color: "#C4B5FD",
                           }}
                         >
-                          📚 Source Document Evidence Review
+                          📚 Legacy Source Document Evidence Review
                         </div>
                         <div
                           style={{
@@ -79573,6 +95290,7 @@ export default function App() {
                       ))}
                     </div>
                     <div
+                      id="supplier-evidence-review-queue"
                       style={{
                         marginBottom: 10,
                         padding: "10px 12px",
@@ -79663,6 +95381,37 @@ export default function App() {
                           )}
                         </div>
                       </div>
+                      {focusedEvidenceReviewCandidate ? (
+                        <div
+                          style={{
+                            marginBottom: 10,
+                            padding: "8px 10px",
+                            background: "#071826",
+                            border: "1px solid #1D4ED8",
+                            borderRadius: 8,
+                            color: "#CBD5E1",
+                            fontSize: 8,
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          Opened from Exceptions Queue:{" "}
+                          <span style={{ color: "#E2E8F0", fontWeight: 700 }}>
+                            {focusedEvidenceReviewCandidate.materialName ||
+                              focusedEvidenceReviewCandidate.canonicalMaterialKey ||
+                              "Supplier review candidate"}
+                          </span>{" "}
+                          ·{" "}
+                          {focusedEvidenceReviewCandidate.fieldLabel ||
+                            focusedEvidenceReviewCandidate.candidateFieldName ||
+                            "Evidence review"}
+                          {focusedEvidenceReviewCandidate.conflictNote ? (
+                            <span style={{ color: "#FDE68A" }}>
+                              {" "}
+                              · {focusedEvidenceReviewCandidate.conflictNote}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                       {evidenceCandidateReviewRows.length > 0 ? (
                         <>
                           <div style={{ overflowX: "auto", marginBottom: 8 }}>
@@ -79711,6 +95460,11 @@ export default function App() {
                                     <tr
                                       key={candidate.evidenceCandidateKey}
                                       style={{
+                                        background:
+                                          candidate.evidenceCandidateKey ===
+                                          supplierEvidenceReviewFocusKey
+                                            ? "#071826"
+                                            : "transparent",
                                         borderBottom:
                                           idx ===
                                           evidenceCandidateReviewRows.length - 1
@@ -80126,7 +95880,7 @@ export default function App() {
                         marginBottom: 6,
                       }}
                     >
-                      Priority Evidence Intake Targets
+                      Legacy Priority Evidence Intake Targets
                     </div>
                     <div style={{ overflowX: "auto", marginBottom: 8 }}>
                       <table
@@ -80393,6 +96147,91 @@ export default function App() {
                     />
                   </div>
                   <div
+                    id="supplier-step-export-approved-updates"
+                    style={{
+                      background: "#020810",
+                      border: "1px solid #1E293B",
+                      borderRadius: 10,
+                      padding: "10px 12px",
+                      marginTop: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Step 5
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                            marginBottom: 4,
+                          }}
+                        >
+                          Export Approved Updates
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.5,
+                            color: "#94A3B8",
+                            lineHeight: 1.6,
+                            maxWidth: 760,
+                          }}
+                        >
+                          Export portable supplier-layer, approved draft, and
+                          generated review payloads here after the review lanes
+                          are clear enough to share downstream.
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          background:
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[4].status
+                            ].background,
+                          border: `1px solid ${
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[4].status
+                            ].borderColor
+                          }`,
+                          borderRadius: 999,
+                          color:
+                            supplierWorkflowStatusMeta[
+                              supplierWorkflowSteps[4].status
+                            ].color,
+                          padding: "2px 8px",
+                          fontSize: 7.5,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {
+                          supplierWorkflowStatusMeta[
+                            supplierWorkflowSteps[4].status
+                          ].label
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  <div
                     style={{
                       marginTop: 12,
                       paddingTop: 12,
@@ -80582,7 +96421,7 @@ export default function App() {
                               color: "#FCD34D",
                             }}
                           >
-                            🛡️ Draft Preflight Check
+                            🛡️ Legacy Draft Preflight Check
                           </div>
                           <div
                             style={{
@@ -80882,7 +96721,7 @@ export default function App() {
                             color: "#A7F3D0",
                           }}
                         >
-                          🧱 Generated Catalog-Row Drafts
+                          🧱 Legacy Generated Catalog-Row Drafts
                         </div>
                         <div
                           style={{
@@ -81218,7 +97057,7 @@ export default function App() {
                             color: "#FDE68A",
                           }}
                         >
-                          💵 Generated Supplier Price Drafts
+                          💵 Legacy Generated Supplier Price Drafts
                         </div>
                         <div
                           style={{
@@ -81554,38 +97393,60 @@ export default function App() {
                       </div>
                     )}
                   </div>
+                    </div>
+                  </details>
                 </div>
 
-                {/* Info box */}
-                <div
+                <details
                   style={{
-                    background: "#0A1E0A",
-                    border: "1px solid #166534",
-                    borderRadius: 10,
-                    padding: "10px 14px",
-                    marginBottom: 12,
-                    fontSize: 9.5,
-                    color: "#86EFAC",
-                    lineHeight: 1.8,
-                  }}
-                >
-                  <strong>How to update a broken URL:</strong> Click the ✏️
-                  pencil next to any URL · Paste the new URL from the supplier's
-                  website · Press Enter or click ✓ to save · The change persists
-                  in your browser and to any exported JSON. Prices are in USD;
-                  sizes follow [qty, "g" or "mL", price] format.
-                </div>
-
-                {/* FRATERWORKS SCRAPER PANEL */}
-                <div
-                  style={{
-                    background: "#060E1E",
-                    border: "1px solid #22D3EE30",
+                    background: CARD,
                     borderRadius: 12,
-                    padding: 14,
+                    border: `1px solid ${BORDER}`,
                     marginBottom: 12,
+                    padding: "10px 14px",
                   }}
                 >
+                  <summary
+                    style={{
+                      cursor: "pointer",
+                      color: "#CBD5E1",
+                      fontSize: 10,
+                      fontWeight: 700,
+                    }}
+                  >
+                    Advanced Tools / Diagnostics: Bulk Refresh, Live Override Table, and URL Tools
+                  </summary>
+                  <div style={{ marginTop: 10 }}>
+                    {/* Info box */}
+                    <div
+                      style={{
+                        background: "#0A1E0A",
+                        border: "1px solid #166534",
+                        borderRadius: 10,
+                        padding: "10px 14px",
+                        marginBottom: 12,
+                        fontSize: 9.5,
+                        color: "#86EFAC",
+                        lineHeight: 1.8,
+                      }}
+                    >
+                      <strong>How to update a broken URL:</strong> Click the ✏️
+                      pencil next to any URL · Paste the new URL from the supplier's
+                      website · Press Enter or click ✓ to save · The change persists
+                      in your browser and to any exported JSON. Prices are in USD;
+                      sizes follow [qty, "g" or "mL", price] format.
+                    </div>
+
+                    {/* FRATERWORKS SCRAPER PANEL */}
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #22D3EE30",
+                        borderRadius: 12,
+                        padding: 14,
+                        marginBottom: 12,
+                      }}
+                    >
                   <div
                     style={{
                       display: "flex",
@@ -81755,18 +97616,18 @@ export default function App() {
                     price overrides only · Does not create supplier registry or
                     review-queue entries
                   </div>
-                </div>
+                    </div>
 
-                {/* PA SCRAPER PANEL */}
-                <div
-                  style={{
-                    background: "#060E1E",
-                    border: "1px solid #22D3EE30",
-                    borderRadius: 12,
-                    padding: 14,
-                    marginBottom: 12,
-                  }}
-                >
+                    {/* PA SCRAPER PANEL */}
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #22D3EE30",
+                        borderRadius: 12,
+                        padding: 14,
+                        marginBottom: 12,
+                      }}
+                    >
                   <div
                     style={{
                       display: "flex",
@@ -82015,17 +97876,17 @@ export default function App() {
                     price overrides only · Does not create supplier registry or
                     review-queue entries
                   </div>
-                </div>
+                    </div>
 
-                {/* Table */}
-                <div
-                  style={{
-                    background: CARD,
-                    borderRadius: 12,
-                    border: `1px solid ${BORDER}`,
-                    overflow: "hidden",
-                  }}
-                >
+                    {/* Table */}
+                    <div
+                      style={{
+                        background: CARD,
+                        borderRadius: 12,
+                        border: `1px solid ${BORDER}`,
+                        overflow: "hidden",
+                      }}
+                    >
                   <table
                     style={{
                       width: "100%",
@@ -82487,7 +98348,9 @@ export default function App() {
                       })}
                     </tbody>
                   </table>
-                </div>
+                    </div>
+                  </div>
+                </details>
               </div>
             );
           })()}
@@ -82710,6 +98573,14 @@ export default function App() {
             onSelectMaterial={setDetailName}
             onStartSubstitutionReview={startSubstitutionReview}
             pricesState={pricesState}
+            supplierLayerPageFacts={supplierLayerPageFacts}
+            manualRecordEdit={manualRecordEdits[detailName] || null}
+            onSaveDirectSupplierRecordEdit={saveDirectSupplierRecordEdit}
+            onSaveDirectMaterialRecordEdit={saveDirectMaterialRecordEdit}
+            onReassignDirectSupplierRelationship={
+              reassignDirectSupplierRelationship
+            }
+            onRefreshSupplierPageData={refreshSupplierProductPageData}
             inventory={inventory}
             formulas={formulas}
             currentFormula={formula}

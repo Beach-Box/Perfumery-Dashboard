@@ -11,12 +11,15 @@ export const APP_STORAGE_KEYS = {
   inventory: "bb_inventory",
   formulaNotes: "bb_formula_notes",
   supplierData: "bb_supplier_data_v4",
+  localDraftIngredients: "bb_local_draft_ingredients_v1",
+  manualRecordEdits: "bb_manual_record_edits_v1",
   savedBuilds: "bb_saved_builds",
   formulaCompare: "bb_formula_compare_state",
   critiqueLens: "bb_critique_lens",
   founderLaunchScenarios: "bb_founder_launch_scenarios_v1",
   supplierImportLocalReview: "bb_supplier_import_local_review_v1",
   evidenceCandidateLocalReview: "bb_evidence_candidate_review_v1",
+  supplierLayerPageFacts: "bb_supplier_layer_page_facts_v1",
 };
 
 export function readJsonStorage(key, fallbackValue) {

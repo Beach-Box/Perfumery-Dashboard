@@ -1,7 +1,11 @@
 import {
   IFRA_CATEGORY_LABELS,
+  buildSupplierProductKey,
+  compareMaterialCasSupportValues,
+  formatMaterialCasSupportValue,
   getIfraMaterialRecord,
   getMaterialNormalizationEntry,
+  parseMaterialCasSupport,
   getSourceDocumentsForCanonicalMaterialKey,
   getEvidenceCandidatesForCanonicalMaterialKey,
   getSupplierProductsForCatalogName,
@@ -4531,6 +4535,1875 @@ export function buildMaterialImprovementQueue({
         (row) => row.insufficientSupportCount > 0
       ).length,
     },
+  };
+}
+
+export const FORMULA_CRITICAL_REVIEW_FIELD_META = {
+  missing_material_intake: {
+    label: "Missing Material Intake",
+    guidance:
+      "Document the missing owned material first, then review normalization, catalog fit, and chemistry support before any live truth move.",
+  },
+  pricing: {
+    label: "Pricing / Pack Size",
+    guidance:
+      "Keep pricing and pack-size corrections review-first until supplier support is verified.",
+  },
+  pack_sizes: {
+    label: "Pack Sizes",
+    guidance:
+      "Keep pack-size corrections review-first until supplier support is verified.",
+  },
+  dilution_carrier: {
+    label: "Dilution / Carrier",
+    guidance:
+      "Confirm dilution or carrier state before treating technical or compliance reads as settled.",
+  },
+  cas: {
+    label: "CAS",
+    guidance:
+      "Verify CAS against a trusted SDS, TDS, or spec sheet before promotion.",
+  },
+  inci: {
+    label: "INCI",
+    guidance:
+      "Verify INCI against a trusted SDS, TDS, or spec sheet before promotion.",
+  },
+  scentDesc: {
+    label: "Scent Summary / Description",
+    guidance:
+      "Treat descriptive corrections as review-first unless a trusted source clearly backs them.",
+  },
+  rep: {
+    label: "Representative Odorant",
+    guidance:
+      "Keep representative-odorant corrections in review until trusted support is attached.",
+  },
+  note: {
+    label: "Note Role",
+    guidance:
+      "Keep note-role corrections in manual review before changing live guidance.",
+  },
+  type: {
+    label: "Material Type",
+    guidance:
+      "Keep material-type corrections in manual review before changing live guidance.",
+  },
+  technical_support: {
+    label: "Technical Support",
+    guidance:
+      "Keep technical notes review-first until source-backed support is attached.",
+  },
+  MW: {
+    label: "MW",
+    guidance:
+      "Keep molecular-weight corrections review-first until source-backed support is attached.",
+  },
+  xLogP: {
+    label: "xLogP",
+    guidance:
+      "Keep polarity/logP corrections review-first until source-backed support is attached.",
+  },
+  VP: {
+    label: "VP",
+    guidance:
+      "Keep vapor-pressure corrections review-first until source-backed support is attached.",
+  },
+  ODT: {
+    label: "ODT",
+    guidance:
+      "Keep odor-threshold corrections review-first until source-backed support is attached.",
+  },
+  TPSA: {
+    label: "TPSA",
+    guidance:
+      "Keep TPSA corrections review-first until source-backed support is attached.",
+  },
+  odorThreshold_ngL: {
+    label: "Odor Threshold",
+    guidance:
+      "Keep odor-threshold corrections review-first until source-backed support is attached.",
+  },
+  ifraMaterialHint: {
+    label: "IFRA / Restriction Support",
+    guidance:
+      "Keep IFRA and restriction corrections manual until canonical identity and structured support are verified.",
+  },
+};
+
+export const FORMULA_CRITICAL_REVIEW_FIELD_ORDER = [
+  "ifraMaterialHint",
+  "pricing",
+  "pack_sizes",
+  "dilution_carrier",
+  "cas",
+  "inci",
+  "scentDesc",
+  "rep",
+  "note",
+  "type",
+  "technical_support",
+  "MW",
+  "xLogP",
+  "VP",
+  "ODT",
+  "TPSA",
+  "odorThreshold_ngL",
+];
+
+const FORMULA_CRITICAL_ISSUE_META = {
+  missing_catalog_ingredient: {
+    label: "Missing ingredient record",
+    action:
+      "Stage a missing-material intake record first, then review canonical fit before changing any live truth.",
+  },
+  conflicting_staged_truth: {
+    label: "Conflicting staged truth",
+    action:
+      "Resolve the conflicting staged evidence before trusting formula advice that depends on this material.",
+  },
+  pricing_distortion: {
+    label: "Pricing support distorting cost",
+    action:
+      "Backfill supplier pack sizes and trusted pricing before treating cost output as final.",
+  },
+  technical_distortion: {
+    label: "Technical support distorting performance",
+    action:
+      "Tighten MW / xLogP / VP / ODT support before over-trusting performance guidance.",
+  },
+  compliance_distortion: {
+    label: "Weak IFRA / restriction support",
+    action:
+      "Keep compliance advice provisional until IFRA and restriction support is tightened.",
+  },
+  identity_distortion: {
+    label: "Weak identity / CAS / INCI support",
+    action:
+      "Verify canonical identity plus CAS / INCI before deeper critique or compliance conclusions.",
+  },
+  evidence_distortion: {
+    label: "Light evidence support",
+    action:
+      "Attach stronger trusted source support before treating this material read as settled.",
+  },
+  partial_truth: {
+    label: "Partial ingredient truth",
+    action:
+      "Review the current dossier and workbench signals before trusting the current advice too strongly.",
+  },
+};
+
+function getFormulaCriticalReviewFieldMeta(fieldKey = "") {
+  return (
+    FORMULA_CRITICAL_REVIEW_FIELD_META[fieldKey] || {
+      label: getBackfillFieldMeta(fieldKey).label,
+      guidance: getBackfillFieldMeta(fieldKey).guidance,
+    }
+  );
+}
+
+function normalizeFormulaCriticalReviewCandidateKeyPart(value = "") {
+  return (
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "") || "unknown"
+  );
+}
+
+function getFormulaCriticalConfidenceLabel(confidence = "medium") {
+  const normalized = String(confidence || "medium").trim().toLowerCase();
+  if (normalized === "high") return "High";
+  if (normalized === "low") return "Low";
+  return "Medium";
+}
+
+function formatFormulaCriticalDisplayValue(value) {
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (Array.isArray(value)) {
+    const joined = value.map((entry) => String(entry || "").trim()).filter(Boolean);
+    return joined.length > 0 ? joined.join(" · ") : "—";
+  }
+  if (value == null) return "—";
+  const normalized = String(value).trim();
+  return normalized || "—";
+}
+
+function buildFormulaCriticalManualReviewCandidate({
+  materialName,
+  canonicalMaterialKey = null,
+  relatedCatalogNames = [],
+  fieldKey,
+  proposedValue,
+  displayValue = null,
+  confidence = "medium",
+  contextLabel = "",
+  sourceType = "manual_review",
+  sourceOrigin = "formula_critical_manual_review",
+  sourceNote = "",
+  currentWeakness = "",
+  recommendedAction = "",
+  createdAt = null,
+} = {}) {
+  const normalizedMaterialName = String(materialName || "").trim();
+  const normalizedFieldKey = String(fieldKey || "").trim();
+  if (!normalizedMaterialName || !normalizedFieldKey) return null;
+
+  const fieldMeta = getFormulaCriticalReviewFieldMeta(normalizedFieldKey);
+  const stamp = normalizeFormulaCriticalReviewCandidateKeyPart(
+    createdAt || new Date().toISOString()
+  );
+  const normalizedCatalogNames = Array.from(
+    new Set(
+      [
+        normalizedMaterialName,
+        ...(Array.isArray(relatedCatalogNames) ? relatedCatalogNames : []),
+      ]
+        .map((value) => String(value || "").trim())
+        .filter(Boolean)
+    )
+  );
+  const normalizedSourceNote = String(sourceNote || "").trim();
+  const normalizedContextLabel = String(contextLabel || "").trim();
+  const sourceSummary = [
+    normalizedContextLabel
+      ? `Staged from Formula-Critical Data Finalization for ${normalizedContextLabel}.`
+      : "Staged from Formula-Critical Data Finalization.",
+    normalizedSourceNote ? `Source note: ${normalizedSourceNote}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    evidenceCandidateKey: `${sourceOrigin}:${normalizeFormulaCriticalReviewCandidateKeyPart(
+      normalizedMaterialName
+    )}:${normalizeFormulaCriticalReviewCandidateKeyPart(normalizedFieldKey)}:${stamp}`,
+    canonicalMaterialKey,
+    materialName: normalizedMaterialName,
+    relatedCatalogNames: normalizedCatalogNames,
+    sourceDocumentKey: null,
+    sourceType,
+    supplier: "Manual review",
+    candidateFieldName: normalizedFieldKey,
+    fieldLabel: fieldMeta.label,
+    candidateValue: proposedValue,
+    displayValue: formatFormulaCriticalDisplayValue(
+      displayValue == null ? proposedValue : displayValue
+    ),
+    confidence: String(confidence || "medium").trim().toLowerCase() || "medium",
+    confidenceLabel: getFormulaCriticalConfidenceLabel(confidence),
+    notes: normalizedSourceNote ? [normalizedSourceNote] : [],
+    applyPath: "manual_review",
+    applyPathLabel: "Manual review",
+    applyPathClassification: "manual_review_only",
+    applyPathClassificationLabel: "Manual-review-only",
+    proposalSupportStatus: null,
+    proposalSupportStatusLabel: null,
+    sourceOrigin,
+    sourceContextNote:
+      normalizedContextLabel || normalizedSourceNote || "Formula-critical manual review proposal.",
+    sourceSummary,
+    currentWeakness:
+      String(currentWeakness || "").trim() ||
+      "Manual review proposal was added because current ingredient truth still looks weak or distorted.",
+    recommendedAction:
+      String(recommendedAction || "").trim() || fieldMeta.guidance,
+    guidance: fieldMeta.guidance,
+    sourceReviewStatus: "pending_review",
+  };
+}
+
+export function buildFormulaFieldCorrectionReviewCandidate({
+  materialName,
+  canonicalMaterialKey = null,
+  relatedCatalogNames = [],
+  fieldKey,
+  proposedValue,
+  confidence = "medium",
+  contextLabel = "",
+  sourceNote = "",
+  currentWeakness = "",
+  recommendedAction = "",
+  createdAt = null,
+} = {}) {
+  return buildFormulaCriticalManualReviewCandidate({
+    materialName,
+    canonicalMaterialKey,
+    relatedCatalogNames,
+    fieldKey,
+    proposedValue,
+    confidence,
+    contextLabel,
+    sourceType: "manual_correction",
+    sourceOrigin: "formula_critical_manual_correction",
+    sourceNote,
+    currentWeakness,
+    recommendedAction,
+    createdAt,
+  });
+}
+
+export function buildFormulaMissingMaterialReviewCandidates({
+  materialName,
+  supplierSourceNote = "",
+  cas = "",
+  inci = "",
+  note = "",
+  materialType = "",
+  scentSummary = "",
+  technicalNotes = "",
+  confidence = "medium",
+  contextLabel = "",
+  createdAt = null,
+} = {}) {
+  const normalizedMaterialName = String(materialName || "").trim();
+  if (!normalizedMaterialName) return [];
+
+  const normalizedSupplierSourceNote = String(supplierSourceNote || "").trim();
+  const normalizedCas = String(cas || "").trim();
+  const normalizedInci = String(inci || "").trim();
+  const normalizedNote = String(note || "").trim();
+  const normalizedMaterialType = String(materialType || "").trim();
+  const normalizedScentSummary = String(scentSummary || "").trim();
+  const normalizedTechnicalNotes = String(technicalNotes || "").trim();
+
+  const intakeDisplayValue = [
+    normalizedMaterialName,
+    normalizedSupplierSourceNote
+      ? `Source ${normalizedSupplierSourceNote}`
+      : null,
+    normalizedCas ? `CAS ${normalizedCas}` : null,
+    normalizedInci ? `INCI ${normalizedInci}` : null,
+    normalizedNote ? `${normalizedNote} note` : null,
+    normalizedMaterialType || null,
+    normalizedScentSummary || null,
+    normalizedTechnicalNotes ? "Technical notes attached" : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const sharedCandidateOptions = {
+    materialName: normalizedMaterialName,
+    canonicalMaterialKey: null,
+    relatedCatalogNames: [normalizedMaterialName],
+    confidence,
+    contextLabel,
+    sourceNote: normalizedSupplierSourceNote,
+    createdAt,
+    currentWeakness:
+      "This owned material is not currently represented in the live app catalog, so formula advice can be distorted until it is reviewed.",
+    recommendedAction:
+      "Keep this intake review-first; do not create live catalog or helper truth until the missing material has been reviewed.",
+  };
+
+  const candidates = [
+    buildFormulaCriticalManualReviewCandidate({
+      ...sharedCandidateOptions,
+      fieldKey: "missing_material_intake",
+      proposedValue: intakeDisplayValue || normalizedMaterialName,
+      displayValue: intakeDisplayValue || normalizedMaterialName,
+      sourceType: "manual_missing_material_intake",
+      sourceOrigin: "formula_critical_missing_material",
+    }),
+  ];
+
+  [
+    ["cas", normalizedCas],
+    ["inci", normalizedInci],
+    ["note", normalizedNote],
+    ["type", normalizedMaterialType],
+    ["scentDesc", normalizedScentSummary],
+    ["technical_support", normalizedTechnicalNotes],
+  ].forEach(([fieldKey, value]) => {
+    if (!value) return;
+    candidates.push(
+      buildFormulaCriticalManualReviewCandidate({
+        ...sharedCandidateOptions,
+        fieldKey,
+        proposedValue: value,
+        sourceType: "manual_missing_material_intake",
+        sourceOrigin: "formula_critical_missing_material",
+      })
+    );
+  });
+
+  return candidates.filter(Boolean);
+}
+
+export const SUPPLIER_ADAPTER_TRUST_LANE_META = {
+  auto_apply_safe: {
+    label: "Auto-apply safe",
+    color: "#86EFAC",
+    borderColor: "#166534",
+    background: "#0A2E1A",
+    description:
+      "Trusted first-party supplier facts can land in the supplier layer without per-field review.",
+  },
+  batch_review_mapping: {
+    label: "Batch-review mapping",
+    color: "#FDE68A",
+    borderColor: "#78350F",
+    background: "#2A1A00",
+    description:
+      "Supplier facts were captured, but mapping, merge, or variant decisions still need review.",
+  },
+  manual_review_conflict: {
+    label: "Manual-review conflict",
+    color: "#FCA5A5",
+    borderColor: "#7F1D1D",
+    background: "#2A0F14",
+    description:
+      "Supplier facts were captured, but stronger canonical truth looks conflicted and needs manual review.",
+  },
+};
+
+export const SUPPLIER_ADAPTER_TRUST_LANE_ORDER = Object.keys(
+  SUPPLIER_ADAPTER_TRUST_LANE_META
+);
+
+const SUPPLIER_ADAPTER_FIELD_LABELS = {
+  productTitle: "Supplier product name",
+  url: "Product URL",
+  pricePoints: "Sizes & prices",
+  availabilityStatus: "Stock / request status",
+  ifraPercent: "IFRA % shown on page",
+  sdsUrl: "SDS URL",
+  casShown: "CAS shown on page",
+  inci: "INCI shown on page",
+  productDescription: "Supplier product description",
+};
+
+const SUPPLIER_ADAPTER_ISSUE_LABELS = {
+  new_item_candidate: "New item candidate",
+  merge_review: "Merge / duplicate review",
+  mapping_unresolved: "Mapping unresolved",
+  variant_confusion: "Variant confusion",
+  organic_variant_mismatch: "Organic / non-organic mismatch",
+  origin_variant_mismatch: "Origin / variant mismatch",
+  dilution_ambiguity: "Dilution ambiguity",
+  canonical_conflict_cas: "CAS conflict",
+  canonical_conflict_inci: "INCI conflict",
+  canonical_conflict_ifra: "IFRA / restriction conflict",
+};
+
+const SUPPLIER_ADAPTER_AVAILABILITY_LABELS = {
+  unknown: "Unknown",
+  in_stock: "In stock",
+  limited_stock: "Limited stock",
+  request_only: "Request / quote",
+  sold_out: "Sold out",
+  discontinued: "Discontinued",
+};
+
+const SUPPLIER_ADAPTER_ORIGIN_TOKENS = [
+  "comoros",
+  "madagascar",
+  "haiti",
+  "india",
+  "indonesia",
+  "egypt",
+  "morocco",
+  "france",
+  "italy",
+  "bulgaria",
+  "turkey",
+  "somalia",
+  "paraguay",
+  "jamaica",
+];
+
+const SUPPLIER_ADAPTER_KIND_TOKENS = {
+  absolute: ["absolute"],
+  resinoid: ["resinoid"],
+  oil: [" essential oil ", " eo ", " oil "],
+  co2: ["co2", "co₂"],
+  accord: ["accord", "compound"],
+};
+
+function normalizeSupplierAdapterText(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[^a-z0-9%]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeSupplierAdapterUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    url.hash = "";
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return raw;
+  }
+}
+
+function normalizeSupplierAdapterPercent(value) {
+  if (value == null) return null;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value >= 0 ? value : null;
+  }
+
+  const match = String(value).match(/-?\d+(?:\.\d+)?/);
+  if (!match) return null;
+
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+}
+
+function normalizeSupplierAdapterAvailability(value) {
+  const normalized = normalizeSupplierAdapterText(value);
+  if (!normalized) return "unknown";
+  if (normalized.includes("request") || normalized.includes("quote")) {
+    return "request_only";
+  }
+  if (normalized.includes("limited") || normalized.includes("low stock")) {
+    return "limited_stock";
+  }
+  if (
+    normalized.includes("sold out") ||
+    normalized.includes("out of stock") ||
+    normalized.includes("unavailable")
+  ) {
+    return "sold_out";
+  }
+  if (normalized.includes("discontinued")) {
+    return "discontinued";
+  }
+  if (normalized.includes("stock") || normalized.includes("available")) {
+    return "in_stock";
+  }
+  return "unknown";
+}
+
+function normalizeSupplierAdapterPricePoint(point) {
+  if (!Array.isArray(point) || point.length < 3) return null;
+
+  const qty = Number(point[0]);
+  const normalizedUnit = String(point[1] || "").trim().toLowerCase();
+  const unit = normalizedUnit === "ml" ? "mL" : normalizedUnit === "g" ? "g" : null;
+  const price = Number(point[2]);
+  const dilution = String(point[3] || "").trim() || null;
+
+  if (!Number.isFinite(qty) || qty <= 0) return null;
+  if (!unit) return null;
+  if (!Number.isFinite(price) || price < 0) return null;
+
+  return [qty, unit, price, dilution];
+}
+
+function normalizeSupplierAdapterPricePoints(pricePoints = []) {
+  const seen = new Set();
+  return (Array.isArray(pricePoints) ? pricePoints : [])
+    .map(normalizeSupplierAdapterPricePoint)
+    .filter((point) => {
+      if (!point) return false;
+      const key = point.join("|");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => a[0] - b[0] || a[2] - b[2]);
+}
+
+function normalizeSupplierAdapterRecordKeyPart(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "unknown";
+}
+
+function buildSupplierAdapterVariantSignals(...values) {
+  const haystack = ` ${values
+    .flat()
+    .map((value) => normalizeSupplierAdapterText(value))
+    .filter(Boolean)
+    .join(" ")} `;
+  const originTokens = SUPPLIER_ADAPTER_ORIGIN_TOKENS.filter((token) =>
+    haystack.includes(` ${token} `)
+  );
+  const dilutionMatch = haystack.match(/(\d+(?:\.\d+)?)\s*%/);
+
+  return {
+    normalized: haystack.trim(),
+    isOrganic:
+      haystack.includes(" organic ") ||
+      haystack.includes(" org ") ||
+      haystack.startsWith("organic "),
+    originTokens,
+    dilutionPercent: dilutionMatch ? Number(dilutionMatch[1]) : null,
+    carrier:
+      haystack.includes(" triethyl citrate ") || haystack.includes(" tec ")
+        ? "TEC"
+        : haystack.includes(" dipropylene glycol ") || haystack.includes(" dpg ")
+        ? "DPG"
+        : null,
+    kinds: Object.entries(SUPPLIER_ADAPTER_KIND_TOKENS)
+      .filter(([, tokens]) => tokens.some((token) => haystack.includes(token)))
+      .map(([key]) => key),
+  };
+}
+
+function buildSupplierAdapterIssue({
+  recordKey,
+  supplierProductKey,
+  trustLane,
+  issueType,
+  productTitle,
+  url,
+  mappedCatalogName,
+  canonicalMaterialKey,
+  whyItMatters,
+  nextAction,
+  fieldKey = null,
+  fieldLabel = null,
+  supplierValue = null,
+  currentValue = null,
+  fetchTimestamp = null,
+}) {
+  const laneMeta = SUPPLIER_ADAPTER_TRUST_LANE_META[trustLane];
+  return {
+    reviewItemKey: `${recordKey}:${issueType}`,
+    supplierProductKey,
+    trustLane,
+    trustLaneLabel: laneMeta?.label || trustLane,
+    issueType,
+    issueLabel: SUPPLIER_ADAPTER_ISSUE_LABELS[issueType] || issueType,
+    productTitle: productTitle || null,
+    url: url || null,
+    mappedCatalogName: mappedCatalogName || null,
+    canonicalMaterialKey: canonicalMaterialKey || null,
+    whyItMatters,
+    nextAction,
+    fieldKey,
+    fieldLabel,
+    supplierValue,
+    currentValue,
+    fetchTimestamp: fetchTimestamp || null,
+    canStageToEvidence: Boolean(fieldKey),
+  };
+}
+
+export function parseSupplierAdapterPackLines(value = "") {
+  const lines = String(value || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const pricePoints = [];
+  const errors = [];
+
+  lines.forEach((line, index) => {
+    let parsedPoint = null;
+
+    if (line.startsWith("[")) {
+      try {
+        parsedPoint = normalizeSupplierAdapterPricePoint(JSON.parse(line));
+      } catch {
+        parsedPoint = null;
+      }
+    } else {
+      const sanitized = line.replace(/[|,]+/g, " ");
+      const match = sanitized.match(
+        /^(\d+(?:\.\d+)?)\s*(g|ml|mL)\s+(\d+(?:\.\d+)?)(?:\s+(.+))?$/i
+      );
+      if (match) {
+        parsedPoint = normalizeSupplierAdapterPricePoint([
+          Number(match[1]),
+          match[2],
+          Number(match[3]),
+          match[4] || null,
+        ]);
+      }
+    }
+
+    if (!parsedPoint) {
+      errors.push(
+        `Line ${index + 1} could not be parsed. Use "15 g 12.5" or [15,"g",12.5,null].`
+      );
+      return;
+    }
+
+    pricePoints.push(parsedPoint);
+  });
+
+  return {
+    pricePoints: normalizeSupplierAdapterPricePoints(pricePoints),
+    errors,
+  };
+}
+
+function normalizeLocalDraftNumericField(value) {
+  if (value == null || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+export function buildLocalDraftIngredientArtifacts({
+  materialName = "",
+  supplierName = "",
+  supplierSourceNote = "",
+  url = "",
+  pricePoints = [],
+  availabilityStatus = "unknown",
+  ifraPercent = null,
+  sdsUrl = "",
+  inci = "",
+  cas = "",
+  note = "",
+  materialType = "",
+  scentSummary = "",
+  scentDescription = "",
+  technicalNotes = "",
+  confidence = "medium",
+  MW = null,
+  xLogP = null,
+  TPSA = null,
+  VP = null,
+  ODT = null,
+  createdAt = null,
+  updatedAt = null,
+} = {}) {
+  const normalizedName = String(materialName || "").trim();
+  if (!normalizedName) return null;
+
+  const normalizedSupplierName = String(supplierName || "").trim() || null;
+  const supplierDisplayName = normalizedSupplierName || "Manual Trusted Entry";
+  const normalizedSupplierSourceNote =
+    String(supplierSourceNote || "").trim() || null;
+  const normalizedUrl = normalizeSupplierAdapterUrl(url);
+  const normalizedSdsUrl = normalizeSupplierAdapterUrl(sdsUrl);
+  const normalizedPricePoints = normalizeSupplierAdapterPricePoints(pricePoints);
+  const normalizedAvailability =
+    normalizeSupplierAdapterAvailability(availabilityStatus);
+  const normalizedIfraPercent = normalizeSupplierAdapterPercent(ifraPercent);
+  const normalizedInci = String(inci || "").trim() || null;
+  const normalizedCas = String(cas || "").trim() || null;
+  const normalizedNote = String(note || "").trim() || null;
+  const normalizedMaterialType = String(materialType || "").trim() || null;
+  const normalizedScentSummary = String(scentSummary || "").trim() || null;
+  const normalizedScentDescription =
+    String(scentDescription || "").trim() || null;
+  const normalizedTechnicalNotes =
+    String(technicalNotes || "").trim() || null;
+  const normalizedConfidence = ["low", "medium", "high"].includes(
+    String(confidence || "").trim().toLowerCase()
+  )
+    ? String(confidence || "").trim().toLowerCase()
+    : "medium";
+  const safeCreatedAt =
+    String(createdAt || "").trim() || new Date().toISOString();
+  const safeUpdatedAt =
+    String(updatedAt || "").trim() || new Date().toISOString();
+  const localDraftDescription =
+    normalizedScentDescription ||
+    normalizedTechnicalNotes ||
+    normalizedScentSummary ||
+    "Browser-local manual trusted draft ingredient. Review and promotion are still pending.";
+  const hasSupplierLayerFacts =
+    Boolean(normalizedSupplierName) ||
+    Boolean(normalizedUrl) ||
+    normalizedPricePoints.length > 0 ||
+    normalizedAvailability !== "unknown" ||
+    normalizedIfraPercent != null ||
+    Boolean(normalizedSdsUrl);
+
+  const localDraftRecord = {
+    materialName: normalizedName,
+    supplierName: normalizedSupplierName,
+    supplierDisplayName,
+    supplierSourceNote: normalizedSupplierSourceNote,
+    url: normalizedUrl,
+    pricePoints: normalizedPricePoints,
+    availabilityStatus: normalizedAvailability,
+    availabilityStatusLabel:
+      SUPPLIER_ADAPTER_AVAILABILITY_LABELS[normalizedAvailability] || "Unknown",
+    ifraPercent: normalizedIfraPercent,
+    sdsUrl: normalizedSdsUrl,
+    inci: normalizedInci,
+    cas: normalizedCas,
+    note: normalizedNote,
+    materialType: normalizedMaterialType,
+    scentSummary: normalizedScentSummary,
+    scentDescription: normalizedScentDescription,
+    technicalNotes: normalizedTechnicalNotes,
+    confidence: normalizedConfidence,
+    MW: normalizeLocalDraftNumericField(MW),
+    xLogP: normalizeLocalDraftNumericField(xLogP),
+    TPSA: normalizeLocalDraftNumericField(TPSA),
+    VP: normalizeLocalDraftNumericField(VP),
+    ODT: normalizeLocalDraftNumericField(ODT),
+    createdAt: safeCreatedAt,
+    updatedAt: safeUpdatedAt,
+    localDraftStatus: "manual_trusted_entry",
+    localDraftStatusLabel: "Local Draft / Manual Trusted Entry",
+    localDraftReviewStatus: "review_pending",
+    localOnly: true,
+    reviewPending: true,
+  };
+
+  const dbRecord = {
+    MW: localDraftRecord.MW,
+    xLogP: localDraftRecord.xLogP,
+    TPSA: localDraftRecord.TPSA,
+    HBD: null,
+    HBA: null,
+    VP: localDraftRecord.VP,
+    ODT: localDraftRecord.ODT,
+    n: null,
+    note: normalizedNote,
+    type: normalizedMaterialType,
+    ifra: false,
+    supplier: supplierDisplayName,
+    char: normalizedScentSummary || normalizedScentDescription || null,
+    rep: null,
+    densityGmL: null,
+    cas: normalizedCas,
+    inci: normalizedInci,
+    scentClass: normalizedMaterialType || "Local Draft",
+    scentSummary: normalizedScentSummary,
+    scentDesc: localDraftDescription,
+    ifraLimit: null,
+    densityGmL2: null,
+    dilutionFactor: null,
+    isUVCB: false,
+    descriptorTags: null,
+    odorThreshold_ngL: null,
+    vpConfidence: null,
+    isIsomerMix: false,
+    ifraLimits: null,
+    entryKind: "local_draft",
+    canonicalMaterialKey: null,
+    linkedDuplicateOfCatalogName: null,
+    supplierLinkMetadata: null,
+    normalizationEntry: {
+      entryKind: "local_draft",
+      source: "browser_local_manual_trusted",
+      reviewStatus: "review_pending",
+    },
+    isLocalDraft: true,
+    localDraftStatus: localDraftRecord.localDraftStatus,
+    localDraftStatusLabel: localDraftRecord.localDraftStatusLabel,
+    localDraftReviewStatus: localDraftRecord.localDraftReviewStatus,
+    localDraftConfidence: normalizedConfidence,
+    localDraftSourceUrl: normalizedUrl,
+    localDraftSdsUrl: normalizedSdsUrl,
+    localDraftAvailabilityStatus: normalizedAvailability,
+    localDraftAvailabilityLabel:
+      SUPPLIER_ADAPTER_AVAILABILITY_LABELS[normalizedAvailability] || "Unknown",
+    localDraftIfraPercent: normalizedIfraPercent,
+    localDraftPricePoints: normalizedPricePoints,
+    localDraftSupplierName: normalizedSupplierName,
+    localDraftSupplierDisplayName: supplierDisplayName,
+    localDraftSourceNote: normalizedSupplierSourceNote,
+    localDraftTechnicalNotes: normalizedTechnicalNotes,
+    localDraftCreatedAt: safeCreatedAt,
+    localDraftUpdatedAt: safeUpdatedAt,
+    localDraftLocalOnly: true,
+    localDraftReviewPending: true,
+  };
+
+  return {
+    name: normalizedName,
+    localDraftRecord,
+    dbRecord,
+    pricingBySupplier: hasSupplierLayerFacts
+      ? {
+          [supplierDisplayName]: {
+            url: normalizedUrl || "",
+            S: normalizedPricePoints,
+            availabilityStatus: normalizedAvailability,
+            ifraPercent: normalizedIfraPercent,
+            sdsUrl: normalizedSdsUrl || "",
+            sourceType: "local_draft_manual_trusted",
+          },
+        }
+      : {},
+  };
+}
+
+export function buildSupplierAdapterConflictReviewCandidate(reviewItem = {}) {
+  if (!reviewItem?.canStageToEvidence || !reviewItem?.reviewItemKey) return null;
+
+  const sourceOrigin = reviewItem.sourceOrigin || "supplier_page_conflict";
+  const evidenceCandidateKeyPrefix =
+    reviewItem.evidenceCandidateKeyPrefix || "supplier_page_conflict";
+  const supplierLabel =
+    reviewItem.supplierDisplayName ||
+    reviewItem.supplier ||
+    "Fraterworks supplier adapter";
+  const sourceSummary =
+    reviewItem.sourceSummary ||
+    "Supplier-page conflict staged from the Fraterworks supplier adapter.";
+  const materialName =
+    reviewItem.mappedCatalogName || reviewItem.productTitle || "Supplier page review";
+  const candidateValue =
+    reviewItem.supplierValue == null
+      ? reviewItem.issueLabel
+      : Array.isArray(reviewItem.supplierValue)
+      ? reviewItem.supplierValue.join(" · ")
+      : String(reviewItem.supplierValue);
+
+  return {
+    evidenceCandidateKey: `${evidenceCandidateKeyPrefix}:${normalizeSupplierAdapterRecordKeyPart(
+      reviewItem.reviewItemKey
+    )}`,
+    canonicalMaterialKey: reviewItem.canonicalMaterialKey || null,
+    materialName,
+    relatedCatalogNames: [materialName],
+    sourceDocumentKey: null,
+    sourceType: sourceOrigin,
+    supplier: supplierLabel,
+    candidateFieldName: reviewItem.fieldKey,
+    fieldLabel: reviewItem.fieldLabel || reviewItem.issueLabel,
+    candidateValue,
+    displayValue: candidateValue,
+    confidence: "medium",
+    confidenceLabel: reviewItem.trustLaneLabel || "Manual-review conflict",
+    notes: [
+      reviewItem.whyItMatters,
+      reviewItem.nextAction,
+      reviewItem.url ? `Source URL: ${reviewItem.url}` : null,
+      reviewItem.fetchTimestamp
+        ? `Fetched at ${reviewItem.fetchTimestamp}.`
+        : null,
+      reviewItem.currentValue != null
+        ? `Current app value: ${reviewItem.currentValue}`
+        : null,
+    ].filter(Boolean),
+    applyPath: "manual_review",
+    applyPathLabel: "Manual review",
+    applyPathClassification: "manual_review_conflict",
+    applyPathClassificationLabel: "Manual-review conflict",
+    proposalSupportStatus: "conflicting",
+    proposalSupportStatusLabel: "Conflict surfaced",
+    sourceOrigin,
+    sourceContextNote:
+      reviewItem.whyItMatters ||
+      "Supplier page fact conflicts with stronger current app truth.",
+    sourceSummary,
+    currentWeakness: reviewItem.whyItMatters || null,
+    recommendedAction: reviewItem.nextAction || null,
+    conflictNote:
+      reviewItem.currentValue != null && reviewItem.supplierValue != null
+        ? `${reviewItem.currentValue} vs ${reviewItem.supplierValue}`
+        : null,
+    guidance: reviewItem.nextAction || reviewItem.whyItMatters || null,
+    sourceReviewStatus: "pending_review",
+  };
+}
+
+export function buildFraterworksSupplierAdapterResult({
+  supplierProductKey = null,
+  productTitle = "",
+  url = "",
+  pricePoints = [],
+  availabilityStatus = "unknown",
+  ifraPercent = null,
+  sdsUrl = "",
+  casShown = "",
+  inci = "",
+  productDescription = "",
+  scentSummary = "",
+  dilutionOrCarrier = "",
+  vendorName = "",
+  fetchTimestamp = null,
+  sourceNote = "",
+  registryRecord = null,
+  mappedRecord = null,
+  ifraRecord = null,
+  relatedSupplierProducts = [],
+} = {}) {
+  const normalizedUrl = normalizeSupplierAdapterUrl(url);
+  const normalizedSdsUrl = normalizeSupplierAdapterUrl(sdsUrl);
+  const normalizedProductTitle =
+    String(productTitle || registryRecord?.productTitle || "").trim() || null;
+  const normalizedCasSupport = parseMaterialCasSupport(casShown);
+  const normalizedInci = String(inci || "").trim() || null;
+  const normalizedDescription = String(productDescription || "").trim() || null;
+  const normalizedScentSummary = String(scentSummary || "").trim() || null;
+  const normalizedDilutionOrCarrier =
+    String(dilutionOrCarrier || "").trim() || null;
+  const normalizedVendorName = String(vendorName || "").trim() || null;
+  const normalizedSourceNote = String(sourceNote || "").trim() || null;
+  const normalizedPricePoints = normalizeSupplierAdapterPricePoints(pricePoints);
+  const normalizedAvailability =
+    normalizeSupplierAdapterAvailability(availabilityStatus);
+  const normalizedIfraPercent = normalizeSupplierAdapterPercent(ifraPercent);
+  const resolvedSupplierProductKey =
+    String(supplierProductKey || "").trim() ||
+    buildSupplierProductKey({
+      supplierKey: "fraterworks",
+      url: normalizedUrl,
+    }) ||
+    `fraterworks:${normalizeSupplierAdapterRecordKeyPart(
+      normalizedProductTitle || normalizedUrl || "unknown"
+    )}`;
+  const mappedCatalogName = registryRecord?.mappedCatalogName || null;
+  const canonicalMaterialKey = registryRecord?.mappedCanonicalMaterialKey || null;
+  const safeFetchTimestamp =
+    String(fetchTimestamp || "").trim() || new Date().toISOString();
+  const recordKey = `supplier_layer:${normalizeSupplierAdapterRecordKeyPart(
+    resolvedSupplierProductKey
+  )}`;
+  const pageSignals = buildSupplierAdapterVariantSignals(
+    normalizedProductTitle,
+    normalizedDescription,
+    normalizedScentSummary,
+    normalizedDilutionOrCarrier,
+    normalizedInci
+  );
+  const mappedSignals = buildSupplierAdapterVariantSignals(
+    mappedCatalogName,
+    mappedRecord?.type,
+    mappedRecord?.scentSummary,
+    mappedRecord?.scentDesc
+  );
+  const reviewItems = [];
+
+  if (registryRecord && !mappedCatalogName) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "mapping_unresolved",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The supplier page fact is trusted, but the canonical material mapping is still unresolved.",
+        nextAction:
+          "Batch-review the mapping before this supplier page can affect live ingredient ownership or pricing.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    pageSignals.isOrganic !== mappedSignals.isOrganic &&
+    (pageSignals.isOrganic || mappedSignals.isOrganic)
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "organic_variant_mismatch",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The supplier page signals a different organic / non-organic variant than the current mapped catalog row.",
+        nextAction:
+          "Confirm whether this page belongs to a separate supplier product row or needs a variant-specific mapping.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    pageSignals.originTokens.length > 0 &&
+    mappedSignals.originTokens.length > 0 &&
+    pageSignals.originTokens.join("|") !== mappedSignals.originTokens.join("|")
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "origin_variant_mismatch",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "Origin or regional variant tokens on the supplier page do not match the current mapped row.",
+        nextAction:
+          "Review whether this should remain a separate supplier variant instead of merging into the current mapped row.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    (pageSignals.dilutionPercent !== mappedSignals.dilutionPercent ||
+      pageSignals.carrier !== mappedSignals.carrier) &&
+    (pageSignals.dilutionPercent != null ||
+      mappedSignals.dilutionPercent != null ||
+      pageSignals.carrier ||
+      mappedSignals.carrier)
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "dilution_ambiguity",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The supplier page suggests a different dilution or carrier context than the current mapped row.",
+        nextAction:
+          "Review whether this is a distinct diluted stock, carrier variant, or merge risk before applying live ownership.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    pageSignals.kinds.length > 0 &&
+    mappedSignals.kinds.length > 0 &&
+    pageSignals.kinds.join("|") !== mappedSignals.kinds.join("|")
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "variant_confusion",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The supplier page looks like a different material form than the currently mapped row.",
+        nextAction:
+          "Review the variant mapping before treating this supplier page as the same live row.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    registryRecord &&
+    relatedSupplierProducts.length > 1 &&
+    normalizeSupplierAdapterText(normalizedProductTitle) !==
+      normalizeSupplierAdapterText(registryRecord?.productTitle) &&
+    normalizeSupplierAdapterText(normalizedProductTitle) !==
+      normalizeSupplierAdapterText(mappedCatalogName)
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "batch_review_mapping",
+        issueType: "merge_review",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "There are already multiple supplier variants for this canonical family, so merging this page-native record without review is risky.",
+        nextAction:
+          "Batch-review whether this should remain a separate supplier variant or be merged with an existing supplier row.",
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    normalizedCasSupport.hasValue &&
+    mappedRecord?.cas &&
+    !compareMaterialCasSupportValues(
+      normalizedCasSupport.displayValue,
+      mappedRecord.cas
+    )
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "manual_review_conflict",
+        issueType: "canonical_conflict_cas",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The supplier page CAS does not match the current mapped app record, so identity support could be distorted downstream.",
+        nextAction:
+          "Keep the supplier-page CAS in the supplier layer and route the identity conflict into manual review before changing live truth.",
+        fieldKey: "cas",
+        fieldLabel: "CAS shown on page",
+        supplierValue: normalizedCasSupport.displayValue,
+        currentValue:
+          formatMaterialCasSupportValue(mappedRecord.cas) || mappedRecord.cas,
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  if (
+    mappedCatalogName &&
+    normalizedInci &&
+    mappedRecord?.inci &&
+    normalizeSupplierAdapterText(normalizedInci) !==
+      normalizeSupplierAdapterText(mappedRecord.inci)
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "manual_review_conflict",
+        issueType: "canonical_conflict_inci",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The Fraterworks page INCI does not match the current mapped app record, so compliance and identity advice could be distorted.",
+        nextAction:
+          "Stage this into manual evidence review before changing live identity truth.",
+        fieldKey: "inci",
+        fieldLabel: "INCI",
+        supplierValue: normalizedInci,
+        currentValue: mappedRecord.inci,
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  const currentCat4Limit = normalizeSupplierAdapterPercent(ifraRecord?.limits?.cat4);
+  if (
+    mappedCatalogName &&
+    normalizedIfraPercent != null &&
+    currentCat4Limit != null &&
+    Math.abs(normalizedIfraPercent - currentCat4Limit) > 0.05
+  ) {
+    reviewItems.push(
+      buildSupplierAdapterIssue({
+        recordKey,
+        supplierProductKey: resolvedSupplierProductKey,
+        trustLane: "manual_review_conflict",
+        issueType: "canonical_conflict_ifra",
+        productTitle: normalizedProductTitle,
+        url: normalizedUrl,
+        mappedCatalogName,
+        canonicalMaterialKey,
+        whyItMatters:
+          "The page-native IFRA percentage does not match the current mapped restriction support, so formula compliance guidance may be distorted.",
+        nextAction:
+          "Keep the supplier-page IFRA value in the supplier layer, but send the restriction conflict through manual review before changing canonical support.",
+        fieldKey: "ifra",
+        fieldLabel: "IFRA % shown on page",
+        supplierValue: `${normalizedIfraPercent}%`,
+        currentValue: `${currentCat4Limit}%`,
+        fetchTimestamp: safeFetchTimestamp,
+      })
+    );
+  }
+
+  const hasManualConflict = reviewItems.some(
+    (item) => item.trustLane === "manual_review_conflict"
+  );
+  const hasBatchMappingIssue = reviewItems.some(
+    (item) => item.trustLane === "batch_review_mapping"
+  );
+  const trustLane = hasManualConflict
+    ? "manual_review_conflict"
+    : hasBatchMappingIssue
+    ? "batch_review_mapping"
+    : "auto_apply_safe";
+  const laneMeta = SUPPLIER_ADAPTER_TRUST_LANE_META[trustLane];
+  const autoAppliedFieldKeys = [
+    normalizedProductTitle ? "productTitle" : null,
+    normalizedUrl ? "url" : null,
+    normalizedPricePoints.length > 0 ? "pricePoints" : null,
+    normalizedAvailability !== "unknown" ? "availabilityStatus" : null,
+    normalizedIfraPercent != null ? "ifraPercent" : null,
+    normalizedSdsUrl ? "sdsUrl" : null,
+    normalizedCasSupport.hasValue ? "casShown" : null,
+    normalizedInci ? "inci" : null,
+    normalizedDescription ? "productDescription" : null,
+  ].filter(Boolean);
+  const canAutoApplyToPricing = Boolean(mappedCatalogName) && !hasBatchMappingIssue;
+  const supplierLayerRecord = {
+    recordKey,
+    supplierKey: "fraterworks",
+    supplierDisplayName: "Fraterworks",
+    supplierProductKey: resolvedSupplierProductKey,
+    trustLane,
+    trustLaneLabel: laneMeta?.label || trustLane,
+    trustLaneDescription: laneMeta?.description || null,
+    mappedCatalogName,
+    canonicalMaterialKey,
+    fetchedAt: safeFetchTimestamp,
+    sourceUrl: normalizedUrl,
+    sourceNote: normalizedSourceNote,
+    pageFacts: {
+      productTitle: normalizedProductTitle,
+      url: normalizedUrl,
+      pricePoints: normalizedPricePoints,
+      availabilityStatus: normalizedAvailability,
+      availabilityStatusLabel:
+        SUPPLIER_ADAPTER_AVAILABILITY_LABELS[normalizedAvailability] || "Unknown",
+      ifraPercent: normalizedIfraPercent,
+      sdsUrl: normalizedSdsUrl,
+      casShown: normalizedCasSupport.displayValue,
+      casState: normalizedCasSupport.state,
+      casValues: normalizedCasSupport.values,
+      inci: normalizedInci,
+      productDescription: normalizedDescription,
+      scentSummary: normalizedScentSummary,
+      dilutionOrCarrier: normalizedDilutionOrCarrier,
+      vendorName: normalizedVendorName,
+    },
+    autoAppliedFieldKeys,
+    autoAppliedFieldLabels: autoAppliedFieldKeys.map(
+      (fieldKey) => SUPPLIER_ADAPTER_FIELD_LABELS[fieldKey] || fieldKey
+    ),
+    canAutoApplyToPricing,
+    pricingAutoApplyCatalogName: canAutoApplyToPricing ? mappedCatalogName : null,
+    reviewItems,
+    notes: [
+      autoAppliedFieldKeys.length > 0
+        ? `${autoAppliedFieldKeys.length} page-native supplier field${
+            autoAppliedFieldKeys.length === 1 ? "" : "s"
+          } were captured from a trusted first-party page.`
+        : "No supplier page-native fields were captured yet.",
+      canAutoApplyToPricing
+        ? `Known mapping allows the live Fraterworks supplier row for "${mappedCatalogName}" to refresh safely.`
+        : "Supplier-layer facts are preserved without touching live ingredient ownership or pricing.",
+      reviewItems.length > 0
+        ? `${reviewItems.length} review issue${
+            reviewItems.length === 1 ? "" : "s"
+          } still need human review.`
+        : "No mapping, merge, or canonical conflicts were surfaced.",
+    ].filter(Boolean),
+  };
+
+  return {
+    trustLane,
+    trustLaneLabel: laneMeta?.label || trustLane,
+    supplierLayerRecord,
+    reviewItems,
+    autoAppliedFieldKeys,
+    canAutoApplyToPricing,
+    pricingPatch: canAutoApplyToPricing
+      ? {
+          catalogName: mappedCatalogName,
+          supplierName: "Fraterworks",
+          url: normalizedUrl,
+          pricePoints: normalizedPricePoints,
+          availabilityStatus: normalizedAvailability,
+          ifraPercent: normalizedIfraPercent,
+          sdsUrl: normalizedSdsUrl,
+          sourceType: "fraterworks_supplier_adapter",
+        }
+      : null,
+  };
+}
+
+export function buildSupplierAdapterExportPayload(records = []) {
+  const normalizedRecords = (Array.isArray(records) ? records : [])
+    .filter((record) => record?.recordKey)
+    .sort((a, b) => (b.fetchedAt || "").localeCompare(a.fetchedAt || ""));
+  const reviewItems = normalizedRecords.flatMap((record) =>
+    Array.isArray(record?.reviewItems) ? record.reviewItems : []
+  );
+
+  return {
+    metadata: {
+      version: 1,
+      source: "browser_local_supplier_adapter",
+      exportedAt: new Date().toISOString(),
+      supplierLayerRecordCount: normalizedRecords.length,
+      reviewItemCount: reviewItems.length,
+      note:
+        "Supplier-layer page facts only. Canonical app truth still requires explicit review and promotion.",
+    },
+    summary: {
+      autoApplySafeCount: normalizedRecords.filter(
+        (record) => record.trustLane === "auto_apply_safe"
+      ).length,
+      batchReviewMappingCount: normalizedRecords.filter(
+        (record) => record.trustLane === "batch_review_mapping"
+      ).length,
+      manualReviewConflictCount: normalizedRecords.filter(
+        (record) => record.trustLane === "manual_review_conflict"
+      ).length,
+    },
+    supplierLayerRecords: normalizedRecords,
+    reviewItems,
+  };
+}
+
+function getFormulaCriticalIssueMeta(issueKey = "partial_truth") {
+  return (
+    FORMULA_CRITICAL_ISSUE_META[issueKey] ||
+    FORMULA_CRITICAL_ISSUE_META.partial_truth
+  );
+}
+
+function formatFormulaCriticalUsageLabel(usagePercent = 0) {
+  const normalized = toFiniteNumber(usagePercent);
+  return `${normalized >= 10 ? normalized.toFixed(1) : normalized.toFixed(2)}% of the formula`;
+}
+
+function buildFormulaCriticalImpactTags({
+  priorityRow = {},
+  target = {},
+  missingCatalogRecord = false,
+} = {}) {
+  const tags = [];
+  if (
+    missingCatalogRecord ||
+    priorityRow.pricingStatus !== "confirmed" ||
+    toFiniteNumber(priorityRow.pricingGapCount) > 0 ||
+    toFiniteNumber(priorityRow.uncertainPricingCount) > 0
+  ) {
+    tags.push("Cost");
+  }
+  if (
+    missingCatalogRecord ||
+    priorityRow.technicalStatus !== "confirmed" ||
+    target.manualFollowUpRows.some((row) => row.fieldKey === "dilution_carrier")
+  ) {
+    tags.push("Performance");
+  }
+  if (
+    missingCatalogRecord ||
+    priorityRow.ifraStatus !== "confirmed" ||
+    priorityRow.regulatoryStatus !== "confirmed" ||
+    priorityRow.identityStatus !== "confirmed"
+  ) {
+    tags.push("Compliance");
+  }
+  if (
+    missingCatalogRecord ||
+    priorityRow.truthLevel !== "strong" ||
+    priorityRow.evidenceStatus !== "confirmed" ||
+    target.conflictSummary.length > 0
+  ) {
+    tags.push("Critique");
+  }
+  return Array.from(new Set(tags));
+}
+
+function getFormulaCriticalIssueKey({
+  priorityRow = {},
+  target = {},
+  missingCatalogRecord = false,
+  impactTags = [],
+} = {}) {
+  if (missingCatalogRecord) return "missing_catalog_ingredient";
+  if (target.conflictSummary.length > 0) return "conflicting_staged_truth";
+  if (impactTags.includes("Cost") && toFiniteNumber(priorityRow.totalLineCost) > 0) {
+    return "pricing_distortion";
+  }
+  if (impactTags.includes("Performance")) return "technical_distortion";
+  if (impactTags.includes("Compliance")) return "compliance_distortion";
+  if (priorityRow.identityStatus !== "confirmed") return "identity_distortion";
+  if (priorityRow.evidenceStatus !== "confirmed") return "evidence_distortion";
+  return "partial_truth";
+}
+
+function buildFormulaCriticalWhyItMatters({
+  priorityRow = {},
+  target = {},
+  impactTags = [],
+  contextKind = "formula",
+  totalCost = 0,
+}) {
+  const parts = [];
+  if (toFiniteNumber(priorityRow.usagePercent) > 0) {
+    parts.push(formatFormulaCriticalUsageLabel(priorityRow.usagePercent));
+  }
+  const costSharePercent =
+    toFiniteNumber(totalCost) > 0 && toFiniteNumber(priorityRow.totalLineCost) > 0
+      ? (toFiniteNumber(priorityRow.totalLineCost) / totalCost) * 100
+      : toFiniteNumber(priorityRow.lineCostSharePercent);
+  if (costSharePercent > 0.9) {
+    parts.push(`~${Math.max(1, Math.round(costSharePercent))}% of current basket cost`);
+  }
+  if (impactTags.length > 0) {
+    parts.push(
+      `${formatHumanList(
+        impactTags.map((tag) => `${tag.toLowerCase()} output`),
+        impactTags.length
+      )} can drift`
+    );
+  }
+  if (target.conflictSummary.length > 0) {
+    parts.push(
+      `${target.conflictSummary.length} conflicting staged field${
+        target.conflictSummary.length === 1 ? "" : "s"
+      } already surfaced`
+    );
+  }
+  if (parts.length === 0) {
+    parts.push(
+      contextKind === "build"
+        ? "Current build guidance can still shift if this ingredient stays weak."
+        : "Current formula guidance can still shift if this ingredient stays weak."
+    );
+  }
+  return parts.join(" · ");
+}
+
+export function buildFormulaCriticalDataAudit({
+  contextLabel = "Current Formula",
+  contextKind = "formula",
+  items = [],
+  basket = null,
+  evidenceCandidates = [],
+  intakeTargets = [],
+  materialContextByName = {},
+  critiqueReport = null,
+  performanceModel = null,
+  finishedProductGuidance = null,
+} = {}) {
+  const activeItems = Array.isArray(items)
+    ? items
+        .map((item) => ({
+          ...item,
+          name: String(item?.name || "").trim(),
+          g: toFiniteNumber(item?.g),
+        }))
+        .filter((item) => item.name && item.g > 0)
+    : [];
+
+  if (activeItems.length === 0) {
+    return {
+      contextLabel,
+      contextKind,
+      rows: [],
+      targets: [],
+      availableMaterialNames: [],
+      headline: `No active ${contextKind === "build" ? "build" : "formula"} ingredients are loaded for finalization yet.`,
+      guardrail:
+        "Load or build a formula first, then use this panel to stage weak ingredient truth into the existing review queue.",
+      summary: {
+        ingredientCount: 0,
+        weakMaterialCount: 0,
+        stagedCandidateCount: 0,
+        promotionSafeProposalCount: 0,
+        manualFollowUpCount: 0,
+        conflictCount: 0,
+        costDistortionCount: 0,
+        performanceDistortionCount: 0,
+        complianceDistortionCount: 0,
+        critiqueDistortionCount: 0,
+        missingCatalogIngredientCount: 0,
+        topPriorityMaterialName: null,
+      },
+    };
+  }
+
+  const combinedItems = Array.from(
+    activeItems.reduce((acc, item) => {
+      const existing = acc.get(item.name);
+      if (existing) {
+        existing.g += item.g;
+      } else {
+        acc.set(item.name, {
+          name: item.name,
+          g: item.g,
+          note: item.note || null,
+        });
+      }
+      return acc;
+    }, new Map()).values()
+  );
+
+  const totalG = combinedItems.reduce((sum, item) => sum + item.g, 0) || 1;
+  const totalCost = toFiniteNumber(basket?.totalCost);
+  const basketLineByName = new Map(
+    (basket?.lines || []).map((line) => [line.ingredientName, line])
+  );
+
+  const prioritization = buildMaterialTruthGapPrioritization(
+    combinedItems.map((item) => {
+      const materialContext = materialContextByName[item.name] || {};
+      const truthReport = materialContext.truthReport || null;
+      const basketLine = basketLineByName.get(item.name) || null;
+      const missingCatalogRecord = !materialContext.dbRecord && !truthReport;
+      const pricingStatus =
+        truthReport?.dimensionByKey?.pricing?.status ||
+        (basketLine?.status === "missing" ? "missing" : "uncertain");
+      const technicalStatus =
+        truthReport?.dimensionByKey?.technical?.status ||
+        (missingCatalogRecord ? "missing" : "uncertain");
+      const ifraStatus =
+        truthReport?.dimensionByKey?.ifra?.status ||
+        (missingCatalogRecord ? "missing" : "uncertain");
+      const evidenceStatus =
+        truthReport?.dimensionByKey?.evidence?.status ||
+        (missingCatalogRecord ? "missing" : "uncertain");
+      const identityStatus =
+        truthReport?.dimensionByKey?.identity?.status ||
+        (missingCatalogRecord ? "missing" : "uncertain");
+      const regulatoryStatus =
+        truthReport?.dimensionByKey?.regulatory?.status ||
+        (missingCatalogRecord ? "missing" : "uncertain");
+      const pricingGapCount =
+        !basketLine ||
+        basketLine.status === "missing" ||
+        basketLine.mappingConfidence === "missing" ||
+        pricingStatus === "missing"
+          ? 1
+          : 0;
+      const uncertainPricingCount =
+        !pricingGapCount &&
+        (basketLine?.status === "uncertain" ||
+          basketLine?.mappingConfidence === "uncertain" ||
+          pricingStatus === "uncertain" ||
+          pricingStatus === "inferred")
+          ? 1
+          : 0;
+      const usagePercent = (item.g / totalG) * 100;
+      const lineCost = toFiniteNumber(basketLine?.lineCost);
+      const lineCostSharePercent =
+        totalCost > 0 ? (lineCost / totalCost) * 100 : 0;
+      return {
+        name: item.name,
+        canonicalMaterialKey: truthReport?.canonicalMaterialKey || null,
+        truthLevel: truthReport?.level || (missingCatalogRecord ? "sparse" : "partial"),
+        supportLabel:
+          truthReport?.supportLabel ||
+          (missingCatalogRecord
+            ? "0% resolved · 0% confirmed"
+            : "Waiting on stronger ingredient truth"),
+        breakdownLabel:
+          truthReport?.breakdownLabel ||
+          (missingCatalogRecord
+            ? "Missing from the live catalog"
+            : "Current ingredient truth is still partial"),
+        primaryGap:
+          truthReport?.primaryGap ||
+          (missingCatalogRecord
+            ? "This ingredient is missing from the live app catalog."
+            : "Current ingredient truth is still partial."),
+        missingSignals: truthReport?.missingSignals || [],
+        uncertainSignals: truthReport?.uncertainSignals || [],
+        pricingStatus,
+        technicalStatus,
+        ifraStatus,
+        evidenceStatus,
+        identityStatus,
+        regulatoryStatus,
+        formulaCount: 1,
+        appearanceCount: 1,
+        totalLineCost: lineCost,
+        totalFormulaG: item.g,
+        founderCriticalCount: 0,
+        nearReadyCount: 0,
+        blockedFormulaCount: 0,
+        pricingGapCount,
+        uncertainPricingCount,
+        inventoryBlockerCount: 0,
+        supplierVariantCount: toFiniteNumber(materialContext.supplierVariantCount),
+        livePricingSupplierCount: toFiniteNumber(
+          materialContext.livePricingSupplierCount
+        ),
+        livePricingPackCount: toFiniteNumber(materialContext.livePricingPackCount),
+        sourceDocumentCount: toFiniteNumber(materialContext.sourceDocumentCount),
+        evidenceCandidateCount: toFiniteNumber(
+          materialContext.evidenceCandidateCount
+        ),
+        usagePercent,
+        lineCostSharePercent,
+      };
+    })
+  );
+
+  const workbench = buildMaterialBackfillWorkbench({
+    targetNames: combinedItems.map((item) => item.name),
+    prioritizationRows: prioritization.rows,
+    evidenceCandidates,
+    intakeTargets,
+    materialContextByName,
+  });
+
+  const rows = workbench.targets
+    .map((target) => {
+      const priorityRow = target.priorityRow || {};
+      const materialContext = materialContextByName[target.name] || {};
+      const truthReport = materialContext.truthReport || target.truthReport || null;
+      const missingCatalogRecord = !materialContext.dbRecord && !truthReport;
+      const impactTags = buildFormulaCriticalImpactTags({
+        priorityRow,
+        target,
+        missingCatalogRecord,
+      });
+      const issueTypeKey = getFormulaCriticalIssueKey({
+        priorityRow,
+        target,
+        missingCatalogRecord,
+        impactTags,
+      });
+      const issueMeta = getFormulaCriticalIssueMeta(issueTypeKey);
+      const drivers = buildImprovementQueueDrivers(target);
+      const nextAction =
+        buildImprovementQueueRecommendedAction(target, drivers) ||
+        issueMeta.action;
+      const currentWeakness =
+        buildImprovementQueueWeakness(target) || priorityRow.primaryGap;
+      const priorityScore = Number(
+        (
+          toFiniteNumber(priorityRow.priorityScore) +
+          Math.min(18, toFiniteNumber(priorityRow.usagePercent) * 0.8) +
+          Math.min(18, toFiniteNumber(priorityRow.lineCostSharePercent) * 0.6) +
+          impactTags.length * 6 +
+          target.conflictSummary.length * 5 +
+          target.stagedCandidates.length
+        ).toFixed(2)
+      );
+      const isWeak =
+        missingCatalogRecord ||
+        priorityRow.truthLevel !== "strong" ||
+        toFiniteNumber(priorityRow.pricingGapCount) > 0 ||
+        toFiniteNumber(priorityRow.uncertainPricingCount) > 0 ||
+        priorityRow.technicalStatus !== "confirmed" ||
+        priorityRow.ifraStatus !== "confirmed" ||
+        priorityRow.regulatoryStatus !== "confirmed" ||
+        priorityRow.identityStatus !== "confirmed" ||
+        priorityRow.evidenceStatus !== "confirmed" ||
+        target.conflictSummary.length > 0;
+
+      return {
+        name: target.name,
+        canonicalMaterialKey: target.canonicalMaterialKey || null,
+        truthLevel: priorityRow.truthLevel || truthReport?.level || "partial",
+        priorityScore,
+        issueType: issueMeta.label,
+        issueTypeKey,
+        usageG: toFiniteNumber(
+          combinedItems.find((item) => item.name === target.name)?.g
+        ),
+        usagePercent: toFiniteNumber(priorityRow.usagePercent),
+        lineCost: toFiniteNumber(priorityRow.totalLineCost),
+        lineCostSharePercent: toFiniteNumber(priorityRow.lineCostSharePercent),
+        currentWeakness,
+        nextAction,
+        whyItMatters: buildFormulaCriticalWhyItMatters({
+          priorityRow,
+          target,
+          impactTags,
+          contextKind,
+          totalCost,
+        }),
+        distortionTags: impactTags,
+        supportLabel: priorityRow.supportLabel || truthReport?.supportLabel || "—",
+        primaryGap: priorityRow.primaryGap || truthReport?.primaryGap || null,
+        stagedCandidateCount: target.stagedCandidates.length,
+        promotionSafeCount: toFiniteNumber(
+          target.proposalSummary?.promotionSafeCount
+        ),
+        manualFollowUpCount: target.manualFollowUpRows.length,
+        conflictCount: target.conflictSummary.length,
+        generatedProposalCount: target.generatedProposalRows.length,
+        missingCatalogRecord,
+        target,
+        canOpenDossier: Boolean(materialContext.dbRecord),
+        isWeak,
+      };
+    })
+    .filter((row) => row.isWeak)
+    .sort(
+      (a, b) => b.priorityScore - a.priorityScore || a.name.localeCompare(b.name)
+    );
+
+  const summary = {
+    ingredientCount: combinedItems.length,
+    weakMaterialCount: rows.length,
+    stagedCandidateCount: rows.reduce(
+      (sum, row) => sum + row.stagedCandidateCount,
+      0
+    ),
+    promotionSafeProposalCount: rows.reduce(
+      (sum, row) => sum + row.promotionSafeCount,
+      0
+    ),
+    manualFollowUpCount: rows.reduce(
+      (sum, row) => sum + row.manualFollowUpCount,
+      0
+    ),
+    conflictCount: rows.reduce((sum, row) => sum + row.conflictCount, 0),
+    costDistortionCount: rows.filter((row) => row.distortionTags.includes("Cost"))
+      .length,
+    performanceDistortionCount: rows.filter((row) =>
+      row.distortionTags.includes("Performance")
+    ).length,
+    complianceDistortionCount: rows.filter((row) =>
+      row.distortionTags.includes("Compliance")
+    ).length,
+    critiqueDistortionCount: rows.filter((row) =>
+      row.distortionTags.includes("Critique")
+    ).length,
+    missingCatalogIngredientCount: rows.filter((row) => row.missingCatalogRecord)
+      .length,
+    topPriorityMaterialName: rows[0]?.name || null,
+  };
+
+  const impactedOutputs = [
+    summary.critiqueDistortionCount > 0 ? "critique" : null,
+    summary.performanceDistortionCount > 0 ? "performance" : null,
+    summary.complianceDistortionCount > 0 ? "compliance" : null,
+    summary.costDistortionCount > 0 ? "cost" : null,
+  ].filter(Boolean);
+
+  const critiqueUncertainty = critiqueReport?.uncertainty?.[0] || null;
+  const performanceCaveat = performanceModel?.caveats?.[0] || null;
+  const finishedProductStatus = finishedProductGuidance?.overallStatus || null;
+  const finishedProductNeedsCaution = Boolean(
+    finishedProductStatus && finishedProductStatus.includes("missing")
+  );
+
+  const guardrail =
+    rows.length === 0
+      ? `No formula-critical weak ingredient records are currently standing out for ${contextLabel}.`
+      : summary.missingCatalogIngredientCount > 0
+      ? `Some ingredient records are missing from the live catalog, so ${formatHumanList(
+          impactedOutputs,
+          impactedOutputs.length
+        )} guidance should stay provisional until review artifacts are staged.`
+      : `Treat ${formatHumanList(
+          impactedOutputs,
+          impactedOutputs.length
+        )} advice as directional while ${rows[0].name} and the other weak materials stay unresolved.`;
+
+  const headline =
+    rows.length === 0
+      ? `${contextLabel} has no obvious formula-critical truth distortion flags right now.`
+      : `${rows.length} ingredient record${
+          rows.length === 1 ? "" : "s"
+        } in ${contextLabel} are currently most likely to distort advice.`;
+
+  const guardrailNotes = [
+    critiqueUncertainty,
+    performanceCaveat,
+    finishedProductNeedsCaution
+      ? "Finished-product guidance is already surfacing missing-data caution."
+      : null,
+  ].filter(Boolean);
+
+  return {
+    contextLabel,
+    contextKind,
+    rows,
+    targets: workbench.targets,
+    availableMaterialNames: combinedItems.map((item) => item.name),
+    headline,
+    guardrail,
+    guardrailNotes: Array.from(new Set(guardrailNotes)).slice(0, 3),
+    summary,
   };
 }
 
