@@ -1,10 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { buildIngredientTruthCompletenessReport } from "../src/lib/ifra_combined_package.js";
+import {
+  buildIngredientTruthCompletenessReport,
+  compareMaterialCasSupportValues,
+  formatMaterialCasSupportValue,
+} from "../src/lib/ifra_combined_package.js";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildFraterworksSupplierAdapterResult,
+  buildFormulaCriticalDataAudit,
+  buildFormulaFieldCorrectionReviewCandidate,
+  buildFormulaMissingMaterialReviewCandidates,
+  buildLocalDraftIngredientArtifacts,
   buildMaterialBackfillWorkbench,
+  buildSupplierAdapterConflictReviewCandidate,
+  buildSupplierAdapterExportPayload,
   buildGeneratedProposalReviewCandidate,
   buildMaterialImprovementQueue,
   buildFounderScenarioInputState,
@@ -15,6 +26,7 @@ import {
   buildSubstitutionReviewDraftFormula,
   createFounderLaunchScenarioRecord,
   normalizeFounderLaunchScenarioRecord,
+  parseSupplierAdapterPackLines,
 } from "../src/lib/perfumer_runtime_helpers.js";
 
 test("ingredient truth completeness surfaces canonical and supplier support from current registries", () => {
@@ -37,6 +49,203 @@ test("ingredient truth completeness flags sparse pricing and identity gaps when 
   assert.ok(["partial", "sparse"].includes(report.level));
   assert.ok(report.missingSignals.length >= 1);
   assert.equal(report.dimensionByKey.pricing.status, "missing");
+});
+
+test("ingredient truth completeness keeps local drafts honest even with strong manual fields", () => {
+  const artifacts = buildLocalDraftIngredientArtifacts({
+    materialName: "Local Draft Amber",
+    supplierName: "Owned Stock",
+    url: "https://example.com/local-draft-amber",
+    pricePoints: [[15, "g", 18.5, null]],
+    availabilityStatus: "in stock",
+    ifraPercent: "0.5",
+    sdsUrl: "https://example.com/local-draft-amber/sds.pdf",
+    inci: "Amber Accord",
+    cas: "111-22-3",
+    note: "base",
+    materialType: "SYNTH",
+    scentSummary: "Warm ambery material.",
+    technicalNotes: "Still awaiting canonical review.",
+  });
+
+  const report = buildIngredientTruthCompletenessReport("Local Draft Amber", {
+    record: artifacts.dbRecord,
+    livePricing: artifacts.pricingBySupplier,
+  });
+
+  assert.equal(report.isLocalDraft, true);
+  assert.equal(report.dimensionByKey.identity.status, "inferred");
+  assert.ok(
+    report.uncertainSignals.some((signal) =>
+      signal.includes("browser-local manual draft ingredient")
+    )
+  );
+});
+
+test("ingredient truth completeness treats direct manual identity edits as strong support when no conflict is active", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Manual Identity", {
+    record: {
+      cas: "123-45-6",
+      inci: "Manual Identity Ingredient",
+      type: "SYNTH",
+      note: "mid",
+      manualIdentityEdited: true,
+      manualIdentityNotes: "Updated directly from the dossier.",
+    },
+    livePricing: {},
+  });
+
+  assert.equal(report.dimensionByKey.identity.status, "confirmed");
+  assert.equal(report.dimensionByKey.regulatory.status, "confirmed");
+  assert.equal(report.dimensionByKey.evidence.status, "inferred");
+  assert.equal(report.hasStrongManualIdentitySupport, true);
+  assert.ok(
+    report.manualTrustedSignals.some((signal) =>
+      signal.includes("CAS / identity fields were manually verified")
+    )
+  );
+  assert.ok(
+    report.uncertainSignals.every(
+      (signal) => !signal.includes("CAS / identity fields include browser-local manual edits")
+    )
+  );
+});
+
+test("ingredient truth completeness treats direct technical edits as strong support when no conflict is active", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Manual Technical", {
+    record: {
+      MW: 180.2,
+      xLogP: 3.1,
+      VP: 0.002,
+      ODT: 12,
+      TPSA: 21.5,
+      odorThreshold_ngL: 8,
+      manualTechnicalEdited: true,
+      manualTechnicalNotes: "Manual trusted molecular estimate.",
+    },
+    livePricing: {},
+  });
+
+  assert.equal(report.dimensionByKey.technical.status, "confirmed");
+  assert.equal(report.dimensionByKey.evidence.status, "inferred");
+  assert.equal(report.hasStrongManualTechnicalSupport, true);
+  assert.ok(
+    report.manualTrustedSignals.some((signal) =>
+      signal.includes(
+        "Technical / molecular fields were manually verified"
+      )
+    )
+  );
+});
+
+test("material CAS comparison treats multi-CAS ordering and mixture intentionally", () => {
+  assert.equal(
+    compareMaterialCasSupportValues(
+      "8007-75-8 ; 89957-91-5",
+      "89957-91-5;8007-75-8"
+    ),
+    true
+  );
+  assert.equal(compareMaterialCasSupportValues("Mixture", "mixture"), true);
+  assert.equal(
+    formatMaterialCasSupportValue("89957-91-5; 8007-75-8"),
+    "8007-75-8 ; 89957-91-5"
+  );
+});
+
+test("ingredient truth completeness keeps explicit manual conflicts cautious", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Manual Identity Conflict", {
+    record: {
+      cas: "123-45-6",
+      inci: "Manual Identity Ingredient",
+      type: "SYNTH",
+      note: "mid",
+      manualIdentityEdited: true,
+      activeConflictFieldKeys: ["cas"],
+    },
+    livePricing: {},
+  });
+
+  assert.equal(report.dimensionByKey.identity.status, "uncertain");
+  assert.equal(report.dimensionByKey.regulatory.status, "uncertain");
+  assert.equal(report.hasActiveManualConflict, true);
+  assert.ok(
+    report.uncertainSignals.some((signal) =>
+      signal.includes("explicit active conflict")
+    )
+  );
+});
+
+test("ingredient truth completeness keeps manual trusted support strong even without formal evidence review", () => {
+  const report = buildIngredientTruthCompletenessReport(
+    "QA Manual Trusted Bergamot",
+    {
+      record: {
+        supplier: "Manual Supplier",
+        cas: "8007-75-8",
+        inci: "Citrus Aurantium Bergamia Peel Oil",
+        type: "EO",
+        note: "top",
+        rep: "Linalyl acetate",
+        scentClass: "citrus",
+        scentSummary: "Fresh bergamot peel.",
+        descriptorTags: ["citrus", "fresh"],
+        manualIdentityEdited: true,
+        manualSupplierEdited: true,
+        manualTechnicalEdited: true,
+        MW: 156.2,
+        xLogP: 3.2,
+        VP: 0.01,
+        ODT: 10,
+        TPSA: 21,
+        odorThreshold_ngL: 2,
+      },
+      livePricing: {
+        "Manual Supplier": {
+          url: "https://example.com/bergamot-eo",
+          sdsUrl: "https://example.com/bergamot-eo/sds.pdf",
+          ifraPercent: "0.4",
+          price: 12.5,
+          S: [[10, "g", 12.5]],
+        },
+      },
+    }
+  );
+
+  const trustSummary = buildFounderTrustSummary({
+    basket: {
+      lines: [{ ingredientName: "QA Manual Trusted Bergamot", mappingConfidence: "confirmed" }],
+      missingCount: 0,
+      uncertainCount: 0,
+    },
+    launchReadiness: {
+      pricing: { missingCount: 0, uncertainCount: 0 },
+      compliance: { finishedProductStatus: "appears_compliant" },
+      blockers: [],
+      cautions: [],
+    },
+    expectedLineCount: 1,
+    extraTrustCounts: report.ingredientTrustCounts,
+    extraMissingSignals: report.missingSignals,
+    extraUncertainSignals: report.uncertainSignals,
+  });
+
+  assert.equal(report.level, "strong");
+  assert.equal(report.dimensionByKey.evidence.status, "inferred");
+  assert.equal(report.dimensionByKey.ifra.status, "confirmed");
+  assert.equal(report.hasAnyStrongManualSupport, true);
+  assert.ok(
+    report.manualTrustedSignals.some((signal) =>
+      signal.includes("Formal evidence review is not attached yet")
+    )
+  );
+  assert.ok(
+    report.uncertainSignals.every(
+      (signal) =>
+        !signal.includes("Source-document and evidence-candidate support is still light")
+    )
+  );
+  assert.equal(trustSummary.level, "supported");
 });
 
 test("buildFounderTrustSummary marks well-supported baskets as supported", () => {
@@ -475,6 +684,420 @@ test("material improvement queue surfaces founder-critical and high-spend weak m
     )
   );
   assert.ok(queue.summary.pricingGapMaterialCount >= 1);
+});
+
+test("formula-critical data audit ranks weak ingredient truth by likely distortion impact", () => {
+  const audit = buildFormulaCriticalDataAudit({
+    contextLabel: "QA Formula",
+    contextKind: "formula",
+    items: [
+      { name: "Sparse Workhorse", g: 18, note: "top" },
+      { name: "Well Supported Material", g: 42, note: "base" },
+    ],
+    basket: {
+      totalCost: 60,
+      lines: [
+        {
+          ingredientName: "Sparse Workhorse",
+          lineCost: 42,
+          status: "missing",
+          mappingConfidence: "missing",
+        },
+        {
+          ingredientName: "Well Supported Material",
+          lineCost: 18,
+          status: "confirmed",
+          mappingConfidence: "confirmed",
+        },
+      ],
+    },
+    evidenceCandidates: [
+      {
+        evidenceCandidateKey: "sparse-workhorse:cas:a",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-1",
+        confidence: "medium",
+        sourceType: "sds",
+        supplier: "Supplier A",
+        reviewStatus: "pending_review",
+      },
+      {
+        evidenceCandidateKey: "sparse-workhorse:cas:b",
+        canonicalMaterialKey: "sparse_workhorse",
+        candidateFieldName: "cas",
+        candidateValue: "100-00-2",
+        confidence: "low",
+        sourceType: "supplier_pdf",
+        supplier: "Supplier B",
+        reviewStatus: "pending_review",
+      },
+    ],
+    intakeTargets: [
+      {
+        canonicalMaterialKey: "sparse_workhorse",
+        relatedCatalogNames: ["Sparse Workhorse"],
+        stillMissingFields: ["cas", "inci", "ifraMaterialHint"],
+        requestedSourceTypes: ["sds", "tds"],
+      },
+    ],
+    materialContextByName: {
+      "Sparse Workhorse": {
+        dbRecord: {
+          note: "top",
+          type: "EO",
+        },
+        canonicalMaterialKey: "sparse_workhorse",
+        supplierVariantCount: 0,
+        livePricingSupplierCount: 0,
+        livePricingPackCount: 0,
+        sourceDocumentCount: 0,
+        evidenceCandidateCount: 2,
+        supplierProducts: [],
+        truthReport: {
+          name: "Sparse Workhorse",
+          level: "sparse",
+          supportLabel: "25% resolved · 0% confirmed",
+          breakdownLabel: "Sparse truth",
+          primaryGap: "No live priced pack-size options are attached yet.",
+          canonicalMaterialKey: "sparse_workhorse",
+          canonicalSource: null,
+          sourceDocuments: [],
+          livePricingEntries: [],
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            regulatory: { status: "missing" },
+            descriptive: { status: "missing" },
+            supplier: { status: "missing" },
+            pricing: { status: "missing" },
+            technical: { status: "uncertain" },
+            ifra: { status: "uncertain" },
+            evidence: { status: "uncertain" },
+          },
+          uncertainSignals: [
+            "Technical behavior support is still sparse (MW / xLogP / VP / ODT / TPSA).",
+            "Structured IFRA restriction support is still partial in the current helper path.",
+          ],
+          missingSignals: [
+            "No live supplier pricing or registry-backed supplier variant is attached yet.",
+          ],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+      "Well Supported Material": {
+        dbRecord: {
+          note: "base",
+          type: "ABS",
+          MW: 250,
+          xLogP: 3.8,
+          VP: 0.1,
+          ODT: 5,
+        },
+        canonicalMaterialKey: "well_supported_material",
+        supplierVariantCount: 1,
+        livePricingSupplierCount: 1,
+        livePricingPackCount: 1,
+        sourceDocumentCount: 1,
+        evidenceCandidateCount: 0,
+        supplierProducts: [],
+        truthReport: {
+          name: "Well Supported Material",
+          level: "strong",
+          supportLabel: "88% resolved · 75% confirmed",
+          breakdownLabel: "Strong truth",
+          primaryGap: null,
+          canonicalMaterialKey: "well_supported_material",
+          canonicalSource: {
+            canonicalName: "Well Supported Material",
+          },
+          sourceDocuments: [{ sourceType: "tds" }],
+          livePricingEntries: [["Supplier A", { S: [[100, "g", 18]] }]],
+          dimensionByKey: {
+            identity: { status: "confirmed" },
+            regulatory: { status: "confirmed" },
+            descriptive: { status: "confirmed" },
+            supplier: { status: "confirmed" },
+            pricing: { status: "confirmed" },
+            technical: { status: "confirmed" },
+            ifra: { status: "confirmed" },
+            evidence: { status: "confirmed" },
+          },
+          uncertainSignals: [],
+          missingSignals: [],
+          normalizationEntry: { entryKind: "supplier_product" },
+        },
+      },
+    },
+    critiqueReport: {
+      uncertainty: ["Structured critique is estimate-only while ingredient truth stays sparse."],
+    },
+    performanceModel: {
+      caveats: ["Projection math is rougher when technical support is sparse."],
+    },
+    finishedProductGuidance: {
+      overallStatus: "warning_with_missing",
+    },
+  });
+
+  assert.equal(audit.summary.weakMaterialCount, 1);
+  assert.equal(audit.rows[0].name, "Sparse Workhorse");
+  assert.ok(audit.rows[0].distortionTags.includes("Critique"));
+  assert.ok(audit.rows[0].distortionTags.includes("Performance"));
+  assert.ok(audit.rows[0].distortionTags.includes("Compliance"));
+  assert.ok(audit.rows[0].distortionTags.includes("Cost"));
+  assert.ok(
+    ["pricing_distortion", "conflicting_staged_truth"].includes(
+      audit.rows[0].issueTypeKey
+    )
+  );
+  assert.ok(audit.rows[0].whyItMatters.includes("formula"));
+  assert.ok(audit.guardrail.toLowerCase().includes("directional"));
+  assert.equal(audit.summary.topPriorityMaterialName, "Sparse Workhorse");
+});
+
+test("manual formula review candidate builders keep missing-material intake and corrections review-first", () => {
+  const correctionCandidate = buildFormulaFieldCorrectionReviewCandidate({
+    materialName: "Bergamot EO FCF",
+    canonicalMaterialKey: "bergamot_eo_fcf",
+    relatedCatalogNames: ["Bergamot EO FCF"],
+    fieldKey: "ifraMaterialHint",
+    proposedValue: "Review Cat 4 restriction support against trusted supplier SDS.",
+    confidence: "high",
+    contextLabel: "QA Formula",
+    sourceNote: "Trusted supplier SDS reviewed manually.",
+  });
+
+  assert.equal(correctionCandidate.materialName, "Bergamot EO FCF");
+  assert.equal(correctionCandidate.candidateFieldName, "ifraMaterialHint");
+  assert.equal(correctionCandidate.applyPath, "manual_review");
+  assert.equal(
+    correctionCandidate.applyPathClassification,
+    "manual_review_only"
+  );
+  assert.equal(correctionCandidate.confidenceLabel, "High");
+  assert.match(correctionCandidate.sourceSummary, /QA Formula/);
+
+  const missingMaterialCandidates = buildFormulaMissingMaterialReviewCandidates({
+    materialName: "Algenone",
+    supplierSourceNote: "Owned bottle on hand",
+    cas: "123-45-6",
+    inci: "Algenone Extract",
+    note: "mid",
+    materialType: "SYNTH",
+    scentSummary: "Marine ambergris-style material.",
+    technicalNotes: "MW still needs source-backed confirmation.",
+    confidence: "medium",
+    contextLabel: "Current Build",
+    createdAt: "2026-03-19T12:00:00.000Z",
+  });
+
+  assert.ok(missingMaterialCandidates.length >= 3);
+  assert.equal(
+    missingMaterialCandidates[0].candidateFieldName,
+    "missing_material_intake"
+  );
+  assert.ok(
+    missingMaterialCandidates.every(
+      (candidate) => candidate.applyPath === "manual_review"
+    )
+  );
+  assert.ok(
+    missingMaterialCandidates.every((candidate) =>
+      candidate.sourceOrigin.includes("formula_critical_missing_material")
+    )
+  );
+  assert.ok(
+    missingMaterialCandidates.some(
+      (candidate) => candidate.candidateFieldName === "cas"
+    )
+  );
+  assert.ok(
+    missingMaterialCandidates.some(
+      (candidate) => candidate.candidateFieldName === "technical_support"
+    )
+  );
+});
+
+test("supplier adapter parses trusted pack rows and auto-applies safe known Fraterworks facts", () => {
+  const parsed = parseSupplierAdapterPackLines("15 g 12.5\n30 g 22.0");
+  assert.deepEqual(parsed.errors, []);
+  assert.deepEqual(parsed.pricePoints, [
+    [15, "g", 12.5, null],
+    [30, "g", 22, null],
+  ]);
+
+  const result = buildFraterworksSupplierAdapterResult({
+    supplierProductKey: "fraterworks:ylang-ylang-extra-oil-comoros",
+    productTitle: "Ylang-Ylang Extra Oil, Comoros",
+    url: "https://fraterworks.com/products/ylang-ylang-extra-oil-comoros",
+    pricePoints: parsed.pricePoints,
+    availabilityStatus: "in stock",
+    ifraPercent: "",
+    registryRecord: {
+      supplierKey: "fraterworks",
+      productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCatalogName: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCanonicalMaterialKey: "ylang_ylang_extra_oil",
+    },
+    mappedRecord: {
+      inci: "Cananga Odorata Flower Oil",
+      type: "EO",
+      scentSummary: "Diffusive creamy ylang oil",
+    },
+    ifraRecord: null,
+    relatedSupplierProducts: [
+      {
+        supplierKey: "fraterworks",
+        productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      },
+    ],
+  });
+
+  assert.equal(result.trustLane, "auto_apply_safe");
+  assert.equal(result.reviewItems.length, 0);
+  assert.equal(result.canAutoApplyToPricing, true);
+  assert.equal(result.pricingPatch.catalogName, "Ylang-Ylang Extra Oil, Comoros");
+  assert.ok(result.autoAppliedFieldKeys.includes("url"));
+  assert.ok(result.autoAppliedFieldKeys.includes("pricePoints"));
+});
+
+test("local draft ingredient artifacts preserve local/manual status while producing live runtime records", () => {
+  const artifacts = buildLocalDraftIngredientArtifacts({
+    materialName: "Local Draft Neroli",
+    supplierName: "Owned Stock",
+    supplierSourceNote: "Manual trusted entry from bottle on hand",
+    url: "https://example.com/neroli",
+    pricePoints: [[5, "mL", 24, null]],
+    availabilityStatus: "limited stock",
+    ifraPercent: "0.3%",
+    sdsUrl: "https://example.com/neroli/sds",
+    inci: "Citrus Aurantium Amara Flower Oil",
+    cas: "8016-38-4",
+    note: "top",
+    materialType: "EO",
+    scentSummary: "Fresh floral citrus.",
+    scentDescription: "Bright orange blossom top note.",
+    technicalNotes: "Manual draft pending canonical reconciliation.",
+    MW: "156.2",
+    xLogP: "2.1",
+    TPSA: "20.5",
+    VP: "0.003",
+    ODT: "12",
+  });
+
+  assert.equal(artifacts.name, "Local Draft Neroli");
+  assert.equal(artifacts.localDraftRecord.localOnly, true);
+  assert.equal(artifacts.dbRecord.entryKind, "local_draft");
+  assert.equal(artifacts.dbRecord.isLocalDraft, true);
+  assert.equal(
+    artifacts.dbRecord.localDraftStatusLabel,
+    "Local Draft / Manual Trusted Entry"
+  );
+  assert.deepEqual(Object.keys(artifacts.pricingBySupplier), ["Owned Stock"]);
+  assert.equal(artifacts.pricingBySupplier["Owned Stock"].S.length, 1);
+});
+
+test("supplier adapter auto-captures clean new items while still surfacing canonical conflicts", () => {
+  const newItemResult = buildFraterworksSupplierAdapterResult({
+    productTitle: "Fraterworks Mystery Base",
+    url: "https://fraterworks.com/products/fraterworks-mystery-base",
+    pricePoints: [[15, "g", 19.5, null]],
+    availabilityStatus: "request",
+  });
+
+  assert.equal(newItemResult.trustLane, "auto_apply_safe");
+  assert.equal(newItemResult.canAutoApplyToPricing, false);
+  assert.equal(newItemResult.reviewItems.length, 0);
+
+  const conflictResult = buildFraterworksSupplierAdapterResult({
+    supplierProductKey: "fraterworks:ylang-ylang-extra-oil-comoros",
+    productTitle: "Ylang-Ylang Extra Oil, Comoros",
+    url: "https://fraterworks.com/products/ylang-ylang-extra-oil-comoros",
+    pricePoints: [[15, "g", 12.5, null]],
+    availabilityStatus: "in stock",
+    ifraPercent: "0.2",
+    inci: "Unexpected Different Inci",
+    registryRecord: {
+      supplierKey: "fraterworks",
+      productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCatalogName: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCanonicalMaterialKey: "ylang_ylang_extra_oil",
+    },
+    mappedRecord: {
+      inci: "Cananga Odorata Flower Oil",
+      type: "EO",
+      scentSummary: "Diffusive creamy ylang oil",
+    },
+    ifraRecord: {
+      limits: {
+        cat4: 0.8,
+      },
+    },
+    relatedSupplierProducts: [
+      {
+        supplierKey: "fraterworks",
+        productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      },
+    ],
+  });
+
+  assert.equal(conflictResult.trustLane, "manual_review_conflict");
+  assert.equal(conflictResult.canAutoApplyToPricing, true);
+  assert.ok(
+    conflictResult.reviewItems.some(
+      (item) => item.issueType === "canonical_conflict_inci"
+    )
+  );
+  assert.ok(
+    conflictResult.reviewItems.some(
+      (item) => item.issueType === "canonical_conflict_ifra"
+    )
+  );
+});
+
+test("supplier adapter conflict review candidates and export payload preserve review-first separation", () => {
+  const result = buildFraterworksSupplierAdapterResult({
+    supplierProductKey: "fraterworks:ylang-ylang-extra-oil-comoros",
+    productTitle: "Ylang-Ylang Extra Oil, Comoros",
+    url: "https://fraterworks.com/products/ylang-ylang-extra-oil-comoros",
+    pricePoints: [[15, "g", 12.5, null]],
+    availabilityStatus: "in stock",
+    inci: "Unexpected Different Inci",
+    registryRecord: {
+      supplierKey: "fraterworks",
+      productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCatalogName: "Ylang-Ylang Extra Oil, Comoros",
+      mappedCanonicalMaterialKey: "ylang_ylang_extra_oil",
+    },
+    mappedRecord: {
+      inci: "Cananga Odorata Flower Oil",
+      type: "EO",
+      scentSummary: "Diffusive creamy ylang oil",
+    },
+    relatedSupplierProducts: [
+      {
+        supplierKey: "fraterworks",
+        productTitle: "Ylang-Ylang Extra Oil, Comoros",
+      },
+    ],
+  });
+  const conflictReviewItem = result.reviewItems.find(
+    (item) => item.issueType === "canonical_conflict_inci"
+  );
+  const conflictCandidate =
+    buildSupplierAdapterConflictReviewCandidate(conflictReviewItem);
+  const exportPayload = buildSupplierAdapterExportPayload([
+    result.supplierLayerRecord,
+  ]);
+
+  assert.equal(conflictCandidate.applyPath, "manual_review");
+  assert.equal(
+    conflictCandidate.applyPathClassification,
+    "manual_review_conflict"
+  );
+  assert.equal(exportPayload.metadata.supplierLayerRecordCount, 1);
+  assert.equal(exportPayload.metadata.reviewItemCount, 1);
+  assert.equal(exportPayload.summary.manualReviewConflictCount, 1);
 });
 
 test("generated proposal promotion builds a staged review candidate with preserved context", () => {

@@ -3253,6 +3253,125 @@ function normalizeText(value) {
     .toLowerCase();
 }
 
+function normalizeCasSupportToken(value) {
+  const match = String(value || "")
+    .trim()
+    .match(/(\d{2,7}-\d{2}-\d)/);
+  return match?.[1] || null;
+}
+
+function compareCasSupportTokenOrder(a, b) {
+  const splitParts = (value) =>
+    String(value || "")
+      .split("-")
+      .map((part) => Number(part));
+  const [aHead = 0, aMid = 0, aTail = 0] = splitParts(a);
+  const [bHead = 0, bMid = 0, bTail = 0] = splitParts(b);
+  if (aHead !== bHead) return aHead - bHead;
+  if (aMid !== bMid) return aMid - bMid;
+  return aTail - bTail;
+}
+
+export function parseMaterialCasSupport(value) {
+  const rawValue = Array.isArray(value)
+    ? value
+        .flatMap((entry) =>
+          String(entry || "")
+            .split(/[;\n]+/)
+            .map((part) => part.trim())
+        )
+        .filter(Boolean)
+        .join(" ; ")
+    : String(value || "").trim();
+  if (!rawValue) {
+    return {
+      rawValue: "",
+      state: "unknown",
+      values: [],
+      primaryValue: null,
+      displayValue: "",
+      comparisonKey: "",
+      hasValue: false,
+      isMixture: false,
+      hasStructuredCas: false,
+    };
+  }
+
+  const mixtureOnly =
+    /\bmixture\b/i.test(rawValue) &&
+    !/(\d{2,7}-\d{2}-\d)/.test(rawValue);
+  if (mixtureOnly) {
+    return {
+      rawValue,
+      state: "mixture",
+      values: [],
+      primaryValue: "Mixture",
+      displayValue: "Mixture",
+      comparisonKey: "mixture",
+      hasValue: true,
+      isMixture: true,
+      hasStructuredCas: false,
+    };
+  }
+
+  const casValues = Array.from(
+    new Set(
+      Array.from(rawValue.matchAll(/(\d{2,7}-\d{2}-\d)/g))
+        .map((match) => match?.[1] || null)
+        .filter(Boolean)
+    )
+  ).sort(compareCasSupportTokenOrder);
+
+  if (casValues.length === 0) {
+    return {
+      rawValue,
+      state: "unknown",
+      values: [],
+      primaryValue: rawValue,
+      displayValue: rawValue,
+      comparisonKey: normalizeText(rawValue),
+      hasValue: true,
+      isMixture: false,
+      hasStructuredCas: false,
+    };
+  }
+
+  const state = casValues.length === 1 ? "single" : "multiple";
+  const displayValue =
+    state === "single" ? casValues[0] : casValues.join(" ; ");
+
+  return {
+    rawValue,
+    state,
+    values: casValues,
+    primaryValue: state === "single" ? casValues[0] : displayValue,
+    displayValue,
+    comparisonKey: `${state}:${casValues.join(";")}`,
+    hasValue: true,
+    isMixture: false,
+    hasStructuredCas: true,
+  };
+}
+
+export function formatMaterialCasSupportValue(value) {
+  return parseMaterialCasSupport(value).displayValue;
+}
+
+export function compareMaterialCasSupportValues(left, right) {
+  const leftSupport = parseMaterialCasSupport(left);
+  const rightSupport = parseMaterialCasSupport(right);
+  if (!leftSupport.hasValue || !rightSupport.hasValue) return false;
+  if (leftSupport.state === "mixture" || rightSupport.state === "mixture") {
+    return (
+      leftSupport.state === "mixture" && rightSupport.state === "mixture"
+    );
+  }
+  if (leftSupport.hasStructuredCas && rightSupport.hasStructuredCas) {
+    return leftSupport.comparisonKey === rightSupport.comparisonKey;
+  }
+  return normalizeText(leftSupport.displayValue) === normalizeText(rightSupport.displayValue);
+}
+
 function resolveIngredientIdentityDirect(name) {
   const direct = INGREDIENT_IDENTITY_MAP[name];
   if (direct) return direct;
@@ -3437,12 +3556,37 @@ function buildIngredientTruthLevel({
   };
 }
 
+function buildManualTrustedConflictFieldSet(record = {}) {
+  return new Set(
+    [
+      ...(Array.isArray(record?.activeConflictFieldKeys)
+        ? record.activeConflictFieldKeys
+        : []),
+      ...(Array.isArray(record?.manualConflictFieldKeys)
+        ? record.manualConflictFieldKeys
+        : []),
+      ...(Array.isArray(record?.conflictFieldKeys) ? record.conflictFieldKeys : []),
+    ]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)
+  );
+}
+
+function hasAnyManualTrustedConflict(conflictFieldSet, fieldKeys = []) {
+  const safeConflictFieldSet =
+    conflictFieldSet instanceof Set ? conflictFieldSet : new Set();
+  return (fieldKeys || []).some((fieldKey) =>
+    safeConflictFieldSet.has(String(fieldKey || "").trim())
+  );
+}
+
 export function buildIngredientTruthCompletenessReport(
   name,
   { record = null, livePricing = null } = {}
 ) {
   const safeRecord = record && typeof record === "object" ? record : {};
-  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const normalizationEntry =
+    safeRecord?.normalizationEntry || getMaterialNormalizationEntry(name);
   const resolvedIdentity = resolveIngredientIdentity(name);
   const canonicalMaterialKey =
     normalizationEntry?.canonicalMaterialKey ||
@@ -3450,6 +3594,9 @@ export function buildIngredientTruthCompletenessReport(
     resolvedIdentity?.canonicalMaterialKey ||
     safeRecord?.canonicalMaterialKey ||
     null;
+  const isLocalDraft = Boolean(
+    safeRecord?.isLocalDraft || normalizationEntry?.entryKind === "local_draft"
+  );
   const canonicalCatalogName = getCanonicalCatalogName(name);
   const canonicalSource = canonicalMaterialKey
     ? getCanonicalMaterialSource(canonicalMaterialKey)
@@ -3497,6 +3644,56 @@ export function buildIngredientTruthCompletenessReport(
   ).size;
   const ifraMaterial = getIfraMaterialRecord(name);
   const ifraUiState = getIfraUiState(name);
+  const hasManualIdentityEdit = Boolean(safeRecord?.manualIdentityEdited);
+  const hasManualTechnicalEdit = Boolean(safeRecord?.manualTechnicalEdited);
+  const hasManualSupplierEdit = Boolean(safeRecord?.manualSupplierEdited);
+  const conflictFieldSet = buildManualTrustedConflictFieldSet(safeRecord);
+  const hasIdentityConflict = hasAnyManualTrustedConflict(conflictFieldSet, [
+    "identity",
+    "cas",
+    "inci",
+    "rep",
+    "type",
+    "canonicalMaterialKey",
+  ]);
+  const hasRegulatoryConflict = hasAnyManualTrustedConflict(conflictFieldSet, [
+    "regulatory",
+    "cas",
+    "inci",
+  ]);
+  const hasSupplierConflict = hasAnyManualTrustedConflict(conflictFieldSet, [
+    "supplier",
+    "supplierName",
+    "supplierProductKey",
+    "supplierProductUrl",
+    "url",
+    "availabilityStatus",
+    "sdsUrl",
+    "manualSdsAttachment",
+    "supplierNotes",
+    "originNote",
+    "price",
+    "pricePoints",
+    "pricing",
+    "dilutionOrCarrier",
+  ]);
+  const hasTechnicalConflict = hasAnyManualTrustedConflict(conflictFieldSet, [
+    "technical",
+    "MW",
+    "xLogP",
+    "VP",
+    "ODT",
+    "TPSA",
+    "odorThreshold_ngL",
+  ]);
+  const hasIfraConflict = hasAnyManualTrustedConflict(conflictFieldSet, [
+    "ifra",
+    "ifraPercent",
+    "ifraMaterialHint",
+    "restriction",
+    "cat4",
+  ]);
+  const hasActiveManualConflict = conflictFieldSet.size > 0;
 
   const identityFieldCount = countCompletenessValues([
     safeRecord?.cas || canonicalSource?.cas,
@@ -3508,17 +3705,26 @@ export function buildIngredientTruthCompletenessReport(
     hasCompletenessValue(name) &&
     hasCompletenessValue(safeRecord?.type || canonicalSource?.type) &&
     identityFieldCount >= 2;
-  const identityStatus = canonicalMaterialKey || hasStrongLocalIdentity
+  const identityStatusBase = canonicalMaterialKey
     ? "confirmed"
+    : hasStrongLocalIdentity
+    ? isLocalDraft
+      ? "inferred"
+      : "confirmed"
     : resolvedIdentity || normalizationEntry || identityFieldCount > 0
     ? "inferred"
     : "missing";
+  const identityStatus = hasIdentityConflict
+    ? identityStatusBase === "missing"
+      ? "missing"
+      : "uncertain"
+    : identityStatusBase;
 
   const regulatoryFieldCount = countCompletenessValues([
     safeRecord?.cas || canonicalSource?.cas,
     safeRecord?.inci || canonicalSource?.inci,
   ]);
-  const regulatoryStatus =
+  const regulatoryStatusBase =
     regulatoryFieldCount >= 2
       ? "confirmed"
       : regulatoryFieldCount === 1
@@ -3526,6 +3732,16 @@ export function buildIngredientTruthCompletenessReport(
       : identityStatus === "missing"
       ? "missing"
       : "uncertain";
+  const regulatoryStatus =
+    hasRegulatoryConflict
+      ? regulatoryStatusBase === "missing"
+        ? "missing"
+        : "uncertain"
+      : isLocalDraft &&
+        !canonicalMaterialKey &&
+        regulatoryStatusBase === "confirmed"
+      ? "inferred"
+      : regulatoryStatusBase;
 
   const descriptiveFieldCount = countCompletenessValues([
     safeRecord?.note || canonicalSource?.note,
@@ -3549,7 +3765,10 @@ export function buildIngredientTruthCompletenessReport(
       : "missing";
 
   const supplierStatus =
-    supplierProducts.length > 0
+    supplierProducts.length > 0 ||
+    (hasManualSupplierEdit &&
+      !hasSupplierConflict &&
+      (livePricingEntries.length > 0 || hasCompletenessValue(safeRecord?.supplier)))
       ? "confirmed"
       : hasCompletenessValue(safeRecord?.supplier) ||
         normalizationEntry?.entryKind === "supplier_product" ||
@@ -3575,7 +3794,7 @@ export function buildIngredientTruthCompletenessReport(
     safeRecord?.TPSA,
     safeRecord?.odorThreshold_ngL,
   ]);
-  const technicalStatus =
+  const technicalStatusBase =
     technicalFieldCount >= 4
       ? "confirmed"
       : technicalFieldCount >= 2
@@ -3583,12 +3802,41 @@ export function buildIngredientTruthCompletenessReport(
       : technicalFieldCount >= 1
       ? "uncertain"
       : "uncertain";
+  const technicalStatus = hasTechnicalConflict
+    ? technicalStatusBase === "missing"
+      ? "missing"
+      : "uncertain"
+    : technicalStatusBase;
+
+  const hasSupplierIfraSupport =
+    livePricingEntries.some(
+      ([, supplierData]) =>
+        supplierData?.ifraPercent != null &&
+        String(supplierData.ifraPercent).trim() !== ""
+    ) ||
+    supplierProducts.some(
+      (record) =>
+        record?.ifraPercentShown != null &&
+        String(record.ifraPercentShown).trim() !== ""
+    );
+  const hasSdsSupport =
+    livePricingEntries.some(
+      ([, supplierData]) =>
+        Boolean(supplierData?.sdsUrl || supplierData?.manualSdsAttachment)
+    ) ||
+    supplierProducts.some((record) =>
+      Boolean(record?.sdsUrl || record?.manualSdsAttachment)
+    );
 
   const ifraStatus =
-    ifraUiState === "listed" && ifraMaterial
+    hasIfraConflict
+      ? "uncertain"
+      : ifraUiState === "listed" && ifraMaterial
       ? resolvedIdentity?.inheritedViaCanonicalMaterialKey
         ? "inferred"
         : "confirmed"
+      : hasSupplierIfraSupport && !hasIfraConflict
+      ? "confirmed"
       : ifraUiState === "functional_solvent"
       ? "confirmed"
       : ifraUiState === "not_found_in_uploaded_pdf"
@@ -3597,10 +3845,32 @@ export function buildIngredientTruthCompletenessReport(
       ? "uncertain"
       : "missing";
 
+  const hasStrongManualIdentitySupport =
+    hasManualIdentityEdit &&
+    !hasIdentityConflict &&
+    identityStatus === "confirmed";
+  const hasStrongManualSupplierSupport =
+    hasManualSupplierEdit &&
+    !hasSupplierConflict &&
+    (supplierStatus === "confirmed" || pricingStatus === "confirmed");
+  const hasStrongManualTechnicalSupport =
+    hasManualTechnicalEdit &&
+    !hasTechnicalConflict &&
+    technicalStatus === "confirmed";
+  const hasStrongManualIfraSupport =
+    hasManualSupplierEdit && !hasIfraConflict && ifraStatus === "confirmed";
+  const hasAnyStrongManualSupport =
+    hasStrongManualIdentitySupport ||
+    hasStrongManualSupplierSupport ||
+    hasStrongManualTechnicalSupport ||
+    hasStrongManualIfraSupport;
+
   const evidenceStatus =
     sourceDocuments.length > 0
       ? "confirmed"
       : evidenceCandidates.length > 0
+      ? "inferred"
+      : hasAnyStrongManualSupport || hasSdsSupport
       ? "inferred"
       : "uncertain";
 
@@ -3631,9 +3901,14 @@ export function buildIngredientTruthCompletenessReport(
   const summary = buildIngredientTruthLevel(counts);
   const missingSignals = [];
   const uncertainSignals = [];
+  const manualTrustedSignals = [];
   const addSignal = (target, message) => {
     if (!message || target.includes(message)) return;
     target.push(message);
+  };
+  const addManualTrustedSignal = (message) => {
+    if (!message || manualTrustedSignals.includes(message)) return;
+    manualTrustedSignals.push(message);
   };
 
   if (identityStatus === "missing") {
@@ -3641,6 +3916,23 @@ export function buildIngredientTruthCompletenessReport(
       missingSignals,
       "Canonical or source-backed identity is still too weak for strong downstream reads."
     );
+  } else if (isLocalDraft && !canonicalMaterialKey) {
+    addSignal(
+      uncertainSignals,
+      "This is a browser-local manual draft ingredient, so it is usable locally but not yet canonical or source-reviewed."
+    );
+  }
+  if (hasManualIdentityEdit) {
+    if (hasIdentityConflict || hasRegulatoryConflict) {
+      addSignal(
+        uncertainSignals,
+        "Manual CAS / identity edits are present, but an explicit active conflict is still attached to identity support."
+      );
+    } else if (hasStrongManualIdentitySupport) {
+      addManualTrustedSignal(
+        "CAS / identity fields were manually verified and are being treated as strong practical support."
+      );
+    }
   }
   if (pricingStatus === "missing") {
     addSignal(
@@ -3657,6 +3949,18 @@ export function buildIngredientTruthCompletenessReport(
       uncertainSignals,
       "Pricing rows exist, but usable pack-size or price support is still incomplete."
     );
+  }
+  if (hasManualSupplierEdit) {
+    if (hasSupplierConflict || hasIfraConflict) {
+      addSignal(
+        uncertainSignals,
+        "Manual supplier-page edits are present, but an explicit supplier or restriction conflict is still active."
+      );
+    } else if (hasStrongManualSupplierSupport || hasStrongManualIfraSupport) {
+      addManualTrustedSignal(
+        "Supplier-page facts were manually verified and are being treated as strong manual support."
+      );
+    }
   }
   if (regulatoryStatus !== "confirmed") {
     addSignal(
@@ -3689,21 +3993,43 @@ export function buildIngredientTruthCompletenessReport(
         : "Technical behavior support is still sparse (MW / xLogP / VP / ODT / TPSA)."
     );
   }
+  if (hasManualTechnicalEdit) {
+    if (hasTechnicalConflict) {
+      addSignal(
+        uncertainSignals,
+        "Technical / molecular manual edits are present, but an explicit active conflict is still attached to those fields."
+      );
+    } else if (hasStrongManualTechnicalSupport) {
+      addManualTrustedSignal(
+        "Technical / molecular fields were manually verified and are being treated as strong practical support."
+      );
+    }
+  }
   if (ifraStatus !== "confirmed") {
     addSignal(
       uncertainSignals,
       "Structured IFRA restriction support is still partial in the current helper path."
     );
   }
-  if (evidenceStatus !== "confirmed") {
+  if (evidenceStatus !== "confirmed" && !hasAnyStrongManualSupport) {
     addSignal(
       uncertainSignals,
       "Source-document and evidence-candidate support is still light for this material."
+    );
+  } else if (
+    evidenceStatus !== "confirmed" &&
+    hasAnyStrongManualSupport &&
+    !sourceDocuments.length &&
+    !evidenceCandidates.length
+  ) {
+    addManualTrustedSignal(
+      "Formal evidence review is not attached yet, but manually verified trusted edits are carrying strong practical support."
     );
   }
 
   return {
     name,
+    isLocalDraft,
     canonicalMaterialKey,
     canonicalCatalogName,
     normalizationEntry,
@@ -3721,6 +4047,16 @@ export function buildIngredientTruthCompletenessReport(
     livePricingPackCount,
     technicalFieldCount,
     technicalFieldTotal: 6,
+    conflictFieldKeys: Array.from(conflictFieldSet),
+    hasActiveManualConflict,
+    hasStrongManualIdentitySupport,
+    hasStrongManualSupplierSupport,
+    hasStrongManualTechnicalSupport,
+    hasStrongManualIfraSupport,
+    hasAnyStrongManualSupport,
+    hasSupplierIfraSupport,
+    hasSdsSupport,
+    manualTrustedSignals,
     dimensions,
     dimensionByKey: Object.fromEntries(
       dimensions.map((dimension) => [dimension.key, dimension])
