@@ -175,3 +175,49 @@ export const DIRECT_TECHNICAL_EDIT_FIELD_LABELS = {
   odorThreshold_ngL: "Odor threshold (ng/L)",
   technicalNotes: "Technical notes",
 };
+
+export const SUPPLIER_REFRESH_FEEDBACK_META = {
+  updated: {
+    label: "Updated",
+    background: "#052E16",
+    borderColor: "#166534",
+    color: "#86EFAC",
+  },
+  unchanged: {
+    label: "No changes",
+    background: "#071826",
+    borderColor: "#334155",
+    color: "#CBD5E1",
+  },
+  preserved: {
+    label: "Manual value preserved",
+    background: "#082F49",
+    borderColor: "#0369A1",
+    color: "#7DD3FC",
+  },
+  conflict: {
+    label: "Conflict",
+    background: "#3F0D12",
+    borderColor: "#991B1B",
+    color: "#FCA5A5",
+  },
+  unavailable: {
+    label: "Unavailable",
+    background: "#1C1917",
+    borderColor: "#57534E",
+    color: "#D6D3D1",
+  },
+  failed: {
+    label: "Failed",
+    background: "#3F0D12",
+    borderColor: "#991B1B",
+    color: "#FCA5A5",
+  },
+};
+
+export const IFRA_VALUE_TONE_COLORS = {
+  defined: "#FCD34D",
+  no_restriction: "#86EFAC",
+  conflict: "#FCA5A5",
+  missing: "#94A3B8",
+};

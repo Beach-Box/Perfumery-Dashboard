@@ -69,8 +69,10 @@ import {
   DIRECT_TECHNICAL_EDIT_FIELD_LABELS,
   IFRA_STATE_BADGE_META,
   IFRA_STATE_LABELS,
+  IFRA_VALUE_TONE_COLORS,
   NORMALIZATION_BADGE_META,
   NORMALIZATION_ENTRY_KIND_LABELS,
+  SUPPLIER_REFRESH_FEEDBACK_META,
   SUPPLIER_LINK_BADGE_META,
   SUPPLIER_AVAILABILITY_LABELS,
 } from "./lib/app_display_metadata";
@@ -54848,52 +54850,6 @@ const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
       "sdsUrl",
     ],
   },
-};
-
-const SUPPLIER_REFRESH_FEEDBACK_META = {
-  updated: {
-    label: "Updated",
-    background: "#052E16",
-    borderColor: "#166534",
-    color: "#86EFAC",
-  },
-  unchanged: {
-    label: "No changes",
-    background: "#071826",
-    borderColor: "#334155",
-    color: "#CBD5E1",
-  },
-  preserved: {
-    label: "Manual value preserved",
-    background: "#082F49",
-    borderColor: "#0369A1",
-    color: "#7DD3FC",
-  },
-  conflict: {
-    label: "Conflict",
-    background: "#3F0D12",
-    borderColor: "#991B1B",
-    color: "#FCA5A5",
-  },
-  unavailable: {
-    label: "Unavailable",
-    background: "#1C1917",
-    borderColor: "#57534E",
-    color: "#D6D3D1",
-  },
-  failed: {
-    label: "Failed",
-    background: "#3F0D12",
-    borderColor: "#991B1B",
-    color: "#FCA5A5",
-  },
-};
-
-const IFRA_VALUE_TONE_COLORS = {
-  defined: "#FCD34D",
-  no_restriction: "#86EFAC",
-  conflict: "#FCA5A5",
-  missing: "#94A3B8",
 };
 
 function getSupplierPageRefreshFieldKeys(scope = "all_safe") {
