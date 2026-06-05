@@ -100,6 +100,10 @@ import {
   formatSupplierReviewContextValue,
 } from "./lib/supplier_display_helpers";
 import {
+  formatIfraValueLabel,
+  getSupplierIfraSupportLabel,
+} from "./lib/ifra_display_helpers";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -54860,27 +54864,6 @@ const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
 function getSupplierPageRefreshFieldKeys(scope = "all_safe") {
   return SUPPLIER_PAGE_REFRESH_SCOPE_META[scope]?.fieldKeys ||
     SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.fieldKeys;
-}
-
-function formatIfraValueLabel(cat4Limit) {
-  const normalizedLimit = Number(cat4Limit);
-  if (!Number.isFinite(normalizedLimit)) return "Missing";
-  if (Number.isInteger(normalizedLimit)) return `${normalizedLimit}%`;
-  return `${normalizedLimit.toFixed(2)}%`;
-}
-
-function getSupplierIfraSupportLabel({
-  ifraPercent = null,
-  ifraRestrictionState = null,
-  ifraRestrictionLabel = null,
-} = {}) {
-  if (ifraPercent != null && Number.isFinite(Number(ifraPercent))) {
-    return `IFRA shown ${formatIfraValueLabel(ifraPercent)}`;
-  }
-  if (String(ifraRestrictionState || "").trim().toLowerCase() === "no_restriction") {
-    return String(ifraRestrictionLabel || "No restrictions").trim() || "No restrictions";
-  }
-  return null;
 }
 
 function buildSupplierRefreshFeedbackState({
