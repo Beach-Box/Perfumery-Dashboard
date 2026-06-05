@@ -60,6 +60,7 @@ import {
   writeJsonStorage,
   writeTextStorage,
 } from "./lib/browser_storage";
+import { MAIN_APP_TABS } from "./lib/app_tabs";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -82957,16 +82958,7 @@ export default function App() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[
-              ["founder", "🚀 Founder"],
-              ["formulas", "📋 Formulas"],
-              ["build", "🧪 Build"],
-              ["catalog", "🌿 Catalog"],
-              ["advisor", "💡 Advisor"],
-              ["suppliers", "⚙️ Suppliers"],
-              ["inventory", "📦 Inventory"],
-              ["dilution", "💧 Dilution"],
-            ].map(([k, l]) => (
+            {MAIN_APP_TABS.map(([k, l]) => (
               <button
                 key={k}
                 style={mainTabStyle(k)}
