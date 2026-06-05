@@ -100,6 +100,7 @@ import {
   formatSupplierReviewContextValue,
 } from "./lib/supplier_display_helpers";
 import {
+  formatIfraPercent,
   formatIfraValueLabel,
   getSupplierIfraSupportLabel,
 } from "./lib/ifra_display_helpers";
@@ -70849,11 +70850,6 @@ export default function App() {
       )}
     </div>
   );
-  const formatIfraPercent = (value) => {
-    if (!Number.isFinite(value)) return "—";
-    const digits = Math.abs(value) >= 1 ? 2 : 3;
-    return `${value.toFixed(digits)}%`;
-  };
   const renderFinishedProductIfraControls = (
     scopeKey,
     { compact = false } = {}

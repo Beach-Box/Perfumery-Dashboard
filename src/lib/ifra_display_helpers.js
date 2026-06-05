@@ -19,3 +19,9 @@ export function getSupplierIfraSupportLabel({
   }
   return null;
 }
+
+export function formatIfraPercent(value) {
+  if (!Number.isFinite(value)) return "—";
+  const digits = Math.abs(value) >= 1 ? 2 : 3;
+  return `${value.toFixed(digits)}%`;
+}

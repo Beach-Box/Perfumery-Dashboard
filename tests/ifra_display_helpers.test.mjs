@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  formatIfraPercent,
   formatIfraValueLabel,
   getSupplierIfraSupportLabel,
 } from "../src/lib/ifra_display_helpers.js";
@@ -71,4 +72,26 @@ test("getSupplierIfraSupportLabel falls back to null without usable support", ()
     getSupplierIfraSupportLabel({ ifraRestrictionState: "restricted" }),
     null
   );
+});
+
+test("formatIfraPercent falls back for non-finite and non-number values", () => {
+  assert.equal(formatIfraPercent(undefined), "—");
+  assert.equal(formatIfraPercent(null), "—");
+  assert.equal(formatIfraPercent("0.4"), "—");
+  assert.equal(formatIfraPercent(Number.NaN), "—");
+  assert.equal(formatIfraPercent(Number.POSITIVE_INFINITY), "—");
+});
+
+test("formatIfraPercent formats zero and values below one with three decimals", () => {
+  assert.equal(formatIfraPercent(0), "0.000%");
+  assert.equal(formatIfraPercent(0.4), "0.400%");
+  assert.equal(formatIfraPercent(0.1234), "0.123%");
+  assert.equal(formatIfraPercent(-0.4), "-0.400%");
+});
+
+test("formatIfraPercent formats values at or above one with two decimals", () => {
+  assert.equal(formatIfraPercent(1), "1.00%");
+  assert.equal(formatIfraPercent(1.234), "1.23%");
+  assert.equal(formatIfraPercent(-1), "-1.00%");
+  assert.equal(formatIfraPercent(-1.234), "-1.23%");
 });
