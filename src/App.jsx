@@ -120,6 +120,7 @@ import { DossierCountCard } from "./components/DossierCountCard";
 import { DossierGuidanceBlock } from "./components/DossierGuidanceBlock";
 import { IfraInlineValue } from "./components/IfraInlineValue";
 import { IfraStateBadge } from "./components/IfraStateBadge";
+import { IngredientDetailDescriptionCallout } from "./components/IngredientDetailDescriptionCallout";
 import { ScoreBar } from "./components/ScoreBar";
 import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedbackPanel";
 import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
@@ -57464,20 +57465,7 @@ function IngredientDetailPanel({
           </button>
         </div>
 
-        <p
-          style={{
-            fontSize: 12,
-            color: "#94A3B8",
-            lineHeight: 1.7,
-            margin: "0 0 18px",
-            padding: "12px 16px",
-            background: "#060E1E",
-            borderRadius: 10,
-            border: `1px solid ${BORDER}`,
-          }}
-        >
-          {dossierDescription}
-        </p>
+        <IngredientDetailDescriptionCallout description={dossierDescription} />
 
         <div
           style={{
