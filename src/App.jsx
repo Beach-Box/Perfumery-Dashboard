@@ -95,6 +95,7 @@ import {
   getEvidenceCandidateConfidenceLabel,
   getEvidenceCandidateDisplayValue,
 } from "./lib/evidence_display_helpers";
+import { formatSupplierAdapterPricePointsForTextarea } from "./lib/supplier_display_helpers";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -63958,20 +63959,6 @@ function buildEmptySupplierAdapterDraft() {
     productDescription: "",
     sourceNote: "",
   };
-}
-
-function formatSupplierAdapterPricePointsForTextarea(pricePoints = []) {
-  return (Array.isArray(pricePoints) ? pricePoints : [])
-    .map((point) => {
-      const qty = point?.[0];
-      const unit = point?.[1];
-      const price = point?.[2];
-      const dilution = String(point?.[3] || "").trim();
-      if (qty == null || !unit || price == null) return null;
-      return `${qty} ${unit} ${price}${dilution ? ` ${dilution}` : ""}`;
-    })
-    .filter(Boolean)
-    .join("\n");
 }
 
 function buildEmptyFormulaCriticalCorrectionDraft() {
