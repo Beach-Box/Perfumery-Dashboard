@@ -105,6 +105,10 @@ import {
   getSupplierIfraSupportLabel,
 } from "./lib/ifra_display_helpers";
 import {
+  getMaterialDisplayName,
+  getMaterialRuntimeKeyCaption,
+} from "./lib/material_display_helpers";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -31734,17 +31738,6 @@ function getNormalizationGroupKey(name, record = DB[name]) {
   );
 }
 
-function getMaterialDisplayName(name, record = DB[name]) {
-  const displayName = String(record?.displayName || "").trim();
-  return displayName || name;
-}
-
-function getMaterialRuntimeKeyCaption(name, record = DB[name]) {
-  const displayName = String(record?.displayName || "").trim();
-  if (!displayName || displayName === name) return null;
-  return name;
-}
-
 function buildIngredientSearchText(name, record = DB[name]) {
   const parts = [
     name,
@@ -56544,7 +56537,9 @@ function IngredientDetailPanel({
       Object.keys(DB)
         .filter((catalogName) => catalogName !== name)
         .sort((a, b) =>
-          getMaterialDisplayName(a).localeCompare(getMaterialDisplayName(b))
+          getMaterialDisplayName(a, DB[a]).localeCompare(
+            getMaterialDisplayName(b, DB[b])
+          )
         ),
     [name, manualRecordEdit, pricesState]
   );
@@ -57462,7 +57457,10 @@ function IngredientDetailPanel({
     const conflictingCatalogName = Object.keys(DB).find((catalogName) => {
       if (catalogName === name) return false;
       if (catalogName === trimmedDisplayName) return true;
-      return getMaterialDisplayName(catalogName).trim() === trimmedDisplayName;
+      return (
+        getMaterialDisplayName(catalogName, DB[catalogName]).trim() ===
+        trimmedDisplayName
+      );
     });
     if (
       trimmedDisplayName &&
@@ -58965,9 +58963,15 @@ function IngredientDetailPanel({
                           <option
                             key={`${name}-supplier-target-${catalogName}`}
                             value={catalogName}
-                            label={getMaterialDisplayName(catalogName)}
+                            label={getMaterialDisplayName(
+                              catalogName,
+                              DB[catalogName]
+                            )}
                           >
-                            {getMaterialDisplayName(catalogName)}
+                            {getMaterialDisplayName(
+                              catalogName,
+                              DB[catalogName]
+                            )}
                           </option>
                         ))}
                       </datalist>
