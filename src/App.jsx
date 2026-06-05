@@ -115,9 +115,9 @@ import {
   normalizeManualComparableValue,
   normalizeManualRecordText,
 } from "./lib/manual_record_helpers";
+import { CatalogMetadataBadges } from "./components/CatalogMetadataBadges";
 import { IfraInlineValue } from "./components/IfraInlineValue";
 import { IfraStateBadge } from "./components/IfraStateBadge";
-import { MetadataBadge } from "./components/MetadataBadge";
 import { ScoreBar } from "./components/ScoreBar";
 import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedbackPanel";
 import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
@@ -32096,27 +32096,6 @@ function getIngredientIfraVisibility(
   };
 }
 
-function CatalogMetadataBadges({ name, compact = false, style = {} }) {
-  const metadata = getIngredientCatalogMetadata(name);
-  if (!metadata.rowBadges.length) return null;
-
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        gap: 4,
-        flexWrap: "wrap",
-        alignItems: "center",
-        ...style,
-      }}
-    >
-      {metadata.rowBadges.map((badge) => (
-        <MetadataBadge key={badge.key} badge={badge} compact={compact} />
-      ))}
-    </span>
-  );
-}
-
 Object.entries(DB).forEach(([name, d]) => {
   const resolvedIdentity = resolveIngredientIdentity(name);
   if (
@@ -57538,7 +57517,7 @@ function IngredientDetailPanel({
                 {noteTypeLabel}
               </span>
               <IfraStateBadge ifraData={ifraData} />
-              <CatalogMetadataBadges name={name} compact />
+              <CatalogMetadataBadges metadata={catalogMetadata} compact />
               <span
                 style={{
                   background: "#071826",
@@ -83074,7 +83053,10 @@ export default function App() {
                                     }}
                                   >
                                     <span>{displayName}</span>
-                                    <CatalogMetadataBadges name={ing.name} compact />
+                                    <CatalogMetadataBadges
+                                      metadata={getIngredientCatalogMetadata(ing.name)}
+                                      compact
+                                    />
                                   </div>
                                   {ing.isBenchStock ? (
                                     <div
@@ -84843,7 +84825,7 @@ export default function App() {
                                               {d?.scentClass} · {d?.type || ""}
                                             </span>
                                             <CatalogMetadataBadges
-                                              name={nm}
+                                              metadata={getIngredientCatalogMetadata(nm)}
                                               compact
                                             />
                                           </div>
@@ -85903,7 +85885,10 @@ export default function App() {
                                   ? `${visibleDescriptorText.summary.slice(0, 50)}…`
                                   : ""}
                               </span>
-                              <CatalogMetadataBadges name={name} compact />
+                              <CatalogMetadataBadges
+                                metadata={getIngredientCatalogMetadata(name)}
+                                compact
+                              />
                             </div>
                           </div>
                           <span
@@ -86143,7 +86128,7 @@ export default function App() {
                                           )}
                                         </span>
                                         <CatalogMetadataBadges
-                                          name={name}
+                                          metadata={getIngredientCatalogMetadata(name)}
                                           compact
                                         />
                                       </div>
@@ -87371,7 +87356,10 @@ export default function App() {
                             {TB[d.type]} {d.type}
                           </span>
                           <IfraStateBadge ifraData={ifraData} compact />
-                          <CatalogMetadataBadges name={name} compact />
+                          <CatalogMetadataBadges
+                            metadata={getIngredientCatalogMetadata(name)}
+                            compact
+                          />
                         </div>
                         <div
                           style={{
