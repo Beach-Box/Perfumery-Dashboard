@@ -134,6 +134,7 @@ import { SupplierPricePointChips } from "./components/SupplierPricePointChips";
 import { SupplierVariantBadges } from "./components/SupplierVariantBadges";
 import { SupplierVariantDetailRows } from "./components/SupplierVariantDetailRows";
 import { SupplierVariantRefreshButtons } from "./components/SupplierVariantRefreshButtons";
+import { SupplierVariantReviewContext } from "./components/SupplierVariantReviewContext";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -59593,44 +59594,10 @@ function IngredientDetailPanel({
 	                    <SupplierRefreshFeedbackPanel
 	                      feedback={refreshFeedback}
 	                    />
-	                    {reviewContextRows.length > 0 ? (
-                      <div
-                        style={{
-                          background: "#2A0F14",
-                          border: "1px solid #7F1D1D",
-                          borderRadius: 8,
-                          padding: "8px 10px",
-                          fontSize: 8.4,
-                          color: "#FCA5A5",
-                          lineHeight: 1.55,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 7.8,
-                            color: "#FCA5A5",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.08em",
-                            fontWeight: 700,
-                            marginBottom: 4,
-                          }}
-                        >
-                          Review-aware supplier conflict context
-                        </div>
-	                        {reviewContextRows.map((reviewRow) => (
-                          <div
-                            key={`${supplierName}-${reviewRow.key}`}
-                            style={{ marginTop: 4 }}
-                          >
-                            <span style={{ color: "#FECACA", fontWeight: 700 }}>
-                              {reviewRow.label}:
-                            </span>
-                            {" "}
-                            {reviewRow.text}
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
+	                    <SupplierVariantReviewContext
+	                      rows={reviewContextRows}
+	                      supplierName={supplierName}
+	                    />
                   </div>
                 );
               })}
