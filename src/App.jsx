@@ -86,6 +86,12 @@ import {
   TB,
 } from "./lib/app_style_tokens";
 import {
+  compactRefreshFieldLabelList,
+  formatHumanList,
+  formatSupplierAvailabilityLabel,
+  pluralizeLabel,
+} from "./lib/app_formatters";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -54583,15 +54589,6 @@ const MANUAL_RECORD_BASE_SNAPSHOTS = new Map();
 
 const MAX_MANUAL_SDS_ATTACHMENT_BYTES = 1.5 * 1024 * 1024;
 
-function formatSupplierAvailabilityLabel(status = "unknown") {
-  const normalizedStatus = String(status || "unknown").trim().toLowerCase();
-  return (
-    SUPPLIER_AVAILABILITY_LABELS[normalizedStatus] ||
-    normalizedStatus ||
-    "Unknown"
-  );
-}
-
 function normalizeManualRecordText(value) {
   const normalizedValue = String(value ?? "").trim();
   return normalizedValue || null;
@@ -54876,16 +54873,6 @@ function getSupplierIfraSupportLabel({
     return String(ifraRestrictionLabel || "No restrictions").trim() || "No restrictions";
   }
   return null;
-}
-
-function compactRefreshFieldLabelList(labels = []) {
-  const safeLabels = (Array.isArray(labels) ? labels : [])
-    .map((label) => String(label || "").trim())
-    .filter(Boolean);
-  if (!safeLabels.length) return "";
-  if (safeLabels.length === 1) return safeLabels[0];
-  if (safeLabels.length === 2) return `${safeLabels[0]} + ${safeLabels[1]}`;
-  return `${safeLabels[0]} + ${safeLabels[1]} +${safeLabels.length - 2} more`;
 }
 
 function buildSupplierRefreshFeedbackState({
@@ -55616,20 +55603,6 @@ const DOSSIER_STATUS_META = {
     description: "There is not enough useful information in this area yet.",
   },
 };
-
-function pluralizeLabel(count, singular, plural = `${singular}s`) {
-  return count === 1 ? singular : plural;
-}
-
-function formatHumanList(items = []) {
-  const cleanItems = items.filter(Boolean);
-  if (!cleanItems.length) return "None";
-  if (cleanItems.length === 1) return cleanItems[0];
-  if (cleanItems.length === 2) return `${cleanItems[0]} and ${cleanItems[1]}`;
-  return `${cleanItems.slice(0, -1).join(", ")}, and ${
-    cleanItems[cleanItems.length - 1]
-  }`;
-}
 
 function addUniqueDossierLine(target, message) {
   if (!message || target.includes(message)) return;
