@@ -70,6 +70,14 @@ test("catalog opens an ingredient detail dossier without crashing", async ({ pag
         .isVisible()
         .catch(() => false));
     expect(hasSupplierSurface).toBe(true);
+
+    await expect(
+      page
+        .getByRole("button", {
+          name: /Refresh Prices|Refresh All Safe Fields/i,
+        })
+        .first()
+    ).toBeVisible();
   }
 
   const editRecordButton = page.getByRole("button", { name: /Edit Record/i });
