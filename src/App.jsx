@@ -92,6 +92,10 @@ import {
   pluralizeLabel,
 } from "./lib/app_formatters";
 import {
+  getEvidenceCandidateConfidenceLabel,
+  getEvidenceCandidateDisplayValue,
+} from "./lib/evidence_display_helpers";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -62447,18 +62451,6 @@ function normalizeEvidenceCandidateReviewStatus(value) {
     return "rejected";
   }
   return "pending_review";
-}
-
-function getEvidenceCandidateDisplayValue(candidate) {
-  if (candidate?.displayValue) return candidate.displayValue;
-  if (typeof candidate?.candidateValue === "boolean") {
-    return String(candidate.candidateValue);
-  }
-  return candidate?.candidateValue || "—";
-}
-
-function getEvidenceCandidateConfidenceLabel(candidate) {
-  return candidate?.confidenceLabel || candidate?.confidence || "unknown";
 }
 
 function buildEvidenceCandidateSourceSnapshot(candidate) {
