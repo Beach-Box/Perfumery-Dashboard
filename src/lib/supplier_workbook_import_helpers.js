@@ -7,6 +7,7 @@ import {
 } from "./ifra_combined_package.js";
 import {
   buildLocalDraftIngredientArtifacts,
+  parseVaporPressureInput,
   SUPPLIER_ADAPTER_TRUST_LANE_META,
 } from "./perfumer_runtime_helpers.js";
 
@@ -623,6 +624,7 @@ function buildSupplierLayerRecord({
   const normalizedAvailability = normalizeAvailability(productRow?.availability);
   const normalizedIfraPercent = parsePercentValue(productRow?.ifra_percent_shown);
   const normalizedCasSupport = parseMaterialCasSupport(productRow?.cas_shown);
+  const normalizedVpInput = parseVaporPressureInput(productRow?.vp);
   const notes = [
     "Trusted supplier workbook facts were captured into the supplier layer.",
     canAutoApplyToPricing && mappedCatalogName
@@ -659,6 +661,10 @@ function buildSupplierLayerRecord({
       availabilityStatusLabel:
         AVAILABILITY_LABELS[normalizedAvailability] || "Unknown",
       ifraPercent: normalizedIfraPercent,
+      ifraRestrictionState:
+        String(productRow?.ifra_restriction_state || "").trim() || null,
+      ifraRestrictionLabel:
+        String(productRow?.ifra_restriction_label || "").trim() || null,
       sdsUrl: normalizeUrl(productRow?.sds_url),
       inci: String(productRow?.inci_shown || "").trim() || null,
       casShown: normalizedCasSupport.displayValue || null,
@@ -673,11 +679,17 @@ function buildSupplierLayerRecord({
       dilutionOrCarrier:
         String(productRow?.dilution_or_carrier || "").trim() || null,
       technicalNotes: String(productRow?.technical_notes || "").trim() || null,
+      vaporPressureRaw: normalizedVpInput.normalizedRaw || null,
+      vaporPressureObservations: normalizedVpInput.observations,
+      vaporPressureDisplayValue: normalizedVpInput.displayValue || null,
       molecularSupport: {
         MW: parseNumberValue(productRow?.mw),
         xLogP: parseNumberValue(productRow?.xlogp),
         TPSA: parseNumberValue(productRow?.tpsa),
-        VP: parseNumberValue(productRow?.vp),
+        VP:
+          normalizedVpInput.legacyModelValueMmHg != null
+            ? normalizedVpInput.legacyModelValueMmHg
+            : parseNumberValue(productRow?.vp),
         ODT: parseNumberValue(productRow?.odt),
       },
       importedFromWorkbook: true,
@@ -983,6 +995,10 @@ function extractLabelValueFromCleanText(cleanText, labelPatterns = []) {
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
+  const looksLikeStructuredLabelLine = (line = "") =>
+    /^(?:CAS(?:\s+(?:No\.?|Number))?|INCI(?:\s+Name)?|IFRA|SDS|MSDS|IUPAC(?:\s+Name)?|Synonyms?|Alternate Names?|Alternative Names?|Other Names?|Note(?:\s+Role)?|Material Type|Vapor Pressure|VP)\b/i.test(
+      String(line || "").trim()
+    );
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     for (const pattern of labelPatterns) {
@@ -993,12 +1009,45 @@ function extractLabelValueFromCleanText(cleanText, labelPatterns = []) {
       if (inlineMatch?.[1]) {
         return inlineMatch[1].trim();
       }
-      if (pattern.test(line) && lines[index + 1]) {
+      if (
+        pattern.test(line) &&
+        lines[index + 1] &&
+        !looksLikeStructuredLabelLine(lines[index + 1])
+      ) {
         return lines[index + 1].trim();
       }
     }
   }
   return "";
+}
+
+function extractStructuredListFromCleanText(cleanText, labelPatterns = []) {
+  const rawValue = extractLabelValueFromCleanText(cleanText, labelPatterns);
+  if (!rawValue) return [];
+  return Array.from(
+    new Set(
+      String(rawValue || "")
+        .split(/[;,/]+/)
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+function extractFraterworksDescription(bodyHtml = "", cleanText = "") {
+  const normalizedText = cleanText || cleanShopifyHtmlToText(bodyHtml);
+  const lines = String(normalizedText || "")
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const filteredLines = lines.filter(
+    (line) =>
+      !/^(?:CAS(?:\s+(?:No\.?|Number))?|INCI(?:\s+Name)?|IFRA|SDS|MSDS|IUPAC(?:\s+Name)?|Synonyms?|Alternate Names?|Alternative Names?|Other Names?|Note(?:\s+Role)?|Material Type|Vapor Pressure|VP)\b/i.test(
+        line
+      )
+  );
+  const joined = filteredLines.join("\n\n").trim();
+  return joined || normalizedText || "";
 }
 
 function extractFraterworksSdsUrl(bodyHtml = "", productUrl = "") {
@@ -1054,21 +1103,105 @@ function extractFraterworksIfraPercent(bodyHtml = "", cleanText = "") {
   return null;
 }
 
-function extractFraterworksComplianceFields(bodyHtml = "", productUrl = "") {
-  const cleanText = cleanShopifyHtmlToText(bodyHtml);
+function extractFraterworksRestrictionSupport(bodyHtml = "", cleanText = "") {
+  const ifraPercent = extractFraterworksIfraPercent(bodyHtml, cleanText);
+  if (ifraPercent != null) {
+    return {
+      ifraPercent,
+      restrictionState: "limited",
+      restrictionLabel: `${ifraPercent}% shown`,
+    };
+  }
+
+  const haystack = [String(bodyHtml || ""), String(cleanText || "")]
+    .filter(Boolean)
+    .join("\n");
+  if (
+    /(?:no|without)\s+(?:ifra\s+)?restrictions?/i.test(haystack) ||
+    /(?:ifra|restriction)[^\n]{0,80}\bno restrictions?\b/i.test(haystack) ||
+    /\bunrestricted\b/i.test(haystack)
+  ) {
+    return {
+      ifraPercent: null,
+      restrictionState: "no_restriction",
+      restrictionLabel: "No restrictions",
+    };
+  }
+
+  return {
+    ifraPercent: null,
+    restrictionState: null,
+    restrictionLabel: null,
+  };
+}
+
+export function extractFraterworksComplianceFields(
+  bodyHtml = "",
+  productUrl = "",
+  { supplementalHtml = "" } = {}
+) {
+  const primaryHtml = String(bodyHtml || "");
+  const supplementalVisibleHtml = String(supplementalHtml || "");
+  const combinedHtml = [primaryHtml, supplementalVisibleHtml]
+    .filter(Boolean)
+    .join("\n");
+  const primaryCleanText = cleanShopifyHtmlToText(primaryHtml);
+  const supplementalCleanText = cleanShopifyHtmlToText(supplementalVisibleHtml);
+  const cleanText = [primaryCleanText, supplementalCleanText]
+    .filter(Boolean)
+    .join("\n\n");
+  const description = extractFraterworksDescription(combinedHtml, cleanText);
   const inciValue = extractLabelValueFromCleanText(cleanText, [
     /INCI(?:\s+Name)?/i,
   ]);
   const casValue = extractLabelValueFromCleanText(cleanText, [
     /CAS(?:\s+(?:No\.?|Number))?/i,
   ]);
+  const iupacName = extractLabelValueFromCleanText(cleanText, [
+    /IUPAC(?:\s+Name)?/i,
+  ]);
+  const alternateNames = extractStructuredListFromCleanText(cleanText, [
+    /Alternate Names?/i,
+    /Alternative Names?/i,
+    /Other Names?/i,
+  ]);
+  const synonyms = extractStructuredListFromCleanText(cleanText, [
+    /Synonyms?/i,
+  ]);
+  const noteRole = extractLabelValueFromCleanText(cleanText, [
+    /Note(?:\s+Role)?/i,
+    /Material Role/i,
+  ]);
+  const materialType = extractLabelValueFromCleanText(cleanText, [
+    /Material Type/i,
+  ]);
+  const vaporPressureRaw = extractLabelValueFromCleanText(cleanText, [
+    /Vapor Pressure/i,
+    /\bVP\b/i,
+  ]);
+  const vaporPressure = parseVaporPressureInput(vaporPressureRaw);
   const casSupport = parseMaterialCasSupport(casValue);
+  const restrictionSupport = extractFraterworksRestrictionSupport(
+    combinedHtml,
+    cleanText
+  );
 
   return {
     cleanText,
-    sdsUrl: extractFraterworksSdsUrl(bodyHtml, productUrl),
-    ifraPercent: extractFraterworksIfraPercent(bodyHtml, cleanText),
+    description,
+    sdsUrl: extractFraterworksSdsUrl(combinedHtml, productUrl),
+    ifraPercent: restrictionSupport.ifraPercent,
+    restrictionState: restrictionSupport.restrictionState,
+    restrictionLabel: restrictionSupport.restrictionLabel,
     inci: inciValue || null,
+    iupacName: iupacName || null,
+    alternateNames,
+    synonyms,
+    noteRole: String(noteRole || "").trim().toLowerCase() || null,
+    materialType: String(materialType || "").trim() || null,
+    vaporPressureRaw: vaporPressure.normalizedRaw || null,
+    vaporPressureObservations: vaporPressure.observations || [],
+    vaporPressureDisplayValue: vaporPressure.displayValue || null,
     casSupport,
   };
 }
@@ -1993,16 +2126,24 @@ function buildFraterworksJsonParsedWorkbook(
     seenKeys.add(supplierProductKey);
     usableProductCount += 1;
 
-    const cleanedDescription = cleanShopifyHtmlToText(product?.body_html);
-    const scentSummary = deriveScentSummaryFromDescription(cleanedDescription);
-    const tags = normalizeTagList(product?.tags);
-    const tagsSummary = tags.join(", ");
-    const materialType = deriveFraterworksMaterialType(product?.product_type, tags);
-    const noteRole = deriveFraterworksNoteRole(product?.product_type, tags);
     const complianceFields = extractFraterworksComplianceFields(
       product?.body_html,
       productUrl
     );
+    const cleanedDescription =
+      complianceFields.description ||
+      cleanShopifyHtmlToText(
+        product?.body_html || product?.description || product?.body || ""
+      );
+    const scentSummary = deriveScentSummaryFromDescription(cleanedDescription);
+    const tags = normalizeTagList(product?.tags);
+    const tagsSummary = tags.join(", ");
+    const materialType =
+      complianceFields.materialType ||
+      deriveFraterworksMaterialType(product?.product_type, tags);
+    const noteRole =
+      complianceFields.noteRole ||
+      deriveFraterworksNoteRole(product?.product_type, tags);
     const variants = Array.isArray(product?.variants) ? product.variants : [];
     const variantFacts = [];
     const variantDilutions = new Set();
@@ -2138,6 +2279,26 @@ function buildFraterworksJsonParsedWorkbook(
         ? complianceFields.casSupport
         : skuCasSupport;
 
+    if (
+      complianceFields.casSupport.hasValue &&
+      skuCasSupport.hasStructuredCas &&
+      !compareMaterialCasSupportValues(
+        complianceFields.casSupport.displayValue,
+        skuCasSupport.displayValue
+      )
+    ) {
+      warnings.push(
+        buildRowWarning({
+          sheetName: FRATERWORKS_JSON_WARNING_SHEET,
+          rowNumber,
+          supplierProductKey,
+          severity: "warning",
+          message:
+            "Structured page CAS was kept instead of a conflicting SKU-derived CAS candidate.",
+        })
+      );
+    }
+
     if (casCandidates.size > 1) {
       warnings.push(
         buildRowWarning({
@@ -2208,6 +2369,8 @@ function buildFraterworksJsonParsedWorkbook(
       dilution_or_carrier:
         variantDilutions.size === 1 ? Array.from(variantDilutions)[0] : "",
       ifra_percent_shown: complianceFields.ifraPercent ?? "",
+      ifra_restriction_state: complianceFields.restrictionState || "",
+      ifra_restriction_label: complianceFields.restrictionLabel || "",
       sds_url: complianceFields.sdsUrl || "",
       inci_shown: complianceFields.inci || "",
       cas_shown: productCasSupport.displayValue || "",
@@ -2218,9 +2381,22 @@ function buildFraterworksJsonParsedWorkbook(
         String(product?.product_type || "").trim()
           ? `Product type: ${String(product.product_type).trim()}`
           : null,
+        complianceFields.iupacName
+          ? `IUPAC: ${complianceFields.iupacName}`
+          : null,
+        complianceFields.alternateNames.length > 0
+          ? `Alternate names: ${complianceFields.alternateNames.join(", ")}`
+          : null,
+        complianceFields.synonyms.length > 0
+          ? `Synonyms: ${complianceFields.synonyms.join(", ")}`
+          : null,
+        complianceFields.vaporPressureRaw
+          ? `Vapor pressure: ${complianceFields.vaporPressureRaw}`
+          : null,
         tagsSummary ? `Tags: ${tagsSummary}` : null,
         getShopifyImageUrl(product) ? `Image: ${getShopifyImageUrl(product)}` : null,
       ]),
+      vp: complianceFields.vaporPressureRaw || "",
       create_local_draft:
         mappingAction === "create_local_draft" ? "yes" : "",
       local_draft_material_name:
@@ -2247,6 +2423,8 @@ function buildFraterworksJsonParsedWorkbook(
     });
 
     extraPageFactsByKey[supplierProductKey] = {
+      description: cleanedDescription || null,
+      scentSummary: scentSummary || null,
       imageUrl: getShopifyImageUrl(product),
       tagsSummary,
       vendorContext: String(product?.vendor || "").trim() || null,
@@ -2256,11 +2434,23 @@ function buildFraterworksJsonParsedWorkbook(
       shopifyHandle: handle,
       variantFacts,
       ifraPercent: complianceFields.ifraPercent,
+      ifraRestrictionState: complianceFields.restrictionState || null,
+      ifraRestrictionLabel: complianceFields.restrictionLabel || null,
       sdsUrl: complianceFields.sdsUrl,
       inci: complianceFields.inci,
       casShown: productCasSupport.displayValue || null,
       casState: productCasSupport.state,
       casValues: productCasSupport.values,
+      iupacName: complianceFields.iupacName || null,
+      alternateNames: complianceFields.alternateNames || [],
+      synonyms: complianceFields.synonyms || [],
+      noteRole: noteRole || null,
+      materialType: materialType || null,
+      vaporPressureRaw: complianceFields.vaporPressureRaw || null,
+      vaporPressureObservations:
+        complianceFields.vaporPressureObservations || [],
+      vaporPressureDisplayValue:
+        complianceFields.vaporPressureDisplayValue || null,
       optionNames: Array.isArray(product?.options)
         ? product.options
             .map((option) => String(option?.name || option || "").trim())
@@ -2378,6 +2568,14 @@ export function buildFraterworksJsonPasteImportPlan(
     ]);
     record.pageFacts = {
       ...(record.pageFacts || {}),
+      productDescription:
+        extraPageFacts.description ||
+        record.pageFacts?.productDescription ||
+        null,
+      scentSummary:
+        extraPageFacts.scentSummary ||
+        record.pageFacts?.scentSummary ||
+        null,
       imageUrl: extraPageFacts.imageUrl || null,
       tagsSummary: extraPageFacts.tagsSummary || null,
       vendorContext: extraPageFacts.vendorContext || null,
@@ -2389,11 +2587,36 @@ export function buildFraterworksJsonPasteImportPlan(
         extraPageFacts.ifraPercent != null
           ? extraPageFacts.ifraPercent
           : record.pageFacts?.ifraPercent ?? null,
+      ifraRestrictionState:
+        extraPageFacts.ifraRestrictionState ||
+        record.pageFacts?.ifraRestrictionState ||
+        null,
+      ifraRestrictionLabel:
+        extraPageFacts.ifraRestrictionLabel ||
+        record.pageFacts?.ifraRestrictionLabel ||
+        null,
       sdsUrl: extraPageFacts.sdsUrl || record.pageFacts?.sdsUrl || null,
       inci: extraPageFacts.inci || record.pageFacts?.inci || null,
       casShown: extraPageFacts.casShown || record.pageFacts?.casShown || null,
       casState: extraPageFacts.casState || record.pageFacts?.casState || "unknown",
       casValues: extraPageFacts.casValues || record.pageFacts?.casValues || [],
+      iupacName: extraPageFacts.iupacName || record.pageFacts?.iupacName || null,
+      alternateNames:
+        extraPageFacts.alternateNames || record.pageFacts?.alternateNames || [],
+      synonyms: extraPageFacts.synonyms || record.pageFacts?.synonyms || [],
+      noteRole: extraPageFacts.noteRole || record.pageFacts?.noteRole || null,
+      materialType:
+        extraPageFacts.materialType || record.pageFacts?.materialType || null,
+      vaporPressureRaw:
+        extraPageFacts.vaporPressureRaw || record.pageFacts?.vaporPressureRaw || null,
+      vaporPressureObservations:
+        extraPageFacts.vaporPressureObservations ||
+        record.pageFacts?.vaporPressureObservations ||
+        [],
+      vaporPressureDisplayValue:
+        extraPageFacts.vaporPressureDisplayValue ||
+        record.pageFacts?.vaporPressureDisplayValue ||
+        null,
       optionNames: extraPageFacts.optionNames || [],
       variantFacts: extraPageFacts.variantFacts || [],
       importedFromFraterworksJsonPaste: true,

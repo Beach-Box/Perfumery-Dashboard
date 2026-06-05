@@ -61,6 +61,7 @@ import {
   writeTextStorage,
 } from "./lib/browser_storage";
 import {
+  FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
   createPersistedFormulaRecord,
@@ -75,6 +76,11 @@ import {
 } from "./lib/formula_runtime_helpers";
 import {
   buildCapitalConstrainedLaunchRecommendation,
+  buildBenchStockDuplicateDraft,
+  buildBenchStockEffectiveActivePercent,
+  buildBenchStockRuntimeSummary,
+  buildVaporPressureDisplay,
+  deriveVisibleMaterialDescriptorText,
   buildFormulaCriticalDataAudit,
   buildFormulaFieldCorrectionReviewCandidate,
   buildFormulaMissingMaterialReviewCandidates,
@@ -116,7 +122,9 @@ import {
   getLivePricingForIngredient,
   LAUNCH_READINESS_STATUS_META,
   normalizeFounderLaunchScenarioRecord,
+  normalizeLooseNumericInput,
   parseSupplierAdapterPackLines,
+  parseVaporPressureInput,
   PERFORMANCE_FIXATIVE_NAMES,
   replaceIngredientInItems,
   SKU_ECONOMICS_STATUS_META,
@@ -132,6 +140,7 @@ import {
   buildFraterworksJsonPasteImportPlan,
   deriveFraterworksProductJsonUrl,
   buildTrustedSupplierWorkbookImportPlan,
+  extractFraterworksComplianceFields,
   normalizeFraterworksJsonPastePayload,
   parseTrustedSupplierWorkbookArrayBuffer,
 } from "./lib/supplier_workbook_import_helpers";
@@ -32005,16 +32014,163 @@ function getIngredientIfraData(name) {
   };
 }
 
-function getIngredientIfraVisibility(name) {
-  const ifraData = getIngredientIfraData(name);
-  const record = DB[name] || {};
+function collectRuntimeIfraSupportValues(
+  livePricing = {},
+  supplierRecords = []
+) {
+  const normalizedValues = new Map();
+  let hasNoRestrictionSupport = false;
+  const pushValue = (value) => {
+    const parsed = normalizeLooseNumericInput(value);
+    if (!Number.isFinite(parsed) || parsed < 0) return;
+    normalizedValues.set(parsed.toFixed(4), parsed);
+  };
+  const pushRestrictionState = (value) => {
+    if (String(value || "").trim().toLowerCase() === "no_restriction") {
+      hasNoRestrictionSupport = true;
+    }
+  };
+  Object.values(livePricing || {}).forEach((supplierData) => {
+    pushValue(supplierData?.ifraPercent);
+    pushRestrictionState(supplierData?.ifraRestrictionState);
+  });
+  (Array.isArray(supplierRecords) ? supplierRecords : []).forEach((record) => {
+    pushValue(record?.pageFacts?.ifraPercent);
+    pushRestrictionState(record?.pageFacts?.ifraRestrictionState);
+  });
+  const values = Array.from(normalizedValues.values()).sort((a, b) => a - b);
+  return {
+    values,
+    primaryValue: values[0] ?? null,
+    hasNoRestrictionSupport,
+    hasConflictingValues:
+      values.length > 1 || (hasNoRestrictionSupport && values.length > 0),
+  };
+}
+
+function getIngredientIfraVisibility(
+  name,
+  {
+    record = null,
+    livePricing = null,
+    supplierRecords = [],
+    completenessReport = null,
+  } = {}
+) {
+  const safeRecord = record || DB[name] || {};
+  const structuredIfraData = getIngredientIfraData(name);
+  const supplierIfraSupport = collectRuntimeIfraSupportValues(
+    livePricing,
+    supplierRecords
+  );
+  const hasIfraConflict =
+    supplierIfraSupport.hasConflictingValues ||
+    Boolean(
+      completenessReport?.hasActiveManualConflict &&
+        (completenessReport?.conflictFieldKeys || []).some((fieldKey) =>
+          ["ifra", "ifraPercent", "cat4", "restriction"].includes(fieldKey)
+        )
+    );
+  const hasManualTrustedIfraSupport = Boolean(
+    completenessReport?.hasStrongManualIfraSupport ||
+      (safeRecord?.manualSupplierEdited &&
+        !hasIfraConflict &&
+        (supplierIfraSupport.primaryValue != null ||
+          supplierIfraSupport.hasNoRestrictionSupport))
+  );
+  const fallbackIfraLimit =
+    structuredIfraData?.cat4Limit != null
+      ? structuredIfraData.cat4Limit
+      : supplierIfraSupport.primaryValue;
+  const ifraData =
+    structuredIfraData?.cat4Limit != null ||
+    structuredIfraData?.state === "functional_solvent" ||
+    (supplierIfraSupport.primaryValue == null &&
+      !supplierIfraSupport.hasNoRestrictionSupport)
+      ? structuredIfraData
+      : {
+          ...structuredIfraData,
+          state: hasIfraConflict
+            ? "manual_ifra_conflict"
+            : supplierIfraSupport.hasNoRestrictionSupport
+            ? hasManualTrustedIfraSupport
+              ? "manual_trusted_no_restriction"
+              : "supplier_no_restriction"
+            : hasManualTrustedIfraSupport
+            ? "manual_trusted_ifra"
+            : "supplier_ifra_shown",
+          stateLabel: hasIfraConflict
+            ? "Supplier IFRA needs review"
+            : supplierIfraSupport.hasNoRestrictionSupport
+            ? hasManualTrustedIfraSupport
+              ? "Strong manual no-restriction support"
+              : "Supplier states no restrictions"
+            : hasManualTrustedIfraSupport
+            ? "Strong manual Cat 4 support"
+            : "Supplier Cat 4 shown",
+          cat4Limit: fallbackIfraLimit,
+          limits: {
+            ...(structuredIfraData?.limits || {}),
+            cat4: fallbackIfraLimit,
+          },
+          hasDefinedLimit: fallbackIfraLimit != null,
+          badgeLabel: hasIfraConflict
+            ? "IFRA Conflict"
+            : supplierIfraSupport.hasNoRestrictionSupport
+            ? "No Restriction"
+            : hasManualTrustedIfraSupport
+            ? "Manual IFRA"
+            : "Supplier IFRA",
+          badgeStyle: hasIfraConflict
+            ? {
+                background: "#3F0D12",
+                color: "#FCA5A5",
+                borderColor: "#991B1B",
+              }
+            : hasManualTrustedIfraSupport
+            ? {
+                background: "#082F49",
+                color: "#7DD3FC",
+                borderColor: "#0369A1",
+              }
+            : supplierIfraSupport.hasNoRestrictionSupport
+            ? {
+                background: "#052E16",
+                color: "#86EFAC",
+                borderColor: "#166534",
+              }
+            : {
+                background: "#251404",
+                color: "#FCD34D",
+                borderColor: "#B45309",
+              },
+        };
+  const valueTone =
+    hasIfraConflict
+      ? "conflict"
+      : ifraData?.cat4Limit != null
+      ? "defined"
+      : ifraData?.state === "functional_solvent" ||
+        supplierIfraSupport.hasNoRestrictionSupport
+      ? "no_restriction"
+      : "missing";
+  const valueLabel =
+    ifraData?.cat4Limit != null
+      ? formatIfraValueLabel(ifraData.cat4Limit)
+      : ifraData?.state === "functional_solvent" ||
+        supplierIfraSupport.hasNoRestrictionSupport
+      ? "No restriction"
+      : "Missing";
   return {
     ifraData,
-    limitLabel: ifraData?.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—",
+    limitLabel: valueLabel,
+    valueLabel,
+    valueTone,
     statusLabel: ifraData?.stateLabel || "Missing",
     hasManualEdit: Boolean(
-      record?.manualIdentityEdited || record?.manualSupplierEdited
+      safeRecord?.manualIdentityEdited || safeRecord?.manualSupplierEdited
     ),
+    hasConflict: hasIfraConflict,
   };
 }
 
@@ -32042,6 +32198,106 @@ function MetadataBadge({ badge, compact = false, style = {} }) {
   );
 }
 
+function SupplierRefreshFeedbackPanel({ feedback, style = {} }) {
+  if (!feedback) return null;
+  const primaryMeta =
+    SUPPLIER_REFRESH_FEEDBACK_META[feedback.outcomeKey] ||
+    SUPPLIER_REFRESH_FEEDBACK_META.unchanged;
+  const badges =
+    Array.isArray(feedback?.badges) && feedback.badges.length > 0
+      ? feedback.badges
+      : [
+          {
+            key: feedback?.outcomeKey || "unchanged",
+            label:
+              SUPPLIER_REFRESH_FEEDBACK_META[feedback?.outcomeKey || "unchanged"]
+                ?.label || "No changes",
+          },
+        ];
+
+  return (
+    <div
+      style={{
+        background: primaryMeta.background,
+        border: `1px solid ${primaryMeta.borderColor}`,
+        borderRadius: 8,
+        padding: "8px 10px",
+        fontSize: 8.4,
+        color: "#E2E8F0",
+        lineHeight: 1.55,
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+          flexWrap: "wrap",
+          marginBottom: 5,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 7.8,
+            color: primaryMeta.color,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+          }}
+        >
+          {feedback?.scopeLabel || "Latest Supplier Refresh"}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
+          {badges.map((badge) => {
+            const badgeMeta =
+              SUPPLIER_REFRESH_FEEDBACK_META[badge?.key] ||
+              SUPPLIER_REFRESH_FEEDBACK_META.unchanged;
+            return (
+              <span
+                key={`${badge?.key || "badge"}-${badge?.label || "label"}`}
+                style={{
+                  background: badgeMeta.background,
+                  border: `1px solid ${badgeMeta.borderColor}`,
+                  borderRadius: 999,
+                  padding: "2px 8px",
+                  fontSize: 7.6,
+                  fontWeight: 700,
+                  color: badgeMeta.color,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {badge?.label || badgeMeta.label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      <div>{feedback?.compactSummary || feedback?.summary}</div>
+      {feedback?.updatedAt ? (
+        <div style={{ marginTop: 4, color: "#94A3B8" }}>
+          {new Date(feedback.updatedAt).toLocaleString()}
+        </div>
+      ) : null}
+      {Array.isArray(feedback?.fieldResults) && feedback.fieldResults.length > 0 ? (
+        <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
+          {feedback.fieldResults.slice(0, 4).map((item) => (
+            <div key={`${feedback?.updatedAt || "refresh"}-${item}`}>{item}</div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function IfraStateBadge({ ifraData, compact = false, style = {} }) {
   if (!ifraData?.badgeStyle) return null;
   const label = compact ? ifraData.badgeLabel : ifraData.stateLabel;
@@ -32063,6 +32319,71 @@ function IfraStateBadge({ ifraData, compact = false, style = {} }) {
     >
       {label}
     </span>
+  );
+}
+
+function IfraInlineValue({
+  visibility,
+  effectiveActivePercent = null,
+  style = {},
+}) {
+  if (!visibility) return null;
+  const secondaryParts = [];
+  let secondaryColor = "#94A3B8";
+
+  if (visibility.hasConflict) {
+    secondaryParts.push("Needs review");
+    secondaryColor = "#FCA5A5";
+  } else if (visibility.hasManualEdit && visibility.valueLabel !== "Missing") {
+    secondaryParts.push("Manual support");
+    secondaryColor = "#7DD3FC";
+  } else if (
+    ["supplier_ifra_shown", "supplier_no_restriction"].includes(
+      visibility.ifraData?.state
+    )
+  ) {
+    secondaryParts.push("Supplier shown");
+  }
+
+  if (effectiveActivePercent != null) {
+    secondaryParts.push(`active basis ${effectiveActivePercent.toFixed(2)}%`);
+  }
+
+  return (
+    <div
+      title={visibility.statusLabel || undefined}
+      style={{
+        display: "grid",
+        gap: 2,
+        minWidth: 82,
+        ...style,
+      }}
+    >
+      <span
+        style={{
+          color:
+            IFRA_VALUE_TONE_COLORS[visibility.valueTone] || "#CBD5E1",
+          fontFamily: "monospace",
+          fontWeight: 700,
+          fontSize: 9,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {visibility.valueLabel}
+      </span>
+      {secondaryParts.length > 0 ? (
+        <span
+          style={{
+            fontSize: 7.4,
+            color: secondaryColor,
+            whiteSpace: "nowrap",
+            lineHeight: 1.35,
+          }}
+        >
+          {secondaryParts.join(" · ")}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -32152,6 +32473,7 @@ function getFormulaIfraRows(items, category) {
         computeActiveRestrictedPercent({
           formulaPercent,
           ingredientName: item.name,
+          activePercentOverride: item?.effectiveActivePercent ?? null,
         }) ?? formulaPercent;
       const limit = ifraData.limits?.[category] ?? null;
 
@@ -54228,12 +54550,18 @@ const FORMULAS_INIT = [
 // CHEMISTRY ENGINE
 // ─────────────────────────────────────────────────────────────
 function computeChemistry(ingredients) {
-  const total = ingredients.reduce((s, i) => s + i.g, 0) || 1;
+  const total =
+    ingredients.reduce(
+      (sum, ingredient) =>
+        sum + (Number(ingredient?.activeG ?? ingredient?.g) || 0),
+      0
+    ) || 1;
   const withMol = ingredients.map((ing) => {
     const d = DB[ing.name];
-    const wfrac = ing.g / total;
+    const resolvedGrams = Number(ing?.activeG ?? ing?.g) || 0;
+    const wfrac = resolvedGrams / total;
     const molN = wfrac / (d?.MW || 180);
-    return { ...ing, wfrac, molN, d };
+    return { ...ing, resolvedGrams, wfrac, molN, d };
   });
   const totalMol = withMol.reduce((s, i) => s + i.molN, 0) || 1;
   // First pass: compute raw headspace and OV
@@ -54381,9 +54709,7 @@ function normalizeManualRecordText(value) {
 }
 
 function normalizeManualRecordNumber(value) {
-  if (value == null || value === "") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return normalizeLooseNumericInput(value);
 }
 
 function normalizeManualComparableValue(value) {
@@ -54539,6 +54865,8 @@ function buildManualRecordRuntimePatch(editRecord = {}) {
     ["ODT", technicalSection?.ODT],
     ["TPSA", technicalSection?.TPSA],
     ["odorThreshold_ngL", technicalSection?.odorThreshold_ngL],
+    ["vaporPressureRaw", technicalSection?.vaporPressureRaw],
+    ["vaporPressureObservations", technicalSection?.vaporPressureObservations],
   ].forEach(([fieldKey, nextValue]) => {
     const sourceSection = identitySection || technicalSection;
     if (!sourceSection) return;
@@ -54648,6 +54976,7 @@ const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
       "productDescription",
       "scentSummary",
       "dilutionOrCarrier",
+      "vaporPressureRaw",
     ],
   },
   compliance: {
@@ -54665,6 +54994,7 @@ const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
       "productDescription",
       "scentSummary",
       "dilutionOrCarrier",
+      "vaporPressureRaw",
       "casShown",
       "inciShown",
       "ifraPercent",
@@ -54673,9 +55003,197 @@ const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
   },
 };
 
+const SUPPLIER_REFRESH_FEEDBACK_META = {
+  updated: {
+    label: "Updated",
+    background: "#052E16",
+    borderColor: "#166534",
+    color: "#86EFAC",
+  },
+  unchanged: {
+    label: "No changes",
+    background: "#071826",
+    borderColor: "#334155",
+    color: "#CBD5E1",
+  },
+  preserved: {
+    label: "Manual value preserved",
+    background: "#082F49",
+    borderColor: "#0369A1",
+    color: "#7DD3FC",
+  },
+  conflict: {
+    label: "Conflict",
+    background: "#3F0D12",
+    borderColor: "#991B1B",
+    color: "#FCA5A5",
+  },
+  unavailable: {
+    label: "Unavailable",
+    background: "#1C1917",
+    borderColor: "#57534E",
+    color: "#D6D3D1",
+  },
+  failed: {
+    label: "Failed",
+    background: "#3F0D12",
+    borderColor: "#991B1B",
+    color: "#FCA5A5",
+  },
+};
+
+const IFRA_VALUE_TONE_COLORS = {
+  defined: "#FCD34D",
+  no_restriction: "#86EFAC",
+  conflict: "#FCA5A5",
+  missing: "#94A3B8",
+};
+
 function getSupplierPageRefreshFieldKeys(scope = "all_safe") {
   return SUPPLIER_PAGE_REFRESH_SCOPE_META[scope]?.fieldKeys ||
     SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.fieldKeys;
+}
+
+function formatIfraValueLabel(cat4Limit) {
+  const normalizedLimit = Number(cat4Limit);
+  if (!Number.isFinite(normalizedLimit)) return "Missing";
+  if (Number.isInteger(normalizedLimit)) return `${normalizedLimit}%`;
+  return `${normalizedLimit.toFixed(2)}%`;
+}
+
+function getSupplierIfraSupportLabel({
+  ifraPercent = null,
+  ifraRestrictionState = null,
+  ifraRestrictionLabel = null,
+} = {}) {
+  if (ifraPercent != null && Number.isFinite(Number(ifraPercent))) {
+    return `IFRA shown ${formatIfraValueLabel(ifraPercent)}`;
+  }
+  if (String(ifraRestrictionState || "").trim().toLowerCase() === "no_restriction") {
+    return String(ifraRestrictionLabel || "No restrictions").trim() || "No restrictions";
+  }
+  return null;
+}
+
+function compactRefreshFieldLabelList(labels = []) {
+  const safeLabels = (Array.isArray(labels) ? labels : [])
+    .map((label) => String(label || "").trim())
+    .filter(Boolean);
+  if (!safeLabels.length) return "";
+  if (safeLabels.length === 1) return safeLabels[0];
+  if (safeLabels.length === 2) return `${safeLabels[0]} + ${safeLabels[1]}`;
+  return `${safeLabels[0]} + ${safeLabels[1]} +${safeLabels.length - 2} more`;
+}
+
+function buildSupplierRefreshFeedbackState({
+  updatedLabels = [],
+  preservedLabels = [],
+  conflictLabels = [],
+  unchangedLabels = [],
+  missingLabels = [],
+  refreshSummary = "",
+  scopeLabel = "",
+  updatedAt = null,
+  fieldResults = [],
+} = {}) {
+  const safeUpdatedLabels = Array.isArray(updatedLabels) ? updatedLabels : [];
+  const safePreservedLabels = Array.isArray(preservedLabels)
+    ? preservedLabels
+    : [];
+  const safeConflictLabels = Array.isArray(conflictLabels) ? conflictLabels : [];
+  const safeUnchangedLabels = Array.isArray(unchangedLabels)
+    ? unchangedLabels
+    : [];
+  const safeMissingLabels = Array.isArray(missingLabels) ? missingLabels : [];
+  const badges = [];
+  let outcomeKey = "unchanged";
+
+  if (safeUpdatedLabels.length > 0) {
+    badges.push({
+      key: "updated",
+      label:
+        safeUpdatedLabels.length === 1
+          ? "Updated"
+          : `Updated ${safeUpdatedLabels.length}`,
+    });
+    outcomeKey = "updated";
+  }
+  if (safePreservedLabels.length > 0) {
+    badges.push({
+      key: "preserved",
+      label:
+        safePreservedLabels.length === 1
+          ? "Manual value preserved"
+          : "Manual values preserved",
+    });
+    if (outcomeKey === "unchanged") {
+      outcomeKey = "preserved";
+    }
+  }
+  if (safeConflictLabels.length > 0) {
+    badges.push({
+      key: "conflict",
+      label:
+        safeConflictLabels.length === 1
+          ? "Conflict detected"
+          : `${safeConflictLabels.length} conflicts`,
+    });
+    outcomeKey = "conflict";
+  }
+  if (
+    safeUpdatedLabels.length === 0 &&
+    safePreservedLabels.length === 0 &&
+    safeConflictLabels.length === 0 &&
+    safeUnchangedLabels.length > 0
+  ) {
+    badges.push({ key: "unchanged", label: "No changes" });
+    outcomeKey = "unchanged";
+  }
+  if (
+    safeUpdatedLabels.length === 0 &&
+    safePreservedLabels.length === 0 &&
+    safeConflictLabels.length === 0 &&
+    safeUnchangedLabels.length === 0 &&
+    safeMissingLabels.length > 0
+  ) {
+    badges.push({ key: "unavailable", label: "No supplier value found" });
+    outcomeKey = "unavailable";
+  }
+  if (!badges.length) {
+    badges.push({ key: "unchanged", label: "No changes" });
+  }
+
+  return {
+    outcomeKey,
+    badges,
+    summary: refreshSummary || "No safe supplier-page updates were applied from this refresh.",
+    compactSummary:
+      safeConflictLabels.length > 0
+        ? compactRefreshFieldLabelList(safeConflictLabels)
+        : safeUpdatedLabels.length > 0
+        ? `Updated ${compactRefreshFieldLabelList(safeUpdatedLabels)}`
+        : safePreservedLabels.length > 0
+        ? `Manual value preserved for ${compactRefreshFieldLabelList(
+            safePreservedLabels
+          )}`
+        : safeUnchangedLabels.length > 0
+        ? `No changes in ${compactRefreshFieldLabelList(safeUnchangedLabels)}`
+        : safeMissingLabels.length > 0
+        ? `No supplier value found for ${compactRefreshFieldLabelList(
+            safeMissingLabels
+          )}`
+        : "No safe supplier-page updates were applied from this refresh.",
+    scopeLabel,
+    updatedAt,
+    fieldResults: (Array.isArray(fieldResults) ? fieldResults : []).slice(0, 8),
+    counts: {
+      updated: safeUpdatedLabels.length,
+      preserved: safePreservedLabels.length,
+      conflict: safeConflictLabels.length,
+      unchanged: safeUnchangedLabels.length,
+      missing: safeMissingLabels.length,
+    },
+  };
 }
 
 function syncLocalDraftIngredientsToRuntime(
@@ -54914,14 +55432,19 @@ const SHOW_DEV_ERROR_HINT = Boolean(import.meta.env?.DEV);
 // COMPONENTS
 // ─────────────────────────────────────────────────────────────
 function PyramidSVG({ ingredients }) {
+  const resolveIngredientNote = (ingredient) =>
+    DB?.[ingredient?.name]?.note || ingredient?.note || "mid";
+  const resolveIngredientWeight = (ingredient) =>
+    Number(ingredient?.activeG ?? ingredient?.g) || 0;
   const byNote = {
-    top: ingredients.filter((i) => i.note === "top"),
-    mid: ingredients.filter((i) => i.note === "mid"),
-    base: ingredients.filter((i) => i.note === "base"),
+    top: ingredients.filter((i) => resolveIngredientNote(i) === "top"),
+    mid: ingredients.filter((i) => resolveIngredientNote(i) === "mid"),
+    base: ingredients.filter((i) => resolveIngredientNote(i) === "base"),
   };
-  const total = ingredients.reduce((s, i) => s + i.g, 0) || 1;
+  const total =
+    ingredients.reduce((sum, ingredient) => sum + resolveIngredientWeight(ingredient), 0) || 1;
   const pct = (k) =>
-    ((byNote[k].reduce((s, i) => s + i.g, 0) / total) * 100).toFixed(0);
+    ((byNote[k].reduce((sum, ingredient) => sum + resolveIngredientWeight(ingredient), 0) / total) * 100).toFixed(0);
   return (
     <div
       style={{
@@ -55036,14 +55559,15 @@ function PyramidSVG({ ingredients }) {
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
             {byNote[k].map((ing) => {
+              const resolvedNote = resolveIngredientNote(ing);
               const ifraData = getIngredientIfraData(ing.name);
               return (
                 <span
                   key={ing.name}
                   style={{
-                    background: NC[k].light,
-                    color: NC[k].text,
-                    border: `1px solid ${NC[k].bg}50`,
+                    background: NC[resolvedNote]?.light || NC[k].light,
+                    color: NC[resolvedNote]?.text || NC[k].text,
+                    border: `1px solid ${(NC[resolvedNote]?.bg || NC[k].bg)}50`,
                     borderRadius: 20,
                     padding: "1px 6px",
                     fontSize: 8.5,
@@ -55366,20 +55890,33 @@ function buildDossierDimensionBuckets(report) {
   };
 }
 
-function DossierCountCard({ label, value, meta, color = "#CBD5E1" }) {
+function DossierCountCard({
+  label,
+  value,
+  meta,
+  color = "#CBD5E1",
+  onClick = null,
+  isActive = false,
+}) {
+  const clickable = typeof onClick === "function";
   return (
-    <div
+    <button
+      type="button"
+      onClick={clickable ? onClick : undefined}
       style={{
-        background: "#071826",
-        border: "1px solid #1E3A52",
+        background: isActive ? "#0A2540" : "#071826",
+        border: `1px solid ${isActive ? "#1D4ED8" : "#1E3A52"}`,
         borderRadius: 10,
         padding: "8px 10px",
+        textAlign: "left",
+        cursor: clickable ? "pointer" : "default",
+        width: "100%",
       }}
     >
       <div
         style={{
           fontSize: 7.8,
-          color: "#64748B",
+          color: clickable ? "#94A3B8" : "#64748B",
           textTransform: "uppercase",
           letterSpacing: "0.08em",
           fontWeight: 700,
@@ -55408,9 +55945,10 @@ function DossierCountCard({ label, value, meta, color = "#CBD5E1" }) {
           }}
         >
           {meta}
+          {clickable ? " Click to inspect the underlying signals." : ""}
         </div>
       ) : null}
-    </div>
+    </button>
   );
 }
 
@@ -55940,7 +56478,6 @@ function IngredientDetailPanel({
   const nc = NC[d.note] || NC.carrier;
   const materialDisplayName = getMaterialDisplayName(name, d);
   const materialRuntimeKeyCaption = getMaterialRuntimeKeyCaption(name, d);
-  const ifraData = getIngredientIfraData(name);
   const catalogMetadata = getIngredientCatalogMetadata(name);
   const resolvedIdentity = resolveIngredientIdentity(name);
   const canonicalMaterialKey =
@@ -56017,6 +56554,21 @@ function IngredientDetailPanel({
         livePricing,
       }),
     [d, livePricing, name]
+  );
+  const ifraVisibility = useMemo(
+    () =>
+      getIngredientIfraVisibility(name, {
+        record: d,
+        livePricing,
+        supplierRecords: relatedSupplierLayerRecords,
+        completenessReport: materialCompletenessReport,
+      }),
+    [d, livePricing, materialCompletenessReport, name, relatedSupplierLayerRecords]
+  );
+  const ifraData = ifraVisibility.ifraData;
+  const vaporPressureDisplay = useMemo(
+    () => buildVaporPressureDisplay(d),
+    [d]
   );
   const buildSupplierEditDraft = useCallback(
     (supplierNameValue = defaultSupplierEditName) => {
@@ -56147,8 +56699,12 @@ function IngredientDetailPanel({
           ? String(d.xLogP)
           : "",
       VP:
-        manualRecordEdit?.sections?.technical?.VP != null
+        manualRecordEdit?.sections?.technical?.vaporPressureRaw != null
+          ? String(manualRecordEdit.sections.technical.vaporPressureRaw)
+          : manualRecordEdit?.sections?.technical?.VP != null
           ? String(manualRecordEdit.sections.technical.VP)
+          : d.vaporPressureRaw != null
+          ? String(d.vaporPressureRaw)
           : d.VP != null
           ? String(d.VP)
           : "",
@@ -56198,6 +56754,11 @@ function IngredientDetailPanel({
     useState("");
   const [supplierRefreshLoadingKey, setSupplierRefreshLoadingKey] =
     useState("");
+  const [
+    supplierRefreshTransientFeedbackBySupplier,
+    setSupplierRefreshTransientFeedbackBySupplier,
+  ] = useState({});
+  const [dossierDrilldown, setDossierDrilldown] = useState(null);
   const manualSdsUploadInputRef = useRef(null);
   useEffect(() => {
     setSelectedSupplierEditName(defaultSupplierEditName);
@@ -56220,6 +56781,35 @@ function IngredientDetailPanel({
   useEffect(() => {
     setSupplierRelationshipTargetName("");
   }, [name, selectedSupplierEditName]);
+  useEffect(() => {
+    setSupplierRefreshTransientFeedbackBySupplier({});
+  }, [name]);
+  useEffect(() => {
+    setDossierDrilldown(null);
+  }, [name]);
+  const selectedSupplierLayerRecord =
+    supplierLayerRecordBySupplier.get(selectedSupplierEditName) || null;
+  const selectedSupplierPersistedRefreshFeedback =
+    selectedSupplierLayerRecord?.pageFacts?.lastRefreshFeedback ||
+    (selectedSupplierLayerRecord?.pageFacts?.lastRefreshSummary
+      ? {
+          outcomeKey: "updated",
+          badges: [{ key: "updated", label: "Updated" }],
+          summary: selectedSupplierLayerRecord.pageFacts.lastRefreshSummary,
+          compactSummary:
+            selectedSupplierLayerRecord.pageFacts.lastRefreshSummary,
+          scopeLabel:
+            selectedSupplierLayerRecord.pageFacts.lastRefreshScopeLabel ||
+            "Latest Supplier Refresh",
+          updatedAt:
+            selectedSupplierLayerRecord.pageFacts.lastRefreshAt || null,
+          fieldResults:
+            selectedSupplierLayerRecord.pageFacts.lastRefreshFieldResults || [],
+        }
+      : null);
+  const selectedSupplierRefreshFeedback =
+    supplierRefreshTransientFeedbackBySupplier[selectedSupplierEditName] ||
+    selectedSupplierPersistedRefreshFeedback;
   const supplierRelationshipOptions = useMemo(
     () =>
       Object.keys(DB)
@@ -56463,8 +57053,7 @@ function IngredientDetailPanel({
     ).values()
   );
 
-  const cat4LimitText =
-    ifraData.cat4Limit != null ? `≤${ifraData.cat4Limit}%` : "—";
+  const cat4LimitText = ifraVisibility.valueLabel || "Missing";
   const identityRows = [
     [
       "CAS",
@@ -56474,7 +57063,7 @@ function IngredientDetailPanel({
     ],
     ["INCI", d.inci || canonicalSource?.inci],
     ["Rep. Odorant", d.rep || canonicalSource?.rep],
-    ["IFRA State", ifraData.stateLabel],
+    ["IFRA State", ifraVisibility.statusLabel],
     ["Cat 4 Limit", cat4LimitText],
     [
       "Identity Path",
@@ -56704,13 +57293,19 @@ function IngredientDetailPanel({
     () =>
       livePricingEntries.some(
         ([, supplierData]) =>
-          supplierData?.ifraPercent != null &&
-          String(supplierData.ifraPercent).trim() !== ""
+          (
+            supplierData?.ifraPercent != null &&
+            String(supplierData.ifraPercent).trim() !== ""
+          ) ||
+          supplierData?.ifraRestrictionState === "no_restriction"
       ) ||
       relatedSupplierLayerRecords.some(
         (record) =>
-          record?.pageFacts?.ifraPercent != null &&
-          String(record.pageFacts.ifraPercent).trim() !== ""
+          (
+            record?.pageFacts?.ifraPercent != null &&
+            String(record.pageFacts.ifraPercent).trim() !== ""
+          ) ||
+          record?.pageFacts?.ifraRestrictionState === "no_restriction"
       ) ||
       catalogSupplierProducts.some(
         (record) =>
@@ -56770,7 +57365,275 @@ function IngredientDetailPanel({
       sourceDocuments.length,
     ]
   );
+  const completenessDrilldowns = useMemo(() => {
+    const formatDimensionDrilldown = (dimension, statusOverride = null) => {
+      if (!dimension) return null;
+      const detail =
+        materialCompletenessReport?.dimensionDetailByKey?.[dimension.key] || null;
+      const status = statusOverride || dimension.status;
+      const summary =
+        detail?.summary ||
+        (status === "confirmed"
+          ? "strongly supported"
+          : status === "inferred"
+          ? "usable but still partial"
+          : status === "missing"
+          ? "missing enough to weaken downstream reads"
+          : "uncertain or conflict-aware");
+      const whyText = detail?.detailLines?.length
+        ? ` Why: ${detail.detailLines.slice(0, 2).join(" ")}`
+        : "";
+      const improveText =
+        status !== "confirmed" && detail?.improveLines?.length
+          ? ` To improve: ${detail.improveLines[0]}`
+          : "";
+      return `${dimension.label}: ${summary}.${whyText}${improveText}`;
+    };
+    const confirmedRows = materialCompletenessReport?.dimensions
+      ?.filter((dimension) => dimension?.status === "confirmed")
+      .map((dimension) => formatDimensionDrilldown(dimension, "confirmed"))
+      .filter(Boolean) || [];
+    const usableRows = materialCompletenessReport?.dimensions
+      ?.filter(
+        (dimension) =>
+          dimension?.status === "confirmed" || dimension?.status === "inferred"
+      )
+      .map((dimension) => formatDimensionDrilldown(dimension))
+      .filter(Boolean) || [];
+    const inferredRows = materialCompletenessReport?.dimensions
+      ?.filter((dimension) => dimension?.status === "inferred")
+      .map((dimension) => formatDimensionDrilldown(dimension, "inferred"))
+      .filter(Boolean) || [];
+    const cautionRows = materialCompletenessReport?.dimensions
+      ?.filter(
+        (dimension) =>
+          dimension?.status === "uncertain" || dimension?.status === "missing"
+      )
+      .map((dimension) => formatDimensionDrilldown(dimension))
+      .filter(Boolean) || [];
+    return {
+      usable: {
+        key: "completeness-usable",
+        title: "Usable data present",
+        intro:
+          "These are the data areas that currently have enough information to be useful right now.",
+        items: usableRows.length ? usableRows : ["No usable coverage signals are attached yet."],
+        accent: "#7DD3FC",
+      },
+      strong: {
+        key: "completeness-strong",
+        title: "High-confidence support",
+        intro:
+          "These are the areas the dossier currently treats as strongest, not just partially filled.",
+        items: confirmedRows.length
+          ? confirmedRows
+          : ["No areas are strongly supported yet."],
+        accent: "#34D399",
+      },
+      incomplete: {
+        key: "completeness-incomplete",
+        title: "Still incomplete",
+        intro:
+          "These areas have useful information, but they still need stronger support.",
+        items: inferredRows.length
+          ? inferredRows
+          : ["No partially filled areas are holding this record back right now."],
+        accent: "#A78BFA",
+      },
+      caution: {
+        key: "completeness-caution",
+        title: "Needs review",
+        intro:
+          "These are the weak, uncertain, or still-missing areas behind the current caution count.",
+        items: cautionRows.length
+          ? cautionRows
+          : ["No major weak-or-missing areas are standing out right now."],
+        accent: "#F59E0B",
+      },
+    };
+  }, [materialCompletenessReport]);
+  const trustDrilldowns = useMemo(() => {
+    const dimensionDetail =
+      materialCompletenessReport?.dimensionDetailByKey || {};
+    const buildDimensionTrustLine = (dimensionKey, fallbackTitle) => {
+      const detail = dimensionDetail?.[dimensionKey];
+      if (!detail) return fallbackTitle;
+      const whyText = detail.detailLines?.length
+        ? ` Why: ${detail.detailLines.slice(0, 2).join(" ")}`
+        : "";
+      const improveText = detail.improveLines?.length
+        ? ` To improve: ${detail.improveLines[0]}`
+        : "";
+      return `${fallbackTitle}.${whyText}${improveText}`;
+    };
+    const openCautions = [
+      ...(materialTrustSummary?.blockerSignals || []),
+      ...(materialTrustSummary?.missingSignals || []),
+      ...(materialTrustSummary?.uncertainSignals || []),
+      ...(materialCompletenessReport?.dimensions
+        ?.filter(
+          (dimension) =>
+            dimension?.status === "uncertain" || dimension?.status === "missing"
+        )
+        .map((dimension) =>
+          buildDimensionTrustLine(
+            dimension.key,
+            `${dimension.label} still needs follow-up`
+          )
+        ) || []),
+    ];
+    const highConfidenceSupport = [
+      materialCompletenessReport?.hasStrongManualIdentitySupport
+        ? buildDimensionTrustLine(
+            "identity",
+            "Manual identity support is currently strong"
+          )
+        : null,
+      materialCompletenessReport?.hasStrongManualIfraSupport
+        ? buildDimensionTrustLine(
+            "ifra",
+            "Manual IFRA support is currently strong"
+          )
+        : null,
+      livePricingEntries.length > 0
+        ? buildDimensionTrustLine(
+            "pricing",
+            "Live supplier pricing is attached"
+          )
+        : null,
+      canonicalMaterialKey
+        ? buildDimensionTrustLine(
+            "identity",
+            "Canonical identity is currently resolved"
+          )
+        : null,
+      ...(materialCompletenessReport?.manualTrustedSignals || []),
+    ].filter(Boolean);
+    const usableSignals = [
+      `${materialTrustSummary?.resolvedCount || 0} trust signals are resolved enough to use right now.`,
+      ...(materialTrustPanelContent.whyLines || []),
+      ...(materialCompletenessReport?.dimensions
+        ?.filter(
+          (dimension) =>
+            dimension?.status === "confirmed" || dimension?.status === "inferred"
+        )
+        .slice(0, 3)
+        .map((dimension) =>
+          buildDimensionTrustLine(
+            dimension.key,
+            `${dimension.label} is currently usable`
+          )
+        ) || []),
+    ].filter(Boolean);
+    const evidenceSignals = [
+      sourceDocuments.length > 0
+        ? `${sourceDocuments.length} linked source document${
+            sourceDocuments.length === 1 ? "" : "s"
+          } are attached.`
+        : "No linked source documents are attached yet.",
+      evidenceCandidates.length > 0
+        ? `${evidenceCandidates.length} staged evidence item${
+            evidenceCandidates.length === 1 ? "" : "s"
+          } are present.`
+        : "No staged evidence items are attached yet.",
+      materialCompletenessReport?.hasAnyStrongManualSupport &&
+      !materialCompletenessReport?.hasActiveManualConflict
+        ? "Manual trusted edits are already carrying strong practical support here."
+        : "Formal evidence support matters more here because practical support is still mixed.",
+      buildDimensionTrustLine(
+        "evidence",
+        "Evidence support status reflects the current audit trail"
+      ),
+    ].filter(Boolean);
+    return {
+      usable: {
+        key: "trust-usable",
+        title: "Usable right now",
+        intro:
+          "These are the current signals that make the app comfortable using this material in formula/build reads right now.",
+        items: usableSignals.length
+          ? usableSignals
+          : ["No resolved trust signals are attached right now."],
+        accent: "#7DD3FC",
+      },
+      strong: {
+        key: "trust-strong",
+        title: "High-confidence support",
+        intro:
+          "These are the strongest current trust drivers, not just the total signal count.",
+        items: highConfidenceSupport.length
+          ? highConfidenceSupport
+          : ["Nothing is strongly confirmed in the current trust slice yet."],
+        accent: "#34D399",
+      },
+      evidence: {
+        key: "trust-evidence",
+        title: "Formal evidence review",
+        intro:
+          "This is the audit-trail side of trust. It complements practical support, but it is not the only thing that matters.",
+        items: evidenceSignals,
+        accent: "#A78BFA",
+      },
+      caution: {
+        key: "trust-caution",
+        title: "Open cautions",
+        intro:
+          "These are the exact cautions behind the current caution count and what still needs follow-up.",
+        items: openCautions.length
+          ? openCautions
+          : ["No major trust cautions are standing out right now."],
+        accent: "#F59E0B",
+      },
+    };
+  }, [
+    canonicalMaterialKey,
+    evidenceCandidates.length,
+    livePricingEntries.length,
+    materialCompletenessReport,
+    materialTrustPanelContent,
+    materialTrustSummary,
+    sourceDocuments.length,
+  ]);
   const isLocalDraftMaterial = Boolean(d.isLocalDraft);
+  const supplierDescriptorFallback = useMemo(() => {
+    const summary =
+      livePricingEntries
+        .map(([supplierName, supplierData]) => {
+          const supplierLayerRecord =
+            supplierLayerRecordBySupplier.get(supplierName) || null;
+          const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
+          return (
+            supplierData?.scentSummary ||
+            supplierPageFacts?.scentSummary ||
+            ""
+          );
+        })
+        .find(Boolean) || "";
+    const description =
+      livePricingEntries
+        .map(([supplierName, supplierData]) => {
+          const supplierLayerRecord =
+            supplierLayerRecordBySupplier.get(supplierName) || null;
+          const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
+          return (
+            supplierData?.productDescription ||
+            supplierPageFacts?.productDescription ||
+            ""
+          );
+        })
+        .find(Boolean) || "";
+    return { summary, description };
+  }, [livePricingEntries, supplierLayerRecordBySupplier]);
+  const visibleDescriptorText = useMemo(
+    () =>
+      deriveVisibleMaterialDescriptorText({
+        recordName: name,
+        record: d,
+        fallbackSummary: supplierDescriptorFallback.summary,
+        fallbackDescription: supplierDescriptorFallback.description,
+      }),
+    [d, name, supplierDescriptorFallback]
+  );
   const noteTypeLabel =
     [
       d.note ? d.note.toUpperCase() : isLocalDraftMaterial ? "NOTE TBD" : null,
@@ -56781,13 +57644,13 @@ function IngredientDetailPanel({
   const scentMetaLine =
     [
       d.scentClass || (isLocalDraftMaterial ? "Local Draft" : null),
-      d.scentSummary ||
+      visibleDescriptorText.summary ||
         (isLocalDraftMaterial ? "Manual trusted entry awaiting canonical review" : null),
     ]
       .filter(Boolean)
       .join(" · ") || "No scent summary attached yet.";
   const dossierDescription =
-    d.scentDesc ||
+    visibleDescriptorText.description ||
     (isLocalDraftMaterial
       ? "Browser-local manual trusted draft ingredient. Use it now, but keep trust/compliance reads review-aware until canonical support catches up."
       : "No dossier description is attached yet.");
@@ -56842,6 +57705,10 @@ function IngredientDetailPanel({
           .join(", ")}`
       : null,
   ].filter(Boolean);
+  const technicalVpPreview = useMemo(
+    () => parseVaporPressureInput(technicalEditDraft.VP),
+    [technicalEditDraft.VP]
+  );
   const sharedEditorLabelStyle = {
     fontSize: 7.8,
     color: "#475569",
@@ -56963,6 +57830,22 @@ function IngredientDetailPanel({
     async (refreshScope, supplierName = selectedSupplierEditName) => {
       const safeSupplierName = String(supplierName || "").trim();
       if (!safeSupplierName || typeof onRefreshSupplierPageData !== "function") {
+        setSupplierRefreshTransientFeedbackBySupplier((prev) => ({
+          ...prev,
+          [safeSupplierName || selectedSupplierEditName || "unknown"]: {
+            outcomeKey: "failed",
+            badges: [{ key: "failed", label: "Failed" }],
+            summary:
+              "Supplier page refresh is not available for this dossier right now.",
+            compactSummary:
+              "Supplier page refresh is not available for this dossier right now.",
+            scopeLabel:
+              SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+              "Supplier refresh",
+            updatedAt: new Date().toISOString(),
+            fieldResults: [],
+          },
+        }));
         setEditorStatus(
           "Supplier page refresh is not available for this dossier right now."
         );
@@ -56979,14 +57862,56 @@ function IngredientDetailPanel({
           supplierName: safeSupplierName,
           refreshScope,
         });
+        if (result?.ok) {
+          setSupplierRefreshTransientFeedbackBySupplier((prev) => {
+            if (!Object.prototype.hasOwnProperty.call(prev, safeSupplierName)) {
+              return prev;
+            }
+            const next = { ...prev };
+            delete next[safeSupplierName];
+            return next;
+          });
+        } else {
+          setSupplierRefreshTransientFeedbackBySupplier((prev) => ({
+            ...prev,
+            [safeSupplierName]: result?.refreshFeedback || {
+              outcomeKey: "failed",
+              badges: [{ key: "failed", label: "Failed" }],
+              summary:
+                result?.message || "Supplier page refresh failed.",
+              compactSummary:
+                result?.message || "Supplier page refresh failed.",
+              scopeLabel:
+                SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+                "Supplier refresh",
+              updatedAt: new Date().toISOString(),
+              fieldResults: result?.fieldResults || [],
+            },
+          }));
+        }
         setEditorStatus(
           result?.message || "Supplier page refresh finished."
         );
       } catch (error) {
+        const failureMessage = `Supplier page refresh failed: ${String(
+          error?.message || error || "Unknown error"
+        )}`;
+        setSupplierRefreshTransientFeedbackBySupplier((prev) => ({
+          ...prev,
+          [safeSupplierName]: {
+            outcomeKey: "failed",
+            badges: [{ key: "failed", label: "Failed" }],
+            summary: failureMessage,
+            compactSummary: failureMessage,
+            scopeLabel:
+              SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+              "Supplier refresh",
+            updatedAt: new Date().toISOString(),
+            fieldResults: [],
+          },
+        }));
         setEditorStatus(
-          `Supplier page refresh failed: ${String(
-            error?.message || error || "Unknown error"
-          )}`
+          failureMessage
         );
       } finally {
         setSupplierRefreshLoadingKey("");
@@ -57924,6 +58849,9 @@ function IngredientDetailPanel({
                       }
                     )}
                   </div>
+                  <SupplierRefreshFeedbackPanel
+                    feedback={selectedSupplierRefreshFeedback}
+                  />
                 </div>
                 <div
                   style={{
@@ -58635,6 +59563,59 @@ function IngredientDetailPanel({
                     </div>
                   ))}
                 </div>
+                {technicalVpPreview.normalizedRaw ? (
+                  <div
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 10,
+                      padding: "9px 10px",
+                      display: "grid",
+                      gap: 4,
+                      fontSize: 8.3,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    <div>
+                      <span style={{ color: "#7DD3FC", fontWeight: 700 }}>
+                        Normalized VP input:
+                      </span>{" "}
+                      {technicalVpPreview.normalizedRaw}
+                    </div>
+                    <div>
+                      <span style={{ color: "#C4B5FD", fontWeight: 700 }}>
+                        Parsed preview:
+                      </span>{" "}
+                      {technicalVpPreview.displayValue || "Unparsed raw text"}
+                    </div>
+                    {technicalVpPreview.legacyModelValueMmHg != null ? (
+                      <div>
+                        <span style={{ color: "#FCD34D", fontWeight: 700 }}>
+                          Current runtime model value:
+                        </span>{" "}
+                        {technicalVpPreview.legacyModelValueMmHg.toFixed(6).replace(
+                          /\.?0+$/,
+                          ""
+                        )}{" "}
+                        mmHg
+                      </div>
+                    ) : (
+                      <div>
+                        Raw VP text will be preserved even if the current runtime
+                        model cannot derive a clean numeric mmHg value from it yet.
+                      </div>
+                    )}
+                    {technicalVpPreview.parsedObservationCount > 1 ? (
+                      <div>
+                        {technicalVpPreview.observations
+                          .filter((observation) => observation?.rawText)
+                          .map((observation) => observation.rawText)
+                          .join(" | ")}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div>
                   <div style={sharedEditorLabelStyle}>Technical Notes</div>
                   <textarea
@@ -58836,9 +59817,45 @@ function IngredientDetailPanel({
                 value={card.value}
                 meta={card.meta}
                 color={card.color}
+                onClick={() => {
+                  const nextDrilldown =
+                    card.label === "Usable data present"
+                      ? completenessDrilldowns.usable
+                      : card.label === "High-confidence support"
+                      ? completenessDrilldowns.strong
+                      : card.label === "Still incomplete"
+                      ? completenessDrilldowns.incomplete
+                      : completenessDrilldowns.caution;
+                  setDossierDrilldown((prev) =>
+                    prev?.key === nextDrilldown.key ? null : nextDrilldown
+                  );
+                }}
+                isActive={
+                  (dossierDrilldown?.key === completenessDrilldowns.usable.key &&
+                    card.label === "Usable data present") ||
+                  (dossierDrilldown?.key === completenessDrilldowns.strong.key &&
+                    card.label === "High-confidence support") ||
+                  (dossierDrilldown?.key ===
+                    completenessDrilldowns.incomplete.key &&
+                    card.label === "Still incomplete") ||
+                  (dossierDrilldown?.key ===
+                    completenessDrilldowns.caution.key &&
+                    card.label === "Needs review")
+                }
               />
             ))}
           </div>
+          {dossierDrilldown &&
+          dossierDrilldown.key.startsWith("completeness-") ? (
+            <div style={{ marginTop: 8 }}>
+              <DossierGuidanceBlock
+                title={dossierDrilldown.title}
+                intro={dossierDrilldown.intro}
+                items={dossierDrilldown.items}
+                accent={dossierDrilldown.accent}
+              />
+            </div>
+          ) : null}
           <div
             style={{
               marginTop: 8,
@@ -59014,9 +60031,42 @@ function IngredientDetailPanel({
                 value={card.value}
                 meta={card.meta}
                 color={card.color}
+                onClick={() => {
+                  const nextDrilldown =
+                    card.label === "Usable right now"
+                      ? trustDrilldowns.usable
+                      : card.label === "High-confidence support"
+                      ? trustDrilldowns.strong
+                      : card.label === "Formal evidence review"
+                      ? trustDrilldowns.evidence
+                      : trustDrilldowns.caution;
+                  setDossierDrilldown((prev) =>
+                    prev?.key === nextDrilldown.key ? null : nextDrilldown
+                  );
+                }}
+                isActive={
+                  (dossierDrilldown?.key === trustDrilldowns.usable.key &&
+                    card.label === "Usable right now") ||
+                  (dossierDrilldown?.key === trustDrilldowns.strong.key &&
+                    card.label === "High-confidence support") ||
+                  (dossierDrilldown?.key === trustDrilldowns.evidence.key &&
+                    card.label === "Formal evidence review") ||
+                  (dossierDrilldown?.key === trustDrilldowns.caution.key &&
+                    card.label === "Open cautions")
+                }
               />
             ))}
           </div>
+          {dossierDrilldown && dossierDrilldown.key.startsWith("trust-") ? (
+            <div style={{ marginTop: 8 }}>
+              <DossierGuidanceBlock
+                title={dossierDrilldown.title}
+                intro={dossierDrilldown.intro}
+                items={dossierDrilldown.items}
+                accent={dossierDrilldown.accent}
+              />
+            </div>
+          ) : null}
           <div
             style={{
               marginTop: 8,
@@ -60345,7 +61395,10 @@ function IngredientDetailPanel({
               ["xLogP", d.xLogP],
               ["TPSA (Å²)", d.TPSA],
               ["HBD / HBA", `${d.HBD} / ${d.HBA}`],
-              ["VP (mmHg)", d.VP],
+              [
+                "Vapor Pressure",
+                vaporPressureDisplay.summary || (d.VP != null ? d.VP : "—"),
+              ],
               ["ODT (ppbv)", d.ODT],
             ].map(([label, value]) => (
               <div
@@ -60364,6 +61417,35 @@ function IngredientDetailPanel({
                 </span>
               </div>
             ))}
+            {String(d.vaporPressureRaw || "").trim() ||
+            vaporPressureDisplay.detailLines.length > 0 ? (
+              <div
+                style={{
+                  marginTop: 10,
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  display: "grid",
+                  gap: 4,
+                  fontSize: 8.4,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                {String(d.vaporPressureRaw || "").trim() ? (
+                  <div>
+                    <span style={{ color: "#7DD3FC", fontWeight: 700 }}>
+                      Raw VP source:
+                    </span>{" "}
+                    {d.vaporPressureRaw}
+                  </div>
+                ) : null}
+                {vaporPressureDisplay.detailLines.map((line) => (
+                  <div key={`${name}-vp-detail-${line}`}>{line}</div>
+                ))}
+              </div>
+            ) : null}
             <div
               style={{
                 marginTop: 10,
@@ -60753,6 +61835,19 @@ function IngredientDetailPanel({
                   "unknown";
                 const supplierIfraShown =
                   supplierData?.ifraPercent ?? supplierPageFacts?.ifraPercent ?? null;
+                const supplierIfraRestrictionState =
+                  supplierData?.ifraRestrictionState ||
+                  supplierPageFacts?.ifraRestrictionState ||
+                  null;
+                const supplierIfraRestrictionLabel =
+                  supplierData?.ifraRestrictionLabel ||
+                  supplierPageFacts?.ifraRestrictionLabel ||
+                  null;
+                const supplierIfraSupportLabel = getSupplierIfraSupportLabel({
+                  ifraPercent: supplierIfraShown,
+                  ifraRestrictionState: supplierIfraRestrictionState,
+                  ifraRestrictionLabel: supplierIfraRestrictionLabel,
+                });
                 const supplierSdsUrl =
                   supplierData?.sdsUrl || supplierPageFacts?.sdsUrl || "";
                 const supplierManualSdsAttachment =
@@ -60779,12 +61874,34 @@ function IngredientDetailPanel({
                   "";
                 const supplierOriginNote =
                   supplierData?.originNote || supplierPageFacts?.originNote || "";
+                const supplierVaporPressureDisplay =
+                  supplierPageFacts?.vaporPressureDisplayValue ||
+                  supplierPageFacts?.vaporPressureRaw ||
+                  "";
                 const supplierRefreshSummary =
                   supplierPageFacts?.lastRefreshSummary || "";
                 const supplierRefreshLabel =
                   supplierPageFacts?.lastRefreshScopeLabel || "";
                 const supplierRefreshUpdatedAt =
                   supplierPageFacts?.lastRefreshAt || null;
+                const supplierPersistedRefreshFeedback =
+                  supplierPageFacts?.lastRefreshFeedback ||
+                  (supplierRefreshSummary
+                    ? {
+                        outcomeKey: "updated",
+                        badges: [{ key: "updated", label: "Updated" }],
+                        summary: supplierRefreshSummary,
+                        compactSummary: supplierRefreshSummary,
+                        scopeLabel:
+                          supplierRefreshLabel || "Latest Supplier Refresh",
+                        updatedAt: supplierRefreshUpdatedAt,
+                        fieldResults:
+                          supplierPageFacts?.lastRefreshFieldResults || [],
+                      }
+                    : null);
+                const supplierRefreshFeedback =
+                  supplierRefreshTransientFeedbackBySupplier[supplierName] ||
+                  supplierPersistedRefreshFeedback;
                 const supplierReviewItems = Array.isArray(
                   supplierLayerRecord?.reviewItems
                 )
@@ -60925,7 +62042,7 @@ function IngredientDetailPanel({
                               supplierAvailabilityStatus
                             )}
                           </span>
-                          {supplierIfraShown != null ? (
+                          {supplierIfraSupportLabel ? (
                             <span
                               style={{
                                 background: "#071826",
@@ -60934,10 +62051,13 @@ function IngredientDetailPanel({
                                 padding: "2px 8px",
                                 fontSize: 7.8,
                                 fontWeight: 700,
-                                color: "#FCD34D",
+                                color:
+                                  supplierIfraRestrictionState === "no_restriction"
+                                    ? "#86EFAC"
+                                    : "#FCD34D",
                               }}
                             >
-                              IFRA shown {supplierIfraShown}%
+                              {supplierIfraSupportLabel}
                             </span>
                           ) : null}
                           {supplierSdsUrl ? (
@@ -61012,6 +62132,7 @@ function IngredientDetailPanel({
                         {supplierDescription ||
                         supplierScentSummary ||
                         supplierDilutionCarrier ||
+                        supplierVaporPressureDisplay ||
                         supplierVendorName ||
                         supplierOriginNote ||
                         supplierManualSdsAttachment?.fileName ? (
@@ -61037,6 +62158,9 @@ function IngredientDetailPanel({
                             ) : null}
                             {supplierDilutionCarrier ? (
                               <div>Dilution / carrier: {supplierDilutionCarrier}</div>
+                            ) : null}
+                            {supplierVaporPressureDisplay ? (
+                              <div>Vapor pressure shown: {supplierVaporPressureDisplay}</div>
                             ) : null}
                             {supplierOriginNote ? (
                               <div>Origin / note: {supplierOriginNote}</div>
@@ -61157,50 +62281,9 @@ function IngredientDetailPanel({
                         </div>
                       </div>
                     </div>
-                    {supplierRefreshSummary ? (
-                      <div
-                        style={{
-                          background: "#071826",
-                          border: "1px solid #1E3A52",
-                          borderRadius: 8,
-                          padding: "8px 10px",
-                          fontSize: 8.4,
-                          color: "#94A3B8",
-                          lineHeight: 1.55,
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 7.8,
-                            color: "#22D3EE",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.08em",
-                            fontWeight: 700,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {supplierRefreshLabel || "Latest Supplier Refresh"}
-                        </div>
-                        <div>{supplierRefreshSummary}</div>
-                        {supplierRefreshUpdatedAt ? (
-                          <div style={{ marginTop: 4, color: "#64748B" }}>
-                            {new Date(supplierRefreshUpdatedAt).toLocaleString()}
-                          </div>
-                        ) : null}
-                        {Array.isArray(supplierPageFacts?.lastRefreshFieldResults) &&
-                        supplierPageFacts.lastRefreshFieldResults.length > 0 ? (
-                          <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
-                            {supplierPageFacts.lastRefreshFieldResults
-                              .slice(0, 4)
-                              .map((item) => (
-                                <div key={`${supplierName}-refresh-result-${item}`}>
-                                  {item}
-                                </div>
-                              ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
+                    <SupplierRefreshFeedbackPanel
+                      feedback={supplierRefreshFeedback}
+                    />
                     {supplierReviewItems.length > 0 ? (
                       <div
                         style={{
@@ -61351,6 +62434,22 @@ function IngredientDetailPanel({
               saved formula/version context.
             </div>
           )}
+          {substitutionSuggestions.advisoryMessage ? (
+            <div
+              style={{
+                marginBottom: 12,
+                background: "#251404",
+                border: "1px solid #B45309",
+                borderRadius: 10,
+                padding: 12,
+                fontSize: 8.8,
+                color: "#FCD34D",
+                lineHeight: 1.6,
+              }}
+            >
+              {substitutionSuggestions.advisoryMessage}
+            </div>
+          ) : null}
 
           <div
             style={{
@@ -63155,6 +64254,128 @@ function buildEmptyFormulaCriticalCorrectionDraft() {
   };
 }
 
+function buildEmptyBenchStockDraft() {
+  return {
+    id: null,
+    duplicateSourceId: null,
+    stockName: "",
+    parentMaterialName: "",
+    supplierName: "",
+    carrierName: "TEC",
+    dilutionPercent: "10.00",
+    parentEffectiveActivePercent: "",
+    gramsOnHand: "",
+    notes: "",
+  };
+}
+
+function normalizeBenchStockPercentInput(value, fallbackValue = null) {
+  const parsed = normalizeLooseNumericInput(value);
+  if (parsed == null) return fallbackValue;
+  return Math.min(100, Math.max(0, parsed));
+}
+
+function inferBenchStockParentEffectiveActivePercent(parentMaterialName = "") {
+  const parentRecord = DB[parentMaterialName] || null;
+  const dilutionFactor = Number(parentRecord?.dilutionFactor);
+  if (Number.isFinite(dilutionFactor) && dilutionFactor > 0 && dilutionFactor <= 1) {
+    return dilutionFactor * 100;
+  }
+  return 100;
+}
+
+function buildBenchStockDisplayName(stock = {}) {
+  const stockName = String(stock?.stockName || "").trim();
+  if (stockName) return stockName;
+  const parentMaterialName = String(stock?.parentMaterialName || "").trim();
+  const dilutionPercent = normalizeBenchStockPercentInput(
+    stock?.dilutionPercent,
+    null
+  );
+  const carrierName = String(stock?.carrierName || "").trim();
+  if (!parentMaterialName) return "Bench stock";
+  if (dilutionPercent != null && carrierName) {
+    return `${parentMaterialName} — ${dilutionPercent.toFixed(2)}% in ${carrierName}`;
+  }
+  return parentMaterialName;
+}
+
+function buildBenchStockSupplierOptions(
+  parentMaterialName,
+  { livePricing = {}, supplierRecords = [], fallbackSupplier = "" } = {}
+) {
+  if (!parentMaterialName) return [];
+
+  const supplierRecordByName = new Map();
+  (Array.isArray(supplierRecords) ? supplierRecords : []).forEach((record) => {
+    const supplierName = String(
+      record?.supplierDisplayName || record?.supplierName || ""
+    ).trim();
+    if (!supplierName || supplierRecordByName.has(supplierName)) return;
+    supplierRecordByName.set(supplierName, record);
+  });
+
+  const supplierNames = Array.from(
+    new Set(
+      [
+        ...Object.keys(livePricing || {}),
+        ...Array.from(supplierRecordByName.keys()),
+        fallbackSupplier,
+      ].filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  return supplierNames.map((supplierName) => {
+    const liveSupplierRow = livePricing?.[supplierName] || {};
+    const supplierRecord = supplierRecordByName.get(supplierName) || null;
+    const pageFacts = supplierRecord?.pageFacts || {};
+    return {
+      supplierName,
+      liveSupplierRow,
+      supplierRecord,
+      pageFacts,
+      vendorName:
+        liveSupplierRow?.supplierVendorName || pageFacts?.vendorName || "",
+      description:
+        liveSupplierRow?.productDescription || pageFacts?.productDescription || "",
+      scentSummary:
+        liveSupplierRow?.scentSummary || pageFacts?.scentSummary || "",
+      ifraSupportLabel: getSupplierIfraSupportLabel({
+        ifraPercent:
+          liveSupplierRow?.ifraPercent ?? pageFacts?.ifraPercent ?? null,
+        ifraRestrictionState:
+          liveSupplierRow?.ifraRestrictionState ||
+          pageFacts?.ifraRestrictionState ||
+          null,
+        ifraRestrictionLabel:
+          liveSupplierRow?.ifraRestrictionLabel ||
+          pageFacts?.ifraRestrictionLabel ||
+          null,
+      }),
+      sdsUrl: liveSupplierRow?.sdsUrl || pageFacts?.sdsUrl || "",
+      url: liveSupplierRow?.url || pageFacts?.url || "",
+    };
+  });
+}
+
+function sortResolvedUsageRows(rows = []) {
+  return [...(Array.isArray(rows) ? rows : [])]
+    .map((row, sourceIndex) => ({
+      ...row,
+      sourceIndex,
+      note: DB?.[row?.name]?.note || row?.note || "mid",
+    }))
+    .sort((a, b) => {
+      const noteDelta =
+        (FORMULA_NOTE_ORDER[a.note] ?? 2) - (FORMULA_NOTE_ORDER[b.note] ?? 2);
+      if (noteDelta !== 0) return noteDelta;
+      const activeDelta =
+        (Number(b?.activeGrams ?? b?.g) || 0) - (Number(a?.activeGrams ?? a?.g) || 0);
+      if (activeDelta !== 0) return activeDelta;
+      return String(a?.name || "").localeCompare(String(b?.name || ""));
+    });
+}
+
 function buildFormulaCriticalMaterialContextByName(items, pricesState) {
   const uniqueNames = Array.from(
     new Set(
@@ -63319,6 +64540,13 @@ export default function App() {
       LOCAL_DRAFT_INGREDIENTS_BOOTSTRAP
     )
   );
+  const [benchStocks, setBenchStocks] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.benchStocks, {})
+  );
+  const [benchStockDraft, setBenchStockDraft] = useState(() =>
+    buildEmptyBenchStockDraft()
+  );
+  const [benchStockStatus, setBenchStockStatus] = useState("");
   const [manualRecordEdits, setManualRecordEdits] = useState(() =>
     readJsonStorage(
       APP_STORAGE_KEYS.manualRecordEdits,
@@ -63422,6 +64650,9 @@ export default function App() {
   useEffect(() => {
     writeJsonStorage(APP_STORAGE_KEYS.formulaCompare, formulaCompareState);
   }, [formulaCompareState]);
+  useEffect(() => {
+    writeJsonStorage(APP_STORAGE_KEYS.benchStocks, benchStocks);
+  }, [benchStocks]);
   // ── AI Formula Critique ──
   const [critiqueLens, setCritiqueLens] = useState(
     () => readTextStorage(APP_STORAGE_KEYS.critiqueLens, "perfumer") || "perfumer"
@@ -63633,25 +64864,55 @@ export default function App() {
       formulaSupplierOverrides,
     ]
   );
+  const formulaBenchStockRuntime = useMemo(
+    () =>
+      buildBenchStockRuntimeSummary(formula?.ingredients || [], {
+        benchStocksById: benchStocks,
+        db: DB,
+      }),
+    [benchStocks, formula]
+  );
+  const buildBenchStockRuntime = useMemo(
+    () =>
+      buildBenchStockRuntimeSummary(buildItems, {
+        benchStocksById: benchStocks,
+        db: DB,
+      }),
+    [benchStocks, buildItems]
+  );
+  const formulaUsageRows = formulaBenchStockRuntime.rows;
+  const buildUsageRows = buildBenchStockRuntime.rows;
+  const formulaDisplayRows = useMemo(
+    () => sortResolvedUsageRows(formulaUsageRows),
+    [formulaUsageRows]
+  );
+  const buildDisplayRows = useMemo(
+    () => sortResolvedUsageRows(buildUsageRows),
+    [buildUsageRows]
+  );
+  const formulaModelingItems = formulaBenchStockRuntime.modelingItems;
+  const buildModelingItems = buildBenchStockRuntime.modelingItems;
+  const formulaProcurementItems = formulaBenchStockRuntime.procurementItems;
+  const buildProcurementItems = buildBenchStockRuntime.procurementItems;
   const formulaBasketStrategies = useMemo(
     () =>
       buildSupplierBasketStrategies(
-        formula?.ingredients || [],
+        formulaProcurementItems,
         pricesState,
         currentFormulaSupplierOverrides,
         { db: DB, pricing: PRICING }
       ),
-    [formula, pricesState, currentFormulaSupplierOverrides]
+    [currentFormulaSupplierOverrides, formulaProcurementItems, pricesState]
   );
   const selectedFormulaBasket =
     formulaBasketStrategies[basketMode] || formulaBasketStrategies.cheapest;
   const buildBasketStrategies = useMemo(
     () =>
-      buildSupplierBasketStrategies(buildItems, pricesState, {}, {
+      buildSupplierBasketStrategies(buildProcurementItems, pricesState, {}, {
         db: DB,
         pricing: PRICING,
       }),
-    [buildItems, pricesState]
+    [buildProcurementItems, pricesState]
   );
   const selectedBuildBasket =
     buildBasketStrategies[basketMode] || buildBasketStrategies.cheapest;
@@ -64815,7 +66076,7 @@ export default function App() {
       const normalizedIfraPercentValue =
         ifraPercent == null || String(ifraPercent).trim() === ""
           ? null
-          : Number(ifraPercent);
+          : normalizeLooseNumericInput(ifraPercent);
       if (
         ifraPercent != null &&
         String(ifraPercent).trim() !== "" &&
@@ -65145,17 +66406,45 @@ export default function App() {
           editedFieldKeys: changedFieldKeys,
           updatedAt: nowIso,
         });
+        if (changedFieldKeys.includes("note") && normalizedValues.note) {
+          setFormulas((prev) =>
+            prev.map((formulaRecord) => ({
+              ...formulaRecord,
+              ingredients: (formulaRecord.ingredients || []).map((ingredient) =>
+                ingredient.name === safeMaterialName
+                  ? { ...ingredient, note: normalizedValues.note }
+                  : ingredient
+              ),
+            }))
+          );
+          setBuildItems((prev) =>
+            prev.map((ingredient) =>
+              ingredient.name === safeMaterialName
+                ? { ...ingredient, note: normalizedValues.note }
+                : ingredient
+            )
+          );
+        }
         return {
           ok: true,
-          message: `Saved material identity for ${safeMaterialName}.`,
+          message:
+            changedFieldKeys.includes("note") && normalizedValues.note
+              ? `Saved material identity for ${safeMaterialName}. Formula and build note-role views were synced to ${normalizedValues.note}.`
+              : `Saved material identity for ${safeMaterialName}.`,
         };
       }
 
       if (sectionKey === "technical") {
+        const normalizedVpInput = parseVaporPressureInput(values.VP);
         const normalizedValues = {
           MW: normalizeManualRecordNumber(values.MW),
           xLogP: normalizeManualRecordNumber(values.xLogP),
-          VP: normalizeManualRecordNumber(values.VP),
+          VP:
+            normalizedVpInput.legacyModelValueMmHg != null
+              ? normalizedVpInput.legacyModelValueMmHg
+              : normalizeManualRecordNumber(values.VP),
+          vaporPressureRaw: normalizedVpInput.normalizedRaw || null,
+          vaporPressureObservations: normalizedVpInput.observations,
           ODT: normalizeManualRecordNumber(values.ODT),
           TPSA: normalizeManualRecordNumber(values.TPSA),
           odorThreshold_ngL: normalizeManualRecordNumber(
@@ -65167,13 +66456,27 @@ export default function App() {
           {
             MW: currentRecord?.MW ?? null,
             xLogP: currentRecord?.xLogP ?? null,
-            VP: currentRecord?.VP ?? null,
+            VP:
+              currentRecord?.vaporPressureRaw ||
+              (currentRecord?.VP != null ? String(currentRecord.VP) : null),
             ODT: currentRecord?.ODT ?? null,
             TPSA: currentRecord?.TPSA ?? null,
             odorThreshold_ngL: currentRecord?.odorThreshold_ngL ?? null,
             technicalNotes: currentRecord?.manualTechnicalNotes || null,
           },
-          normalizedValues
+          {
+            MW: normalizedValues.MW,
+            xLogP: normalizedValues.xLogP,
+            VP:
+              normalizedValues.vaporPressureRaw ||
+              (normalizedValues.VP != null
+                ? String(normalizedValues.VP)
+                : null),
+            ODT: normalizedValues.ODT,
+            TPSA: normalizedValues.TPSA,
+            odorThreshold_ngL: normalizedValues.odorThreshold_ngL,
+            technicalNotes: normalizedValues.technicalNotes,
+          }
         );
         if (changedFieldKeys.length === 0) {
           return {
@@ -65475,17 +66778,50 @@ export default function App() {
     async ({ materialName, supplierName, refreshScope = "all_safe" }) => {
       const safeMaterialName = String(materialName || "").trim();
       const safeSupplierName = String(supplierName || "").trim();
+      const refreshRequestedAt = new Date().toISOString();
+      const refreshScopeLabel =
+        SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+        SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.label;
+      const buildRefreshFeedbackResult = ({
+        ok,
+        outcomeKey,
+        summary,
+        fieldResults = [],
+      }) => ({
+        ok,
+        message: ok
+          ? `${refreshScopeLabel} for ${safeSupplierName} on ${safeMaterialName}: ${summary}.`
+          : summary,
+        refreshFeedback: {
+          outcomeKey,
+          badges: [
+            {
+              key: outcomeKey,
+              label:
+                SUPPLIER_REFRESH_FEEDBACK_META[outcomeKey]?.label || outcomeKey,
+            },
+          ],
+          summary,
+          compactSummary: summary,
+          scopeLabel: refreshScopeLabel,
+          updatedAt: refreshRequestedAt,
+          fieldResults: Array.isArray(fieldResults) ? fieldResults : [],
+        },
+        fieldResults,
+      });
       if (!safeMaterialName || !DB[safeMaterialName]) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: "This material could not be found in the current runtime.",
-        };
+          outcomeKey: "failed",
+          summary: "This material could not be found in the current runtime.",
+        });
       }
       if (!safeSupplierName) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: "Choose a supplier row before refreshing page data.",
-        };
+          outcomeKey: "failed",
+          summary: "Choose a supplier row before refreshing page data.",
+        });
       }
 
       const existingSupplierRow =
@@ -65504,22 +66840,24 @@ export default function App() {
         existingRecord?.sourceUrl ||
         "";
       if (!sourceUrl) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: `No supplier product URL is saved for ${safeSupplierName} on ${safeMaterialName}.`,
-        };
+          outcomeKey: "unavailable",
+          summary: `No supplier product URL is saved for ${safeSupplierName} on ${safeMaterialName}.`,
+        });
       }
 
       const productJsonUrl = deriveFraterworksProductJsonUrl(sourceUrl);
       if (!productJsonUrl) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message:
+          outcomeKey: "unavailable",
+          summary:
             "Field-level supplier refresh currently supports Fraterworks product URLs that can resolve to Shopify product JSON.",
-        };
+        });
       }
 
-      const importedAt = new Date().toISOString();
+      const importedAt = refreshRequestedAt;
       let response;
       try {
         response = await fetch(productJsonUrl, {
@@ -65529,33 +66867,51 @@ export default function App() {
           },
         });
       } catch (error) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: `Supplier page refresh failed: ${String(
+          outcomeKey: "failed",
+          summary: `Supplier page refresh failed: ${String(
             error?.message || error || "Unknown network error"
           )}`,
-        };
+        });
       }
 
       if (!response?.ok) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: `Supplier page refresh failed: HTTP ${
+          outcomeKey: "failed",
+          summary: `Supplier page refresh failed: HTTP ${
             response?.status || "unknown"
           } from ${productJsonUrl}.`,
-        };
+        });
       }
 
       let responseText = "";
       try {
         responseText = await response.text();
       } catch (error) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: `Supplier page refresh could not read the product payload: ${String(
+          outcomeKey: "failed",
+          summary: `Supplier page refresh could not read the product payload: ${String(
             error?.message || error || "Unknown error"
           )}`,
-        };
+        });
+      }
+
+      let visiblePageHtml = "";
+      try {
+        const visiblePageResponse = await fetch(sourceUrl, {
+          method: "GET",
+          headers: {
+            Accept: "text/html",
+          },
+        });
+        if (visiblePageResponse?.ok) {
+          visiblePageHtml = await visiblePageResponse.text();
+        }
+      } catch {
+        visiblePageHtml = "";
       }
 
       const importPlan = buildFraterworksJsonPasteImportPlan(responseText, {
@@ -65570,10 +66926,11 @@ export default function App() {
       });
 
       if (importPlan.fatalErrors.length > 0) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message: importPlan.fatalErrors[0],
-        };
+          outcomeKey: "failed",
+          summary: importPlan.fatalErrors[0],
+        });
       }
 
       const existingSupplierProductKey =
@@ -65595,11 +66952,12 @@ export default function App() {
         null;
 
       if (!refreshedRecord) {
-        return {
+        return buildRefreshFeedbackResult({
           ok: false,
-          message:
+          outcomeKey: "unavailable",
+          summary:
             "No refreshable supplier-layer record could be derived from the supplier page payload.",
-        };
+        });
       }
 
       const scopeFieldKeys = new Set(getSupplierPageRefreshFieldKeys(refreshScope));
@@ -65610,7 +66968,86 @@ export default function App() {
           ? manualSupplierSection?.editedFieldKeys || []
           : []
       );
-      const refreshedPageFacts = refreshedRecord?.pageFacts || {};
+      const visiblePageCompliance = visiblePageHtml
+        ? extractFraterworksComplianceFields("", sourceUrl, {
+            supplementalHtml: visiblePageHtml,
+          })
+        : null;
+      const refreshedPageFacts = {
+        ...(refreshedRecord?.pageFacts || {}),
+        productDescription:
+          visiblePageCompliance?.description ||
+          refreshedRecord?.pageFacts?.productDescription ||
+          null,
+        ifraPercent:
+          visiblePageCompliance?.ifraPercent != null
+            ? visiblePageCompliance.ifraPercent
+            : refreshedRecord?.pageFacts?.ifraPercent ?? null,
+        ifraRestrictionState:
+          visiblePageCompliance?.restrictionState ||
+          refreshedRecord?.pageFacts?.ifraRestrictionState ||
+          null,
+        ifraRestrictionLabel:
+          visiblePageCompliance?.restrictionLabel ||
+          refreshedRecord?.pageFacts?.ifraRestrictionLabel ||
+          null,
+        sdsUrl:
+          visiblePageCompliance?.sdsUrl ||
+          refreshedRecord?.pageFacts?.sdsUrl ||
+          null,
+        inci:
+          visiblePageCompliance?.inci ||
+          refreshedRecord?.pageFacts?.inci ||
+          null,
+        casShown:
+          visiblePageCompliance?.casSupport?.displayValue ||
+          refreshedRecord?.pageFacts?.casShown ||
+          null,
+        casState:
+          visiblePageCompliance?.casSupport?.state ||
+          refreshedRecord?.pageFacts?.casState ||
+          "unknown",
+        casValues:
+          visiblePageCompliance?.casSupport?.values ||
+          refreshedRecord?.pageFacts?.casValues ||
+          [],
+        casComparisonKey:
+          visiblePageCompliance?.casSupport?.comparisonKey ||
+          refreshedRecord?.pageFacts?.casComparisonKey ||
+          null,
+        iupacName:
+          visiblePageCompliance?.iupacName ||
+          refreshedRecord?.pageFacts?.iupacName ||
+          null,
+        alternateNames:
+          visiblePageCompliance?.alternateNames?.length
+            ? visiblePageCompliance.alternateNames
+            : refreshedRecord?.pageFacts?.alternateNames || [],
+        synonyms:
+          visiblePageCompliance?.synonyms?.length
+            ? visiblePageCompliance.synonyms
+            : refreshedRecord?.pageFacts?.synonyms || [],
+        noteRole:
+          visiblePageCompliance?.noteRole ||
+          refreshedRecord?.pageFacts?.noteRole ||
+          null,
+        materialType:
+          visiblePageCompliance?.materialType ||
+          refreshedRecord?.pageFacts?.materialType ||
+          null,
+        vaporPressureRaw:
+          visiblePageCompliance?.vaporPressureRaw ||
+          refreshedRecord?.pageFacts?.vaporPressureRaw ||
+          null,
+        vaporPressureObservations:
+          visiblePageCompliance?.vaporPressureObservations?.length
+            ? visiblePageCompliance.vaporPressureObservations
+            : refreshedRecord?.pageFacts?.vaporPressureObservations || [],
+        vaporPressureDisplayValue:
+          visiblePageCompliance?.vaporPressureDisplayValue ||
+          refreshedRecord?.pageFacts?.vaporPressureDisplayValue ||
+          null,
+      };
       const materialIdentitySection =
         manualRecordEdits?.[safeMaterialName]?.sections?.identity || null;
       const currentMaterialCas =
@@ -65635,6 +67072,7 @@ export default function App() {
         productDescription: "Description",
         scentSummary: "Scent summary",
         dilutionOrCarrier: "Dilution / carrier",
+        vaporPressureRaw: "Vapor pressure",
         casShown: "CAS shown",
         inciShown: "INCI shown",
         ifraPercent: "IFRA shown",
@@ -65803,6 +67241,23 @@ export default function App() {
           }
         );
       }
+      if (scopeFieldKeys.has("vaporPressureRaw")) {
+        nextPageFacts.vaporPressureRaw = setPageFactValue(
+          "vaporPressureRaw",
+          refreshedPageFacts?.vaporPressureRaw,
+          {
+            existingValue: existingPageFacts?.vaporPressureRaw || "",
+          }
+        );
+        nextPageFacts.vaporPressureObservations =
+          refreshedPageFacts?.vaporPressureObservations ||
+          nextPageFacts?.vaporPressureObservations ||
+          [];
+        nextPageFacts.vaporPressureDisplayValue =
+          refreshedPageFacts?.vaporPressureDisplayValue ||
+          nextPageFacts?.vaporPressureDisplayValue ||
+          null;
+      }
       if (scopeFieldKeys.has("casShown")) {
         nextPageFacts.casShown = setPageFactValue(
           "casShown",
@@ -65861,25 +67316,73 @@ export default function App() {
         }
       }
       if (scopeFieldKeys.has("ifraPercent")) {
-        nextPageFacts.ifraPercent = setPageFactValue(
-          "ifraPercent",
-          refreshedPageFacts?.ifraPercent,
-          {
-            manualFieldKey: "ifraPercent",
-            existingValue: existingPageFacts?.ifraPercent ?? null,
-            hasValue: refreshedPageFacts?.ifraPercent != null,
-          }
-        );
+        const existingIfraRestrictionState =
+          existingPageFacts?.ifraRestrictionState || null;
+        const refreshedIfraRestrictionState =
+          refreshedPageFacts?.ifraRestrictionState || null;
         if (
-          nextPageFacts.ifraPercent != null &&
-          Number.isFinite(currentMaterialIfra) &&
-          Math.abs(Number(nextPageFacts.ifraPercent) - currentMaterialIfra) > 0.05
+          manualSupplierFieldSet.has("ifraPercent")
         ) {
           pushFieldResult(
-            conflictLabels,
+            preservedLabels,
             "ifraPercent",
-            `conflicts with Cat 4 ${currentMaterialIfra}%`
+            "kept manual trusted override"
           );
+          nextPageFacts.ifraPercent = existingPageFacts?.ifraPercent ?? null;
+          nextPageFacts.ifraRestrictionState =
+            existingPageFacts?.ifraRestrictionState || null;
+          nextPageFacts.ifraRestrictionLabel =
+            existingPageFacts?.ifraRestrictionLabel || null;
+        } else if (refreshedIfraRestrictionState === "no_restriction") {
+          const nextRestrictionLabel =
+            refreshedPageFacts?.ifraRestrictionLabel || "No restrictions";
+          const unchangedNoRestriction =
+            existingIfraRestrictionState === "no_restriction" &&
+            normalizeManualComparableValue(
+              existingPageFacts?.ifraRestrictionLabel || "No restrictions"
+            ) === normalizeManualComparableValue(nextRestrictionLabel);
+          if (unchangedNoRestriction) {
+            pushFieldResult(unchangedLabels, "ifraPercent", "unchanged");
+          } else {
+            pushFieldResult(
+              updatedLabels,
+              "ifraPercent",
+              "now states no restrictions"
+            );
+          }
+          nextPageFacts.ifraPercent = null;
+          nextPageFacts.ifraRestrictionState = "no_restriction";
+          nextPageFacts.ifraRestrictionLabel = nextRestrictionLabel;
+          if (Number.isFinite(currentMaterialIfra)) {
+            pushFieldResult(
+              conflictLabels,
+              "ifraPercent",
+              `no restrictions conflicts with Cat 4 ${currentMaterialIfra}%`
+            );
+          }
+        } else {
+          nextPageFacts.ifraPercent = setPageFactValue(
+            "ifraPercent",
+            refreshedPageFacts?.ifraPercent,
+            {
+              manualFieldKey: "ifraPercent",
+              existingValue: existingPageFacts?.ifraPercent ?? null,
+              hasValue: refreshedPageFacts?.ifraPercent != null,
+            }
+          );
+          nextPageFacts.ifraRestrictionState = null;
+          nextPageFacts.ifraRestrictionLabel = null;
+          if (
+            nextPageFacts.ifraPercent != null &&
+            Number.isFinite(currentMaterialIfra) &&
+            Math.abs(Number(nextPageFacts.ifraPercent) - currentMaterialIfra) > 0.05
+          ) {
+            pushFieldResult(
+              conflictLabels,
+              "ifraPercent",
+              `conflicts with Cat 4 ${currentMaterialIfra}%`
+            );
+          }
         }
       }
       if (scopeFieldKeys.has("sdsUrl")) {
@@ -65997,8 +67500,22 @@ export default function App() {
       const refreshSummary =
         summaryParts[0] ||
         "No safe supplier-page updates were applied from this refresh.";
+      const refreshFeedback = buildSupplierRefreshFeedbackState({
+        updatedLabels,
+        preservedLabels,
+        conflictLabels,
+        unchangedLabels,
+        missingLabels,
+        refreshSummary,
+        scopeLabel:
+          SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label ||
+          SUPPLIER_PAGE_REFRESH_SCOPE_META.all_safe.label,
+        updatedAt: importedAt,
+        fieldResults: nextFieldResults,
+      });
 
       nextSupplierRecord.pageFacts.lastRefreshSummary = refreshSummary;
+      nextSupplierRecord.pageFacts.lastRefreshFeedback = refreshFeedback;
       nextSupplierRecord.notes = [
         `Field-level supplier refresh (${nextSupplierRecord.pageFacts.lastRefreshScopeLabel}) ${refreshSummary}.`,
         ...(Array.isArray(existingRecord?.notes) ? existingRecord.notes : []),
@@ -66042,10 +67559,19 @@ export default function App() {
           scopeFieldKeys.has("ifraPercent") &&
           !manualSupplierFieldSet.has("ifraPercent")
         ) {
-          nextSupplierRow.ifraPercent =
-            nextPageFacts.ifraPercent != null
-              ? nextPageFacts.ifraPercent
-              : nextSupplierRow.ifraPercent ?? null;
+          if (nextPageFacts.ifraRestrictionState === "no_restriction") {
+            nextSupplierRow.ifraPercent = null;
+            nextSupplierRow.ifraRestrictionState = "no_restriction";
+            nextSupplierRow.ifraRestrictionLabel =
+              nextPageFacts.ifraRestrictionLabel || "No restrictions";
+          } else {
+            nextSupplierRow.ifraPercent =
+              nextPageFacts.ifraPercent != null
+                ? nextPageFacts.ifraPercent
+                : nextSupplierRow.ifraPercent ?? null;
+            nextSupplierRow.ifraRestrictionState = null;
+            nextSupplierRow.ifraRestrictionLabel = null;
+          }
         }
         if (
           scopeFieldKeys.has("sdsUrl") &&
@@ -66098,6 +67624,7 @@ export default function App() {
         message: `${SUPPLIER_PAGE_REFRESH_SCOPE_META[refreshScope]?.label || "Supplier refresh"} for ${safeSupplierName} on ${safeMaterialName}: ${refreshSummary}.`,
         reviewItemCount: nextReviewItems.length,
         fieldResults: nextFieldResults,
+        refreshFeedback,
       };
     },
     [
@@ -67409,23 +68936,32 @@ export default function App() {
     formula?.isLocked && formula?.sourceType !== "seeded"
   );
   const canDeleteFormula = Boolean(formula && !formula.isSeeded);
-  const chem = useMemo(() => computeChemistry(formula.ingredients), [formula]);
-  const buildChem = useMemo(() => computeChemistry(buildItems), [buildItems]);
+  const chem = useMemo(
+    () => computeChemistry(formulaModelingItems),
+    [formulaModelingItems]
+  );
+  const buildChem = useMemo(
+    () => computeChemistry(buildModelingItems),
+    [buildModelingItems]
+  );
   const buildScore = useMemo(
     () =>
-      buildItems.length > 0
-        ? perfScore(buildItems)
+      buildModelingItems.length > 0
+        ? perfScore(buildModelingItems)
         : { longevity: 0, sillage: 0, projection: 0 },
-    [buildItems]
+    [buildModelingItems]
   );
-  const formulaScore = useMemo(() => perfScore(formula.ingredients), [formula]);
+  const formulaScore = useMemo(
+    () => perfScore(formulaModelingItems),
+    [formulaModelingItems]
+  );
   const formulaCritiqueIfraRows = useMemo(
-    () => getFormulaIfraRows(formula.ingredients, "cat4"),
-    [formula]
+    () => getFormulaIfraRows(formulaUsageRows, "cat4"),
+    [formulaUsageRows]
   );
   const buildCritiqueIfraRows = useMemo(
-    () => getFormulaIfraRows(buildItems, ifraCategory),
-    [buildItems, ifraCategory]
+    () => getFormulaIfraRows(buildUsageRows, ifraCategory),
+    [buildUsageRows, ifraCategory]
   );
   const formulaChemistrySummary = useMemo(
     () => summarizeComputedChemistry(chem),
@@ -67437,7 +68973,7 @@ export default function App() {
   );
   const formulaPerformanceModel = useMemo(
     () =>
-      buildPerformanceModelSummary(formula.ingredients, {
+      buildPerformanceModelSummary(formulaModelingItems, {
         db: DB,
         chemistry: chem,
         performance: formulaScore,
@@ -67445,11 +68981,11 @@ export default function App() {
         computeChemistry,
         perfScore,
       }),
-    [chem, formula, formulaChemistrySummary, formulaScore]
+    [chem, formulaChemistrySummary, formulaModelingItems, formulaScore]
   );
   const buildPerformanceModel = useMemo(
     () =>
-      buildPerformanceModelSummary(buildItems, {
+      buildPerformanceModelSummary(buildModelingItems, {
         db: DB,
         chemistry: buildChem,
         performance: buildScore,
@@ -67457,30 +68993,33 @@ export default function App() {
         computeChemistry,
         perfScore,
       }),
-    [buildChem, buildChemistrySummary, buildItems, buildScore]
+    [buildChem, buildChemistrySummary, buildModelingItems, buildScore]
   );
   const formulaFinishedProductGuidance = useMemo(
     () =>
       buildFinishedProductIfraGuidance({
-        items: formula?.ingredients || [],
+        items: formulaUsageRows,
         category: ifraCategory,
         fragranceLoadPercent: selectedFragranceType.pct,
       }),
-    [formula, ifraCategory, selectedFragranceType]
+    [formulaUsageRows, ifraCategory, selectedFragranceType]
   );
   const buildFinishedProductGuidance = useMemo(
     () =>
       buildFinishedProductIfraGuidance({
-        items: buildItems,
+        items: buildUsageRows,
         category: ifraCategory,
         fragranceLoadPercent: selectedFragranceType.pct,
       }),
-    [buildItems, ifraCategory, selectedFragranceType]
+    [buildUsageRows, ifraCategory, selectedFragranceType]
   );
   const formulaCritiqueReport = useMemo(
     () =>
       buildFormulaCritiqueReport({
-        formula,
+        formula: {
+          ...formula,
+          ingredients: formulaModelingItems,
+        },
         chemistry: chem,
         performance: formulaScore,
         performanceModel: formulaPerformanceModel,
@@ -67497,6 +69036,7 @@ export default function App() {
       formula,
       formulaBasketStrategies,
       formulaCritiqueIfraRows,
+      formulaModelingItems,
       formulaPerformanceModel,
       formulaScore,
       selectedBasketModeMeta,
@@ -67505,12 +69045,12 @@ export default function App() {
   );
   const buildCritiqueReport = useMemo(
     () =>
-      buildItems.length
+      buildModelingItems.length
         ? buildFormulaCritiqueReport({
             formula: {
               formulaKey: "build-current",
               name: buildName.trim() || "Current Build",
-              ingredients: buildItems,
+              ingredients: buildModelingItems,
             },
             chemistry: buildChem,
             performance: buildScore,
@@ -67527,7 +69067,7 @@ export default function App() {
       buildBasketStrategies,
       buildChem,
       buildCritiqueIfraRows,
-      buildItems,
+      buildModelingItems,
       buildName,
       buildPerformanceModel,
       buildScore,
@@ -67554,7 +69094,7 @@ export default function App() {
       buildFormulaCriticalDataAudit({
         contextLabel: selectedFormulaLabel,
         contextKind: "formula",
-        items: formula?.ingredients || [],
+        items: formulaModelingItems,
         basket: selectedFormulaBasket,
         evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
         intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
@@ -67568,6 +69108,7 @@ export default function App() {
       formulaCriticalMaterialContextByName,
       formulaCritiqueReport,
       formulaFinishedProductGuidance,
+      formulaModelingItems,
       formulaPerformanceModel,
       selectedFormulaBasket,
       selectedFormulaLabel,
@@ -67579,7 +69120,7 @@ export default function App() {
       buildFormulaCriticalDataAudit({
         contextLabel: currentBuildLabel,
         contextKind: "build",
-        items: buildItems,
+        items: buildModelingItems,
         basket: selectedBuildBasket,
         evidenceCandidates: sourceDocumentEvidenceReviewPayload.evidenceCandidates,
         intakeTargets: sourceDocumentEvidenceReviewPayload.intakeTargets,
@@ -67592,7 +69133,7 @@ export default function App() {
       buildCriticalMaterialContextByName,
       buildCritiqueReport,
       buildFinishedProductGuidance,
-      buildItems,
+      buildModelingItems,
       buildPerformanceModel,
       currentBuildLabel,
       selectedBuildBasket,
@@ -68596,9 +70137,134 @@ export default function App() {
     launchRecommendation,
     sortFounderScenarioRecords,
   ]);
-  const totalBuildG = buildItems.reduce((s, i) => s + i.g, 0);
+  const totalBuildG = buildBenchStockRuntime.totals.totalStockGrams;
   const totalBuildCost = selectedBuildBasket?.totalCost || 0;
   const allIngredients = Object.keys(DB);
+  const parentMaterialOptions = useMemo(
+    () =>
+      allIngredients
+        .filter((name) => DB[name]?.note !== "carrier")
+        .sort((a, b) =>
+          getMaterialDisplayName(a, DB[a]).localeCompare(
+            getMaterialDisplayName(b, DB[b])
+          )
+        ),
+    [allIngredients]
+  );
+  const benchStockCarrierOptions = useMemo(
+    () =>
+      allIngredients
+        .filter(
+          (name) => DB[name]?.note === "carrier" || DB[name]?.type === "CARRIER"
+        )
+        .sort((a, b) =>
+          getMaterialDisplayName(a, DB[a]).localeCompare(
+            getMaterialDisplayName(b, DB[b])
+          )
+        ),
+    [allIngredients]
+  );
+  const benchStockList = useMemo(
+    () =>
+      Object.values(benchStocks || {})
+        .map((stock) => {
+          const parentEffectiveActivePercent =
+            normalizeBenchStockPercentInput(
+              stock?.parentEffectiveActivePercent,
+              null
+            ) ?? inferBenchStockParentEffectiveActivePercent(stock?.parentMaterialName);
+          const dilutionPercent = normalizeBenchStockPercentInput(
+            stock?.dilutionPercent,
+            100
+          );
+          return {
+            ...stock,
+            parentEffectiveActivePercent,
+            dilutionPercent,
+            effectiveActivePercent: buildBenchStockEffectiveActivePercent({
+              dilutionPercent,
+              parentEffectiveActivePercent,
+            }),
+            displayName: buildBenchStockDisplayName(stock),
+          };
+        })
+        .sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || "")),
+    [benchStocks]
+  );
+  const getBenchStockSupplierOptionsForMaterial = useCallback(
+    (parentMaterialName, fallbackSupplier = "") =>
+      buildBenchStockSupplierOptions(parentMaterialName, {
+        livePricing: getLivePricingForIngredient(
+          parentMaterialName,
+          pricesState,
+          PRICING
+        ),
+        supplierRecords: Object.values(supplierLayerPageFacts || {}).filter(
+          (record) =>
+            record?.mappedCatalogName === parentMaterialName ||
+            record?.materialName === parentMaterialName
+        ),
+        fallbackSupplier,
+      }),
+    [pricesState, supplierLayerPageFacts]
+  );
+  const benchStockDraftParentRecord = benchStockDraft.parentMaterialName
+    ? DB[benchStockDraft.parentMaterialName] || null
+    : null;
+  const benchStockDraftSupplierOptions = useMemo(
+    () =>
+      getBenchStockSupplierOptionsForMaterial(
+        benchStockDraft.parentMaterialName,
+        benchStockDraft.supplierName
+      ),
+    [
+      benchStockDraft.parentMaterialName,
+      benchStockDraft.supplierName,
+      getBenchStockSupplierOptionsForMaterial,
+    ]
+  );
+  const selectedBenchStockSupplierOption =
+    benchStockDraftSupplierOptions.find(
+      (option) => option.supplierName === benchStockDraft.supplierName
+    ) || null;
+  const benchStockDraftDescriptor = useMemo(
+    () =>
+      deriveVisibleMaterialDescriptorText({
+        recordName: benchStockDraft.parentMaterialName,
+        record: benchStockDraftParentRecord,
+        fallbackSummary:
+          selectedBenchStockSupplierOption?.scentSummary || "",
+        fallbackDescription:
+          selectedBenchStockSupplierOption?.description || "",
+      }),
+    [
+      benchStockDraft.parentMaterialName,
+      benchStockDraftParentRecord,
+      selectedBenchStockSupplierOption,
+    ]
+  );
+  const benchStockDraftIfraVisibility = useMemo(
+    () =>
+      benchStockDraft.parentMaterialName
+        ? getIngredientIfraVisibility(benchStockDraft.parentMaterialName, {
+            record: benchStockDraftParentRecord,
+            livePricing: getLivePricingForIngredient(
+              benchStockDraft.parentMaterialName,
+              pricesState,
+              PRICING
+            ),
+            supplierRecords: benchStockDraftSupplierOptions
+              .map((option) => option.supplierRecord)
+              .filter(Boolean),
+          })
+        : null,
+    [
+      benchStockDraft.parentMaterialName,
+      benchStockDraftParentRecord,
+      benchStockDraftSupplierOptions,
+      pricesState,
+    ]
+  );
 
   // Filtered catalog
   const baseFilteredCat = useMemo(
@@ -68656,6 +70322,27 @@ export default function App() {
   const buildResults = buildSearchResultState.names;
   const buildSearchHiddenLinkedDuplicateCount =
     buildSearchResultState.hiddenLinkedDuplicateCount;
+  const buildBenchStockResults = useMemo(() => {
+    const query = String(buildSearch || "").trim().toLowerCase();
+    if (query.length < 2) return [];
+    const currentNames = new Set(buildItems.map((item) => item.name));
+    return benchStockList
+      .filter((stock) => {
+        if (!stock?.parentMaterialName || currentNames.has(stock.parentMaterialName)) {
+          return false;
+        }
+        const haystack = [
+          stock.displayName,
+          stock.parentMaterialName,
+          stock.carrierName,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .slice(0, 6);
+  }, [benchStockList, buildItems, buildSearch]);
 
   const formulaEditSearchState = useMemo(
     () =>
@@ -68673,6 +70360,29 @@ export default function App() {
           })(),
     [allIngredients, formula.ingredients, ingSearchQuery]
   );
+  const formulaBenchStockResults = useMemo(() => {
+    const query = String(ingSearchQuery || "").trim().toLowerCase();
+    if (query.length < 1) return [];
+    const currentNames = new Set(
+      (formula?.ingredients || []).map((item) => item.name)
+    );
+    return benchStockList
+      .filter((stock) => {
+        if (!stock?.parentMaterialName || currentNames.has(stock.parentMaterialName)) {
+          return false;
+        }
+        const haystack = [
+          stock.displayName,
+          stock.parentMaterialName,
+          stock.carrierName,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      })
+      .slice(0, 8);
+  }, [benchStockList, formula, ingSearchQuery]);
 
   const buildPaletteGroups = useMemo(
     () =>
@@ -68696,6 +70406,36 @@ export default function App() {
     });
     setBuildSearch("");
   };
+  const addBenchStockToBuild = useCallback(
+    (stockId) => {
+      const stock = benchStocks?.[stockId];
+      if (!stock?.parentMaterialName) return;
+      setBuildItems((prev) => {
+        const exists = prev.find((item) => item.name === stock.parentMaterialName);
+        if (exists) return prev;
+        return [
+          ...prev,
+          {
+            name: stock.parentMaterialName,
+            g: 10,
+            note: DB[stock.parentMaterialName]?.note || "mid",
+            benchStockId: stockId,
+            benchStockName: stock.stockName,
+            parentMaterialName: stock.parentMaterialName,
+            supplierName: stock.supplierName || "",
+            carrierName: stock.carrierName,
+            stockDilutionPercent: stock.dilutionPercent,
+            parentEffectiveActivePercent: stock.parentEffectiveActivePercent,
+            effectiveActivePercent: stock.effectiveActivePercent,
+            gramsOnHand: stock.gramsOnHand,
+            benchStockNotes: stock.notes || "",
+          },
+        ];
+      });
+      setBuildSearch("");
+    },
+    [benchStocks]
+  );
   const removeBuildItem = (name) =>
     setBuildItems((prev) => prev.filter((i) => i.name !== name));
   const updateBuildG = useCallback((name, nextValue) => {
@@ -68741,6 +70481,220 @@ export default function App() {
     setBuildItems((prev) =>
       prev.map((i) => (i.name === name ? { ...i, note } : i))
     );
+  const addBenchStockToFormula = useCallback(
+    (formulaKey, stockId) => {
+      const stock = benchStocks?.[stockId];
+      if (!stock?.parentMaterialName) return;
+      updateFormulaRecord(formulaKey, (current) => {
+        const exists = (current?.ingredients || []).some(
+          (item) => item.name === stock.parentMaterialName
+        );
+        if (exists) return current;
+        return {
+          ...current,
+          ingredients: sortFormulaIngredients([
+            ...(current?.ingredients || []),
+            {
+              name: stock.parentMaterialName,
+              g: 10,
+              note: DB[stock.parentMaterialName]?.note || "mid",
+              benchStockId: stockId,
+              benchStockName: stock.stockName,
+              parentMaterialName: stock.parentMaterialName,
+              supplierName: stock.supplierName || "",
+              carrierName: stock.carrierName,
+              stockDilutionPercent: stock.dilutionPercent,
+              parentEffectiveActivePercent: stock.parentEffectiveActivePercent,
+              effectiveActivePercent: stock.effectiveActivePercent,
+              gramsOnHand: stock.gramsOnHand,
+              benchStockNotes: stock.notes || "",
+            },
+          ]),
+        };
+      });
+      setIngSearchQuery("");
+    },
+    [benchStocks]
+  );
+  const resetBenchStockDraft = useCallback(() => {
+    setBenchStockDraft(buildEmptyBenchStockDraft());
+    setBenchStockStatus("");
+  }, []);
+  const editBenchStockDraft = useCallback(
+    (stockId) => {
+      const stock = benchStocks?.[stockId];
+      if (!stock) return;
+      setBenchStockDraft({
+        id: stock.id || stockId,
+        duplicateSourceId: null,
+        stockName: stock.stockName || "",
+        parentMaterialName: stock.parentMaterialName || "",
+        supplierName: stock.supplierName || "",
+        carrierName: stock.carrierName || "TEC",
+        dilutionPercent:
+          stock.dilutionPercent != null ? String(stock.dilutionPercent) : "10.00",
+        parentEffectiveActivePercent:
+          stock.parentEffectiveActivePercent != null
+            ? String(stock.parentEffectiveActivePercent)
+            : "",
+        gramsOnHand:
+          stock.gramsOnHand != null ? String(stock.gramsOnHand) : "",
+        notes: stock.notes || "",
+      });
+      setBenchStockStatus(
+        `Editing ${buildBenchStockDisplayName(stock)}. Save to update the stock.`
+      );
+      setMainTab("dilution");
+    },
+    [benchStocks]
+  );
+  const duplicateBenchStockDraft = useCallback(
+    (stockId, overrides = {}) => {
+      const stock = benchStocks?.[stockId];
+      if (!stock) return;
+      const nextDraft = buildBenchStockDuplicateDraft(stock, overrides);
+      setBenchStockDraft(nextDraft);
+      setBenchStockStatus(
+        `Duplicating ${buildBenchStockDisplayName(
+          stock
+        )}. Adjust dilution %, stock name, or grams on hand, then save as a new stock.`
+      );
+      setMainTab("dilution");
+    },
+    [benchStocks]
+  );
+  const deleteBenchStock = useCallback(
+    (stockId) => {
+      const stock = benchStocks?.[stockId];
+      if (!stock) return;
+      setBenchStocks((prev) => {
+        const next = { ...prev };
+        delete next[stockId];
+        return next;
+      });
+      if (benchStockDraft.id === stockId) {
+        setBenchStockDraft(buildEmptyBenchStockDraft());
+      }
+      setBenchStockStatus(
+        `Removed ${buildBenchStockDisplayName(stock)} from local bench stocks.`
+      );
+    },
+    [benchStockDraft.id, benchStocks]
+  );
+  const saveBenchStockDraft = useCallback(() => {
+    const parentMaterialName = String(
+      benchStockDraft.parentMaterialName || ""
+    ).trim();
+    const supplierName = String(benchStockDraft.supplierName || "").trim();
+    const carrierName = String(benchStockDraft.carrierName || "").trim() || "TEC";
+    const stockName = String(benchStockDraft.stockName || "").trim();
+    const dilutionPercent = normalizeBenchStockPercentInput(
+      benchStockDraft.dilutionPercent,
+      null
+    );
+    const gramsOnHandRaw = String(benchStockDraft.gramsOnHand || "").trim();
+    const parsedGramsOnHand = normalizeLooseNumericInput(gramsOnHandRaw);
+    const inferredParentPercent =
+      inferBenchStockParentEffectiveActivePercent(parentMaterialName);
+    const parentEffectiveActivePercent =
+      normalizeBenchStockPercentInput(
+        benchStockDraft.parentEffectiveActivePercent,
+        null
+      ) ?? inferredParentPercent;
+    const gramsOnHand =
+      gramsOnHandRaw === "" ? null : Math.max(0, parsedGramsOnHand ?? 0);
+
+    if (!parentMaterialName || !DB[parentMaterialName]) {
+      setBenchStockStatus(
+        "Choose an existing parent material before saving a bench stock."
+      );
+      return;
+    }
+    if (dilutionPercent == null) {
+      setBenchStockStatus(
+        "Enter a valid stock dilution percent before saving this bench stock."
+      );
+      return;
+    }
+    if (
+      gramsOnHandRaw !== "" &&
+      parsedGramsOnHand == null
+    ) {
+      setBenchStockStatus("Grams on hand must be a valid number or left blank.");
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const effectiveActivePercent = buildBenchStockEffectiveActivePercent({
+      dilutionPercent,
+      parentEffectiveActivePercent,
+    });
+    const stockId =
+      benchStockDraft.id ||
+      globalThis.crypto?.randomUUID?.() ||
+      `bench-stock-${Date.now()}`;
+    const existingStock = benchStocks?.[stockId] || null;
+    const duplicateSourceStock =
+      benchStockDraft.duplicateSourceId &&
+      benchStocks?.[benchStockDraft.duplicateSourceId]
+        ? benchStocks[benchStockDraft.duplicateSourceId]
+        : null;
+    const generatedDisplayName = buildBenchStockDisplayName({
+      parentMaterialName,
+      dilutionPercent,
+      carrierName,
+    });
+    const duplicateSourceDisplayName = duplicateSourceStock
+      ? buildBenchStockDisplayName(duplicateSourceStock)
+      : null;
+    const nextRecord = {
+      id: stockId,
+      stockName:
+        stockName ||
+        (duplicateSourceDisplayName &&
+        duplicateSourceDisplayName === generatedDisplayName
+          ? `${generatedDisplayName} (Copy)`
+          : generatedDisplayName),
+      parentMaterialName,
+      supplierName,
+      carrierName,
+      dilutionPercent: Number(dilutionPercent.toFixed(6)),
+      parentEffectiveActivePercent: Number(
+        parentEffectiveActivePercent.toFixed(6)
+      ),
+      effectiveActivePercent: Number(effectiveActivePercent.toFixed(6)),
+      gramsOnHand,
+      notes: String(benchStockDraft.notes || "").trim(),
+      createdAt: existingStock?.createdAt || now,
+      updatedAt: now,
+    };
+
+    setBenchStocks((prev) => ({
+      ...prev,
+      [stockId]: nextRecord,
+    }));
+    setBenchStockDraft(buildEmptyBenchStockDraft());
+    setBenchStockStatus(
+      `${existingStock ? "Updated" : "Saved"} ${nextRecord.stockName}. Active ${effectiveActivePercent.toFixed(
+        2
+      )}% of the stock now drives formula modeling.`
+    );
+  }, [benchStockDraft, benchStocks]);
+  const benchStockDraftResolvedParentEffectivePercent =
+    normalizeBenchStockPercentInput(
+      benchStockDraft.parentEffectiveActivePercent,
+      null
+    ) ??
+    inferBenchStockParentEffectiveActivePercent(
+      benchStockDraft.parentMaterialName
+    );
+  const benchStockDraftResolvedDilutionPercent =
+    normalizeBenchStockPercentInput(benchStockDraft.dilutionPercent, 100) ?? 100;
+  const benchStockDraftEffectiveActivePercent =
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: benchStockDraftResolvedDilutionPercent,
+      parentEffectiveActivePercent: benchStockDraftResolvedParentEffectivePercent,
+    });
   const buildFormulaGramDraftKey = (formulaKey, index, ingredientName) =>
     `${formulaKey || "formula"}:${index}:${ingredientName || "ingredient"}`;
   const updateFormulaGramDraft = useCallback((draftKey, rawValue, onCommit) => {
@@ -81434,7 +83388,7 @@ export default function App() {
                       }}
                     >
                       <div>
-                        <PyramidSVG ingredients={formula.ingredients} />
+                        <PyramidSVG ingredients={formulaModelingItems} />
                         {(() => {
                           const cats = [
                             "Citrus",
@@ -81449,10 +83403,13 @@ export default function App() {
                             "Green",
                           ];
                           const total =
-                            formula.ingredients.reduce((s, i) => s + i.g, 0) || 1;
+                            formulaModelingItems.reduce(
+                              (sum, ingredient) => sum + (ingredient.g || 0),
+                              0
+                            ) || 1;
                           const radarData = cats
                             .map((cat) => {
-                              const score = formula.ingredients.reduce(
+                              const score = formulaModelingItems.reduce(
                                 (s, ing) => {
                                   const d = DB[ing.name];
                                   if (!d || !d.scentClass) return s;
@@ -81558,9 +83515,72 @@ export default function App() {
                             Ingredient Breakdown
                           </span>
                           <span style={{ fontSize: 9, color: "#334155" }}>
-                            Click grams to edit · helper IFRA state shown · 🔍
-                            click name for detail
+                            Click grams to edit · clean IFRA summary shown · 🔍 click
+                            name for detail
                           </span>
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4,minmax(0,1fr))",
+                            gap: 8,
+                            marginBottom: 10,
+                          }}
+                        >
+                          {[
+                            {
+                              label: "Stock grams",
+                              value: `${formulaBenchStockRuntime.totals.totalStockGrams.toFixed(2)}g`,
+                              color: "#7DD3FC",
+                            },
+                            {
+                              label: "Active aromatics",
+                              value: `${formulaBenchStockRuntime.totals.totalActiveGrams.toFixed(2)}g`,
+                              color: "#34D399",
+                            },
+                            {
+                              label: "Bench carrier",
+                              value: `${formulaBenchStockRuntime.totals.totalBenchCarrierGrams.toFixed(2)}g`,
+                              color: "#A78BFA",
+                            },
+                            {
+                              label: "Active %",
+                              value: `${formulaBenchStockRuntime.totals.activeAromaticPercent.toFixed(2)}%`,
+                              color: "#F59E0B",
+                            },
+                          ].map((card) => (
+                            <div
+                              key={card.label}
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 8,
+                                padding: "8px 10px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 7.8,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  color: "#64748B",
+                                  fontWeight: 700,
+                                  marginBottom: 4,
+                                }}
+                              >
+                                {card.label}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  color: card.color,
+                                }}
+                              >
+                                {card.value}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                         <table
                           style={{
@@ -81577,11 +83597,13 @@ export default function App() {
                               "Supplier",
                               "IFRA %",
                               "Type",
-                              "g",
+                              "Stock g",
+                              "Active g",
+                              "Carrier g",
                               "% Conc",
                               "MW",
                               "xLogP",
-                              "VP (mmHg)",
+                              "VP",
                               "Longevity Contrib",
                             ].map((h) => (
                               <th
@@ -81601,32 +83623,44 @@ export default function App() {
                           </tr>
                         </thead>
                         <tbody>
-                          {formula.ingredients.map((ing, ii) => {
+                          {formulaDisplayRows.map((ing) => {
                             const d = DB[ing.name];
-                            const nc = NC[ing.note] || NC.carrier;
-                            const ifraData = getIngredientIfraData(ing.name);
-                            const ifraVisibility =
-                              getIngredientIfraVisibility(ing.name);
-                            const displayName = getMaterialDisplayName(
+                            const resolvedNote = d?.note || ing.note || "mid";
+                            const nc = NC[resolvedNote] || NC.carrier;
+                            const ifraVisibility = getIngredientIfraVisibility(
                               ing.name,
-                              d
+                              {
+                                record: d,
+                                livePricing: getLivePricingForIngredient(
+                                  ing.name,
+                                  pricesState,
+                                  PRICING
+                                ),
+                              }
                             );
+                            const displayName =
+                              ing.isBenchStock && ing.benchStockName
+                                ? ing.benchStockName
+                                : getMaterialDisplayName(ing.name, d);
                             const runtimeKeyCaption =
                               getMaterialRuntimeKeyCaption(ing.name, d);
                             const primarySupplierName =
+                              ing.supplierName ||
                               Object.keys(
                                 pricesState?.[ing.name] || PRICING?.[ing.name] || {}
                               )[0] ||
                               d?.supplier ||
                               "—";
-                            const key = `${selFrag}-${ii}`;
-                            const total = formula.ingredients.reduce(
-                              (s, i) => s + i.g,
-                              0
-                            );
+                            const key = `${selFrag}-${ing.sourceIndex}`;
+                            const total =
+                              formulaBenchStockRuntime.totals.totalStockGrams || 1;
+                            const vaporPressureDisplay = buildVaporPressureDisplay(d);
                             return (
                               <tr
-                                key={ing.name}
+                                key={
+                                  ing.benchStockId ||
+                                  `${ing.name}-${ing.sourceIndex}`
+                                }
                                 style={{ borderBottom: "1px solid #0A1628" }}
                                 onMouseEnter={(e) =>
                                   (e.currentTarget.style.background = "#0A1E30")
@@ -81648,7 +83682,7 @@ export default function App() {
                                       fontWeight: 700,
                                     }}
                                   >
-                                    {ing.note.toUpperCase()}
+                                    {resolvedNote.toUpperCase()}
                                   </span>
                                 </td>
                                 <td
@@ -81669,9 +83703,24 @@ export default function App() {
                                     }}
                                   >
                                     <span>{displayName}</span>
-                                    <IfraStateBadge ifraData={ifraData} compact />
                                     <CatalogMetadataBadges name={ing.name} compact />
                                   </div>
+                                  {ing.isBenchStock ? (
+                                    <div
+                                      style={{
+                                        fontSize: 8.1,
+                                        color: "#A78BFA",
+                                        marginTop: 3,
+                                      }}
+                                    >
+                                      Bench stock: {ing.stockDilutionPercent.toFixed(2)}% in{" "}
+                                      {ing.carrierName || "carrier"} · parent{" "}
+                                      {ing.parentMaterialName}
+                                      {ing.supplierName
+                                        ? ` · supplier ${ing.supplierName}`
+                                        : ""}
+                                    </div>
+                                  ) : null}
                                   {runtimeKeyCaption ? (
                                     <div
                                       style={{
@@ -81697,53 +83746,14 @@ export default function App() {
                                   {primarySupplierName}
                                 </td>
                                 <td style={{ padding: "4px 6px" }}>
-                                  <div
-                                    style={{
-                                      display: "grid",
-                                      gap: 2,
-                                      minWidth: 70,
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        color:
-                                          ifraVisibility.limitLabel === "—"
-                                            ? "#64748B"
-                                            : "#FCD34D",
-                                        fontFamily: "monospace",
-                                        fontWeight: 700,
-                                        fontSize: 9,
-                                      }}
-                                    >
-                                      {ifraVisibility.limitLabel}
-                                    </span>
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: 4,
-                                        flexWrap: "wrap",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <IfraStateBadge
-                                        ifraData={ifraData}
-                                        compact
-                                      />
-                                      {ifraVisibility.hasManualEdit ? (
-                                        <span
-                                          style={{
-                                            fontSize: 7.5,
-                                            color: "#7DD3FC",
-                                            textTransform: "uppercase",
-                                            letterSpacing: "0.08em",
-                                            fontWeight: 700,
-                                          }}
-                                        >
-                                          Manual
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                  </div>
+                                  <IfraInlineValue
+                                    visibility={ifraVisibility}
+                                    effectiveActivePercent={
+                                      ing.isBenchStock
+                                        ? ing.effectiveActivePercent
+                                        : null
+                                    }
+                                  />
                                 </td>
                                 <td
                                   style={{
@@ -81775,7 +83785,7 @@ export default function App() {
                                               ingredients:
                                                 current.ingredients.map(
                                                   (x, xi) =>
-                                                    xi !== ii
+                                                    xi !== ing.sourceIndex
                                                       ? x
                                                       : { ...x, g: v }
                                                 ),
@@ -81798,7 +83808,7 @@ export default function App() {
                                                 ingredients:
                                                   current.ingredients.map(
                                                     (x, xi) =>
-                                                      xi !== ii
+                                                      xi !== ing.sourceIndex
                                                         ? x
                                                         : { ...x, g: v }
                                                   ),
@@ -81829,12 +83839,33 @@ export default function App() {
                                       onClick={() => {
                                         if (formula.isLocked) return;
                                         setEditIdx(key);
-                                        setEditVal(ing.g);
+                                        setEditVal(ing.stockGrams);
                                       }}
                                     >
-                                      {ing.g}g
+                                      {ing.stockGrams}g
                                     </span>
                                   )}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "4px 6px",
+                                    color: "#34D399",
+                                    fontFamily: "monospace",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {ing.activeGrams.toFixed(4)}
+                                </td>
+                                <td
+                                  style={{
+                                    padding: "4px 6px",
+                                    color: "#A78BFA",
+                                    fontFamily: "monospace",
+                                  }}
+                                >
+                                  {ing.carrierGrams > 0
+                                    ? ing.carrierGrams.toFixed(4)
+                                    : "—"}
                                 </td>
                                 <td
                                   style={{
@@ -81843,7 +83874,7 @@ export default function App() {
                                     fontFamily: "monospace",
                                   }}
                                 >
-                                  {((ing.g / total) * 100).toFixed(1)}%
+                                  {((ing.stockGrams / total) * 100).toFixed(1)}%
                                 </td>
                                 <td
                                   style={{
@@ -81876,10 +83907,10 @@ export default function App() {
                                     fontSize: 9,
                                   }}
                                 >
-                                  {d?.VP || "—"}
+                                  {vaporPressureDisplay.summary || "—"}
                                 </td>
                                 <td style={{ padding: "4px 6px" }}>
-                                  {d && ing.note === "base" && (
+                                  {d && resolvedNote === "base" && (
                                     <div
                                       style={{
                                         height: 4,
@@ -83144,9 +85175,15 @@ export default function App() {
                     return i.hasRealVP ? peak > 0.05 : true;
                   });
                   // Stage summary
-                  const topNames = formula.ingredients.filter(i => i.note === "top").map(i => i.name);
-                  const midNames = formula.ingredients.filter(i => i.note === "mid").map(i => i.name);
-                  const baseNames = formula.ingredients.filter(i => i.note === "base").map(i => i.name);
+                  const topNames = formulaModelingItems
+                    .filter((i) => i.note === "top")
+                    .map((i) => i.name);
+                  const midNames = formulaModelingItems
+                    .filter((i) => i.note === "mid")
+                    .map((i) => i.name);
+                  const baseNames = formulaModelingItems
+                    .filter((i) => i.note === "base")
+                    .map((i) => i.name);
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
@@ -83456,6 +85493,86 @@ export default function App() {
                                       </div>
                                     );
                                   })}
+                                  {formulaBenchStockResults.length > 0 && (
+                                    <div
+                                      style={{
+                                        borderTop: "1px solid #1E3A52",
+                                        paddingTop: 4,
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          padding: "6px 12px 4px",
+                                          fontSize: 7.8,
+                                          color: "#64748B",
+                                          textTransform: "uppercase",
+                                          letterSpacing: "0.08em",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Bench Stocks
+                                      </div>
+                                      {formulaBenchStockResults.map((stock) => (
+                                        <div
+                                          key={stock.id}
+                                          onMouseDown={() => {
+                                            if (formula.isLocked) return;
+                                            addBenchStockToFormula(
+                                              formula.formulaKey,
+                                              stock.id
+                                            );
+                                            setIngSearchOpen(false);
+                                          }}
+                                          style={{
+                                            padding: "7px 12px",
+                                            cursor: "pointer",
+                                            borderBottom: "1px solid #0A1628",
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                          }}
+                                          onMouseEnter={(e) =>
+                                            (e.currentTarget.style.background = "#0A1E30")
+                                          }
+                                          onMouseLeave={(e) =>
+                                            (e.currentTarget.style.background = "transparent")
+                                          }
+                                        >
+                                          <div>
+                                            <div
+                                              style={{
+                                                fontSize: 10,
+                                                fontWeight: 600,
+                                                color: "#E2E8F0",
+                                              }}
+                                            >
+                                              {stock.displayName}
+                                            </div>
+                                            <div
+                                              style={{
+                                                fontSize: 8,
+                                                color: "#A78BFA",
+                                              }}
+                                            >
+                                              {stock.parentMaterialName} · {stock.effectiveActivePercent.toFixed(2)}% active · {stock.carrierName || "carrier"}
+                                            </div>
+                                          </div>
+                                          <span
+                                            style={{
+                                              fontSize: 8,
+                                              fontWeight: 700,
+                                              color: "#A78BFA",
+                                              background: "#A78BFA20",
+                                              padding: "1px 6px",
+                                              borderRadius: 8,
+                                            }}
+                                          >
+                                            STOCK
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                   {formulaEditSearchState.hiddenLinkedDuplicateCount >
                                     0 && (
                                     <div
@@ -83698,17 +85815,20 @@ export default function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {formula.ingredients.map((ing, ii) => {
-                          const total = formula.ingredients.reduce(
-                            (s, i) => s + i.g,
-                            0
-                          );
-                          const pct = ((ing.g / total) * 100).toFixed(1);
+                        {formulaDisplayRows.map((ing) => {
+                          const total =
+                            formulaBenchStockRuntime.totals.totalStockGrams || 1;
+                          const pct = ((ing.stockGrams / total) * 100).toFixed(1);
                           const ingredientRecord = DB[ing.name];
-                          const ingredientIfraData =
-                            getIngredientIfraData(ing.name);
                           const ingredientIfraVisibility =
-                            getIngredientIfraVisibility(ing.name);
+                            getIngredientIfraVisibility(ing.name, {
+                              record: ingredientRecord,
+                              livePricing: getLivePricingForIngredient(
+                                ing.name,
+                                pricesState,
+                                PRICING
+                              ),
+                            });
                           const ingredientDisplayName = getMaterialDisplayName(
                             ing.name,
                             ingredientRecord
@@ -83720,7 +85840,7 @@ export default function App() {
                             );
                           const formulaGramDraftKey = buildFormulaGramDraftKey(
                             formula.formulaKey,
-                            ii,
+                            ing.sourceIndex,
                             ing.name
                           );
                           const NC_ = {
@@ -83730,16 +85850,24 @@ export default function App() {
                             carrier: { bg: "#1A1F2E", text: "#64748B" },
                           };
                           const nc = NC_[ing.note] || NC_.carrier;
-                          const suppliers = Object.keys(
-                            pricesState[ing.name] || PRICING[ing.name] || {}
+                          const suppliers = Array.from(
+                            new Set(
+                              [
+                                ing.supplierName,
+                                ...Object.keys(
+                                  pricesState[ing.name] || PRICING[ing.name] || {}
+                                ),
+                              ].filter(Boolean)
+                            )
                           );
                           const currentSupplier =
                             currentFormulaSupplierOverrides[ing.name] ||
+                            ing.supplierName ||
                             suppliers[0] ||
                             "";
                           return (
                             <tr
-                              key={ing.name + ii}
+                              key={ing.benchStockId || `${ing.name}-${ing.sourceIndex}`}
                               style={{ borderBottom: "1px solid #0A1628" }}
                               onMouseEnter={(e) =>
                                 (e.currentTarget.style.background = "#0A1E30")
@@ -83760,7 +85888,7 @@ export default function App() {
                                         ...current,
                                         ingredients: sortFormulaIngredients(
                                           current.ingredients.map((ing2, i2) =>
-                                            i2 === ii
+                                            i2 === ing.sourceIndex
                                               ? {
                                                   ...ing2,
                                                   note: e.target.value,
@@ -83803,7 +85931,7 @@ export default function App() {
                                         ...current,
                                         ingredients: current.ingredients.map(
                                           (ing2, i2) =>
-                                            i2 === ii
+                                            i2 === ing.sourceIndex
                                               ? { ...ing2, name: newName }
                                               : ing2
                                         ),
@@ -83833,6 +85961,21 @@ export default function App() {
                                     Display: {ingredientDisplayName}
                                   </div>
                                 ) : null}
+                                {ing.isBenchStock ? (
+                                  <div
+                                    style={{
+                                      marginTop: 3,
+                                      fontSize: 8,
+                                      color: "#A78BFA",
+                                      lineHeight: 1.45,
+                                    }}
+                                  >
+                                    Bench stock: {ing.benchStockName || buildBenchStockDisplayName(ing)} · {ing.stockDilutionPercent.toFixed(2)}% in {ing.carrierName || "carrier"} · active {ing.effectiveActivePercent.toFixed(2)}%
+                                    {ing.supplierName
+                                      ? ` · supplier ${ing.supplierName}`
+                                      : ""}
+                                  </div>
+                                ) : null}
                                 {ingredientRuntimeKeyCaption ? (
                                   <div
                                     style={{
@@ -83858,53 +86001,14 @@ export default function App() {
                                 )}
                               </td>
                               <td style={{ padding: "5px 8px" }}>
-                                <div
-                                  style={{
-                                    display: "grid",
-                                    gap: 2,
-                                    minWidth: 70,
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      color:
-                                        ingredientIfraVisibility.limitLabel === "—"
-                                          ? "#64748B"
-                                          : "#FCD34D",
-                                      fontFamily: "monospace",
-                                      fontWeight: 700,
-                                      fontSize: 9,
-                                    }}
-                                  >
-                                    {ingredientIfraVisibility.limitLabel}
-                                  </span>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      gap: 4,
-                                      flexWrap: "wrap",
-                                      alignItems: "center",
-                                    }}
-                                  >
-                                    <IfraStateBadge
-                                      ifraData={ingredientIfraData}
-                                      compact
-                                    />
-                                    {ingredientIfraVisibility.hasManualEdit ? (
-                                      <span
-                                        style={{
-                                          fontSize: 7.5,
-                                          color: "#7DD3FC",
-                                          textTransform: "uppercase",
-                                          letterSpacing: "0.08em",
-                                          fontWeight: 700,
-                                        }}
-                                      >
-                                        Manual
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                </div>
+                                <IfraInlineValue
+                                  visibility={ingredientIfraVisibility}
+                                  effectiveActivePercent={
+                                    ing.isBenchStock
+                                      ? ing.effectiveActivePercent
+                                      : null
+                                  }
+                                />
                               </td>
                               <td style={{ padding: "5px 8px" }}>
                                 <div
@@ -83921,7 +86025,7 @@ export default function App() {
                                     inputMode="decimal"
                                     value={
                                       formulaGramDrafts[formulaGramDraftKey] ??
-                                      String(ing.g)
+                                      String(ing.stockGrams)
                                     }
                                     disabled={formula.isLocked}
                                     onChange={(e) =>
@@ -83932,10 +86036,10 @@ export default function App() {
                                           updateFormulaRecord(
                                             formula.formulaKey,
                                             (current) => ({
-                                              ...current,
-                                              ingredients: current.ingredients.map(
-                                                (ing2, i2) =>
-                                                  i2 === ii
+                                                ...current,
+                                                ingredients: current.ingredients.map(
+                                                  (ing2, i2) =>
+                                                  i2 === ing.sourceIndex
                                                     ? { ...ing2, g: v }
                                                     : ing2
                                               ),
@@ -83953,7 +86057,7 @@ export default function App() {
                                               ...current,
                                               ingredients: current.ingredients.map(
                                                 (ing2, i2) =>
-                                                  i2 === ii
+                                                  i2 === ing.sourceIndex
                                                     ? { ...ing2, g: v }
                                                     : ing2
                                               ),
@@ -83973,7 +86077,7 @@ export default function App() {
                                                 ingredients:
                                                   current.ingredients.map(
                                                     (ing2, i2) =>
-                                                      i2 === ii
+                                                      i2 === ing.sourceIndex
                                                         ? { ...ing2, g: v }
                                                         : ing2
                                                   ),
@@ -84002,6 +86106,18 @@ export default function App() {
                                   >
                                     {pct}%
                                   </span>
+                                  {ing.isBenchStock ? (
+                                    <span
+                                      style={{
+                                        color: "#94A3B8",
+                                        fontSize: 8,
+                                        whiteSpace: "nowrap",
+                                      }}
+                                    >
+                                      {ing.activeGrams.toFixed(4)}g active ·{" "}
+                                      {ing.carrierGrams.toFixed(4)}g carrier
+                                    </span>
+                                  ) : null}
                                   <div
                                     style={{
                                       width: 60,
@@ -84071,7 +86187,8 @@ export default function App() {
                                           ...current,
                                           ingredients:
                                             current.ingredients.filter(
-                                              (_, i2) => i2 !== ii
+                                              (_, i2) =>
+                                                i2 !== ing.sourceIndex
                                             ),
                                         })
                                       );
@@ -84108,14 +86225,12 @@ export default function App() {
                       <span style={{ fontSize: 10, color: "#64748B" }}>
                         Total:{" "}
                         <strong style={{ color: "#22D3EE" }}>
-                          {formula.ingredients
-                            .reduce((s, i) => s + i.g, 0)
-                            .toFixed(1)}
+                          {formulaBenchStockRuntime.totals.totalStockGrams.toFixed(1)}
                           g
                         </strong>
                       </span>
                       <span style={{ fontSize: 9, color: "#475569" }}>
-                        Concentrations adjust automatically when grams change
+                        Active aromatics {formulaBenchStockRuntime.totals.totalActiveGrams.toFixed(2)}g · carrier {formulaBenchStockRuntime.totals.totalCarrierGrams.toFixed(2)}g
                       </span>
                     </div>
                   </div>
@@ -84345,6 +86460,11 @@ export default function App() {
                     {buildResults.map((name) => {
                       const d = DB[name];
                       const displayName = getMaterialDisplayName(name, d);
+                      const visibleDescriptorText =
+                        deriveVisibleMaterialDescriptorText({
+                          recordName: name,
+                          record: d,
+                        });
                       const runtimeKeyCaption = getMaterialRuntimeKeyCaption(
                         name,
                         d
@@ -84408,7 +86528,9 @@ export default function App() {
                                 </span>
                               ) : null}
                               <span>
-                                {d?.scentSummary?.slice(0, 50) || ""}…
+                                {visibleDescriptorText.summary
+                                  ? `${visibleDescriptorText.summary.slice(0, 50)}…`
+                                  : ""}
                               </span>
                               <CatalogMetadataBadges name={name} compact />
                             </div>
@@ -84429,6 +86551,84 @@ export default function App() {
                         </div>
                       );
                     })}
+                    {buildBenchStockResults.length > 0 && (
+                      <div
+                        style={{
+                          borderTop: "1px solid #1E3A52",
+                          marginTop: 4,
+                          paddingTop: 4,
+                        }}
+                      >
+                        <div
+                          style={{
+                            padding: "6px 2px 4px",
+                            fontSize: 7.8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Bench Stocks
+                        </div>
+                        {buildBenchStockResults.map((stock) => (
+                          <div
+                            key={stock.id}
+                            onClick={() => addBenchStockToBuild(stock.id)}
+                            style={{
+                              background: "#060E1E",
+                              border: `1px solid ${BORDER}`,
+                              borderRadius: 8,
+                              padding: "8px 12px",
+                              cursor: "pointer",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: 4,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = ACC;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = BORDER;
+                            }}
+                          >
+                            <div>
+                              <div
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 600,
+                                  color: "#E2E8F0",
+                                }}
+                              >
+                                {stock.displayName}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 8.5,
+                                  color: "#A78BFA",
+                                }}
+                              >
+                                {stock.parentMaterialName} · {stock.effectiveActivePercent.toFixed(2)}% active · {stock.carrierName || "carrier"} · {Number(stock.gramsOnHand || 0).toFixed(2)}g on hand
+                              </div>
+                            </div>
+                            <span
+                              style={{
+                                fontSize: 8,
+                                fontWeight: 700,
+                                color: "#A78BFA",
+                                background: "#A78BFA20",
+                                padding: "1px 6px",
+                                borderRadius: 8,
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              STOCK
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div style={{ marginTop: 10 }}>
@@ -84488,6 +86688,11 @@ export default function App() {
                               {ings.map((name) => {
                                 const d = DB[name];
                                 const displayName = getMaterialDisplayName(name, d);
+                                const visibleDescriptorText =
+                                  deriveVisibleMaterialDescriptorText({
+                                    recordName: name,
+                                    record: d,
+                                  });
                                 const runtimeKeyCaption =
                                   getMaterialRuntimeKeyCaption(name, d);
                                 const alreadyIn = buildItems.some(
@@ -84561,7 +86766,10 @@ export default function App() {
                                             textOverflow: "ellipsis",
                                           }}
                                         >
-                                          {d?.scentSummary?.slice(0, 42)}
+                                          {visibleDescriptorText.summary.slice(
+                                            0,
+                                            42
+                                          )}
                                         </span>
                                         <CatalogMetadataBadges
                                           name={name}
@@ -84620,8 +86828,8 @@ export default function App() {
                         margin: 0,
                       }}
                     >
-                      Concentrate ({buildItems.length} ing ·{" "}
-                      {totalBuildG.toFixed(1)}g)
+                      Concentrate ({buildUsageRows.length} ing ·{" "}
+                      {totalBuildG.toFixed(1)}g stock)
                     </p>
                     <button
                       onClick={() => setBuildItems([])}
@@ -84636,19 +86844,90 @@ export default function App() {
                       Clear All
                     </button>
                   </div>
-                  {buildItems.map((item) => {
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(4,minmax(0,1fr))",
+                      gap: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    {[
+                      {
+                        label: "Stock grams",
+                        value: `${buildBenchStockRuntime.totals.totalStockGrams.toFixed(2)}g`,
+                        color: "#7DD3FC",
+                      },
+                      {
+                        label: "Active aromatics",
+                        value: `${buildBenchStockRuntime.totals.totalActiveGrams.toFixed(2)}g`,
+                        color: "#34D399",
+                      },
+                      {
+                        label: "Bench carrier",
+                        value: `${buildBenchStockRuntime.totals.totalBenchCarrierGrams.toFixed(2)}g`,
+                        color: "#A78BFA",
+                      },
+                      {
+                        label: "Active %",
+                        value: `${buildBenchStockRuntime.totals.activeAromaticPercent.toFixed(2)}%`,
+                        color: "#F59E0B",
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 7.8,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            color: "#64748B",
+                            fontWeight: 700,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {card.label}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            color: card.color,
+                          }}
+                        >
+                          {card.value}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {buildDisplayRows.map((item) => {
                     const buildRecord = DB[item.name];
-                    const buildDisplayName = getMaterialDisplayName(
-                      item.name,
-                      buildRecord
-                    );
+                    const buildDisplayName =
+                      item.isBenchStock && item.benchStockName
+                        ? item.benchStockName
+                        : getMaterialDisplayName(item.name, buildRecord);
                     const buildRuntimeKeyCaption = getMaterialRuntimeKeyCaption(
                       item.name,
                       buildRecord
                     );
-                    const buildIfraVisibility =
-                      getIngredientIfraVisibility(item.name);
-                    const buildIfraData = buildIfraVisibility.ifraData;
+                    const buildIfraVisibility = getIngredientIfraVisibility(
+                      item.name,
+                      {
+                        record: DB[item.name] || null,
+                        livePricing: getLivePricingForIngredient(
+                          item.name,
+                          pricesState,
+                          PRICING
+                        ),
+                      }
+                    );
                     const basketLine =
                       selectedBuildBasketLineMap.get(item.name) || null;
                     const basketLineStatus =
@@ -84656,7 +86935,7 @@ export default function App() {
                       basketStatusMeta.inferred;
                     return (
                       <div
-                        key={item.name}
+                        key={item.benchStockId || item.name}
                         style={{
                           background: "#060E1E",
                           borderRadius: 10,
@@ -84722,7 +87001,10 @@ export default function App() {
                             min="0.1"
                             step="0.5"
                             inputMode="decimal"
-                            value={buildGramDrafts[item.name] ?? String(item.g)}
+                            value={
+                              buildGramDrafts[item.name] ??
+                              String(item.stockGrams ?? item.g)
+                            }
                             onChange={(e) =>
                               updateBuildGramDraft(item.name, e.target.value)
                             }
@@ -84748,7 +87030,7 @@ export default function App() {
                             }}
                           />
                           <span style={{ fontSize: 9, color: "#475569" }}>
-                            grams
+                            stock grams
                           </span>
                           <select
                             value={item.note}
@@ -84774,44 +87056,87 @@ export default function App() {
                           <div
                             style={{
                               display: "inline-flex",
-                              alignItems: "center",
-                              gap: 5,
+                              alignItems: "flex-end",
+                              gap: 8,
                               marginLeft: "auto",
                               flexWrap: "wrap",
                             }}
                           >
-                            <span
-                              style={{
-                                background: "#0A1628",
-                                border: "1px solid #1E3A52",
-                                borderRadius: 999,
-                                padding: "2px 7px",
-                                fontSize: 7.8,
-                                fontWeight: 700,
-                                color:
-                                  buildIfraVisibility.limitLabel === "—"
-                                    ? "#64748B"
-                                    : "#FCD34D",
-                              }}
-                            >
-                              IFRA {buildIfraVisibility.limitLabel}
-                            </span>
-                            <IfraStateBadge ifraData={buildIfraData} compact />
-                            {buildIfraVisibility.hasManualEdit ? (
-                              <span
-                                style={{
-                                  fontSize: 7.5,
-                                  color: "#7DD3FC",
-                                  textTransform: "uppercase",
-                                  letterSpacing: "0.08em",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                Manual
-                              </span>
-                            ) : null}
+                            <IfraInlineValue
+                              visibility={buildIfraVisibility}
+                              effectiveActivePercent={
+                                item.isBenchStock
+                                  ? item.effectiveActivePercent
+                                  : null
+                              }
+                              style={{ minWidth: 0 }}
+                            />
                           </div>
                         </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 10,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            marginBottom: 6,
+                            fontSize: 8.4,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          <span>
+                            Active aromatic:{" "}
+                            <strong style={{ color: "#34D399" }}>
+                              {item.activeGrams.toFixed(4)}g
+                            </strong>
+                          </span>
+                          <span>
+                            Carrier:{" "}
+                            <strong style={{ color: "#A78BFA" }}>
+                              {item.carrierGrams.toFixed(4)}g
+                            </strong>
+                          </span>
+                          <span>
+                            Active basis:{" "}
+                            <strong style={{ color: "#FCD34D" }}>
+                              {item.effectiveActivePercent.toFixed(2)}%
+                            </strong>
+                          </span>
+                          {item.isBenchStock ? (
+                            <span>
+                              On hand:{" "}
+                              <strong
+                                style={{
+                                  color: item.overdrawn ? "#FCA5A5" : "#7DD3FC",
+                                }}
+                              >
+                                {item.gramsOnHand != null
+                                  ? `${item.gramsOnHand.toFixed(2)}g`
+                                  : "not tracked"}
+                              </strong>
+                            </span>
+                          ) : null}
+                        </div>
+                        {item.isBenchStock ? (
+                          <div
+                            style={{
+                              fontSize: 8.3,
+                              color: "#A78BFA",
+                              marginBottom: 6,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            Bench stock: {item.stockDilutionPercent.toFixed(2)}% in{" "}
+                            {item.carrierName || "carrier"} · parent{" "}
+                            {item.parentMaterialName}
+                            {item.supplierName
+                              ? ` · supplier ${item.supplierName}`
+                              : ""}
+                            {item.overdrawn
+                              ? " · usage exceeds grams on hand"
+                              : ""}
+                          </div>
+                        ) : null}
                         {basketLine && (
                           <div
                             style={{
@@ -84999,7 +87324,7 @@ export default function App() {
                     }}
                   >
                     <div>
-                      <PyramidSVG ingredients={buildItems} />
+                      <PyramidSVG ingredients={buildModelingItems} />
                       {(() => {
                         const cats = [
                           "Citrus",
@@ -85014,10 +87339,13 @@ export default function App() {
                           "Green",
                         ];
                         const total =
-                          buildItems.reduce((s, i) => s + i.g, 0) || 1;
+                          buildModelingItems.reduce(
+                            (sum, ingredient) => sum + (ingredient.g || 0),
+                            0
+                          ) || 1;
                         const rd = cats
                           .map((cat) => {
-                            const score = buildItems.reduce((s, ing) => {
+                            const score = buildModelingItems.reduce((s, ing) => {
                               const d = DB[ing.name];
                               if (!d || !d.scentClass) return s;
                               const sc = d.scentClass || "";
@@ -85600,6 +87928,10 @@ export default function App() {
               {filteredCat.map((name) => {
                 const d = DB[name];
                 const displayName = getMaterialDisplayName(name, d);
+                const visibleDescriptorText = deriveVisibleMaterialDescriptorText({
+                  recordName: name,
+                  record: d,
+                });
                 const runtimeKeyCaption = getMaterialRuntimeKeyCaption(name, d);
                 const p = pricesState[name];
                 const nc = NC[d.note] || NC.carrier;
@@ -85707,10 +88039,9 @@ export default function App() {
                             WebkitBoxOrient: "vertical",
                           }}
                         >
-                          {d.scentClass} ·{" "}
-                          <span style={{ color: "#64748B" }}>
-                            {d.scentSummary}
-                          </span>
+                          {[d.scentClass, visibleDescriptorText.summary]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </div>
                       </div>
                     </div>
@@ -98386,6 +100717,1100 @@ export default function App() {
               <p style={{ fontSize: 11, color: "#475569", marginBottom: 20, lineHeight: 1.6 }}>
                 Calculate carrier/alcohol volumes to achieve a target fragrance concentration. Uses the currently selected formula as reference for per-ingredient breakdown.
               </p>
+
+              <div style={{ display: "grid", gap: 14, marginBottom: 20 }}>
+                <div
+                  style={{
+                    background: CARD,
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 14,
+                    padding: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "#64748B",
+                      letterSpacing: "0.1em",
+                      marginBottom: 8,
+                    }}
+                  >
+                    BENCH STOCKS / WORKING SOLUTIONS
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 10.5,
+                      color: "#94A3B8",
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    Link in-house diluted stocks to existing parent materials so
+                    formula rows can use real stock grams while the app still models
+                    IFRA, note role, scent profile, performance, and cost from the
+                    active aromatic content.
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 9,
+                      color: "#64748B",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Bench stocks persist locally in the browser and stay separate
+                    from supplier products and parent catalog identity.
+                  </div>
+                  {benchStockStatus ? (
+                    <div
+                      style={{
+                        marginTop: 10,
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "8px 10px",
+                        fontSize: 9,
+                        color: "#7DD3FC",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {benchStockStatus}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(300px,360px) minmax(0,1fr)",
+                    gap: 14,
+                    alignItems: "start",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: CARD,
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: 14,
+                      padding: 16,
+                      display: "grid",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#CBD5E1",
+                          }}
+                        >
+                          {benchStockDraft.duplicateSourceId
+                            ? "Duplicate Bench Stock"
+                            : benchStockDraft.id
+                            ? "Edit Bench Stock"
+                            : "Create Bench Stock"}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 8.7,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          Build a working solution from a live parent material plus
+                          carrier.
+                        </div>
+                      </div>
+                      {benchStockDraft.duplicateSourceId ? (
+                        <span
+                          style={{
+                            background: "#052E16",
+                            border: "1px solid #166534",
+                            borderRadius: 999,
+                            padding: "3px 10px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: "#86EFAC",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          Duplicate Draft
+                        </span>
+                      ) : benchStockDraft.id ? (
+                        <span
+                          style={{
+                            background: "#082F49",
+                            border: "1px solid #0369A1",
+                            borderRadius: 999,
+                            padding: "3px 10px",
+                            fontSize: 8,
+                            fontWeight: 700,
+                            color: "#7DD3FC",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          Editing
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <label style={{ display: "grid", gap: 4 }}>
+                      <span style={{ fontSize: 8.4, color: "#64748B", fontWeight: 700 }}>
+                        Stock name
+                      </span>
+                      <input
+                        type="text"
+                        value={benchStockDraft.stockName}
+                        onChange={(e) =>
+                          setBenchStockDraft((prev) => ({
+                            ...prev,
+                            stockName: e.target.value,
+                          }))
+                        }
+                        placeholder="Optional custom label"
+                        style={{
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 8,
+                          color: "#E2E8F0",
+                          padding: "8px 10px",
+                          fontSize: 10,
+                          outline: "none",
+                        }}
+                      />
+                      <div
+                        style={{
+                          fontSize: 8.1,
+                          color: "#64748B",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        Leave blank to auto-label as{" "}
+                        {buildBenchStockDisplayName({
+                          parentMaterialName: benchStockDraft.parentMaterialName,
+                          dilutionPercent: benchStockDraftResolvedDilutionPercent,
+                          carrierName: benchStockDraft.carrierName,
+                        })}
+                        .
+                      </div>
+                    </label>
+
+                    <label style={{ display: "grid", gap: 4 }}>
+                      <span style={{ fontSize: 8.4, color: "#64748B", fontWeight: 700 }}>
+                        Parent material
+                      </span>
+                      <input
+                        list="bench-stock-parent-options"
+                        type="text"
+                        value={benchStockDraft.parentMaterialName}
+                        onChange={(e) =>
+                          setBenchStockDraft((prev) => {
+                            const nextParent = e.target.value;
+                            const nextSupplierOptions =
+                              getBenchStockSupplierOptionsForMaterial(
+                                nextParent,
+                                prev.supplierName
+                              );
+                            const currentManualPercent = String(
+                              prev.parentEffectiveActivePercent || ""
+                            ).trim();
+                            const previousInferred = prev.parentMaterialName
+                              ? inferBenchStockParentEffectiveActivePercent(
+                                  prev.parentMaterialName
+                                )
+                              : null;
+                            const shouldRefreshParentPercent =
+                              !currentManualPercent ||
+                              (previousInferred != null &&
+                                normalizeBenchStockPercentInput(
+                                  currentManualPercent,
+                                  null
+                                ) === previousInferred);
+                            const supplierStillValid = nextSupplierOptions.some(
+                              (option) => option.supplierName === prev.supplierName
+                            );
+                            return {
+                              ...prev,
+                              parentMaterialName: nextParent,
+                              supplierName: supplierStillValid
+                                ? prev.supplierName
+                                : nextSupplierOptions.length === 1
+                                ? nextSupplierOptions[0].supplierName
+                                : "",
+                              parentEffectiveActivePercent: shouldRefreshParentPercent
+                                ? inferBenchStockParentEffectiveActivePercent(
+                                    nextParent
+                                  ).toFixed(2)
+                                : prev.parentEffectiveActivePercent,
+                            };
+                          })
+                        }
+                        placeholder="Start typing a catalog material"
+                        style={{
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 8,
+                          color: "#E2E8F0",
+                          padding: "8px 10px",
+                          fontSize: 10,
+                          outline: "none",
+                        }}
+                      />
+                    </label>
+
+                    {benchStockDraft.parentMaterialName ? (
+                      <label style={{ display: "grid", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 8.4,
+                            color: "#64748B",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Supplier context
+                        </span>
+                        <select
+                          value={benchStockDraft.supplierName}
+                          onChange={(e) =>
+                            setBenchStockDraft((prev) => ({
+                              ...prev,
+                              supplierName: e.target.value,
+                            }))
+                          }
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 10,
+                            outline: "none",
+                          }}
+                        >
+                          <option value="">
+                            {benchStockDraftSupplierOptions.length > 1
+                              ? "Use parent default context"
+                              : "No supplier selected"}
+                          </option>
+                          {benchStockDraftSupplierOptions.map((option) => (
+                            <option
+                              key={`${benchStockDraft.parentMaterialName}-${option.supplierName}`}
+                              value={option.supplierName}
+                            >
+                              {option.supplierName}
+                            </option>
+                          ))}
+                        </select>
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          Optional. Pick the parent supplier variant you want this
+                          stock to inherit for display context and supplier-linked
+                          details.
+                        </div>
+                      </label>
+                    ) : null}
+
+                    <label style={{ display: "grid", gap: 4 }}>
+                      <span style={{ fontSize: 8.4, color: "#64748B", fontWeight: 700 }}>
+                        Carrier
+                      </span>
+                      <input
+                        list="bench-stock-carrier-options"
+                        type="text"
+                        value={benchStockDraft.carrierName}
+                        onChange={(e) =>
+                          setBenchStockDraft((prev) => ({
+                            ...prev,
+                            carrierName: e.target.value,
+                          }))
+                        }
+                        placeholder="TEC"
+                        style={{
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 8,
+                          color: "#E2E8F0",
+                          padding: "8px 10px",
+                          fontSize: 10,
+                          outline: "none",
+                        }}
+                      />
+                    </label>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                        gap: 10,
+                      }}
+                    >
+                      <label style={{ display: "grid", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 8.4,
+                            color: "#64748B",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Final bench-stock concentration %
+                        </span>
+                        <input
+                          type="text"
+                          value={benchStockDraft.dilutionPercent}
+                          onChange={(e) =>
+                            setBenchStockDraft((prev) => ({
+                              ...prev,
+                              dilutionPercent: e.target.value,
+                            }))
+                          }
+                          placeholder="10.00"
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 10,
+                            outline: "none",
+                          }}
+                        />
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          This is the final aromatic concentration of the stock you
+                          will use at the bench.
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {[1, 5, 10, 20].map((preset) => (
+                            <button
+                              key={`bench-stock-preset-${preset}`}
+                              type="button"
+                              onClick={() =>
+                                setBenchStockDraft((prev) => ({
+                                  ...prev,
+                                  dilutionPercent: preset.toFixed(2),
+                                }))
+                              }
+                              style={{
+                                background:
+                                  Number(
+                                    benchStockDraftResolvedDilutionPercent.toFixed(2)
+                                  ) === Number(preset.toFixed(2))
+                                    ? "#0E3D60"
+                                    : "#060E1E",
+                                border: `1px solid ${
+                                  Number(
+                                    benchStockDraftResolvedDilutionPercent.toFixed(2)
+                                  ) === Number(preset.toFixed(2))
+                                    ? "#38BDF8"
+                                    : BORDER
+                                }`,
+                                color:
+                                  Number(
+                                    benchStockDraftResolvedDilutionPercent.toFixed(2)
+                                  ) === Number(preset.toFixed(2))
+                                    ? "#7DD3FC"
+                                    : "#94A3B8",
+                                borderRadius: 999,
+                                padding: "2px 8px",
+                                fontSize: 8,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              {preset}%
+                            </button>
+                          ))}
+                        </div>
+                      </label>
+                      <label style={{ display: "grid", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 8.4,
+                            color: "#64748B",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Starting material active %
+                        </span>
+                        <input
+                          type="text"
+                          value={benchStockDraft.parentEffectiveActivePercent}
+                          onChange={(e) =>
+                            setBenchStockDraft((prev) => ({
+                              ...prev,
+                              parentEffectiveActivePercent: e.target.value,
+                            }))
+                          }
+                          placeholder={inferBenchStockParentEffectiveActivePercent(
+                            benchStockDraft.parentMaterialName
+                          ).toFixed(2)}
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 10,
+                            outline: "none",
+                          }}
+                        />
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#64748B",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          Use 100% unless the parent material was already diluted
+                          before you made this stock.
+                          {benchStockDraft.parentMaterialName
+                            ? ` Current default from the selected parent: ${benchStockDraftResolvedParentEffectivePercent.toFixed(
+                                2
+                              )}%.`
+                            : ""}
+                        </div>
+                      </label>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                        gap: 10,
+                      }}
+                    >
+                      <label style={{ display: "grid", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 8.4,
+                            color: "#64748B",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Effective active %
+                        </span>
+                        <div
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#34D399",
+                            padding: "8px 10px",
+                            fontSize: 10,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {benchStockDraftEffectiveActivePercent.toFixed(4)}%
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#64748B",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          Used for IFRA, note balance, performance, and cost.
+                          Grams on hand does not change this percentage.
+                        </div>
+                      </label>
+                      <label style={{ display: "grid", gap: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 8.4,
+                            color: "#64748B",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Grams on hand
+                        </span>
+                        <input
+                          type="text"
+                          value={benchStockDraft.gramsOnHand}
+                          onChange={(e) =>
+                            setBenchStockDraft((prev) => ({
+                              ...prev,
+                              gramsOnHand: e.target.value,
+                            }))
+                          }
+                          placeholder="Optional"
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 8,
+                            color: "#E2E8F0",
+                            padding: "8px 10px",
+                            fontSize: 10,
+                            outline: "none",
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <label style={{ display: "grid", gap: 4 }}>
+                      <span style={{ fontSize: 8.4, color: "#64748B", fontWeight: 700 }}>
+                        Notes / batch note
+                      </span>
+                      <textarea
+                        value={benchStockDraft.notes}
+                        onChange={(e) =>
+                          setBenchStockDraft((prev) => ({
+                            ...prev,
+                            notes: e.target.value,
+                          }))
+                        }
+                        placeholder="Optional notes about the working solution"
+                        style={{
+                          minHeight: 86,
+                          resize: "vertical",
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          borderRadius: 8,
+                          color: "#E2E8F0",
+                          padding: "8px 10px",
+                          fontSize: 10,
+                          lineHeight: 1.6,
+                          outline: "none",
+                        }}
+                        />
+                    </label>
+
+                    {benchStockDraftParentRecord ? (
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 10,
+                          padding: "10px 12px",
+                          display: "grid",
+                          gap: 6,
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 8,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          Inherited Parent Modeling
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10.2,
+                            fontWeight: 700,
+                            color: "#E2E8F0",
+                          }}
+                        >
+                          {getMaterialDisplayName(
+                            benchStockDraft.parentMaterialName,
+                            benchStockDraftParentRecord
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            flexWrap: "wrap",
+                            alignItems: "center",
+                            fontSize: 8.3,
+                            color: "#94A3B8",
+                          }}
+                        >
+                          <span>
+                            Note {String(benchStockDraftParentRecord.note || "mid").toUpperCase()}
+                          </span>
+                          <span>
+                            Type {benchStockDraftParentRecord.type || "—"}
+                          </span>
+                          <IfraInlineValue
+                            visibility={benchStockDraftIfraVisibility}
+                            style={{ minWidth: 0 }}
+                          />
+                        </div>
+                        {benchStockDraftDescriptor.summary ? (
+                          <div
+                            style={{
+                              fontSize: 8.5,
+                              color: "#CBD5E1",
+                              lineHeight: 1.55,
+                            }}
+                          >
+                            {benchStockDraftDescriptor.summary}
+                          </div>
+                        ) : null}
+                        {selectedBenchStockSupplierOption ? (
+                          <div
+                            style={{
+                              fontSize: 8.2,
+                              color: "#64748B",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            Supplier context:{" "}
+                            <span style={{ color: "#7DD3FC" }}>
+                              {selectedBenchStockSupplierOption.supplierName}
+                            </span>
+                            {selectedBenchStockSupplierOption.vendorName
+                              ? ` · ${selectedBenchStockSupplierOption.vendorName}`
+                              : ""}
+                            {selectedBenchStockSupplierOption.ifraSupportLabel
+                              ? ` · ${selectedBenchStockSupplierOption.ifraSupportLabel}`
+                              : ""}
+                            {selectedBenchStockSupplierOption.description
+                              ? ` · ${selectedBenchStockSupplierOption.description}`
+                              : ""}
+                          </div>
+                        ) : (
+                          <div
+                            style={{
+                              fontSize: 8.2,
+                              color: "#64748B",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            This stock inherits the parent material’s note role,
+                            technical behavior, IFRA basis, and descriptor space.
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: "10px 12px",
+                        fontSize: 8.8,
+                        color: "#94A3B8",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      <div>
+                        Effective active % = starting material active % × final
+                        bench-stock concentration %
+                      </div>
+                      <div style={{ marginTop: 4 }}>
+                        Example: 100% starting material × 10.24% stock ={" "}
+                        <strong style={{ color: "#34D399" }}>10.24%</strong>{" "}
+                        effective active.
+                      </div>
+                      <div style={{ marginTop: 4 }}>
+                        Example: 50% starting material × 10.00% stock ={" "}
+                        <strong style={{ color: "#34D399" }}>5.00%</strong>{" "}
+                        effective active.
+                      </div>
+                      <div>
+                        0.80g of this stock delivers{" "}
+                        <strong style={{ color: "#34D399" }}>
+                          {(0.8 * (benchStockDraftEffectiveActivePercent / 100)).toFixed(4)}g
+                        </strong>{" "}
+                        active aromatic and{" "}
+                        <strong style={{ color: "#A78BFA" }}>
+                          {(0.8 * (1 - benchStockDraftEffectiveActivePercent / 100)).toFixed(4)}g
+                        </strong>{" "}
+                        carrier.
+                      </div>
+                      <div style={{ marginTop: 4 }}>
+                        0.50g delivers{" "}
+                        <strong style={{ color: "#34D399" }}>
+                          {(0.5 * (benchStockDraftEffectiveActivePercent / 100)).toFixed(4)}g
+                        </strong>{" "}
+                        active and{" "}
+                        <strong style={{ color: "#A78BFA" }}>
+                          {(0.5 * (1 - benchStockDraftEffectiveActivePercent / 100)).toFixed(4)}g
+                        </strong>{" "}
+                        carrier. Bottle size and grams on hand only affect how much
+                        you can use, not the effective active %.
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={saveBenchStockDraft}
+                        style={{
+                          background: "linear-gradient(135deg,#0E4D6E,#1A6D9A)",
+                          border: "1px solid #38BDF8",
+                          color: "#E0F2FE",
+                          borderRadius: 9,
+                          padding: "8px 12px",
+                          fontSize: 9.5,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {benchStockDraft.duplicateSourceId
+                          ? "Save Duplicated Stock"
+                          : benchStockDraft.id
+                          ? "Save Bench Stock"
+                          : "Create Bench Stock"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetBenchStockDraft}
+                        style={{
+                          background: "#060E1E",
+                          border: `1px solid ${BORDER}`,
+                          color: "#CBD5E1",
+                          borderRadius: 9,
+                          padding: "8px 12px",
+                          fontSize: 9.5,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Clear Draft
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      background: CARD,
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: 14,
+                      padding: 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        marginBottom: 10,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: "#CBD5E1",
+                          }}
+                        >
+                          Saved Bench Stocks
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 8.7,
+                            color: "#64748B",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          Search for these names inside Formula or Build, or add
+                          them directly from here.
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 999,
+                          padding: "3px 10px",
+                          fontSize: 8,
+                          fontWeight: 700,
+                          color: "#7DD3FC",
+                        }}
+                      >
+                        {benchStockList.length} stock
+                        {benchStockList.length === 1 ? "" : "s"}
+                      </span>
+                    </div>
+
+                    {benchStockList.length === 0 ? (
+                      <div
+                        style={{
+                          background: "#060E1E",
+                          border: "1px dashed #1E3A52",
+                          borderRadius: 10,
+                          padding: "14px 16px",
+                          fontSize: 9,
+                          color: "#64748B",
+                          lineHeight: 1.7,
+                        }}
+                      >
+                        No local bench stocks are saved yet. Create one here, then
+                        add it from Formula or Build like any other ingredient
+                        picker result.
+                      </div>
+                    ) : (
+                      <div style={{ display: "grid", gap: 10 }}>
+                        {benchStockList.map((stock) => {
+                          const parentRecord = DB[stock.parentMaterialName] || null;
+                          const parentLabel = getMaterialDisplayName(
+                            stock.parentMaterialName,
+                            parentRecord
+                          );
+                          const alreadyInFormula = (formula?.ingredients || []).some(
+                            (item) => item.name === stock.parentMaterialName
+                          );
+                          const alreadyInBuild = buildItems.some(
+                            (item) => item.name === stock.parentMaterialName
+                          );
+                          return (
+                            <div
+                              key={stock.id}
+                              style={{
+                                background: "#060E1E",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 12,
+                                padding: "12px 14px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 10,
+                                  alignItems: "flex-start",
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                  <div
+                                    style={{
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      color: "#E2E8F0",
+                                    }}
+                                  >
+                                    {stock.displayName}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8.7,
+                                      color: "#94A3B8",
+                                      lineHeight: 1.6,
+                                    }}
+                                  >
+                                    Parent {parentLabel} · {stock.dilutionPercent.toFixed(2)}% in{" "}
+                                    {stock.carrierName || "carrier"} · effective active{" "}
+                                    {stock.effectiveActivePercent.toFixed(4)}%
+                                    {stock.supplierName
+                                      ? ` · supplier ${stock.supplierName}`
+                                      : ""}
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontSize: 8.4,
+                                      color: "#64748B",
+                                      lineHeight: 1.55,
+                                    }}
+                                  >
+                                    On hand:{" "}
+                                    <span style={{ color: "#7DD3FC" }}>
+                                      {stock.gramsOnHand != null
+                                        ? `${stock.gramsOnHand.toFixed(2)}g`
+                                        : "not tracked"}
+                                    </span>
+                                    {" · "}Updated{" "}
+                                    {stock.updatedAt
+                                      ? new Date(stock.updatedAt).toLocaleString()
+                                      : "just now"}
+                                  </div>
+                                  {stock.notes ? (
+                                    <div
+                                      style={{
+                                        marginTop: 6,
+                                        fontSize: 8.4,
+                                        color: "#64748B",
+                                        lineHeight: 1.55,
+                                      }}
+                                    >
+                                      {stock.notes}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: 6,
+                                    flexWrap: "wrap",
+                                    justifyContent: "flex-end",
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => addBenchStockToFormula(formula.formulaKey, stock.id)}
+                                    style={{
+                                      background: alreadyInFormula ? "#0A1628" : "#082F49",
+                                      border: `1px solid ${alreadyInFormula ? "#1E3A52" : "#0369A1"}`,
+                                      color: alreadyInFormula ? "#64748B" : "#7DD3FC",
+                                      borderRadius: 8,
+                                      padding: "6px 9px",
+                                      fontSize: 8.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {alreadyInFormula ? "In Formula" : "Add to Formula"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => addBenchStockToBuild(stock.id)}
+                                    style={{
+                                      background: alreadyInBuild ? "#0A1628" : "#052E16",
+                                      border: `1px solid ${alreadyInBuild ? "#1E3A52" : "#166534"}`,
+                                      color: alreadyInBuild ? "#64748B" : "#86EFAC",
+                                      borderRadius: 8,
+                                      padding: "6px 9px",
+                                      fontSize: 8.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {alreadyInBuild ? "In Build" : "Add to Build"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => duplicateBenchStockDraft(stock.id)}
+                                    style={{
+                                      background: "#251404",
+                                      border: "1px solid #B45309",
+                                      color: "#FCD34D",
+                                      borderRadius: 8,
+                                      padding: "6px 9px",
+                                      fontSize: 8.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Duplicate Stock
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => editBenchStockDraft(stock.id)}
+                                    style={{
+                                      background: "#060E1E",
+                                      border: `1px solid ${BORDER}`,
+                                      color: "#CBD5E1",
+                                      borderRadius: 8,
+                                      padding: "6px 9px",
+                                      fontSize: 8.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteBenchStock(stock.id)}
+                                    style={{
+                                      background: "#2A0E14",
+                                      border: "1px solid #7F1D1D",
+                                      color: "#FCA5A5",
+                                      borderRadius: 8,
+                                      padding: "6px 9px",
+                                      fontSize: 8.5,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 8,
+                                  display: "flex",
+                                  gap: 6,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                {[1, 5, 10, 20].map((preset) => (
+                                  <button
+                                    key={`${stock.id}-duplicate-${preset}`}
+                                    type="button"
+                                    onClick={() =>
+                                      duplicateBenchStockDraft(stock.id, {
+                                        dilutionPercent: preset,
+                                      })
+                                    }
+                                    style={{
+                                      background: "#071826",
+                                      border: "1px solid #1E3A52",
+                                      color: "#94A3B8",
+                                      borderRadius: 999,
+                                      padding: "3px 8px",
+                                      fontSize: 7.8,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Duplicate as {preset}%
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <datalist id="bench-stock-parent-options">
+                  {parentMaterialOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {getMaterialDisplayName(name, DB[name])}
+                    </option>
+                  ))}
+                </datalist>
+                <datalist id="bench-stock-carrier-options">
+                  {Array.from(
+                    new Set([
+                      ...benchStockCarrierOptions,
+                      "TEC",
+                      "DPG",
+                      "IPM",
+                      "Ethanol",
+                    ])
+                  ).map((name) => (
+                    <option key={name} value={name}>
+                      {getMaterialDisplayName(name, DB[name]) || name}
+                    </option>
+                  ))}
+                </datalist>
+              </div>
 
               {/* Input row */}
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>

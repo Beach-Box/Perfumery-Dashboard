@@ -48,6 +48,466 @@ export const SUPPLIER_BASKET_MODE_ORDER = Object.keys(
   SUPPLIER_BASKET_MODE_META
 );
 
+function normalizeVisibleDescriptorText(value) {
+  return String(value || "").trim();
+}
+
+function textSignalsFcfIdentity(value = "") {
+  return /\bfcf\b|furocoumarin[\s-]*free/i.test(
+    normalizeVisibleDescriptorText(value)
+  );
+}
+
+function textSignalsFcfDescriptor(value = "") {
+  return (
+    textSignalsFcfIdentity(value) ||
+    /safe\s+for\s+skin/i.test(normalizeVisibleDescriptorText(value))
+  );
+}
+
+export function deriveVisibleMaterialDescriptorText({
+  recordName = "",
+  record = null,
+  fallbackSummary = null,
+  fallbackDescription = null,
+} = {}) {
+  const safeRecord = record && typeof record === "object" ? record : {};
+  const visibleIdentityName =
+    normalizeVisibleDescriptorText(safeRecord?.displayName) ||
+    normalizeVisibleDescriptorText(recordName);
+  const allowsFcfDescriptor = textSignalsFcfIdentity(visibleIdentityName);
+  const pickCandidate = (candidates = []) => {
+    for (const candidate of candidates) {
+      const normalizedCandidate = normalizeVisibleDescriptorText(candidate);
+      if (!normalizedCandidate) continue;
+      if (!allowsFcfDescriptor && textSignalsFcfDescriptor(normalizedCandidate)) {
+        continue;
+      }
+      return normalizedCandidate;
+    }
+    return "";
+  };
+
+  const summary = pickCandidate([
+    safeRecord?.scentSummary,
+    fallbackSummary,
+    safeRecord?.char,
+    Array.isArray(safeRecord?.descriptorTags)
+      ? safeRecord.descriptorTags.slice(0, 3).join(", ")
+      : null,
+    safeRecord?.rep ? `${safeRecord.rep} forward.` : null,
+  ]);
+  const description = pickCandidate([
+    safeRecord?.scentDesc,
+    fallbackDescription,
+    summary,
+    safeRecord?.char,
+  ]);
+
+  return {
+    visibleIdentityName,
+    summary,
+    description,
+    suppressedStaleSummary:
+      Boolean(normalizeVisibleDescriptorText(safeRecord?.scentSummary)) &&
+      !allowsFcfDescriptor &&
+      textSignalsFcfDescriptor(safeRecord?.scentSummary),
+    suppressedStaleDescription:
+      Boolean(normalizeVisibleDescriptorText(safeRecord?.scentDesc)) &&
+      !allowsFcfDescriptor &&
+      textSignalsFcfDescriptor(safeRecord?.scentDesc),
+  };
+}
+
+const VAPOR_PRESSURE_UNIT_META = {
+  Pa: { label: "Pa", toPa: 1 },
+  kPa: { label: "kPa", toPa: 1000 },
+  hPa: { label: "hPa", toPa: 100 },
+  mbar: { label: "mbar", toPa: 100 },
+  mmHg: { label: "mmHg", toPa: 133.32236842105263 },
+  torr: { label: "torr", toPa: 133.32236842105263 },
+};
+
+const MATERIAL_DESCRIPTOR_STOPWORDS = new Set([
+  "absolute",
+  "accord",
+  "aroma",
+  "base",
+  "blend",
+  "bourbon",
+  "carrier",
+  "coeur",
+  "compound",
+  "concentrate",
+  "essential",
+  "extract",
+  "fragrance",
+  "gamma",
+  "material",
+  "mid",
+  "middle",
+  "natural",
+  "odorant",
+  "oil",
+  "organic",
+  "perfume",
+  "pure",
+  "solvent",
+  "stock",
+  "supplier",
+  "synthetic",
+  "top",
+]);
+const MATERIAL_FAMILY_SIGNAL_TOKENS = new Set([
+  "aldehyde",
+  "amber",
+  "ambrox",
+  "anisic",
+  "bergamot",
+  "cedar",
+  "citral",
+  "citrus",
+  "floral",
+  "fruity",
+  "geraniol",
+  "hesperidic",
+  "ionone",
+  "irone",
+  "jasmine",
+  "lactone",
+  "musk",
+  "neroli",
+  "orris",
+  "osmanthus",
+  "oud",
+  "patchouli",
+  "rose",
+  "sandalwood",
+  "vanilla",
+  "vetiver",
+  "violet",
+  "woody",
+]);
+
+function formatTechnicalNumber(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "";
+  if (Math.abs(parsed) >= 100) return parsed.toFixed(2).replace(/\.00$/, "");
+  if (Math.abs(parsed) >= 1) {
+    return parsed.toFixed(4).replace(/\.?0+$/, "");
+  }
+  return parsed.toFixed(6).replace(/\.?0+$/, "");
+}
+
+export function formatVaporPressureNumber(value, { maxDecimals = 12 } = {}) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "";
+  const abs = Math.abs(parsed);
+  if (abs === 0) return "0";
+
+  let decimals = 4;
+  if (abs >= 100) decimals = 2;
+  else if (abs >= 1) decimals = 4;
+  else if (abs >= 0.01) decimals = 4;
+  else if (abs >= 0.0001) decimals = 6;
+  else {
+    const exponent = Math.floor(Math.log10(abs));
+    decimals = Math.min(maxDecimals, Math.max(6, Math.abs(exponent) + 2));
+  }
+
+  return parsed.toFixed(decimals).replace(/\.?0+$/, "");
+}
+
+function normalizeDecimalLikeText(value = "") {
+  return String(value || "")
+    .replace(/\u00A0/g, " ")
+    .replace(/[\u2012\u2013\u2014\u2212]/g, "-")
+    .replace(/(\d)\s*,\s*(\d)/g, "$1.$2")
+    .replace(/(^|[^0-9])\.(\d)/g, "$10.$2");
+}
+
+export function normalizeLooseNumericInput(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  const normalizedValue = normalizeDecimalLikeText(String(value || "").trim());
+  if (!normalizedValue) return null;
+  const numericMatch = normalizedValue.match(/[-+]?(?:\d+(?:\.\d+)?|\.\d+)/);
+  if (!numericMatch?.[0]) return null;
+  const parsed = Number(numericMatch[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeVaporPressureUnitToken(value = "") {
+  const compact = String(value || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toLowerCase();
+  if (!compact) return null;
+  if (compact === "pa") return "Pa";
+  if (compact === "kpa") return "kPa";
+  if (compact === "hpa") return "hPa";
+  if (compact === "mbar") return "mbar";
+  if (compact === "mmhg") return "mmHg";
+  if (compact === "torr") return "torr";
+  return null;
+}
+
+export function normalizeVaporPressureRawText(value) {
+  const normalizedValue = normalizeDecimalLikeText(String(value || "").trim());
+  if (!normalizedValue) return "";
+  return normalizedValue
+    .replace(/mm\s*hg/gi, "mmHg")
+    .replace(/k\s*pa/gi, "kPa")
+    .replace(/h\s*pa/gi, "hPa")
+    .replace(/\bmbar\b/gi, "mbar")
+    .replace(/\btorr\b/gi, "torr")
+    .replace(/\bpa\b/gi, "Pa")
+    .replace(/\(\s*(-?\d+(?:\.\d+)?)\s*[°º]?\s*c\s*\)/gi, " @ $1°C")
+    .replace(/@\s*(-?\d+(?:\.\d+)?)\s*[°º]?\s*c/gi, " @ $1°C")
+    .replace(/\bat\s*(-?\d+(?:\.\d+)?)\s*[°º]?\s*c\b/gi, " @ $1°C")
+    .replace(/\s*([;|])\s*/g, "$1 ")
+    .replace(/\s*-\s*/g, " - ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function convertVaporPressureToPa(value, unit) {
+  const parsedValue = Number(value);
+  const unitMeta = VAPOR_PRESSURE_UNIT_META[unit];
+  if (!Number.isFinite(parsedValue) || !unitMeta) return null;
+  return parsedValue * unitMeta.toPa;
+}
+
+function convertPaToHpa(valuePa) {
+  const parsedValue = Number(valuePa);
+  return Number.isFinite(parsedValue) ? parsedValue / 100 : null;
+}
+
+function convertPaToMmHg(valuePa) {
+  const parsedValue = Number(valuePa);
+  return Number.isFinite(parsedValue)
+    ? parsedValue / VAPOR_PRESSURE_UNIT_META.mmHg.toPa
+    : null;
+}
+
+function parseTemperatureFromVaporPressureText(value = "") {
+  const match = String(value || "").match(/@\s*(-?\d+(?:\.\d+)?)°C/i);
+  const parsedValue = match?.[1] ? Number(match[1]) : null;
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function parseRangeVaporPressureObservation(
+  valueText,
+  normalizedSegment,
+  temperatureC
+) {
+  const rangeMatch = valueText.match(
+    /^(\d+(?:\.\d+)?)\s*(Pa|kPa|hPa|mbar|mmHg|torr)\s*-\s*(\d+(?:\.\d+)?)\s*(Pa|kPa|hPa|mbar|mmHg|torr)?$/i
+  );
+  if (!rangeMatch) return null;
+  const minValue = Number(rangeMatch[1]);
+  const minUnit = normalizeVaporPressureUnitToken(rangeMatch[2]);
+  const maxValue = Number(rangeMatch[3]);
+  const maxUnit = normalizeVaporPressureUnitToken(rangeMatch[4] || rangeMatch[2]);
+  const valueMinPa = convertVaporPressureToPa(minValue, minUnit);
+  const valueMaxPa = convertVaporPressureToPa(maxValue, maxUnit);
+  const valuePa =
+    Number.isFinite(valueMinPa) && Number.isFinite(valueMaxPa)
+      ? (valueMinPa + valueMaxPa) / 2
+      : null;
+
+  return {
+    rawText: normalizedSegment,
+    parsed: Number.isFinite(valueMinPa) && Number.isFinite(valueMaxPa),
+    comparator: "range",
+    valueMin: minValue,
+    valueMax: maxValue,
+    unitOriginal: minUnit,
+    unitNormalized: "Pa",
+    valueMinPa,
+    valueMaxPa,
+    valuePa,
+    valueMinHpa: convertPaToHpa(valueMinPa),
+    valueMaxHpa: convertPaToHpa(valueMaxPa),
+    valueHpa: convertPaToHpa(valuePa),
+    valueMinMmHg: convertPaToMmHg(valueMinPa),
+    valueMaxMmHg: convertPaToMmHg(valueMaxPa),
+    valueMmHg: convertPaToMmHg(valuePa),
+    temperatureC,
+    usedDefaultUnit: false,
+  };
+}
+
+function parseSingleVaporPressureObservation(
+  valueText,
+  normalizedSegment,
+  temperatureC,
+  defaultUnit
+) {
+  const singleMatch = valueText.match(
+    /^(<|>)?\s*(\d+(?:\.\d+)?)\s*(Pa|kPa|hPa|mbar|mmHg|torr)?$/i
+  );
+  if (!singleMatch) return null;
+  const comparator = singleMatch[1] || "exact";
+  const parsedValue = Number(singleMatch[2]);
+  const explicitUnit = normalizeVaporPressureUnitToken(singleMatch[3] || "");
+  const resolvedUnit =
+    explicitUnit || normalizeVaporPressureUnitToken(defaultUnit) || "mmHg";
+  const valuePa = convertVaporPressureToPa(parsedValue, resolvedUnit);
+
+  return {
+    rawText: normalizedSegment,
+    parsed: Number.isFinite(valuePa),
+    comparator,
+    valueMin: parsedValue,
+    valueMax: parsedValue,
+    unitOriginal: resolvedUnit,
+    unitNormalized: "Pa",
+    valuePa,
+    valueHpa: convertPaToHpa(valuePa),
+    valueMmHg: convertPaToMmHg(valuePa),
+    temperatureC,
+    usedDefaultUnit: !explicitUnit,
+  };
+}
+
+function parseVaporPressureObservation(rawSegment = "", { defaultUnit = "mmHg" } = {}) {
+  const normalizedSegment = normalizeVaporPressureRawText(rawSegment);
+  if (!normalizedSegment) {
+    return {
+      rawText: "",
+      parsed: false,
+      comparator: "exact",
+      unitOriginal: null,
+      unitNormalized: "Pa",
+      temperatureC: null,
+      usedDefaultUnit: false,
+    };
+  }
+
+  const temperatureC = parseTemperatureFromVaporPressureText(normalizedSegment);
+  const valueText = normalizedSegment.replace(/@\s*-?\d+(?:\.\d+)?°C/gi, "").trim();
+
+  return (
+    parseRangeVaporPressureObservation(valueText, normalizedSegment, temperatureC) ||
+    parseSingleVaporPressureObservation(
+      valueText,
+      normalizedSegment,
+      temperatureC,
+      defaultUnit
+    ) || {
+      rawText: normalizedSegment,
+      parsed: false,
+      comparator: "exact",
+      unitOriginal: null,
+      unitNormalized: "Pa",
+      temperatureC,
+      usedDefaultUnit: false,
+    }
+  );
+}
+
+export function formatVaporPressureObservationDisplay(
+  observation,
+  { showImplicitUnit = false } = {}
+) {
+  if (!observation?.rawText) return "";
+  if (!observation.parsed) return observation.rawText;
+
+  const unitLabel =
+    showImplicitUnit || !observation.usedDefaultUnit
+      ? observation.unitOriginal
+      : "";
+  const temperatureLabel =
+    observation.temperatureC != null
+      ? ` @ ${formatTechnicalNumber(observation.temperatureC)}°C`
+      : "";
+
+  if (observation.comparator === "range") {
+    return `${formatVaporPressureNumber(
+      observation.valueMin
+    )}-${formatVaporPressureNumber(observation.valueMax)}${
+      unitLabel ? ` ${unitLabel}` : ""
+    }${temperatureLabel}`;
+  }
+
+  return `${
+    observation.comparator === "exact" ? "" : `${observation.comparator} `
+  }${formatVaporPressureNumber(observation.valueMin)}${
+    unitLabel ? ` ${unitLabel}` : ""
+  }${temperatureLabel}`;
+}
+
+export function parseVaporPressureInput(value, { defaultUnit = "mmHg" } = {}) {
+  const normalizedRaw = normalizeVaporPressureRawText(value);
+  if (!normalizedRaw) {
+    return {
+      rawValue: "",
+      normalizedRaw: "",
+      observations: [],
+      parsedObservationCount: 0,
+      hasParsedObservations: false,
+      legacyModelValueMmHg: null,
+      displayValue: "",
+    };
+  }
+
+  const observations = normalizedRaw
+    .split(/\s*[;|]\s*/)
+    .map((segment) => parseVaporPressureObservation(segment, { defaultUnit }))
+    .filter((observation) => observation.rawText);
+  const parsedObservations = observations.filter((observation) => observation.parsed);
+  const primaryObservation = parsedObservations[0] || observations[0] || null;
+
+  return {
+    rawValue: String(value || ""),
+    normalizedRaw,
+    observations,
+    parsedObservationCount: parsedObservations.length,
+    hasParsedObservations: parsedObservations.length > 0,
+    legacyModelValueMmHg:
+      primaryObservation && primaryObservation.parsed
+        ? primaryObservation.valueMmHg ?? null
+        : null,
+    displayValue:
+      parsedObservations.length > 1
+        ? `${parsedObservations.length} VP observations`
+        : formatVaporPressureObservationDisplay(primaryObservation),
+  };
+}
+
+export function buildVaporPressureDisplay(record = {}) {
+  const observations = Array.isArray(record?.vaporPressureObservations)
+    ? record.vaporPressureObservations
+    : [];
+  const parsedObservations = observations.filter(
+    (observation) => observation?.parsed && observation?.rawText
+  );
+  const summary =
+    parsedObservations.length > 1
+      ? `${parsedObservations.length} VP observations`
+      : parsedObservations.length === 1
+      ? formatVaporPressureObservationDisplay(parsedObservations[0])
+      : String(record?.vaporPressureRaw || "").trim() ||
+        (record?.VP != null ? formatVaporPressureNumber(record.VP) : "");
+
+  return {
+    summary,
+    detailLines:
+      parsedObservations.length > 1
+        ? parsedObservations.map((observation) =>
+            formatVaporPressureObservationDisplay(observation, {
+              showImplicitUnit: true,
+            })
+          )
+        : [],
+    hasParsedObservations: parsedObservations.length > 0,
+    parsedObservationCount: parsedObservations.length,
+  };
+}
+
 export const FOUNDER_PRODUCT_PROFILE_META = {
   fine_fragrance_spray: {
     label: "Fine Fragrance Spray",
@@ -275,6 +735,207 @@ export const CRITIQUE_LENS_ORDER = Object.keys(CRITIQUE_LENS_META);
 
 function getDbNote(db, ingredientName, fallback = "mid") {
   return db?.[ingredientName]?.note || fallback;
+}
+
+export function buildBenchStockEffectiveActivePercent({
+  dilutionPercent = 100,
+  parentEffectiveActivePercent = 100,
+} = {}) {
+  const normalizedDilutionPercent = Math.min(
+    100,
+    Math.max(0, normalizeLooseNumericInput(dilutionPercent) ?? 100)
+  );
+  const normalizedParentPercent = Math.min(
+    100,
+    Math.max(0, normalizeLooseNumericInput(parentEffectiveActivePercent) ?? 100)
+  );
+  return Number(
+    ((normalizedDilutionPercent * normalizedParentPercent) / 100).toFixed(6)
+  );
+}
+
+function formatBenchStockPercentText(value, fallbackValue = "") {
+  const parsed = normalizeLooseNumericInput(value);
+  if (!Number.isFinite(parsed)) return fallbackValue;
+  return parsed.toFixed(2);
+}
+
+export function buildBenchStockDuplicateDraft(
+  stock = {},
+  { dilutionPercent = null } = {}
+) {
+  const nextDilutionPercent =
+    normalizeLooseNumericInput(dilutionPercent) ??
+    normalizeLooseNumericInput(stock?.dilutionPercent) ??
+    10;
+  return {
+    id: null,
+    duplicateSourceId: stock?.id || null,
+    stockName: "",
+    parentMaterialName: String(stock?.parentMaterialName || "").trim(),
+    supplierName: String(stock?.supplierName || "").trim(),
+    carrierName: String(stock?.carrierName || "").trim() || "TEC",
+    dilutionPercent: formatBenchStockPercentText(nextDilutionPercent, "10.00"),
+    parentEffectiveActivePercent: formatBenchStockPercentText(
+      stock?.parentEffectiveActivePercent,
+      ""
+    ),
+    gramsOnHand: "",
+    notes: String(stock?.notes || "").trim(),
+  };
+}
+
+function inferParentEffectiveActivePercent(parentRecord = {}) {
+  const dilutionFactor = Number(parentRecord?.dilutionFactor);
+  if (Number.isFinite(dilutionFactor) && dilutionFactor > 0 && dilutionFactor <= 1) {
+    return Number((dilutionFactor * 100).toFixed(6));
+  }
+  return 100;
+}
+
+export function buildBenchStockRuntimeSummary(
+  items = [],
+  { benchStocksById = {}, db = {} } = {}
+) {
+  const rows = (Array.isArray(items) ? items : [])
+    .filter((item) => item?.name)
+    .map((item) => {
+      const stock =
+        item?.benchStockId && benchStocksById?.[item.benchStockId]
+          ? benchStocksById[item.benchStockId]
+          : null;
+      const parentMaterialName =
+        stock?.parentMaterialName ||
+        item?.parentMaterialName ||
+        item?.name ||
+        null;
+      const parentRecord = db?.[parentMaterialName] || {};
+      const parentEffectiveActivePercent =
+        normalizeLooseNumericInput(
+          stock?.parentEffectiveActivePercent ??
+            item?.parentEffectiveActivePercent
+        ) ?? inferParentEffectiveActivePercent(parentRecord);
+      const stockDilutionPercent =
+        normalizeLooseNumericInput(
+          stock?.dilutionPercent ?? item?.stockDilutionPercent
+        ) ?? 100;
+      const effectiveActivePercent = stock
+        ? buildBenchStockEffectiveActivePercent({
+            dilutionPercent: stockDilutionPercent,
+            parentEffectiveActivePercent,
+          })
+        : parentEffectiveActivePercent;
+      const stockGrams = Math.max(0, Number(item?.g) || 0);
+      const isCarrierMaterial =
+        parentRecord?.note === "carrier" || parentRecord?.type === "CARRIER";
+      const activeGrams = isCarrierMaterial
+        ? 0
+        : Number(((stockGrams * effectiveActivePercent) / 100).toFixed(6));
+      const carrierGrams = Number(
+        (
+          stock
+            ? Math.max(0, stockGrams - activeGrams)
+            : isCarrierMaterial
+            ? stockGrams
+            : 0
+        ).toFixed(6)
+      );
+      const gramsOnHand =
+        normalizeLooseNumericInput(stock?.gramsOnHand ?? item?.gramsOnHand) ?? null;
+
+      return {
+        ...item,
+        name: parentMaterialName,
+        note: getDbNote(db, parentMaterialName, item?.note || "mid"),
+        isBenchStock: Boolean(stock || item?.benchStockId),
+        benchStockId: stock?.id || item?.benchStockId || null,
+        benchStockName: stock?.stockName || item?.benchStockName || null,
+        parentMaterialName,
+        supplierName: stock?.supplierName || item?.supplierName || null,
+        carrierName: stock?.carrierName || item?.carrierName || null,
+        stockDilutionPercent,
+        parentEffectiveActivePercent,
+        effectiveActivePercent,
+        stockGrams,
+        activeG: activeGrams,
+        activeGrams,
+        carrierGrams,
+        gramsOnHand,
+        notes: stock?.notes || item?.benchStockNotes || null,
+        overdrawn:
+          gramsOnHand != null && stockGrams - gramsOnHand > 0.000001,
+      };
+    });
+
+  const modelingMap = new Map();
+  const procurementMap = new Map();
+  const mergeRuntimeIngredient = (targetMap, key, nextRow) => {
+    const existing = targetMap.get(key);
+    if (existing) {
+      existing.g += nextRow.g;
+      existing.activeG = (existing.activeG || 0) + (nextRow.activeG || nextRow.g);
+      existing.stockGrams = (existing.stockGrams || 0) + (nextRow.stockGrams || nextRow.g);
+      return;
+    }
+    targetMap.set(key, { ...nextRow });
+  };
+
+  rows.forEach((row) => {
+    if (row.activeGrams > 0.000001) {
+      mergeRuntimeIngredient(
+        modelingMap,
+        `${row.parentMaterialName}::${row.note}`,
+        {
+          name: row.parentMaterialName,
+          note: row.note,
+          g: row.activeGrams,
+          activeG: row.activeGrams,
+          stockGrams: row.stockGrams,
+        }
+      );
+      mergeRuntimeIngredient(procurementMap, row.parentMaterialName, {
+        name: row.parentMaterialName,
+        note: row.note,
+        g: row.activeGrams,
+        activeG: row.activeGrams,
+        stockGrams: row.stockGrams,
+      });
+    }
+    if (row.carrierGrams > 0.000001 && row.carrierName) {
+      mergeRuntimeIngredient(procurementMap, row.carrierName, {
+        name: row.carrierName,
+        note: getDbNote(db, row.carrierName, "carrier"),
+        g: row.carrierGrams,
+        activeG: 0,
+        stockGrams: row.carrierGrams,
+      });
+    }
+  });
+
+  const totalStockGrams = rows.reduce((sum, row) => sum + row.stockGrams, 0);
+  const totalActiveGrams = rows.reduce((sum, row) => sum + row.activeGrams, 0);
+  const totalCarrierGrams = rows.reduce((sum, row) => sum + row.carrierGrams, 0);
+  const totalFreeCarrierGrams = rows.reduce((sum, row) => {
+    if (!row.isBenchStock && db?.[row.parentMaterialName]?.note === "carrier") {
+      return sum + row.stockGrams;
+    }
+    return sum;
+  }, 0);
+
+  return {
+    rows,
+    modelingItems: Array.from(modelingMap.values()),
+    procurementItems: Array.from(procurementMap.values()),
+    totals: {
+      totalStockGrams,
+      totalActiveGrams,
+      totalCarrierGrams,
+      totalBenchCarrierGrams: Math.max(0, totalCarrierGrams - totalFreeCarrierGrams),
+      totalFreeCarrierGrams,
+      activeAromaticPercent:
+        totalStockGrams > 0 ? (totalActiveGrams / totalStockGrams) * 100 : 0,
+    },
+  };
 }
 
 export function getLivePricingForIngredient(
@@ -680,7 +1341,7 @@ export function buildBatchPlannerReport({
         .map((ingredient) => ({
           ...ingredient,
           g: Number(ingredient?.g) || 0,
-          note: ingredient?.note || getDbNote(db, ingredient?.name),
+          note: getDbNote(db, ingredient?.name, ingredient?.note || "mid"),
         }))
         .filter((ingredient) => ingredient.name && ingredient.g > 0)
     : [];
@@ -915,7 +1576,7 @@ export function buildPerformanceModelSummary(ingredients = [], options = {}) {
         .map((ingredient) => ({
           ...ingredient,
           g: Number(ingredient?.g) || 0,
-          note: ingredient?.note || getDbNote(db, ingredient?.name),
+          note: getDbNote(db, ingredient?.name, ingredient?.note || "mid"),
         }))
         .filter((ingredient) => ingredient.name && ingredient.g > 0)
     : [];
@@ -5240,9 +5901,7 @@ export function parseSupplierAdapterPackLines(value = "") {
 }
 
 function normalizeLocalDraftNumericField(value) {
-  if (value == null || value === "") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+  return normalizeLooseNumericInput(value);
 }
 
 export function buildLocalDraftIngredientArtifacts({
@@ -5292,6 +5951,7 @@ export function buildLocalDraftIngredientArtifacts({
     String(scentDescription || "").trim() || null;
   const normalizedTechnicalNotes =
     String(technicalNotes || "").trim() || null;
+  const normalizedVpInput = parseVaporPressureInput(VP);
   const normalizedConfidence = ["low", "medium", "high"].includes(
     String(confidence || "").trim().toLowerCase()
   )
@@ -5337,7 +5997,12 @@ export function buildLocalDraftIngredientArtifacts({
     MW: normalizeLocalDraftNumericField(MW),
     xLogP: normalizeLocalDraftNumericField(xLogP),
     TPSA: normalizeLocalDraftNumericField(TPSA),
-    VP: normalizeLocalDraftNumericField(VP),
+    VP:
+      normalizedVpInput.legacyModelValueMmHg != null
+        ? normalizedVpInput.legacyModelValueMmHg
+        : normalizeLocalDraftNumericField(VP),
+    vaporPressureRaw: normalizedVpInput.normalizedRaw || null,
+    vaporPressureObservations: normalizedVpInput.observations,
     ODT: normalizeLocalDraftNumericField(ODT),
     createdAt: safeCreatedAt,
     updatedAt: safeUpdatedAt,
@@ -5355,6 +6020,8 @@ export function buildLocalDraftIngredientArtifacts({
     HBD: null,
     HBA: null,
     VP: localDraftRecord.VP,
+    vaporPressureRaw: localDraftRecord.vaporPressureRaw,
+    vaporPressureObservations: localDraftRecord.vaporPressureObservations,
     ODT: localDraftRecord.ODT,
     n: null,
     note: normalizedNote,
@@ -5403,6 +6070,7 @@ export function buildLocalDraftIngredientArtifacts({
     localDraftSupplierDisplayName: supplierDisplayName,
     localDraftSourceNote: normalizedSupplierSourceNote,
     localDraftTechnicalNotes: normalizedTechnicalNotes,
+    localDraftVaporPressureRaw: localDraftRecord.vaporPressureRaw,
     localDraftCreatedAt: safeCreatedAt,
     localDraftUpdatedAt: safeUpdatedAt,
     localDraftLocalOnly: true,
@@ -7379,7 +8047,7 @@ export function buildLaunchRunPlannerSummary({
 
       const existing = ingredientDemandMap.get(ingredientName) || {
         name: ingredientName,
-        note: ingredient?.note || getDbNote(db, ingredientName),
+        note: getDbNote(db, ingredientName, ingredient?.note || "mid"),
         requiredG: 0,
         formulas: [],
       };
@@ -8082,6 +8750,57 @@ function getMaterialDescriptorTags(record = {}) {
   return Array.from(new Set(fallback));
 }
 
+function tokenizeMaterialDescriptorValues(values = []) {
+  return Array.from(
+    new Set(
+      (Array.isArray(values) ? values : [values])
+        .flatMap((value) =>
+          String(value || "")
+            .split(/[^A-Za-z0-9]+/)
+            .map((token) => token.trim().toLowerCase())
+        )
+        .filter(
+          (token) =>
+            token &&
+            token.length >= 4 &&
+            !MATERIAL_DESCRIPTOR_STOPWORDS.has(token)
+        )
+    )
+  );
+}
+
+function getMaterialDescriptorSignalTokens(record = {}) {
+  return tokenizeMaterialDescriptorValues([
+    ...(Array.isArray(record?.descriptorTags) ? record.descriptorTags : []),
+    record?.scentClass,
+    record?.scentSummary,
+    record?.scentDesc,
+    record?.char,
+    record?.rep,
+  ]);
+}
+
+function getSharedDescriptorTokens(originalRecord = {}, candidateRecord = {}) {
+  const originalTokens = new Set(getMaterialDescriptorSignalTokens(originalRecord));
+  return getMaterialDescriptorSignalTokens(candidateRecord).filter((token) =>
+    originalTokens.has(token)
+  );
+}
+
+function getMaterialFamilySignalTokens(record = {}, materialName = "") {
+  return tokenizeMaterialDescriptorValues([
+    materialName,
+    record?.rep,
+    record?.scentClass,
+    record?.scentSummary,
+    record?.scentDesc,
+    record?.char,
+    ...(Array.isArray(record?.descriptorTags) ? record.descriptorTags : []),
+    ...(Array.isArray(record?.synonyms) ? record.synonyms : []),
+    ...(Array.isArray(record?.alternateNames) ? record.alternateNames : []),
+  ]).filter((token) => MATERIAL_FAMILY_SIGNAL_TOKENS.has(token));
+}
+
 function getSharedMaterialTraits(originalRecord = {}, candidateRecord = {}) {
   const originalTags = new Set(
     getMaterialDescriptorTags(originalRecord).map((tag) => String(tag).toLowerCase())
@@ -8103,6 +8822,9 @@ function getSharedMaterialTraits(originalRecord = {}, candidateRecord = {}) {
     traits.push(`${originalRecord.type} material type`);
   }
   candidateTags.slice(0, 2).forEach((tag) => traits.push(`${tag} tag`));
+  getSharedDescriptorTokens(originalRecord, candidateRecord)
+    .slice(0, 2)
+    .forEach((token) => traits.push(`${token} descriptor`));
   return Array.from(new Set(traits));
 }
 
@@ -8363,6 +9085,21 @@ export function buildMaterialSubstitutionSuggestions(
   const originalDiffusion = getMaterialDiffusionProxy(originalRecord);
   const originalPersistence = getMaterialPersistenceProxy(originalRecord);
   const originalLogVp = getMaterialLogVp(originalRecord);
+  const originalDescriptorTokens = getMaterialDescriptorSignalTokens(originalRecord);
+  const originalFamilyTokens = getMaterialFamilySignalTokens(
+    originalRecord,
+    materialName
+  );
+  const originalMetadataStrength =
+    [originalRecord.note, originalRecord.type, originalRecord.scentClass].filter(Boolean)
+      .length +
+    (originalDescriptorTokens.length > 0 ? 1 : 0) +
+    (Number.isFinite(Number(originalRecord.VP)) ? 1 : 0) +
+    (Number.isFinite(Number(originalRecord.xLogP)) ? 1 : 0);
+  const advisoryMessage =
+    originalMetadataStrength < 3
+      ? "Metadata is still thin or contradictory here, so substitution confidence stays low until note-role, descriptive, and technical fields are tightened."
+      : null;
 
   const candidates = Object.entries(db)
     .map(([candidateName, candidateRecord]) => {
@@ -8381,11 +9118,25 @@ export function buildMaterialSubstitutionSuggestions(
       ) {
         return null;
       }
+      if (
+        originalRecord.type !== "ACCORD" &&
+        candidateRecord.type === "ACCORD"
+      ) {
+        return null;
+      }
 
       const sharedTraits = getSharedMaterialTraits(
         originalRecord,
         candidateRecord
       );
+      const sharedDescriptorTokens = getSharedDescriptorTokens(
+        originalRecord,
+        candidateRecord
+      );
+      const sharedFamilyTokens = getMaterialFamilySignalTokens(
+        candidateRecord,
+        candidateName
+      ).filter((token) => originalFamilyTokens.includes(token));
       const tagOverlap = sharedTraits.filter((trait) => trait.endsWith("tag"))
         .length;
       const sameClass =
@@ -8395,7 +9146,39 @@ export function buildMaterialSubstitutionSuggestions(
         candidateRecord.note && candidateRecord.note === originalRecord.note;
       const sameType =
         candidateRecord.type && candidateRecord.type === originalRecord.type;
-      if (!sameClass && !sameNote && !sameType && tagOverlap === 0) {
+      const familyGatePass =
+        originalFamilyTokens.length === 0 ? true : sharedFamilyTokens.length > 0;
+      const strongTraitCount =
+        (sameClass ? 1 : 0) +
+        (sameNote ? 1 : 0) +
+        (sameType ? 1 : 0) +
+        (sharedFamilyTokens.length > 0 ? 2 : 0) +
+        (sharedDescriptorTokens.length >= 2 ? 1 : 0);
+      if (
+        !familyGatePass &&
+        !(sameClass && sameNote && sharedDescriptorTokens.length >= 2)
+      ) {
+        return null;
+      }
+      if (
+        originalRecord.note &&
+        candidateRecord.note &&
+        candidateRecord.note !== originalRecord.note &&
+        !sharedFamilyTokens.length
+      ) {
+        return null;
+      }
+      if (
+        !sameClass &&
+        !sameNote &&
+        !sameType &&
+        tagOverlap === 0 &&
+        sharedDescriptorTokens.length < 2 &&
+        sharedFamilyTokens.length === 0
+      ) {
+        return null;
+      }
+      if (strongTraitCount < 3) {
         return null;
       }
 
@@ -8416,7 +9199,9 @@ export function buildMaterialSubstitutionSuggestions(
         (sameClass ? 5 : 0) +
         (sameNote ? 3 : 0) +
         (sameType ? 1.5 : 0) +
-        tagOverlap * 1.2 -
+        sharedFamilyTokens.length * 3 +
+        tagOverlap * 0.8 +
+        sharedDescriptorTokens.length * 1.75 -
         Math.min(
           2.5,
           Math.abs((Number(candidateRecord.xLogP) || 0) - (Number(originalRecord.xLogP) || 0))
@@ -8424,7 +9209,13 @@ export function buildMaterialSubstitutionSuggestions(
         Math.min(
           2.5,
           Math.abs((candidateLogVp ?? -10) - (originalLogVp ?? -10))
-        );
+        ) -
+        (candidateRecord.type && originalRecord.type && candidateRecord.type !== originalRecord.type
+          ? 1.5
+          : 0) -
+        (candidateRecord.note && originalRecord.note && candidateRecord.note !== originalRecord.note
+          ? 1.5
+          : 0);
 
       return {
         name: candidateName,
@@ -8433,6 +9224,9 @@ export function buildMaterialSubstitutionSuggestions(
         scentClass: candidateRecord.scentClass || null,
         scentSummary: candidateRecord.scentSummary || null,
         descriptorTags: getMaterialDescriptorTags(candidateRecord),
+        sharedDescriptorTokens,
+        sharedFamilyTokens,
+        strongTraitCount,
         styleScore,
         sharedTraits,
         candidateCost,
@@ -8448,6 +9242,14 @@ export function buildMaterialSubstitutionSuggestions(
     .filter(Boolean);
 
   const stylisticFit = [...candidates]
+    .filter(
+      (candidate) =>
+        candidate.styleScore >= 6 &&
+        (candidate.sharedFamilyTokens.length > 0 ||
+          (candidate.scentClass === originalRecord.scentClass &&
+            candidate.note === originalRecord.note &&
+            candidate.sharedDescriptorTokens.length >= 2))
+    )
     .sort((a, b) => b.styleScore - a.styleScore)
     .slice(0, 4)
     .map((candidate) => ({
@@ -8467,7 +9269,7 @@ export function buildMaterialSubstitutionSuggestions(
         baselineCost != null &&
         candidate.candidateCost != null &&
         candidate.candidateCost < baselineCost &&
-        candidate.styleScore >= 2.5
+        candidate.styleScore >= 6
     )
     .sort((a, b) => {
       if (a.candidateCost !== b.candidateCost) {
@@ -8496,7 +9298,7 @@ export function buildMaterialSubstitutionSuggestions(
         originalLimit != null &&
         candidate.candidateLimit != null &&
         candidate.candidateLimit > originalLimit &&
-        candidate.styleScore >= 2
+        candidate.styleScore >= 5.5
     )
     .sort((a, b) => {
       if (b.candidateLimit !== a.candidateLimit) {
@@ -8521,7 +9323,11 @@ export function buildMaterialSubstitutionSuggestions(
 
   const moreDiffusive = [...candidates]
     .filter(
-      (candidate) => candidate.diffusionDelta > 0.02 && candidate.styleScore >= 1.5
+      (candidate) =>
+        candidate.diffusionDelta > 0.02 &&
+        candidate.styleScore >= 5.5 &&
+        (candidate.sharedFamilyTokens.length > 0 ||
+          candidate.sharedDescriptorTokens.length >= 2)
     )
     .sort((a, b) => {
       if (b.diffusionDelta !== a.diffusionDelta) {
@@ -8544,7 +9350,11 @@ export function buildMaterialSubstitutionSuggestions(
   const morePersistent = [...candidates]
     .filter(
       (candidate) =>
-        candidate.persistenceDelta > 1.2 && candidate.styleScore >= 1.5
+        candidate.persistenceDelta > 1.2 &&
+        candidate.styleScore >= 5 &&
+        candidate.strongTraitCount >= 3 &&
+        (candidate.sharedFamilyTokens.length > 0 ||
+          candidate.sharedDescriptorTokens.length >= 2)
     )
     .sort((a, b) => {
       if (b.persistenceDelta !== a.persistenceDelta) {
@@ -8571,6 +9381,7 @@ export function buildMaterialSubstitutionSuggestions(
     null;
 
   return {
+    advisoryMessage,
     baseline: {
       materialName,
       amountG,

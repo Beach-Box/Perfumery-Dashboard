@@ -8,6 +8,7 @@ import {
   buildFraterworksReferenceWorkbookExport,
   buildFraterworksJsonPasteImportPlan,
   buildTrustedSupplierWorkbookImportPlan,
+  extractFraterworksComplianceFields,
   fetchFraterworksPaginatedCatalog,
   normalizeFraterworksJsonPastePayload,
   parseTrustedSupplierWorkbookArrayBuffer,
@@ -266,6 +267,120 @@ test("fraterworks json import preserves explicit mixture CAS state", () => {
   const importedRecord = Object.values(importPlan.supplierLayerRecordMap)[0];
   assert.equal(importedRecord.pageFacts.casShown, "Mixture");
   assert.equal(importedRecord.pageFacts.casState, "mixture");
+});
+
+test("fraterworks compliance extraction reads visible page fields and recognizes no restrictions", () => {
+  const extracted = extractFraterworksComplianceFields(
+    "<p>Supplier intro only.</p>",
+    "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+    {
+      supplementalHtml: `
+        <section>
+          <p>Elegant violet-powdery ionone material.</p>
+          <p>CAS: 127-51-5</p>
+          <p>INCI: Methyl Ionone</p>
+          <p>IFRA: No restrictions</p>
+          <a href="/files/methyl-ionone-alpha-extra-sds.pdf">Download SDS</a>
+        </section>
+      `,
+    }
+  );
+
+  assert.equal(
+    extracted.description.includes("Elegant violet-powdery ionone material"),
+    true
+  );
+  assert.equal(extracted.casSupport.displayValue, "127-51-5");
+  assert.equal(extracted.inci, "Methyl Ionone");
+  assert.equal(extracted.restrictionState, "no_restriction");
+  assert.equal(extracted.restrictionLabel, "No restrictions");
+  assert.equal(
+    extracted.sdsUrl,
+    "https://fraterworks.com/files/methyl-ionone-alpha-extra-sds.pdf"
+  );
+});
+
+test("fraterworks json import prefers structured page identity fields over conflicting SKU hints and preserves VP observations", () => {
+  const importPlan = buildFraterworksJsonPasteImportPlan(
+    JSON.stringify({
+      products: [
+        {
+          id: 103,
+          title: "Methyl Ionone Gamma Coeur",
+          handle: "methyl-ionone-gamma-coeur",
+          vendor: "Fraterworks",
+          product_type: "Aroma Chemical",
+          body_html: `
+            <p>Rich, diffusive violet-woody ionone material with elegant powdery lift.</p>
+            <p>CAS: 7779-30-8</p>
+            <p>INCI: Methyl Ionone</p>
+            <p>IUPAC Name: 4-(2,6,6-Trimethylcyclohex-1-en-1-yl)but-3-en-2-one</p>
+            <p>Synonyms: Methyl ionone gamma, Gamma ionone coeur</p>
+            <p>Alternate Names: MIGC</p>
+            <p>Vapor Pressure: 1 mbar(20 °C)| 2 mbar (50 °C)</p>
+          `,
+          variants: [
+            {
+              id: 401,
+              title: "15 g / 100% Pure",
+              option1: "15 g",
+              option2: "100% Pure",
+              sku: "79-89-0-MIGC-15",
+              price: "14.00",
+              available: true,
+            },
+          ],
+        },
+      ],
+    }),
+    {
+      db: {
+        "Methyl Ionone Gamma Coeur": {
+          cas: "7779-30-8",
+          inci: "Methyl Ionone",
+          canonicalMaterialKey: "methyl_ionone_gamma_coeur",
+        },
+      },
+      supplierProductRegistry: {
+        "fraterworks:methyl-ionone-gamma-coeur": {
+          supplierKey: "fraterworks",
+          supplierDisplayName: "Fraterworks",
+          productTitle: "Methyl Ionone Gamma Coeur",
+          mappedCatalogName: "Methyl Ionone Gamma Coeur",
+          mappedCanonicalMaterialKey: "methyl_ionone_gamma_coeur",
+        },
+      },
+    }
+  );
+
+  assert.deepEqual(importPlan.fatalErrors, []);
+  const importedRecord = Object.values(importPlan.supplierLayerRecordMap)[0];
+  assert.equal(importedRecord.pageFacts.casShown, "7779-30-8");
+  assert.equal(
+    importedRecord.reviewItems.some(
+      (item) => item.issueType === "canonical_conflict_cas"
+    ),
+    false
+  );
+  assert.ok(
+    importedRecord.pageFacts.productDescription.includes(
+      "Rich, diffusive violet-woody ionone material"
+    )
+  );
+  assert.equal(
+    importedRecord.pageFacts.iupacName,
+    "4-(2,6,6-Trimethylcyclohex-1-en-1-yl)but-3-en-2-one"
+  );
+  assert.deepEqual(importedRecord.pageFacts.synonyms, [
+    "Methyl ionone gamma",
+    "Gamma ionone coeur",
+  ]);
+  assert.deepEqual(importedRecord.pageFacts.alternateNames, ["MIGC"]);
+  assert.equal(importedRecord.pageFacts.vaporPressureObservations.length, 2);
+  assert.equal(
+    importedRecord.pageFacts.vaporPressureDisplayValue,
+    "2 VP observations"
+  );
 });
 
 test("trusted supplier workbook import creates a local draft material when requested", () => {

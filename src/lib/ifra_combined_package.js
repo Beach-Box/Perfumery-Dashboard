@@ -3438,7 +3438,16 @@ export function getIfraUiState(name) {
 export function computeActiveRestrictedPercent({
   formulaPercent,
   ingredientName,
+  activePercentOverride = null,
 }) {
+  const normalizedActivePercentOverride =
+    activePercentOverride != null ? Number(activePercentOverride) : null;
+  if (
+    Number.isFinite(normalizedActivePercentOverride) &&
+    normalizedActivePercentOverride >= 0
+  ) {
+    return formulaPercent * (normalizedActivePercentOverride / 100);
+  }
   const resolved = resolveIngredientIdentity(ingredientName);
   if (!resolved) return null;
   const stock = resolved.stock;
@@ -3682,6 +3691,8 @@ export function buildIngredientTruthCompletenessReport(
     "MW",
     "xLogP",
     "VP",
+    "vaporPressureRaw",
+    "vaporPressureObservations",
     "ODT",
     "TPSA",
     "odorThreshold_ngL",
@@ -3827,6 +3838,14 @@ export function buildIngredientTruthCompletenessReport(
     supplierProducts.some((record) =>
       Boolean(record?.sdsUrl || record?.manualSdsAttachment)
     );
+  const hasSupplierNoRestrictionSupport =
+    livePricingEntries.some(
+      ([, supplierData]) =>
+        supplierData?.ifraRestrictionState === "no_restriction"
+    ) ||
+    supplierProducts.some(
+      (record) => record?.ifraRestrictionState === "no_restriction"
+    );
 
   const ifraStatus =
     hasIfraConflict
@@ -3835,6 +3854,8 @@ export function buildIngredientTruthCompletenessReport(
       ? resolvedIdentity?.inheritedViaCanonicalMaterialKey
         ? "inferred"
         : "confirmed"
+      : hasSupplierNoRestrictionSupport && !hasIfraConflict
+      ? "confirmed"
       : hasSupplierIfraSupport && !hasIfraConflict
       ? "confirmed"
       : ifraUiState === "functional_solvent"
@@ -3884,6 +3905,41 @@ export function buildIngredientTruthCompletenessReport(
     { key: "ifra", label: "IFRA Support", status: ifraStatus },
     { key: "evidence", label: "Evidence Support", status: evidenceStatus },
   ];
+  const identityTypeValue = safeRecord?.type || canonicalSource?.type || null;
+  const identityRepValue = safeRecord?.rep || canonicalSource?.rep || null;
+  const regulatoryCasValue = safeRecord?.cas || canonicalSource?.cas || null;
+  const regulatoryInciValue = safeRecord?.inci || canonicalSource?.inci || null;
+  const descriptiveSummaryValue =
+    safeRecord?.scentSummary ||
+    safeRecord?.scentDesc ||
+    safeRecord?.char ||
+    canonicalSource?.scentSummary ||
+    canonicalSource?.scentDesc ||
+    null;
+  const descriptiveNoteValue = safeRecord?.note || canonicalSource?.note || null;
+  const descriptiveTypeValue = safeRecord?.type || canonicalSource?.type || null;
+  const technicalFieldMeta = [
+    { key: "MW", label: "MW", value: safeRecord?.MW },
+    { key: "xLogP", label: "xLogP", value: safeRecord?.xLogP },
+    {
+      key: "VP",
+      label: "vapor pressure",
+      value:
+        safeRecord?.vaporPressureRaw ||
+        safeRecord?.VP ||
+        safeRecord?.vaporPressureObservations,
+    },
+    { key: "ODT", label: "odor threshold", value: safeRecord?.ODT },
+    { key: "TPSA", label: "TPSA", value: safeRecord?.TPSA },
+    {
+      key: "odorThreshold_ngL",
+      label: "odor-threshold support",
+      value: safeRecord?.odorThreshold_ngL,
+    },
+  ];
+  const missingTechnicalLabels = technicalFieldMeta
+    .filter((field) => !hasCompletenessValue(field.value))
+    .map((field) => field.label);
   const counts = dimensions.reduce(
     (acc, dimension) => {
       acc.totalConsideredCount += 1;
@@ -4026,6 +4082,241 @@ export function buildIngredientTruthCompletenessReport(
       "Formal evidence review is not attached yet, but manually verified trusted edits are carrying strong practical support."
     );
   }
+  const buildDimensionDetail = (key) => {
+    const detailLines = [];
+    const improveLines = [];
+    let summary = "";
+
+    if (key === "identity") {
+      if (identityStatus === "confirmed") {
+        summary = canonicalMaterialKey
+          ? "Canonical identity is resolved for this record."
+          : "Current name, type, and identity support are coherent enough to use confidently.";
+      } else if (identityStatus === "inferred") {
+        summary =
+          "Identity is usable, but the canonical mapping or core identity shape is still incomplete.";
+      } else if (identityStatus === "uncertain") {
+        summary =
+          "Identity is present, but an active conflict or unresolved mapping still makes it cautionary.";
+      } else {
+        summary =
+          "Core identity is still too weak to trust without more confirmation.";
+      }
+      if (!canonicalMaterialKey && !resolvedIdentity) {
+        detailLines.push("Canonical material mapping is still unresolved.");
+      }
+      if (!hasCompletenessValue(identityTypeValue)) {
+        detailLines.push("Material type is still missing.");
+      }
+      if (!hasCompletenessValue(identityRepValue)) {
+        detailLines.push("Representative odorant / identity hint is still missing.");
+      }
+      if (hasIdentityConflict) {
+        detailLines.push(
+          "A saved identity field currently conflicts with another active value."
+        );
+      }
+      improveLines.push(
+        "Confirm the material type and identity mapping so the visible record lines up with the intended ingredient."
+      );
+    } else if (key === "regulatory") {
+      if (regulatoryStatus === "confirmed") {
+        summary =
+          "CAS and INCI both have usable support in the current record.";
+      } else if (regulatoryStatus === "inferred") {
+        summary =
+          "Only part of the CAS / INCI identity support is filled in right now.";
+      } else if (regulatoryStatus === "uncertain") {
+        summary =
+          "CAS / INCI support is present, but at least one of those fields is weak or conflict-aware.";
+      } else {
+        summary = "CAS and INCI are still missing.";
+      }
+      if (!hasCompletenessValue(regulatoryCasValue)) {
+        detailLines.push("CAS is missing.");
+      }
+      if (!hasCompletenessValue(regulatoryInciValue)) {
+        detailLines.push("INCI is missing.");
+      }
+      if (hasRegulatoryConflict) {
+        detailLines.push(
+          "CAS or INCI currently conflicts with another active value."
+        );
+      }
+      improveLines.push(
+        "Confirm or correct CAS and INCI from supplier data so identity-sensitive reads stop leaning on partial support."
+      );
+    } else if (key === "descriptive") {
+      if (descriptiveStatus === "confirmed") {
+        summary =
+          "The scent, note-role, and descriptive profile are filled in well enough to read cleanly.";
+      } else if (descriptiveStatus === "inferred") {
+        summary =
+          "Descriptive context is usable, but it still needs fuller scent/profile support.";
+      } else if (descriptiveStatus === "uncertain") {
+        summary =
+          "Only a light descriptive profile is attached right now.";
+      } else {
+        summary =
+          "No useful scent or note-role description is attached yet.";
+      }
+      if (!hasCompletenessValue(descriptiveNoteValue)) {
+        detailLines.push("Note role is missing.");
+      }
+      if (!hasCompletenessValue(descriptiveTypeValue)) {
+        detailLines.push("Material type is missing from the descriptive profile.");
+      }
+      if (!hasCompletenessValue(descriptiveSummaryValue)) {
+        detailLines.push("Main scent summary / description is still missing.");
+      }
+      if (!hasCompletenessValue(safeRecord?.descriptorTags || canonicalSource?.descriptorTags)) {
+        detailLines.push("Descriptor tags are still light or missing.");
+      }
+      improveLines.push(
+        "Add a clearer scent summary, note role, material type, and descriptor tags so recommendation and profile reads stay grounded."
+      );
+    } else if (key === "supplier") {
+      if (supplierStatus === "confirmed") {
+        summary = "Supplier ownership and product-row coverage look solid.";
+      } else if (supplierStatus === "inferred") {
+        summary =
+          "Supplier links exist, but the current record still leans on partial supplier coverage.";
+      } else {
+        summary =
+          "Supplier coverage is still light enough that sourcing reads stay cautious.";
+      }
+      if (!supplierProducts.length && !hasCompletenessValue(safeRecord?.supplier)) {
+        detailLines.push("No supplier product rows are attached yet.");
+      }
+      if (supplierProducts.length > 0 && catalogSupplierCount < 2) {
+        detailLines.push("Supplier coverage is still narrow.");
+      }
+      if (hasSupplierConflict) {
+        detailLines.push(
+          "At least one supplier-linked field is still conflict-aware."
+        );
+      }
+      improveLines.push(
+        "Attach or refresh supplier rows so the record has clearer supplier ownership and coverage."
+      );
+    } else if (key === "pricing") {
+      if (pricingStatus === "confirmed") {
+        summary = "Live pack-size pricing is attached and usable.";
+      } else if (pricingStatus === "inferred") {
+        summary =
+          "Supplier rows exist, but priced size support is still incomplete.";
+      } else if (pricingStatus === "uncertain") {
+        summary =
+          "Pricing exists, but usable price or pack-size detail is still partial.";
+      } else {
+        summary = "No live priced pack sizes are attached yet.";
+      }
+      if (!livePricingEntries.length) {
+        detailLines.push("No live supplier price rows are attached.");
+      } else if (!livePricingSupplierCount) {
+        detailLines.push("Supplier rows exist, but no usable pack-size pricing was resolved.");
+      }
+      improveLines.push(
+        "Add or refresh supplier pack sizes and prices so costing and sourcing reads stay current."
+      );
+    } else if (key === "technical") {
+      if (technicalStatus === "confirmed") {
+        summary =
+          "Technical behavior support is strong across the main modeled fields.";
+      } else if (technicalStatus === "inferred") {
+        summary =
+          "Some technical behavior fields are present, but the model is still missing pieces.";
+      } else {
+        summary =
+          "Technical behavior support is sparse or conflict-aware right now.";
+      }
+      if (missingTechnicalLabels.length) {
+        detailLines.push(
+          `Missing technical fields: ${missingTechnicalLabels.join(", ")}.`
+        );
+      }
+      if (hasTechnicalConflict) {
+        detailLines.push(
+          "A technical / molecular field currently conflicts with another active value."
+        );
+      }
+      if (hasManualTechnicalEdit && !hasTechnicalConflict) {
+        detailLines.push(
+          "Current technical support is being carried partly by manual trusted edits."
+        );
+      }
+      improveLines.push(
+        "Add MW, xLogP, vapor pressure, odor threshold, or TPSA where known so performance-model reads get stronger."
+      );
+    } else if (key === "ifra") {
+      if (ifraStatus === "confirmed") {
+        summary = hasSupplierNoRestrictionSupport
+          ? "Current compliance support explicitly says no restriction."
+          : "Structured IFRA support is present and usable.";
+      } else {
+        summary =
+          "Restriction support is still partial, weak, or conflict-aware.";
+      }
+      if (!hasSupplierIfraSupport && !hasSupplierNoRestrictionSupport && ifraUiState !== "listed") {
+        detailLines.push(
+          "No supplier or helper IFRA support is attached yet."
+        );
+      }
+      if (hasSupplierNoRestrictionSupport) {
+        detailLines.push(
+          "At least one supplier record explicitly states no restrictions."
+        );
+      }
+      if (hasIfraConflict) {
+        detailLines.push(
+          "IFRA / restriction support currently conflicts with another saved value."
+        );
+      }
+      improveLines.push(
+        "Refresh supplier compliance fields or save the verified restriction state so compliance reads do not stay partial."
+      );
+    } else if (key === "evidence") {
+      if (evidenceStatus === "confirmed") {
+        summary = "Formal evidence-review support is attached.";
+      } else if (evidenceStatus === "inferred") {
+        summary =
+          "Practical support exists, but the audit trail is still lighter than a fully documented record.";
+      } else {
+        summary =
+          "Formal evidence-review support is still light or missing.";
+      }
+      if (!sourceDocuments.length) {
+        detailLines.push("No source documents are attached.");
+      }
+      if (!evidenceCandidates.length) {
+        detailLines.push("No staged evidence-review items are attached.");
+      }
+      if (hasAnyStrongManualSupport && !hasActiveManualConflict) {
+        detailLines.push(
+          "Manual trusted support is carrying practical confidence even without a heavier evidence trail."
+        );
+      } else if (supplierProducts.length > 0 && !hasSdsSupport) {
+        detailLines.push(
+          "Supplier rows exist, but SDS/source-document support is still incomplete."
+        );
+      }
+      improveLines.push(
+        "Attach SDS or source documents, or stage real conflicts into evidence review when you want a stronger audit trail."
+      );
+    }
+
+    return {
+      summary,
+      detailLines,
+      improveLines,
+    };
+  };
+  const dimensionDetailByKey = Object.fromEntries(
+    dimensions.map((dimension) => [
+      dimension.key,
+      buildDimensionDetail(dimension.key),
+    ])
+  );
 
   return {
     name,
@@ -4061,6 +4352,7 @@ export function buildIngredientTruthCompletenessReport(
     dimensionByKey: Object.fromEntries(
       dimensions.map((dimension) => [dimension.key, dimension])
     ),
+    dimensionDetailByKey,
     missingSignals,
     uncertainSignals,
     primaryGap: missingSignals[0] || uncertainSignals[0] || null,
@@ -4098,11 +4390,13 @@ export function buildFinishedProductIfraGuidance({
         computeActiveRestrictedPercent({
           formulaPercent: finishedProductPercent,
           ingredientName: item.name,
+          activePercentOverride: item?.effectiveActivePercent ?? null,
         }) ?? finishedProductPercent;
       const activeRestrictedPercentInConcentrate =
         computeActiveRestrictedPercent({
           formulaPercent: concentratePercent,
           ingredientName: item.name,
+          activePercentOverride: item?.effectiveActivePercent ?? null,
         }) ?? concentratePercent;
       const limit = material?.limits?.[categoryKey] ?? null;
 

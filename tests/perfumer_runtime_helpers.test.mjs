@@ -4,10 +4,16 @@ import assert from "node:assert/strict";
 import {
   buildIngredientTruthCompletenessReport,
   compareMaterialCasSupportValues,
+  computeActiveRestrictedPercent,
   formatMaterialCasSupportValue,
 } from "../src/lib/ifra_combined_package.js";
 import {
+  buildBenchStockDuplicateDraft,
+  buildBenchStockEffectiveActivePercent,
+  buildBenchStockRuntimeSummary,
   buildCapitalConstrainedLaunchRecommendation,
+  buildMaterialSubstitutionSuggestions,
+  buildVaporPressureDisplay,
   buildFraterworksSupplierAdapterResult,
   buildFormulaCriticalDataAudit,
   buildFormulaFieldCorrectionReviewCandidate,
@@ -18,6 +24,8 @@ import {
   buildSupplierAdapterExportPayload,
   buildGeneratedProposalReviewCandidate,
   buildMaterialImprovementQueue,
+  deriveVisibleMaterialDescriptorText,
+  formatVaporPressureNumber,
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderTrustSummary,
@@ -26,6 +34,8 @@ import {
   buildSubstitutionReviewDraftFormula,
   createFounderLaunchScenarioRecord,
   normalizeFounderLaunchScenarioRecord,
+  normalizeLooseNumericInput,
+  parseVaporPressureInput,
   parseSupplierAdapterPackLines,
 } from "../src/lib/perfumer_runtime_helpers.js";
 
@@ -153,6 +163,50 @@ test("material CAS comparison treats multi-CAS ordering and mixture intentionall
   );
 });
 
+test("visible descriptor text suppresses stale FCF copy when the current visible record is non-FCF", () => {
+  const correctedDescriptor = deriveVisibleMaterialDescriptorText({
+    recordName: "Bergamot EO FCF",
+    record: {
+      displayName: "Bergamot EO",
+      scentSummary: "Fresh, zesty bergamot - FCF safe for skin",
+      scentDesc:
+        "Bergamot FCF (furocoumarin-free) — the benchmark citrus opening note.",
+      char: "Fresh bergamot peel with floral-green lift.",
+    },
+    fallbackSummary: "Supplier-confirmed regular bergamot peel.",
+    fallbackDescription: "Regular bergamot essential oil confirmed from current suppliers.",
+  });
+
+  assert.equal(
+    correctedDescriptor.summary,
+    "Supplier-confirmed regular bergamot peel."
+  );
+  assert.equal(
+    correctedDescriptor.description,
+    "Regular bergamot essential oil confirmed from current suppliers."
+  );
+  assert.equal(correctedDescriptor.suppressedStaleSummary, true);
+  assert.equal(correctedDescriptor.suppressedStaleDescription, true);
+
+  const fcfDescriptor = deriveVisibleMaterialDescriptorText({
+    recordName: "Bergamot EO FCF",
+    record: {
+      displayName: "Bergamot EO FCF",
+      scentSummary: "Fresh, zesty bergamot - FCF safe for skin",
+      scentDesc:
+        "Bergamot FCF (furocoumarin-free) — the benchmark citrus opening note.",
+    },
+  });
+
+  assert.equal(fcfDescriptor.summary, "Fresh, zesty bergamot - FCF safe for skin");
+  assert.equal(
+    fcfDescriptor.description,
+    "Bergamot FCF (furocoumarin-free) — the benchmark citrus opening note."
+  );
+  assert.equal(fcfDescriptor.suppressedStaleSummary, false);
+  assert.equal(fcfDescriptor.suppressedStaleDescription, false);
+});
+
 test("ingredient truth completeness keeps explicit manual conflicts cautious", () => {
   const report = buildIngredientTruthCompletenessReport("QA Manual Identity Conflict", {
     record: {
@@ -246,6 +300,347 @@ test("ingredient truth completeness keeps manual trusted support strong even wit
     )
   );
   assert.equal(trustSummary.level, "supported");
+});
+
+test("bench stock effective active percent compounds parent activity with stock dilution", () => {
+  assert.equal(
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: 10,
+      parentEffectiveActivePercent: 100,
+    }),
+    10
+  );
+  assert.equal(
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: 10,
+      parentEffectiveActivePercent: 50,
+    }),
+    5
+  );
+  assert.equal(
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: 10.24,
+      parentEffectiveActivePercent: 100,
+    }),
+    10.24
+  );
+  assert.equal(
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: 50,
+      parentEffectiveActivePercent: 100,
+    }),
+    50
+  );
+});
+
+test("bench stock duplicate draft preserves parent/carrier while creating a new variant draft", () => {
+  const originalStock = {
+    id: "ylang-10-tec",
+    stockName: "Ylang Ylang Complete — 10.00% in TEC",
+    parentMaterialName: "Ylang Ylang Complete",
+    supplierName: "Fraterworks",
+    carrierName: "TEC",
+    dilutionPercent: 10,
+    parentEffectiveActivePercent: 100,
+    gramsOnHand: 18,
+    notes: "Bench working stock",
+  };
+
+  const duplicateDraft = buildBenchStockDuplicateDraft(originalStock, {
+    dilutionPercent: 5,
+  });
+
+  assert.equal(duplicateDraft.id, null);
+  assert.equal(duplicateDraft.duplicateSourceId, "ylang-10-tec");
+  assert.equal(duplicateDraft.parentMaterialName, "Ylang Ylang Complete");
+  assert.equal(duplicateDraft.supplierName, "Fraterworks");
+  assert.equal(duplicateDraft.carrierName, "TEC");
+  assert.equal(duplicateDraft.dilutionPercent, "5.00");
+  assert.equal(duplicateDraft.parentEffectiveActivePercent, "100.00");
+  assert.equal(duplicateDraft.gramsOnHand, "");
+  assert.equal(duplicateDraft.notes, "Bench working stock");
+  assert.equal(originalStock.dilutionPercent, 10);
+  assert.equal(
+    buildBenchStockEffectiveActivePercent({
+      dilutionPercent: duplicateDraft.dilutionPercent,
+      parentEffectiveActivePercent: duplicateDraft.parentEffectiveActivePercent,
+    }),
+    5
+  );
+});
+
+test("vapor pressure formatter keeps UI values readable without scientific notation", () => {
+  assert.equal(formatVaporPressureNumber(0.03000246730816679), "0.03");
+  assert.equal(formatVaporPressureNumber(0.217518), "0.2175");
+  assert.equal(formatVaporPressureNumber(2.25e-7), "0.000000225");
+});
+
+test("bench stock runtime summary computes stock, active, and carrier grams correctly", () => {
+  const runtime = buildBenchStockRuntimeSummary(
+    [
+      {
+        name: "Ylang Ylang Complete",
+        g: 0.8,
+        note: "mid",
+        benchStockId: "ylang-10-tec",
+      },
+      {
+        name: "Frangipani Absolute",
+        g: 0.5,
+        note: "mid",
+        benchStockId: "frangipani-10-24-tec",
+      },
+      {
+        name: "Pre-Diluted Parent",
+        g: 1,
+        note: "base",
+        benchStockId: "prediluted-parent-10-tec",
+      },
+    ],
+    {
+      benchStocksById: {
+        "ylang-10-tec": {
+          id: "ylang-10-tec",
+          stockName: "Ylang Ylang Complete — 10.00% in TEC",
+          parentMaterialName: "Ylang Ylang Complete",
+          carrierName: "TEC",
+          dilutionPercent: 10,
+          parentEffectiveActivePercent: 100,
+          gramsOnHand: 25,
+        },
+        "frangipani-10-24-tec": {
+          id: "frangipani-10-24-tec",
+          stockName: "Frangipani Absolute — 10.24% in TEC",
+          parentMaterialName: "Frangipani Absolute",
+          carrierName: "TEC",
+          dilutionPercent: 10.24,
+          parentEffectiveActivePercent: 100,
+          gramsOnHand: 12,
+        },
+        "prediluted-parent-10-tec": {
+          id: "prediluted-parent-10-tec",
+          stockName: "Pre-Diluted Parent — 10.00% in TEC",
+          parentMaterialName: "Pre-Diluted Parent",
+          carrierName: "TEC",
+          dilutionPercent: 10,
+          parentEffectiveActivePercent: 50,
+          gramsOnHand: 10,
+        },
+      },
+      db: {
+        "Ylang Ylang Complete": { note: "mid", type: "EO" },
+        "Frangipani Absolute": { note: "mid", type: "ABS" },
+        "Pre-Diluted Parent": {
+          note: "base",
+          type: "SYNTH",
+          dilutionFactor: 0.5,
+        },
+        TEC: { note: "carrier", type: "CARRIER" },
+      },
+    }
+  );
+
+  assert.equal(runtime.rows[0].activeGrams, 0.08);
+  assert.equal(runtime.rows[0].carrierGrams, 0.72);
+  assert.equal(runtime.rows[1].activeGrams, 0.0512);
+  assert.equal(runtime.rows[1].carrierGrams, 0.4488);
+  assert.equal(runtime.rows[2].effectiveActivePercent, 5);
+  assert.equal(runtime.rows[2].activeGrams, 0.05);
+  assert.equal(runtime.rows[2].carrierGrams, 0.95);
+  assert.equal(runtime.totals.totalStockGrams, 2.3);
+  assert.ok(Math.abs(runtime.totals.totalActiveGrams - 0.1812) < 1e-9);
+  assert.ok(Math.abs(runtime.totals.totalBenchCarrierGrams - 2.1188) < 1e-9);
+});
+
+test("bench stock IFRA calculations respect active grams instead of raw stock grams", () => {
+  assert.equal(
+    computeActiveRestrictedPercent({
+      formulaPercent: 8,
+      ingredientName: "Bench Stock Parent",
+      activePercentOverride: 10,
+    }),
+    0.8
+  );
+});
+
+test("loose numeric and vapor-pressure parsing handle messy supplier-style inputs", () => {
+  assert.equal(normalizeLooseNumericInput(".04"), 0.04);
+  assert.equal(normalizeLooseNumericInput("0.04 hPa"), 0.04);
+
+  const singleObservation = parseVaporPressureInput("0.005516 mm Hg @ 23° C");
+  assert.equal(singleObservation.normalizedRaw, "0.005516 mmHg @ 23°C");
+  assert.equal(singleObservation.parsedObservationCount, 1);
+  assert.ok(
+    Math.abs((singleObservation.legacyModelValueMmHg || 0) - 0.005516) < 1e-9
+  );
+
+  const comparatorObservation = parseVaporPressureInput("< 0,01 hPa");
+  assert.equal(comparatorObservation.normalizedRaw, "< 0.01 hPa");
+  assert.equal(comparatorObservation.observations[0].comparator, "<");
+  assert.ok(
+    Math.abs((comparatorObservation.observations[0].valueHpa || 0) - 0.01) <
+      1e-9
+  );
+
+  const multiObservation = parseVaporPressureInput(
+    "1 mbar(20 °C)| 2 mbar (50 °C)"
+  );
+  assert.equal(multiObservation.parsedObservationCount, 2);
+  assert.equal(multiObservation.observations[0].temperatureC, 20);
+  assert.equal(multiObservation.observations[1].temperatureC, 50);
+
+  const display = buildVaporPressureDisplay({
+    VP: multiObservation.legacyModelValueMmHg,
+    vaporPressureRaw: multiObservation.normalizedRaw,
+    vaporPressureObservations: multiObservation.observations,
+  });
+  assert.equal(display.summary, "2 VP observations");
+  assert.deepEqual(display.detailLines, ["1 mbar @ 20°C", "2 mbar @ 50°C"]);
+});
+
+test("ingredient truth completeness treats manual IFRA supplier support as strong when no conflict is active", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Manual IFRA", {
+    record: {
+      manualSupplierEdited: true,
+      note: "mid",
+      type: "SYNTH",
+    },
+    livePricing: {
+      "Trusted Supplier": {
+        ifraPercent: "30.00%",
+      },
+    },
+  });
+
+  assert.equal(report.dimensionByKey.ifra.status, "confirmed");
+  assert.equal(report.hasStrongManualIfraSupport, true);
+  assert.ok(
+    report.manualTrustedSignals.some((signal) =>
+      signal.includes("Supplier-page facts were manually verified")
+    )
+  );
+});
+
+test("ingredient truth completeness exposes specific drilldown details for weak technical and evidence support", () => {
+  const report = buildIngredientTruthCompletenessReport("QA Drilldown Material", {
+    record: {
+      type: "SYNTH",
+      note: "mid",
+      scentSummary: "Powdery floral material.",
+      MW: 218.3,
+    },
+    livePricing: {},
+  });
+
+  assert.ok(
+    report.dimensionDetailByKey.technical.detailLines.some((line) =>
+      line.includes("Missing technical fields:")
+    )
+  );
+  assert.ok(
+    report.dimensionDetailByKey.technical.detailLines.some((line) =>
+      line.includes("xLogP")
+    )
+  );
+  assert.ok(
+    report.dimensionDetailByKey.ifra.detailLines.some((line) =>
+      line.includes("No supplier or helper IFRA support")
+    )
+  );
+  assert.ok(
+    report.dimensionDetailByKey.evidence.detailLines.some((line) =>
+      line.includes("No source documents are attached")
+    )
+  );
+  assert.ok(
+    report.dimensionDetailByKey.evidence.improveLines[0].includes(
+      "Attach SDS or source documents"
+    )
+  );
+});
+
+test("substitution suggestions avoid unrelated carriers and broad accord mismatches", () => {
+  const suggestions = buildMaterialSubstitutionSuggestions(
+    "Methyl Ionone Gamma Coeur",
+    {
+      db: {
+        "Methyl Ionone Gamma Coeur": {
+          note: "base",
+          type: "SYNTH",
+          scentClass: "violet",
+          scentSummary: "Powdery violet-woody ionone profile.",
+          rep: "Ionone",
+          xLogP: 4.3,
+          VP: 0.02,
+        },
+        "Gamma Methyl Ionone": {
+          note: "base",
+          type: "SYNTH",
+          scentClass: "violet",
+          scentSummary: "Powdery violet-woody ionone profile.",
+          rep: "Ionone",
+          xLogP: 4.1,
+          VP: 0.018,
+        },
+        DPG: {
+          note: "carrier",
+          type: "CARRIER",
+          scentClass: "carrier",
+          scentSummary: "Odorless solvent.",
+          xLogP: -0.4,
+          VP: 0.004,
+        },
+        "Vanilla Bourbon Absolute": {
+          note: "base",
+          type: "ABS",
+          scentClass: "gourmand",
+          scentSummary: "Sweet vanilla absolute.",
+          rep: "Vanillin",
+          xLogP: 5.5,
+          VP: 0.0001,
+        },
+        "Woody Accord Base": {
+          note: "base",
+          type: "ACCORD",
+          scentClass: "woody",
+          scentSummary: "General woody accord base.",
+          rep: "Woody accord",
+          xLogP: 4.8,
+          VP: 0.008,
+        },
+        "Rum Absolute": {
+          note: "base",
+          type: "ABS",
+          scentClass: "gourmand",
+          scentSummary: "Boozy rum absolute with dark sweetness.",
+          rep: "Rum absolute",
+          xLogP: 5.1,
+          VP: 0.0002,
+        },
+        "Oud Supreme": {
+          note: "base",
+          type: "EO",
+          scentClass: "woody",
+          scentSummary: "Dense oud-amber natural.",
+          rep: "Oud",
+          xLogP: 5.8,
+          VP: 0.00005,
+        },
+      },
+    }
+  );
+
+  const candidateNames = Object.values(suggestions.categories)
+    .flat()
+    .map((candidate) => candidate.name);
+
+  assert.ok(candidateNames.includes("Gamma Methyl Ionone"));
+  assert.equal(candidateNames.includes("DPG"), false);
+  assert.equal(candidateNames.includes("Vanilla Bourbon Absolute"), false);
+  assert.equal(candidateNames.includes("Woody Accord Base"), false);
+  assert.equal(candidateNames.includes("Rum Absolute"), false);
+  assert.equal(candidateNames.includes("Oud Supreme"), false);
+  assert.equal(suggestions.advisoryMessage, null);
 });
 
 test("buildFounderTrustSummary marks well-supported baskets as supported", () => {

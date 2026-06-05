@@ -20,6 +20,7 @@ export const APP_STORAGE_KEYS = {
   supplierImportLocalReview: "bb_supplier_import_local_review_v1",
   evidenceCandidateLocalReview: "bb_evidence_candidate_review_v1",
   supplierLayerPageFacts: "bb_supplier_layer_page_facts_v1",
+  benchStocks: "bb_bench_stocks_v1",
 };
 
 export function readJsonStorage(key, fallbackValue) {
