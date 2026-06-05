@@ -109,6 +109,11 @@ import {
   getMaterialRuntimeKeyCaption,
 } from "./lib/material_display_helpers";
 import {
+  getChangedManualFieldKeys,
+  normalizeManualComparableValue,
+  normalizeManualRecordText,
+} from "./lib/manual_record_helpers";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -54595,36 +54600,8 @@ const MANUAL_RECORD_BASE_SNAPSHOTS = new Map();
 
 const MAX_MANUAL_SDS_ATTACHMENT_BYTES = 1.5 * 1024 * 1024;
 
-function normalizeManualRecordText(value) {
-  const normalizedValue = String(value ?? "").trim();
-  return normalizedValue || null;
-}
-
 function normalizeManualRecordNumber(value) {
   return normalizeLooseNumericInput(value);
-}
-
-function normalizeManualComparableValue(value) {
-  if (Array.isArray(value)) {
-    return JSON.stringify(value);
-  }
-  if (value == null || value === "") return "";
-  if (typeof value === "number") return String(value);
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value).trim();
-}
-
-function getChangedManualFieldKeys(currentValues = {}, nextValues = {}) {
-  return Object.entries(nextValues).reduce((changedKeys, [fieldKey, nextValue]) => {
-    const currentValue = currentValues?.[fieldKey];
-    if (
-      normalizeManualComparableValue(currentValue) !==
-      normalizeManualComparableValue(nextValue)
-    ) {
-      changedKeys.push(fieldKey);
-    }
-    return changedKeys;
-  }, []);
 }
 
 function buildManualSupplierLayerRecordKey(materialName = "", supplierName = "") {
