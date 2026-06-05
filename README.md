@@ -66,7 +66,13 @@ npm run validate
 git diff --check
 ```
 
-`npm run validate` currently runs `npm run test:helpers` and then `npm run build`.
+`npm run validate` currently runs helper tests, builds the production app through `npm run test:smoke`, then runs the Playwright smoke test against Vite preview.
+
+The smoke test uses Playwright. If Playwright reports that Chromium is missing on a fresh machine, run:
+
+```sh
+npx playwright install chromium
+```
 
 There is no active lint script in `package.json` at the time of writing.
 
@@ -98,7 +104,7 @@ For the current source-of-truth model, read [docs/data_sources.md](docs/data_sou
 - `src/App.jsx` is extremely large, so small behavior changes can have broad review and merge risk.
 - Source-of-truth boundaries are split across embedded app data, JSON registries, local browser overlays, imports, and generated review payloads.
 - Browser-side API key storage and direct external calls are local/private-tool grade only.
-- Helper tests exist, but no UI/e2e test suite was found in the audit.
+- Helper tests and a minimal Playwright app smoke test exist, but detailed UI/e2e coverage is still limited.
 - Vite build passes but warns about large chunks.
 - Node emits module-type warnings during helper tests because the package does not declare `"type": "module"`.
 - `public/index.html`, `src/App.jsx.backup`, and `beach-box-perfumery/*` appear stale or legacy but are intentionally left untouched until a dedicated cleanup task.

@@ -12,6 +12,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
@@ -23,7 +24,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:helpers": "node --test tests/*.test.mjs",
-    "validate": "npm run test:helpers && npm run build"
+    "test:smoke": "npm run build && playwright test",
+    "validate": "npm run test:helpers && npm run test:smoke"
   },
   "browserslist": [
     ">0.2%",

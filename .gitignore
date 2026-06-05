@@ -4,3 +4,5 @@ dist/
 .env
 .vscode/
 downloads/source_documents/
+test-results/
+playwright-report/

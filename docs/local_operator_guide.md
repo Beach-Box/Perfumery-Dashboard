@@ -29,12 +29,19 @@ npm run validate
 git diff --check
 ```
 
-`npm run validate` currently runs helper tests first, then the production build.
+`npm run validate` currently runs helper tests first, then `npm run test:smoke`. The smoke script builds the production app and runs Playwright against Vite preview.
+
+The smoke test uses Chromium through Playwright. If Playwright reports that Chromium is missing on a fresh machine, run:
+
+```sh
+npx playwright install chromium
+```
 
 Expected current behavior:
 
 - Build passes.
 - Helper tests pass.
+- Smoke test starts the Vite app and clicks through the primary tabs.
 - Vite may warn about large chunks.
 - Node may warn about ES module reparsing because the package does not declare `"type": "module"`.
 
