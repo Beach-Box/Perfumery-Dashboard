@@ -35,6 +35,17 @@ test("catalog opens an ingredient detail dossier without crashing", async ({ pag
     )
   ).toBeVisible();
 
+  const formalEvidenceCard = page
+    .getByRole("button", { name: /Formal evidence review/i })
+    .first();
+  await expect(formalEvidenceCard).toBeVisible();
+  await formalEvidenceCard.click();
+  await expect(
+    page.getByText(
+      "This is the audit-trail side of trust. It complements practical support, but it is not the only thing that matters."
+    )
+  ).toBeVisible();
+
   const editRecordButton = page.getByRole("button", { name: /Edit Record/i });
   await expect(editRecordButton).toBeVisible();
   await editRecordButton.click();

@@ -116,8 +116,6 @@ import {
   normalizeManualRecordText,
 } from "./lib/manual_record_helpers";
 import { CatalogMetadataBadges } from "./components/CatalogMetadataBadges";
-import { DossierCountCard } from "./components/DossierCountCard";
-import { DossierGuidanceBlock } from "./components/DossierGuidanceBlock";
 import { IfraInlineValue } from "./components/IfraInlineValue";
 import { IfraStateBadge } from "./components/IfraStateBadge";
 import { IngredientDetailCatalogCoveragePanel } from "./components/IngredientDetailCatalogCoveragePanel";
@@ -126,6 +124,7 @@ import { IngredientDetailEditIntro } from "./components/IngredientDetailEditIntr
 import { IngredientDetailHeader } from "./components/IngredientDetailHeader";
 import { IngredientDetailLocalDraftPanel } from "./components/IngredientDetailLocalDraftPanel";
 import { IngredientDetailManualEditSummary } from "./components/IngredientDetailManualEditSummary";
+import { IngredientDetailMaterialTrustPanel } from "./components/IngredientDetailMaterialTrustPanel";
 import { IngredientDetailMetricCards } from "./components/IngredientDetailMetricCards";
 import { ScoreBar } from "./components/ScoreBar";
 import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedbackPanel";
@@ -56954,6 +56953,43 @@ function IngredientDetailPanel({
     materialTrustSummary,
     sourceDocuments.length,
   ]);
+  const materialTrustBadgeMeta = {
+    bg: materialTrustSummary?.levelMeta?.bg || "#071826",
+    border: materialTrustSummary?.levelMeta?.border || "#1E3A52",
+    color: materialTrustSummary?.levelMeta?.color || "#94A3B8",
+    label: materialTrustSummary?.levelMeta?.label || "Context Needed",
+  };
+  const activeTrustDrilldown =
+    dossierDrilldown && dossierDrilldown.key.startsWith("trust-")
+      ? dossierDrilldown
+      : null;
+  const activeTrustCardLabel =
+    activeTrustDrilldown?.key === trustDrilldowns.usable.key
+      ? "Usable right now"
+      : activeTrustDrilldown?.key === trustDrilldowns.strong.key
+      ? "High-confidence support"
+      : activeTrustDrilldown?.key === trustDrilldowns.evidence.key
+      ? "Formal evidence review"
+      : activeTrustDrilldown?.key === trustDrilldowns.caution.key
+      ? "Open cautions"
+      : null;
+  const showMaterialTrustSparseWarning = Boolean(materialTrustSummary?.dataSparse);
+  const handleSelectTrustCard = useCallback(
+    (cardLabel) => {
+      const nextDrilldown =
+        cardLabel === "Usable right now"
+          ? trustDrilldowns.usable
+          : cardLabel === "High-confidence support"
+          ? trustDrilldowns.strong
+          : cardLabel === "Formal evidence review"
+          ? trustDrilldowns.evidence
+          : trustDrilldowns.caution;
+      setDossierDrilldown((prev) =>
+        prev?.key === nextDrilldown.key ? null : nextDrilldown
+      );
+    },
+    [trustDrilldowns]
+  );
   const isLocalDraftMaterial = Boolean(d.isLocalDraft);
   const supplierDescriptorFallback = useMemo(() => {
     const summary =
@@ -58735,199 +58771,14 @@ function IngredientDetailPanel({
           onSelectCard={handleSelectCompletenessCard}
         />
 
-        <div
-          style={{
-            background: "#060E1E",
-            borderRadius: 12,
-            border: `1px solid ${BORDER}`,
-            padding: 12,
-            marginBottom: 18,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: 8.5,
-                  color: "#34D399",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  fontWeight: 700,
-                }}
-              >
-                Material Trust / Evidence Context
-              </div>
-              <div
-                style={{
-                  marginTop: 4,
-                  fontSize: 8.8,
-                  color: "#CBD5E1",
-                  lineHeight: 1.55,
-                }}
-              >
-                {materialTrustPanelContent.summary}
-              </div>
-            </div>
-            <span
-              style={{
-                background: materialTrustSummary?.levelMeta?.bg || "#071826",
-                border: `1px solid ${
-                  materialTrustSummary?.levelMeta?.border || "#1E3A52"
-                }`,
-                borderRadius: 999,
-                padding: "2px 8px",
-                fontSize: 7.9,
-                fontWeight: 700,
-                color: materialTrustSummary?.levelMeta?.color || "#94A3B8",
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {materialTrustSummary?.levelMeta?.label || "Context Needed"}
-            </span>
-          </div>
-          <div
-            style={{
-              marginTop: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-              gap: 8,
-            }}
-          >
-            {materialTrustPanelContent.cards.map((card) => (
-              <DossierCountCard
-                key={`material-trust-${card.label}`}
-                label={card.label}
-                value={card.value}
-                meta={card.meta}
-                color={card.color}
-                onClick={() => {
-                  const nextDrilldown =
-                    card.label === "Usable right now"
-                      ? trustDrilldowns.usable
-                      : card.label === "High-confidence support"
-                      ? trustDrilldowns.strong
-                      : card.label === "Formal evidence review"
-                      ? trustDrilldowns.evidence
-                      : trustDrilldowns.caution;
-                  setDossierDrilldown((prev) =>
-                    prev?.key === nextDrilldown.key ? null : nextDrilldown
-                  );
-                }}
-                isActive={
-                  (dossierDrilldown?.key === trustDrilldowns.usable.key &&
-                    card.label === "Usable right now") ||
-                  (dossierDrilldown?.key === trustDrilldowns.strong.key &&
-                    card.label === "High-confidence support") ||
-                  (dossierDrilldown?.key === trustDrilldowns.evidence.key &&
-                    card.label === "Formal evidence review") ||
-                  (dossierDrilldown?.key === trustDrilldowns.caution.key &&
-                    card.label === "Open cautions")
-                }
-              />
-            ))}
-          </div>
-          {dossierDrilldown && dossierDrilldown.key.startsWith("trust-") ? (
-            <div style={{ marginTop: 8 }}>
-              <DossierGuidanceBlock
-                title={dossierDrilldown.title}
-                intro={dossierDrilldown.intro}
-                items={dossierDrilldown.items}
-                accent={dossierDrilldown.accent}
-              />
-            </div>
-          ) : null}
-          <div
-            style={{
-              marginTop: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-              gap: 8,
-            }}
-          >
-            <DossierGuidanceBlock
-              title="What this means"
-              intro="This section is about how much of the current formula/build advice is being driven by resolved support."
-              items={materialTrustPanelContent.meaningLines}
-              accent="#34D399"
-            />
-            <DossierGuidanceBlock
-              title="Why the trust read looks like this"
-              intro="These are the strongest reasons the current trust level landed where it did."
-              items={materialTrustPanelContent.whyLines}
-              accent="#CBD5E1"
-            />
-          </div>
-          {materialTrustPanelContent.primaryGap ? (
-            <div
-              style={{
-                marginTop: 8,
-                background: "#071826",
-                border: "1px solid #1E3A52",
-                borderRadius: 10,
-                padding: "9px 10px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 7.9,
-                  color: "#FCD34D",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  fontWeight: 700,
-                }}
-              >
-                Main trust caution
-              </div>
-              <div
-                style={{
-                  marginTop: 5,
-                  fontSize: 8.4,
-                  color: "#E2E8F0",
-                  lineHeight: 1.55,
-                }}
-              >
-                {materialTrustPanelContent.primaryGap}
-              </div>
-            </div>
-          ) : null}
-          <div
-            style={{
-              marginTop: 8,
-            }}
-          >
-            <DossierGuidanceBlock
-              title="To improve this score"
-              intro="These actions will make the current formula/build trust read stronger from here."
-              items={materialTrustPanelContent.improveLines}
-              accent="#7DD3FC"
-            />
-          </div>
-          {materialTrustSummary?.dataSparse ? (
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 8.2,
-                color: "#FCD34D",
-                lineHeight: 1.55,
-              }}
-            >
-              No formal evidence-review records or sparse trust support should not
-              be read as "totally broken" by itself. It means some of the current
-              advice is still leaning on incomplete supplier, pricing, identity, or
-              compliance inputs.
-            </div>
-          ) : null}
-        </div>
+        <IngredientDetailMaterialTrustPanel
+          content={materialTrustPanelContent}
+          badgeMeta={materialTrustBadgeMeta}
+          activeCardLabel={activeTrustCardLabel}
+          activeDrilldown={activeTrustDrilldown}
+          showSparseDataWarning={showMaterialTrustSparseWarning}
+          onSelectCard={handleSelectTrustCard}
+        />
 
         {false ? (
           <>
