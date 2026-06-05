@@ -95,7 +95,10 @@ import {
   getEvidenceCandidateConfidenceLabel,
   getEvidenceCandidateDisplayValue,
 } from "./lib/evidence_display_helpers";
-import { formatSupplierAdapterPricePointsForTextarea } from "./lib/supplier_display_helpers";
+import {
+  formatSupplierAdapterPricePointsForTextarea,
+  formatSupplierReviewContextValue,
+} from "./lib/supplier_display_helpers";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -88936,16 +88939,6 @@ export default function App() {
                 )
               );
             });
-            const formatSupplierReviewContextValue = (value) => {
-              if (Array.isArray(value)) {
-                const parts = value
-                  .map((item) => String(item || "").trim())
-                  .filter(Boolean);
-                return parts.length > 0 ? parts.join(" · ") : "—";
-              }
-              const normalizedValue = String(value ?? "").trim();
-              return normalizedValue || "—";
-            };
             const getSupplierAdapterEvidenceStageMeta = (reviewItem) => {
               const candidate =
                 buildSupplierAdapterConflictReviewCandidate(reviewItem);

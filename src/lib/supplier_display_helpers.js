@@ -12,3 +12,14 @@ export function formatSupplierAdapterPricePointsForTextarea(pricePoints = []) {
     .filter(Boolean)
     .join("\n");
 }
+
+export function formatSupplierReviewContextValue(value) {
+  if (Array.isArray(value)) {
+    const parts = value
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+    return parts.length > 0 ? parts.join(" · ") : "—";
+  }
+  const normalizedValue = String(value ?? "").trim();
+  return normalizedValue || "—";
+}
