@@ -130,6 +130,7 @@ import { IngredientDetailMetricCards } from "./components/IngredientDetailMetric
 import { ScoreBar } from "./components/ScoreBar";
 import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedbackPanel";
 import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
+import { SupplierPricePointChips } from "./components/SupplierPricePointChips";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -59753,37 +59754,10 @@ function IngredientDetailPanel({
 	                            )
 	                          )}
                         </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: 6,
-                            flexWrap: "wrap",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-	                          {pricePoints.map(([qty, unit, price], index) => (
-                            <span
-                              key={`${supplierName}-${index}`}
-                              style={{
-                                background: CARD,
-                                border: `1px solid ${BORDER}`,
-                                borderRadius: 6,
-                                padding: "4px 10px",
-                                fontSize: 11,
-                                color: "#E2E8F0",
-                              }}
-                            >
-                              <span style={{ color: ACC, fontWeight: 700 }}>
-                                {qty}
-                                {unit}
-                              </span>
-                              {" · "}
-                              <span style={{ color: "#34D399" }}>
-                                ${price.toFixed(2)}
-                              </span>
-                            </span>
-                          ))}
-                        </div>
+	                        <SupplierPricePointChips
+	                          pricePoints={pricePoints}
+	                          supplierName={supplierName}
+	                        />
                       </div>
 	                    </div>
 	                    <SupplierRefreshFeedbackPanel
