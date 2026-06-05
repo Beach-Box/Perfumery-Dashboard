@@ -57288,6 +57288,19 @@ function IngredientDetailPanel({
           };
         }
       );
+      const reviewContextRows = supplierReviewItems
+        .slice(0, 2)
+        .map((reviewItem) => ({
+          key: reviewItem.reviewItemKey,
+          label: reviewItem.fieldLabel || reviewItem.issueLabel,
+          text:
+            reviewItem.currentValue != null ||
+            reviewItem.supplierValue != null
+              ? `current ${reviewItem.currentValue || "—"} vs incoming ${
+                  reviewItem.supplierValue || "—"
+                }`
+              : reviewItem.whyItMatters,
+        }));
 
       return {
         supplierName,
@@ -57318,6 +57331,7 @@ function IngredientDetailPanel({
         pricePoints: S,
         refreshFeedback: supplierRefreshFeedback,
         reviewItems: supplierReviewItems,
+        reviewContextRows,
       };
     }
   );
@@ -59464,7 +59478,7 @@ function IngredientDetailPanel({
                   refreshButtons,
                   pricePoints,
                   refreshFeedback,
-                  reviewItems,
+                  reviewContextRows,
                 } = supplierRow;
                 return (
                   <div
@@ -59579,7 +59593,7 @@ function IngredientDetailPanel({
 	                    <SupplierRefreshFeedbackPanel
 	                      feedback={refreshFeedback}
 	                    />
-	                    {reviewItems.length > 0 ? (
+	                    {reviewContextRows.length > 0 ? (
                       <div
                         style={{
                           background: "#2A0F14",
@@ -59603,21 +59617,16 @@ function IngredientDetailPanel({
                         >
                           Review-aware supplier conflict context
                         </div>
-	                        {reviewItems.slice(0, 2).map((reviewItem) => (
+	                        {reviewContextRows.map((reviewRow) => (
                           <div
-                            key={`${supplierName}-${reviewItem.reviewItemKey}`}
+                            key={`${supplierName}-${reviewRow.key}`}
                             style={{ marginTop: 4 }}
                           >
                             <span style={{ color: "#FECACA", fontWeight: 700 }}>
-                              {reviewItem.fieldLabel || reviewItem.issueLabel}:
+                              {reviewRow.label}:
                             </span>
                             {" "}
-                            {reviewItem.currentValue != null ||
-                            reviewItem.supplierValue != null
-                              ? `current ${reviewItem.currentValue || "—"} vs incoming ${
-                                  reviewItem.supplierValue || "—"
-                                }`
-                              : reviewItem.whyItMatters}
+                            {reviewRow.text}
                           </div>
                         ))}
                       </div>
