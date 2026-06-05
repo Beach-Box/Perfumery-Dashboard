@@ -69,7 +69,6 @@ import {
   DIRECT_TECHNICAL_EDIT_FIELD_LABELS,
   IFRA_STATE_BADGE_META,
   IFRA_STATE_LABELS,
-  IFRA_VALUE_TONE_COLORS,
   NORMALIZATION_BADGE_META,
   NORMALIZATION_ENTRY_KIND_LABELS,
   SUPPLIER_REFRESH_FEEDBACK_META,
@@ -116,6 +115,7 @@ import {
   normalizeManualComparableValue,
   normalizeManualRecordText,
 } from "./lib/manual_record_helpers";
+import { IfraInlineValue } from "./components/IfraInlineValue";
 import { IfraStateBadge } from "./components/IfraStateBadge";
 import { MetadataBadge } from "./components/MetadataBadge";
 import { ScoreBar } from "./components/ScoreBar";
@@ -32094,71 +32094,6 @@ function getIngredientIfraVisibility(
     ),
     hasConflict: hasIfraConflict,
   };
-}
-
-function IfraInlineValue({
-  visibility,
-  effectiveActivePercent = null,
-  style = {},
-}) {
-  if (!visibility) return null;
-  const secondaryParts = [];
-  let secondaryColor = "#94A3B8";
-
-  if (visibility.hasConflict) {
-    secondaryParts.push("Needs review");
-    secondaryColor = "#FCA5A5";
-  } else if (visibility.hasManualEdit && visibility.valueLabel !== "Missing") {
-    secondaryParts.push("Manual support");
-    secondaryColor = "#7DD3FC";
-  } else if (
-    ["supplier_ifra_shown", "supplier_no_restriction"].includes(
-      visibility.ifraData?.state
-    )
-  ) {
-    secondaryParts.push("Supplier shown");
-  }
-
-  if (effectiveActivePercent != null) {
-    secondaryParts.push(`active basis ${effectiveActivePercent.toFixed(2)}%`);
-  }
-
-  return (
-    <div
-      title={visibility.statusLabel || undefined}
-      style={{
-        display: "grid",
-        gap: 2,
-        minWidth: 82,
-        ...style,
-      }}
-    >
-      <span
-        style={{
-          color:
-            IFRA_VALUE_TONE_COLORS[visibility.valueTone] || "#CBD5E1",
-          fontFamily: "monospace",
-          fontWeight: 700,
-          fontSize: 9,
-          whiteSpace: "nowrap",
-        }}
-      >
-        {visibility.valueLabel}
-      </span>
-      {secondaryParts.length > 0 ? (
-        <span
-          style={{
-            fontSize: 7.4,
-            color: secondaryColor,
-            whiteSpace: "nowrap",
-            lineHeight: 1.35,
-          }}
-        >
-          {secondaryParts.join(" · ")}
-        </span>
-      ) : null}
-    </div>
-  );
 }
 
 function CatalogMetadataBadges({ name, compact = false, style = {} }) {
