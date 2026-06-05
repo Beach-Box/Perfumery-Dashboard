@@ -56978,6 +56978,46 @@ function IngredientDetailPanel({
   const localDraftPricePointCount = Array.isArray(d.localDraftPricePoints)
     ? d.localDraftPricePoints.length
     : 0;
+  const localDraftSummaryRows = isLocalDraftMaterial
+    ? [
+        { label: "Source", value: localDraftSupplierLabel },
+        {
+          label: "Availability",
+          value: d.localDraftAvailabilityLabel || "Unknown",
+        },
+        {
+          label: "Pack support",
+          value: localDraftPricePointCount
+            ? `${localDraftPricePointCount} saved price point${
+                localDraftPricePointCount === 1 ? "" : "s"
+              }`
+            : "No live pack pricing saved yet",
+        },
+        {
+          label: "IFRA shown on entry",
+          value:
+            d.localDraftIfraPercent != null
+              ? `${d.localDraftIfraPercent}%`
+              : "Not attached",
+        },
+        { label: "Confidence", value: d.localDraftConfidence || "medium" },
+        { label: "Updated", value: localDraftUpdatedLabel || "Just now" },
+      ]
+    : [];
+  const localDraftDetailRows = isLocalDraftMaterial
+    ? [
+        d.localDraftSourceUrl
+          ? { label: "URL", value: d.localDraftSourceUrl }
+          : null,
+        d.localDraftSdsUrl ? { label: "SDS", value: d.localDraftSdsUrl } : null,
+        d.localDraftSourceNote
+          ? { label: "Source note", value: d.localDraftSourceNote }
+          : null,
+        d.localDraftTechnicalNotes
+          ? { label: "Technical notes", value: d.localDraftTechnicalNotes }
+          : null,
+      ].filter(Boolean)
+    : [];
   const manualEditUpdatedLabel = manualRecordEdit?.updatedAt
     ? new Date(manualRecordEdit.updatedAt).toLocaleString()
     : d.manualEditUpdatedAt
@@ -57446,26 +57486,7 @@ function IngredientDetailPanel({
                 gap: 8,
               }}
             >
-              {[
-                ["Source", localDraftSupplierLabel],
-                ["Availability", d.localDraftAvailabilityLabel || "Unknown"],
-                [
-                  "Pack support",
-                  localDraftPricePointCount
-                    ? `${localDraftPricePointCount} saved price point${
-                        localDraftPricePointCount === 1 ? "" : "s"
-                      }`
-                    : "No live pack pricing saved yet",
-                ],
-                [
-                  "IFRA shown on entry",
-                  d.localDraftIfraPercent != null
-                    ? `${d.localDraftIfraPercent}%`
-                    : "Not attached",
-                ],
-                ["Confidence", d.localDraftConfidence || "medium"],
-                ["Updated", localDraftUpdatedLabel || "Just now"],
-              ].map(([label, value]) => (
+              {localDraftSummaryRows.map(({ label, value }) => (
                 <div
                   key={`${name}-${label}`}
                   style={{
@@ -57500,10 +57521,7 @@ function IngredientDetailPanel({
                 </div>
               ))}
             </div>
-            {(d.localDraftSourceUrl ||
-              d.localDraftSdsUrl ||
-              d.localDraftSourceNote ||
-              d.localDraftTechnicalNotes) && (
+            {localDraftDetailRows.length > 0 ? (
               <div
                 style={{
                   background: "#120716",
@@ -57517,20 +57535,13 @@ function IngredientDetailPanel({
                   lineHeight: 1.55,
                 }}
               >
-                {d.localDraftSourceUrl ? (
-                  <div>URL: {d.localDraftSourceUrl}</div>
-                ) : null}
-                {d.localDraftSdsUrl ? (
-                  <div>SDS: {d.localDraftSdsUrl}</div>
-                ) : null}
-                {d.localDraftSourceNote ? (
-                  <div>Source note: {d.localDraftSourceNote}</div>
-                ) : null}
-                {d.localDraftTechnicalNotes ? (
-                  <div>Technical notes: {d.localDraftTechnicalNotes}</div>
-                ) : null}
+                {localDraftDetailRows.map(({ label, value }) => (
+                  <div key={`${name}-local-draft-detail-${label}`}>
+                    {label}: {value}
+                  </div>
+                ))}
               </div>
-            )}
+            ) : null}
           </div>
         ) : null}
 
