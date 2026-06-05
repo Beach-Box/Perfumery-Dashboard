@@ -120,6 +120,7 @@ import { DossierCountCard } from "./components/DossierCountCard";
 import { DossierGuidanceBlock } from "./components/DossierGuidanceBlock";
 import { IfraInlineValue } from "./components/IfraInlineValue";
 import { IfraStateBadge } from "./components/IfraStateBadge";
+import { IngredientDetailCatalogCoveragePanel } from "./components/IngredientDetailCatalogCoveragePanel";
 import { IngredientDetailDescriptionCallout } from "./components/IngredientDetailDescriptionCallout";
 import { IngredientDetailEditIntro } from "./components/IngredientDetailEditIntro";
 import { IngredientDetailHeader } from "./components/IngredientDetailHeader";
@@ -56770,6 +56771,47 @@ function IngredientDetailPanel({
       },
     };
   }, [materialCompletenessReport]);
+  const completenessCategoryBreakdownItems =
+    materialCompletenessPanelContent.bucketRows.map((row) => {
+      const itemLabel = row.count
+        ? formatHumanList(row.items)
+        : "None in this bucket right now";
+      return `${row.label} (${row.count}): ${itemLabel}. ${row.description}`;
+    });
+  const activeCompletenessDrilldown =
+    dossierDrilldown && dossierDrilldown.key.startsWith("completeness-")
+      ? dossierDrilldown
+      : null;
+  const activeCompletenessCardLabel =
+    activeCompletenessDrilldown?.key === completenessDrilldowns.usable.key
+      ? "Usable data present"
+      : activeCompletenessDrilldown?.key === completenessDrilldowns.strong.key
+      ? "High-confidence support"
+      : activeCompletenessDrilldown?.key === completenessDrilldowns.incomplete.key
+      ? "Still incomplete"
+      : activeCompletenessDrilldown?.key === completenessDrilldowns.caution.key
+      ? "Needs review"
+      : null;
+  const showCompletenessEstimateWarning =
+    materialCompletenessReport?.level !== "strong";
+  const completenessEstimateWarningColor =
+    materialCompletenessReport?.level === "sparse" ? "#FCA5A5" : "#FCD34D";
+  const handleSelectCompletenessCard = useCallback(
+    (cardLabel) => {
+      const nextDrilldown =
+        cardLabel === "Usable data present"
+          ? completenessDrilldowns.usable
+          : cardLabel === "High-confidence support"
+          ? completenessDrilldowns.strong
+          : cardLabel === "Still incomplete"
+          ? completenessDrilldowns.incomplete
+          : completenessDrilldowns.caution;
+      setDossierDrilldown((prev) =>
+        prev?.key === nextDrilldown.key ? null : nextDrilldown
+      );
+    },
+    [completenessDrilldowns]
+  );
   const trustDrilldowns = useMemo(() => {
     const dimensionDetail =
       materialCompletenessReport?.dimensionDetailByKey || {};
@@ -58682,217 +58724,16 @@ function IngredientDetailPanel({
 
         <IngredientDetailMetricCards cards={dossierMetricCards} />
 
-        <div
-          style={{
-            background: "#060E1E",
-            borderRadius: 12,
-            border: `1px solid ${BORDER}`,
-            padding: 12,
-            marginBottom: 18,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: 8.5,
-                  color: "#7DD3FC",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  fontWeight: 700,
-                }}
-              >
-                Catalog Data Coverage
-              </div>
-              <div
-                style={{
-                  marginTop: 4,
-                  fontSize: 8.8,
-                  color: "#CBD5E1",
-                  lineHeight: 1.55,
-                }}
-              >
-                {materialCompletenessPanelContent.summary}
-              </div>
-            </div>
-            <span
-              style={{
-                background: materialCompletenessMeta.bg,
-                border: `1px solid ${materialCompletenessMeta.border}`,
-                borderRadius: 999,
-                padding: "2px 8px",
-                fontSize: 7.9,
-                fontWeight: 700,
-                color: materialCompletenessMeta.color,
-                textTransform: "uppercase",
-                letterSpacing: "0.08em",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {materialCompletenessMeta.label}
-            </span>
-          </div>
-          <div
-            style={{
-              marginTop: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-              gap: 8,
-            }}
-          >
-            {materialCompletenessPanelContent.cards.map((card) => (
-              <DossierCountCard
-                key={`material-completeness-${card.label}`}
-                label={card.label}
-                value={card.value}
-                meta={card.meta}
-                color={card.color}
-                onClick={() => {
-                  const nextDrilldown =
-                    card.label === "Usable data present"
-                      ? completenessDrilldowns.usable
-                      : card.label === "High-confidence support"
-                      ? completenessDrilldowns.strong
-                      : card.label === "Still incomplete"
-                      ? completenessDrilldowns.incomplete
-                      : completenessDrilldowns.caution;
-                  setDossierDrilldown((prev) =>
-                    prev?.key === nextDrilldown.key ? null : nextDrilldown
-                  );
-                }}
-                isActive={
-                  (dossierDrilldown?.key === completenessDrilldowns.usable.key &&
-                    card.label === "Usable data present") ||
-                  (dossierDrilldown?.key === completenessDrilldowns.strong.key &&
-                    card.label === "High-confidence support") ||
-                  (dossierDrilldown?.key ===
-                    completenessDrilldowns.incomplete.key &&
-                    card.label === "Still incomplete") ||
-                  (dossierDrilldown?.key ===
-                    completenessDrilldowns.caution.key &&
-                    card.label === "Needs review")
-                }
-              />
-            ))}
-          </div>
-          {dossierDrilldown &&
-          dossierDrilldown.key.startsWith("completeness-") ? (
-            <div style={{ marginTop: 8 }}>
-              <DossierGuidanceBlock
-                title={dossierDrilldown.title}
-                intro={dossierDrilldown.intro}
-                items={dossierDrilldown.items}
-                accent={dossierDrilldown.accent}
-              />
-            </div>
-          ) : null}
-          <div
-            style={{
-              marginTop: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-              gap: 8,
-            }}
-          >
-            <DossierGuidanceBlock
-              title="What this means"
-              intro="These labels are meant to explain the score in plain language, not just show internal percentages."
-              items={materialCompletenessPanelContent.meaningLines}
-              accent="#7DD3FC"
-            />
-            <DossierGuidanceBlock
-              title="Category breakdown"
-              intro="Each major data area is grouped by how strong the current support is."
-              items={materialCompletenessPanelContent.bucketRows.map((row) => {
-                const itemLabel = row.count
-                  ? formatHumanList(row.items)
-                  : "None in this bucket right now";
-                return `${row.label} (${row.count}): ${itemLabel}. ${row.description}`;
-              })}
-              accent="#A78BFA"
-            />
-          </div>
-          {materialCompletenessPanelContent.primaryGap ? (
-            <div
-              style={{
-                marginTop: 8,
-                background: "#071826",
-                border: "1px solid #1E3A52",
-                borderRadius: 10,
-                padding: "9px 10px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 7.9,
-                  color: "#FCD34D",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  fontWeight: 700,
-                }}
-              >
-                Main thing holding this back
-              </div>
-              <div
-                style={{
-                  marginTop: 5,
-                  fontSize: 8.4,
-                  color: "#E2E8F0",
-                  lineHeight: 1.55,
-                }}
-              >
-                {materialCompletenessPanelContent.primaryGap}
-              </div>
-            </div>
-          ) : null}
-          <div
-            style={{
-              marginTop: 8,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-              gap: 8,
-            }}
-          >
-            <DossierGuidanceBlock
-              title="Why this record has this score"
-              intro="These are the concrete record details shaping the current coverage and confidence read."
-              items={materialCompletenessPanelContent.whyLines}
-              accent="#CBD5E1"
-            />
-            <DossierGuidanceBlock
-              title="To improve this score"
-              intro="These are the fastest ways to make the dossier stronger from its current state."
-              items={materialCompletenessPanelContent.improveLines}
-              accent="#34D399"
-            />
-          </div>
-          {materialCompletenessReport?.level !== "strong" ? (
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 8.2,
-                color:
-                  materialCompletenessReport?.level === "sparse"
-                    ? "#FCA5A5"
-                    : "#FCD34D",
-                lineHeight: 1.55,
-              }}
-            >
-              Formula advice, substitution notes, and founder planning reads stay
-              more estimate-grade when catalog coverage is partial. Tightening
-              pricing, identity, compliance, or technical support will make this
-              dossier more trustworthy downstream.
-            </div>
-          ) : null}
-        </div>
+        <IngredientDetailCatalogCoveragePanel
+          content={materialCompletenessPanelContent}
+          meta={materialCompletenessMeta}
+          categoryBreakdownItems={completenessCategoryBreakdownItems}
+          activeCardLabel={activeCompletenessCardLabel}
+          activeDrilldown={activeCompletenessDrilldown}
+          showEstimateWarning={showCompletenessEstimateWarning}
+          estimateWarningColor={completenessEstimateWarningColor}
+          onSelectCard={handleSelectCompletenessCard}
+        />
 
         <div
           style={{
