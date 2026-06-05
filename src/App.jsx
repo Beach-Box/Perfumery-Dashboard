@@ -63,11 +63,16 @@ import {
 import { MAIN_APP_TABS } from "./lib/app_tabs";
 import {
   CATALOG_NORMALIZATION_FILTER_OPTIONS,
+  DIRECT_CORE_EDIT_FIELD_LABELS,
+  DIRECT_IDENTITY_EDIT_FIELD_LABELS,
+  DIRECT_SUPPLIER_EDIT_FIELD_LABELS,
+  DIRECT_TECHNICAL_EDIT_FIELD_LABELS,
   IFRA_STATE_BADGE_META,
   IFRA_STATE_LABELS,
   NORMALIZATION_BADGE_META,
   NORMALIZATION_ENTRY_KIND_LABELS,
   SUPPLIER_LINK_BADGE_META,
+  SUPPLIER_AVAILABILITY_LABELS,
 } from "./lib/app_display_metadata";
 import {
   ACC,
@@ -54574,14 +54579,6 @@ const MANUAL_RECORD_EDITS_BOOTSTRAP = readJsonStorage(
 const MANUAL_RECORD_RUNTIME_NAMES = new Set();
 const MANUAL_RECORD_BASE_SNAPSHOTS = new Map();
 
-const SUPPLIER_AVAILABILITY_LABELS = {
-  unknown: "Unknown",
-  "in stock": "In stock",
-  "limited stock": "Limited stock",
-  "request only": "Request / quote",
-  "sold out": "Sold out",
-  discontinued: "Discontinued",
-};
 const MAX_MANUAL_SDS_ATTACHMENT_BYTES = 1.5 * 1024 * 1024;
 
 function formatSupplierAvailabilityLabel(status = "unknown") {
@@ -54811,46 +54808,6 @@ function syncManualRecordEditsToRuntime(
     MANUAL_RECORD_RUNTIME_NAMES.add(materialName)
   );
 }
-
-const DIRECT_SUPPLIER_EDIT_FIELD_LABELS = {
-  url: "Supplier product URL",
-  vendorName: "Supplier / vendor context",
-  availabilityStatus: "Availability",
-  ifraPercent: "IFRA % shown on page",
-  sdsUrl: "SDS URL",
-  manualSdsAttachment: "Manual SDS PDF",
-  inciShown: "INCI shown on page",
-  productDescription: "Supplier description",
-  scentSummary: "Supplier scent summary",
-  dilutionOrCarrier: "Dilution / carrier",
-  supplierNotes: "Supplier notes",
-  originNote: "Origin / organic notes",
-  pricePoints: "Size / price rows",
-};
-
-const DIRECT_CORE_EDIT_FIELD_LABELS = {
-  displayName: "Display / material name",
-  scentDesc: "Main description",
-};
-
-const DIRECT_IDENTITY_EDIT_FIELD_LABELS = {
-  cas: "CAS",
-  inci: "Material INCI",
-  note: "Note role",
-  type: "Material type",
-  rep: "Representative odorant",
-  identityNotes: "Identity notes",
-};
-
-const DIRECT_TECHNICAL_EDIT_FIELD_LABELS = {
-  MW: "MW",
-  xLogP: "xLogP",
-  VP: "Vapor pressure",
-  ODT: "Odor threshold",
-  TPSA: "TPSA",
-  odorThreshold_ngL: "Odor threshold (ng/L)",
-  technicalNotes: "Technical notes",
-};
 
 const SUPPLIER_PAGE_REFRESH_SCOPE_META = {
   prices: {

@@ -126,3 +126,52 @@ export const CATALOG_NORMALIZATION_FILTER_OPTIONS = [
   ["local_draft", "Local Drafts"],
   ["linked_duplicate", "Linked Dups"],
 ];
+
+export const SUPPLIER_AVAILABILITY_LABELS = {
+  unknown: "Unknown",
+  "in stock": "In stock",
+  "limited stock": "Limited stock",
+  "request only": "Request / quote",
+  "sold out": "Sold out",
+  discontinued: "Discontinued",
+};
+
+export const DIRECT_SUPPLIER_EDIT_FIELD_LABELS = {
+  url: "Supplier product URL",
+  vendorName: "Supplier / vendor context",
+  availabilityStatus: "Availability",
+  ifraPercent: "IFRA % shown on page",
+  sdsUrl: "SDS URL",
+  manualSdsAttachment: "Manual SDS PDF",
+  inciShown: "INCI shown on page",
+  productDescription: "Supplier description",
+  scentSummary: "Supplier scent summary",
+  dilutionOrCarrier: "Dilution / carrier",
+  supplierNotes: "Supplier notes",
+  originNote: "Origin / organic notes",
+  pricePoints: "Size / price rows",
+};
+
+export const DIRECT_CORE_EDIT_FIELD_LABELS = {
+  displayName: "Display / material name",
+  scentDesc: "Main description",
+};
+
+export const DIRECT_IDENTITY_EDIT_FIELD_LABELS = {
+  cas: "CAS",
+  inci: "Material INCI",
+  note: "Note role",
+  type: "Material type",
+  rep: "Representative odorant",
+  identityNotes: "Identity notes",
+};
+
+export const DIRECT_TECHNICAL_EDIT_FIELD_LABELS = {
+  MW: "MW",
+  xLogP: "xLogP",
+  VP: "Vapor pressure",
+  ODT: "Odor threshold",
+  TPSA: "TPSA",
+  odorThreshold_ngL: "Odor threshold (ng/L)",
+  technicalNotes: "Technical notes",
+};
