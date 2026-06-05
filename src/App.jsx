@@ -73,7 +73,6 @@ import {
   NORMALIZATION_BADGE_META,
   NORMALIZATION_ENTRY_KIND_LABELS,
   SUPPLIER_REFRESH_FEEDBACK_META,
-  SUPPLIER_LINK_BADGE_META,
   SUPPLIER_AVAILABILITY_LABELS,
 } from "./lib/app_display_metadata";
 import {
@@ -120,6 +119,7 @@ import {
 import { IfraStateBadge } from "./components/IfraStateBadge";
 import { MetadataBadge } from "./components/MetadataBadge";
 import { ScoreBar } from "./components/ScoreBar";
+import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -32278,35 +32278,6 @@ function CatalogMetadataBadges({ name, compact = false, style = {} }) {
         <MetadataBadge key={badge.key} badge={badge} compact={compact} />
       ))}
     </span>
-  );
-}
-
-function SupplierLinkStatusBadge({
-  linkStatus,
-  linkNote,
-  linkedDuplicateOfCatalogName,
-  compact = true,
-  style = {},
-}) {
-  if (!linkStatus || linkStatus === "primary_listing") return null;
-  const meta = SUPPLIER_LINK_BADGE_META[linkStatus];
-  if (!meta) return null;
-
-  const titleParts = [];
-  if (linkedDuplicateOfCatalogName) {
-    titleParts.push(`Linked duplicate of "${linkedDuplicateOfCatalogName}".`);
-  }
-  if (linkNote) titleParts.push(linkNote);
-
-  return (
-    <MetadataBadge
-      badge={{
-        ...meta,
-        title: titleParts.join(" "),
-      }}
-      compact={compact}
-      style={style}
-    />
   );
 }
 
