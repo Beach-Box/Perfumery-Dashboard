@@ -57142,6 +57142,181 @@ function IngredientDetailPanel({
           .join(", ")}`
       : null,
   ].filter(Boolean);
+  const supplierVariantRows = livePricingEntries.map(
+    ([supplierName, supplierData]) => {
+      const {
+        url,
+        S = [],
+        linkStatus,
+        linkNote,
+        linkedDuplicateOfCatalogName,
+      } = supplierData || {};
+      const supplierLayerRecord =
+        supplierLayerRecordBySupplier.get(supplierName) || null;
+      const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
+      const supplierAvailabilityStatus =
+        supplierData?.availabilityStatus ||
+        supplierPageFacts?.availabilityStatus ||
+        "unknown";
+      const supplierIfraShown =
+        supplierData?.ifraPercent ?? supplierPageFacts?.ifraPercent ?? null;
+      const supplierIfraRestrictionState =
+        supplierData?.ifraRestrictionState ||
+        supplierPageFacts?.ifraRestrictionState ||
+        null;
+      const supplierIfraRestrictionLabel =
+        supplierData?.ifraRestrictionLabel ||
+        supplierPageFacts?.ifraRestrictionLabel ||
+        null;
+      const supplierIfraSupportLabel = getSupplierIfraSupportLabel({
+        ifraPercent: supplierIfraShown,
+        ifraRestrictionState: supplierIfraRestrictionState,
+        ifraRestrictionLabel: supplierIfraRestrictionLabel,
+      });
+      const supplierSdsUrl =
+        supplierData?.sdsUrl || supplierPageFacts?.sdsUrl || "";
+      const supplierManualSdsAttachment =
+        supplierPageFacts?.manualSdsAttachment || null;
+      const supplierInciShown =
+        supplierData?.inciShown || supplierPageFacts?.inci || "";
+      const supplierCasShown = supplierPageFacts?.casShown || "";
+      const supplierDescription =
+        supplierData?.productDescription ||
+        supplierPageFacts?.productDescription ||
+        "";
+      const supplierScentSummary =
+        supplierData?.scentSummary || supplierPageFacts?.scentSummary || "";
+      const supplierDilutionCarrier =
+        supplierData?.dilutionOrCarrier ||
+        supplierPageFacts?.dilutionOrCarrier ||
+        "";
+      const supplierVendorName =
+        supplierData?.supplierVendorName || supplierPageFacts?.vendorName || "";
+      const supplierOriginNote =
+        supplierData?.originNote || supplierPageFacts?.originNote || "";
+      const supplierVaporPressureDisplay =
+        supplierPageFacts?.vaporPressureDisplayValue ||
+        supplierPageFacts?.vaporPressureRaw ||
+        "";
+      const supplierRefreshSummary =
+        supplierPageFacts?.lastRefreshSummary || "";
+      const supplierRefreshLabel =
+        supplierPageFacts?.lastRefreshScopeLabel || "";
+      const supplierRefreshUpdatedAt =
+        supplierPageFacts?.lastRefreshAt || null;
+      const supplierPersistedRefreshFeedback =
+        supplierPageFacts?.lastRefreshFeedback ||
+        (supplierRefreshSummary
+          ? {
+              outcomeKey: "updated",
+              badges: [{ key: "updated", label: "Updated" }],
+              summary: supplierRefreshSummary,
+              compactSummary: supplierRefreshSummary,
+              scopeLabel: supplierRefreshLabel || "Latest Supplier Refresh",
+              updatedAt: supplierRefreshUpdatedAt,
+              fieldResults:
+                supplierPageFacts?.lastRefreshFieldResults || [],
+            }
+          : null);
+      const supplierRefreshFeedback =
+        supplierRefreshTransientFeedbackBySupplier[supplierName] ||
+        supplierPersistedRefreshFeedback;
+      const supplierReviewItems = Array.isArray(supplierLayerRecord?.reviewItems)
+        ? supplierLayerRecord.reviewItems
+        : [];
+      const registryMatches = registryProducts.filter(
+        (record) => record.supplierDisplayName === supplierName
+      );
+      const supplierLinkSummary =
+        linkStatus && linkStatus !== "primary_listing"
+          ? linkNote ||
+            (linkedDuplicateOfCatalogName
+              ? `Linked duplicate of ${linkedDuplicateOfCatalogName}.`
+              : null)
+          : null;
+      const detailRows = [
+        supplierVendorName
+          ? { key: "vendor", text: `Vendor context: ${supplierVendorName}` }
+          : null,
+        supplierScentSummary
+          ? { key: "scent", text: `Scent summary: ${supplierScentSummary}` }
+          : null,
+        supplierDilutionCarrier
+          ? {
+              key: "dilution",
+              text: `Dilution / carrier: ${supplierDilutionCarrier}`,
+            }
+          : null,
+        supplierVaporPressureDisplay
+          ? {
+              key: "vapor-pressure",
+              text: `Vapor pressure shown: ${supplierVaporPressureDisplay}`,
+            }
+          : null,
+        supplierOriginNote
+          ? { key: "origin", text: `Origin / note: ${supplierOriginNote}` }
+          : null,
+        supplierManualSdsAttachment?.fileName
+          ? {
+              key: "manual-sds",
+              text: `Manual SDS PDF: ${supplierManualSdsAttachment.fileName}${
+                supplierManualSdsAttachment.uploadedAt
+                  ? ` · uploaded ${new Date(
+                      supplierManualSdsAttachment.uploadedAt
+                    ).toLocaleString()}`
+                  : ""
+              }`,
+            }
+          : null,
+        supplierDescription
+          ? { key: "description", text: supplierDescription }
+          : null,
+      ].filter(Boolean);
+      const refreshButtons = Object.entries(SUPPLIER_PAGE_REFRESH_SCOPE_META).map(
+        ([scopeKey, scopeMeta]) => {
+          const isLoading =
+            supplierRefreshLoadingKey === `${supplierName}:${scopeKey}`;
+          return {
+            scopeKey,
+            scopeMeta,
+            isLoading,
+            disabled: isLoading || !String(url || "").trim(),
+          };
+        }
+      );
+
+      return {
+        supplierName,
+        supplierData,
+        supplierColor: SUPPLIER_COLORS[supplierName] || "#fff",
+        url,
+        linkStatus,
+        linkNote,
+        linkedDuplicateOfCatalogName,
+        supplierLinkSummary,
+        registryMatches,
+        badges: {
+          isManualTrustedEdit: Boolean(
+            supplierData?.manualTrustedEdit || supplierLayerRecord?.isManualEdit
+          ),
+          availabilityLabel: formatSupplierAvailabilityLabel(
+            supplierAvailabilityStatus
+          ),
+          ifraSupportLabel: supplierIfraSupportLabel,
+          ifraRestrictionState: supplierIfraRestrictionState,
+          sdsUrl: supplierSdsUrl,
+          manualSdsAttachment: supplierManualSdsAttachment,
+          inciShown: supplierInciShown,
+          casShown: supplierCasShown,
+        },
+        detailRows,
+        refreshButtons,
+        pricePoints: S,
+        refreshFeedback: supplierRefreshFeedback,
+        reviewItems: supplierReviewItems,
+      };
+    }
+  );
   const technicalVpPreview = useMemo(
     () => parseVaporPressureInput(technicalEditDraft.VP),
     [technicalEditDraft.VP]
@@ -59270,105 +59445,23 @@ function IngredientDetailPanel({
             </div>
           ) : (
             <div style={{ display: "grid", gap: 8 }}>
-              {livePricingEntries.map(([supplierName, supplierData]) => {
+              {supplierVariantRows.map((supplierRow) => {
                 const {
+                  supplierName,
+                  supplierColor,
                   url,
-                  S = [],
                   linkStatus,
                   linkNote,
                   linkedDuplicateOfCatalogName,
-                } = supplierData || {};
-                const supplierLayerRecord =
-                  supplierLayerRecordBySupplier.get(supplierName) || null;
-                const supplierPageFacts = supplierLayerRecord?.pageFacts || {};
-                const supplierAvailabilityStatus =
-                  supplierData?.availabilityStatus ||
-                  supplierPageFacts?.availabilityStatus ||
-                  "unknown";
-                const supplierIfraShown =
-                  supplierData?.ifraPercent ?? supplierPageFacts?.ifraPercent ?? null;
-                const supplierIfraRestrictionState =
-                  supplierData?.ifraRestrictionState ||
-                  supplierPageFacts?.ifraRestrictionState ||
-                  null;
-                const supplierIfraRestrictionLabel =
-                  supplierData?.ifraRestrictionLabel ||
-                  supplierPageFacts?.ifraRestrictionLabel ||
-                  null;
-                const supplierIfraSupportLabel = getSupplierIfraSupportLabel({
-                  ifraPercent: supplierIfraShown,
-                  ifraRestrictionState: supplierIfraRestrictionState,
-                  ifraRestrictionLabel: supplierIfraRestrictionLabel,
-                });
-                const supplierSdsUrl =
-                  supplierData?.sdsUrl || supplierPageFacts?.sdsUrl || "";
-                const supplierManualSdsAttachment =
-                  supplierPageFacts?.manualSdsAttachment || null;
-                const supplierInciShown =
-                  supplierData?.inciShown || supplierPageFacts?.inci || "";
-                const supplierCasShown =
-                  supplierPageFacts?.casShown || "";
-                const supplierDescription =
-                  supplierData?.productDescription ||
-                  supplierPageFacts?.productDescription ||
-                  "";
-                const supplierScentSummary =
-                  supplierData?.scentSummary ||
-                  supplierPageFacts?.scentSummary ||
-                  "";
-                const supplierDilutionCarrier =
-                  supplierData?.dilutionOrCarrier ||
-                  supplierPageFacts?.dilutionOrCarrier ||
-                  "";
-                const supplierVendorName =
-                  supplierData?.supplierVendorName ||
-                  supplierPageFacts?.vendorName ||
-                  "";
-                const supplierOriginNote =
-                  supplierData?.originNote || supplierPageFacts?.originNote || "";
-                const supplierVaporPressureDisplay =
-                  supplierPageFacts?.vaporPressureDisplayValue ||
-                  supplierPageFacts?.vaporPressureRaw ||
-                  "";
-                const supplierRefreshSummary =
-                  supplierPageFacts?.lastRefreshSummary || "";
-                const supplierRefreshLabel =
-                  supplierPageFacts?.lastRefreshScopeLabel || "";
-                const supplierRefreshUpdatedAt =
-                  supplierPageFacts?.lastRefreshAt || null;
-                const supplierPersistedRefreshFeedback =
-                  supplierPageFacts?.lastRefreshFeedback ||
-                  (supplierRefreshSummary
-                    ? {
-                        outcomeKey: "updated",
-                        badges: [{ key: "updated", label: "Updated" }],
-                        summary: supplierRefreshSummary,
-                        compactSummary: supplierRefreshSummary,
-                        scopeLabel:
-                          supplierRefreshLabel || "Latest Supplier Refresh",
-                        updatedAt: supplierRefreshUpdatedAt,
-                        fieldResults:
-                          supplierPageFacts?.lastRefreshFieldResults || [],
-                      }
-                    : null);
-                const supplierRefreshFeedback =
-                  supplierRefreshTransientFeedbackBySupplier[supplierName] ||
-                  supplierPersistedRefreshFeedback;
-                const supplierReviewItems = Array.isArray(
-                  supplierLayerRecord?.reviewItems
-                )
-                  ? supplierLayerRecord.reviewItems
-                  : [];
-                const registryMatches = registryProducts.filter(
-                  (record) => record.supplierDisplayName === supplierName
-                );
-                const supplierLinkSummary =
-                  linkStatus && linkStatus !== "primary_listing"
-                    ? linkNote ||
-                      (linkedDuplicateOfCatalogName
-                        ? `Linked duplicate of ${linkedDuplicateOfCatalogName}.`
-                        : null)
-                    : null;
+                  supplierLinkSummary,
+                  registryMatches,
+                  badges,
+                  detailRows,
+                  refreshButtons,
+                  pricePoints,
+                  refreshFeedback,
+                  reviewItems,
+                } = supplierRow;
                 return (
                   <div
                     key={`${name}-${supplierName}`}
@@ -59400,12 +59493,12 @@ function IngredientDetailPanel({
                           }}
                         >
                           <span
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: SUPPLIER_COLORS[supplierName] || "#fff",
-                            }}
-                          >
+	                            style={{
+	                              fontSize: 12,
+	                              fontWeight: 700,
+	                              color: supplierColor,
+	                            }}
+	                          >
                             {supplierName}
                           </span>
                           <SupplierLinkStatusBadge
@@ -59461,9 +59554,8 @@ function IngredientDetailPanel({
                             marginTop: 6,
                           }}
                         >
-                          {(supplierData?.manualTrustedEdit ||
-                            supplierLayerRecord?.isManualEdit) && (
-                            <span
+	                          {badges.isManualTrustedEdit && (
+	                            <span
                               style={{
                                 background: "#071826",
                                 border: "1px solid #0E7490",
@@ -59490,31 +59582,29 @@ function IngredientDetailPanel({
                               color: "#CBD5E1",
                             }}
                           >
-                            {formatSupplierAvailabilityLabel(
-                              supplierAvailabilityStatus
-                            )}
-                          </span>
-                          {supplierIfraSupportLabel ? (
-                            <span
-                              style={{
+	                            {badges.availabilityLabel}
+	                          </span>
+	                          {badges.ifraSupportLabel ? (
+	                            <span
+	                              style={{
                                 background: "#071826",
                                 border: "1px solid #1E3A52",
                                 borderRadius: 999,
                                 padding: "2px 8px",
                                 fontSize: 7.8,
-                                fontWeight: 700,
-                                color:
-                                  supplierIfraRestrictionState === "no_restriction"
-                                    ? "#86EFAC"
-                                    : "#FCD34D",
-                              }}
-                            >
-                              {supplierIfraSupportLabel}
-                            </span>
-                          ) : null}
-                          {supplierSdsUrl ? (
-                            <a
-                              href={supplierSdsUrl}
+	                                fontWeight: 700,
+	                                color:
+	                                  badges.ifraRestrictionState === "no_restriction"
+	                                    ? "#86EFAC"
+	                                    : "#FCD34D",
+	                              }}
+	                            >
+	                              {badges.ifraSupportLabel}
+	                            </span>
+	                          ) : null}
+	                          {badges.sdsUrl ? (
+	                            <a
+	                              href={badges.sdsUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
@@ -59531,9 +59621,9 @@ function IngredientDetailPanel({
                               SDS
                             </a>
                           ) : null}
-                          {supplierManualSdsAttachment?.dataUrl ? (
-                            <a
-                              href={supplierManualSdsAttachment.dataUrl}
+	                          {badges.manualSdsAttachment?.dataUrl ? (
+	                            <a
+	                              href={badges.manualSdsAttachment.dataUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
@@ -59550,7 +59640,7 @@ function IngredientDetailPanel({
                               Manual SDS PDF
                             </a>
                           ) : null}
-                          {supplierInciShown ? (
+	                          {badges.inciShown ? (
                             <span
                               style={{
                                 background: "#071826",
@@ -59565,8 +59655,8 @@ function IngredientDetailPanel({
                               INCI shown
                             </span>
                           ) : null}
-                          {supplierCasShown ? (
-                            <span
+	                          {badges.casShown ? (
+	                            <span
                               style={{
                                 background: "#071826",
                                 border: "1px solid #1E3A52",
@@ -59577,20 +59667,14 @@ function IngredientDetailPanel({
                                 color: "#F9A8D4",
                               }}
                             >
-                              CAS shown {supplierCasShown}
-                            </span>
+	                              CAS shown {badges.casShown}
+	                            </span>
                           ) : null}
                         </div>
-                        {supplierDescription ||
-                        supplierScentSummary ||
-                        supplierDilutionCarrier ||
-                        supplierVaporPressureDisplay ||
-                        supplierVendorName ||
-                        supplierOriginNote ||
-                        supplierManualSdsAttachment?.fileName ? (
-                          <div
-                            style={{
-                              marginTop: 8,
+	                        {detailRows.length > 0 ? (
+	                          <div
+	                            style={{
+	                              marginTop: 8,
                               background: "#071826",
                               border: "1px solid #1E3A52",
                               borderRadius: 8,
@@ -59599,39 +59683,16 @@ function IngredientDetailPanel({
                               gap: 4,
                               fontSize: 8.4,
                               color: "#94A3B8",
-                              lineHeight: 1.55,
-                            }}
-                          >
-                            {supplierVendorName ? (
-                              <div>Vendor context: {supplierVendorName}</div>
-                            ) : null}
-                            {supplierScentSummary ? (
-                              <div>Scent summary: {supplierScentSummary}</div>
-                            ) : null}
-                            {supplierDilutionCarrier ? (
-                              <div>Dilution / carrier: {supplierDilutionCarrier}</div>
-                            ) : null}
-                            {supplierVaporPressureDisplay ? (
-                              <div>Vapor pressure shown: {supplierVaporPressureDisplay}</div>
-                            ) : null}
-                            {supplierOriginNote ? (
-                              <div>Origin / note: {supplierOriginNote}</div>
-                            ) : null}
-                            {supplierManualSdsAttachment?.fileName ? (
-                              <div>
-                                Manual SDS PDF: {supplierManualSdsAttachment.fileName}
-                                {supplierManualSdsAttachment.uploadedAt
-                                  ? ` · uploaded ${new Date(
-                                      supplierManualSdsAttachment.uploadedAt
-                                    ).toLocaleString()}`
-                                  : ""}
-                              </div>
-                            ) : null}
-                            {supplierDescription ? (
-                              <div>{supplierDescription}</div>
-                            ) : null}
-                          </div>
-                        ) : null}
+	                              lineHeight: 1.55,
+	                            }}
+	                          >
+	                            {detailRows.map((detailRow) => (
+	                              <div key={`${supplierName}-${detailRow.key}`}>
+	                                {detailRow.text}
+	                              </div>
+	                            ))}
+	                          </div>
+	                        ) : null}
                       </div>
                       <div
                         style={{
@@ -59649,56 +59710,48 @@ function IngredientDetailPanel({
                             justifyContent: "flex-end",
                           }}
                         >
-                          {Object.entries(SUPPLIER_PAGE_REFRESH_SCOPE_META).map(
-                            ([scopeKey, scopeMeta]) => {
-                              const isLoading =
-                                supplierRefreshLoadingKey ===
-                                `${supplierName}:${scopeKey}`;
-                              return (
-                                <button
-                                  key={`${name}-${supplierName}-card-refresh-${scopeKey}`}
-                                  type="button"
-                                  disabled={isLoading || !String(url || "").trim()}
-                                  onClick={() =>
-                                    handleRefreshSupplierPage(
-                                      scopeKey,
-                                      supplierName
-                                    )
-                                  }
-                                  style={{
-                                    background:
-                                      isLoading || !String(url || "").trim()
-                                        ? "#0F172A"
-                                        : scopeKey === "all_safe"
-                                        ? "#0A2540"
-                                        : "#071826",
-                                    border: `1px solid ${
-                                      scopeKey === "all_safe"
-                                        ? "#1D4ED8"
-                                        : "#1E3A52"
-                                    }`,
-                                    borderRadius: 8,
-                                    color:
-                                      isLoading || !String(url || "").trim()
-                                        ? "#475569"
-                                        : scopeKey === "all_safe"
-                                        ? "#7DD3FC"
-                                        : "#CBD5E1",
-                                    padding: "6px 8px",
-                                    fontSize: 7.8,
-                                    fontWeight: 700,
-                                    cursor:
-                                      isLoading || !String(url || "").trim()
-                                        ? "not-allowed"
-                                        : "pointer",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  {isLoading ? "Refreshing..." : scopeMeta.label}
-                                </button>
-                              );
-                            }
-                          )}
+	                          {refreshButtons.map(
+	                            ({ scopeKey, scopeMeta, isLoading, disabled }) => (
+	                              <button
+	                                key={`${name}-${supplierName}-card-refresh-${scopeKey}`}
+	                                type="button"
+	                                disabled={disabled}
+	                                onClick={() =>
+	                                  handleRefreshSupplierPage(
+	                                    scopeKey,
+	                                    supplierName
+	                                  )
+	                                }
+	                                style={{
+	                                  background:
+	                                    disabled
+	                                      ? "#0F172A"
+	                                      : scopeKey === "all_safe"
+	                                      ? "#0A2540"
+	                                      : "#071826",
+	                                  border: `1px solid ${
+	                                    scopeKey === "all_safe"
+	                                      ? "#1D4ED8"
+	                                      : "#1E3A52"
+	                                  }`,
+	                                  borderRadius: 8,
+	                                  color:
+	                                    disabled
+	                                      ? "#475569"
+	                                      : scopeKey === "all_safe"
+	                                      ? "#7DD3FC"
+	                                      : "#CBD5E1",
+	                                  padding: "6px 8px",
+	                                  fontSize: 7.8,
+	                                  fontWeight: 700,
+	                                  cursor: disabled ? "not-allowed" : "pointer",
+	                                  whiteSpace: "nowrap",
+	                                }}
+	                              >
+	                                {isLoading ? "Refreshing..." : scopeMeta.label}
+	                              </button>
+	                            )
+	                          )}
                         </div>
                         <div
                           style={{
@@ -59708,7 +59761,7 @@ function IngredientDetailPanel({
                             justifyContent: "flex-end",
                           }}
                         >
-                          {S.map(([qty, unit, price], index) => (
+	                          {pricePoints.map(([qty, unit, price], index) => (
                             <span
                               key={`${supplierName}-${index}`}
                               style={{
@@ -59732,11 +59785,11 @@ function IngredientDetailPanel({
                           ))}
                         </div>
                       </div>
-                    </div>
-                    <SupplierRefreshFeedbackPanel
-                      feedback={supplierRefreshFeedback}
-                    />
-                    {supplierReviewItems.length > 0 ? (
+	                    </div>
+	                    <SupplierRefreshFeedbackPanel
+	                      feedback={refreshFeedback}
+	                    />
+	                    {reviewItems.length > 0 ? (
                       <div
                         style={{
                           background: "#2A0F14",
@@ -59760,7 +59813,7 @@ function IngredientDetailPanel({
                         >
                           Review-aware supplier conflict context
                         </div>
-                        {supplierReviewItems.slice(0, 2).map((reviewItem) => (
+	                        {reviewItems.slice(0, 2).map((reviewItem) => (
                           <div
                             key={`${supplierName}-${reviewItem.reviewItemKey}`}
                             style={{ marginTop: 4 }}

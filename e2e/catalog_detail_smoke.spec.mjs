@@ -46,6 +46,32 @@ test("catalog opens an ingredient detail dossier without crashing", async ({ pag
     )
   ).toBeVisible();
 
+  await expect(page.getByText("Supplier Variants + Live Pricing")).toBeVisible();
+  const supplierEmptyState = page.getByText(
+    "No live supplier price rows are currently stored for this material."
+  );
+  if (await supplierEmptyState.isVisible()) {
+    await expect(supplierEmptyState).toBeVisible();
+  } else {
+    const hasSupplierSurface =
+      (await page
+        .getByRole("link", { name: /Visit/i })
+        .first()
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText(/\$\d+\.\d{2}/)
+        .first()
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .getByText(/Manual trusted edit|INCI shown|CAS shown|SDS/i)
+        .first()
+        .isVisible()
+        .catch(() => false));
+    expect(hasSupplierSurface).toBe(true);
+  }
+
   const editRecordButton = page.getByRole("button", { name: /Edit Record/i });
   await expect(editRecordButton).toBeVisible();
   await editRecordButton.click();
