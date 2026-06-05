@@ -132,6 +132,7 @@ import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedba
 import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
 import { SupplierPricePointChips } from "./components/SupplierPricePointChips";
 import { SupplierVariantBadges } from "./components/SupplierVariantBadges";
+import { SupplierVariantDetailRows } from "./components/SupplierVariantDetailRows";
 import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
@@ -59549,28 +59550,10 @@ function IngredientDetailPanel({
                           </div>
                         ))}
 	                        <SupplierVariantBadges badges={badges} />
-	                        {detailRows.length > 0 ? (
-	                          <div
-	                            style={{
-	                              marginTop: 8,
-                              background: "#071826",
-                              border: "1px solid #1E3A52",
-                              borderRadius: 8,
-                              padding: "8px 10px",
-                              display: "grid",
-                              gap: 4,
-                              fontSize: 8.4,
-                              color: "#94A3B8",
-	                              lineHeight: 1.55,
-	                            }}
-	                          >
-	                            {detailRows.map((detailRow) => (
-	                              <div key={`${supplierName}-${detailRow.key}`}>
-	                                {detailRow.text}
-	                              </div>
-	                            ))}
-	                          </div>
-	                        ) : null}
+	                        <SupplierVariantDetailRows
+	                          detailRows={detailRows}
+	                          supplierName={supplierName}
+	                        />
                       </div>
                       <div
                         style={{
