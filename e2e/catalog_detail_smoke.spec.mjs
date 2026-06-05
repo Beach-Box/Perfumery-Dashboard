@@ -24,7 +24,12 @@ test("catalog opens an ingredient detail dossier without crashing", async ({ pag
   await firstDetailsButton.click();
 
   await expect(page.getByText("Dossier + Heuristic Substitution View")).toBeVisible();
-  await expect(page.getByRole("button", { name: /Edit Record/i })).toBeVisible();
+  const editRecordButton = page.getByRole("button", { name: /Edit Record/i });
+  await expect(editRecordButton).toBeVisible();
+  await editRecordButton.click();
+
+  await expect(page.getByRole("button", { name: /Hide Editor/i })).toBeVisible();
+  await expect(page.getByText("Direct Product / Material Edit")).toBeVisible();
   await expect(heading).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
