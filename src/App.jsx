@@ -70,6 +70,15 @@ import {
   SUPPLIER_LINK_BADGE_META,
 } from "./lib/app_display_metadata";
 import {
+  ACC,
+  BG,
+  BORDER,
+  CARD,
+  NC,
+  SUPPLIER_COLORS,
+  TB,
+} from "./lib/app_style_tokens";
+import {
   FORMULA_NOTE_ORDER,
   buildFormulaKey,
   buildFormulaLibrary,
@@ -55241,45 +55250,6 @@ Object.entries(DB).forEach(([name, d]) => {
 // ─────────────────────────────────────────────────────────────
 // STYLE CONSTANTS
 // ─────────────────────────────────────────────────────────────
-const BG = "#07101F";
-const CARD = "#0C1A2E";
-const BORDER = "#1A3354";
-const ACC = "#22D3EE";
-const ACC2 = "#818CF8";
-const NC = {
-  top: {
-    bg: "#F59E0B",
-    light: "rgba(245,158,11,0.14)",
-    text: "#92400E",
-    label: "TOP NOTES",
-  },
-  mid: {
-    bg: "#10B981",
-    light: "rgba(16,185,129,0.11)",
-    text: "#065F46",
-    label: "HEART NOTES",
-  },
-  base: {
-    bg: "#818CF8",
-    light: "rgba(99,102,241,0.14)",
-    text: "#3730A3",
-    label: "BASE NOTES",
-  },
-  carrier: {
-    bg: "#6B7280",
-    light: "rgba(107,114,128,0.1)",
-    text: "#374151",
-    label: "CARRIER",
-  },
-};
-const TB = { EO: "🌿", ABS: "🌸", CO2: "⚗️", SYNTH: "🔬", CARRIER: "💧" };
-const SUPPLIER_COLORS = {
-  Fraterworks: "#22D3EE",
-  "Eden Botanicals": "#34D399",
-  "Perfumers Apprentice": "#F59E0B",
-  "Perfumers World": "#A78BFA",
-  "Nature in Bottle": "#FB923C",
-};
 const ALL_SUPPLIERS = [
   "Fraterworks",
   "Eden Botanicals",
