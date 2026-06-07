@@ -45,6 +45,57 @@ Seeded formulas are embedded in `FORMULAS_INIT`. These are the base formula reco
 
 Saved builds and formula notes are not written back into `FORMULAS_INIT`; they live in browser storage unless a future explicit promotion flow is added.
 
+The current 10-seed lineup is legacy active data. It is preserved in
+[`docs/archive/legacy_formula_seeds_2026-06-07.md`](archive/legacy_formula_seeds_2026-06-07.md)
+and is scheduled to be replaced once the exact 4 active hero-scent formulas are
+supplied. Until that replacement task runs, the app should keep `FORMULAS_INIT`
+unchanged so active runtime behavior remains stable.
+
+Future formula seed resets should use explicit stable `formulaKey` values. The
+current legacy seeds rely on generated keys from formula name plus array index,
+which makes replacement and localStorage migration more fragile.
+
+Retired seed keys to handle during the future replacement:
+
+- `seed-cabana-confessions-1`
+- `seed-coastal-af-2`
+- `seed-dominican-drift-3`
+- `seed-heat-stroke-4`
+- `seed-low-tide-lust-5`
+- `seed-nauti-by-nature-6`
+- `seed-rum-riptide-7`
+- `seed-salty-skin-8`
+- `seed-seasick-satisfied-9`
+- `seed-wet-shore-10`
+
+Smallest future saved-build guardrail: teach `buildFormulaLibrary` about a
+retired-seed key set and filter persisted records whose `formulaKey` is retired
+and whose record is a seeded baseline or seeded override. Keep unrelated custom
+formulas and draft versions intact, even if they were derived from a retired
+seed, unless the user explicitly asks to remove them. This prevents old
+seed-derived overrides in `bb_saved_builds` from reappearing as active formulas
+after `FORMULAS_INIT` is replaced.
+
+Future active hero-scent seeds should use this shape:
+
+```js
+{
+  formulaKey: "seed-hero-original",
+  familyKey: "hero-scent",
+  variationRole: "original",
+  variationNumber: 0,
+  name: "...",
+  tagline: "...",
+  desc: "...",
+  versionLabel: "...",
+  revisionNote: "...",
+  developmentStatus: "active",
+  ingredients: [
+    { name: "Exact Catalog Material Name", g: 0, note: "top" },
+  ],
+}
+```
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.
@@ -149,7 +200,7 @@ Be careful with `--update-registry` and `--download` on discovery scripts becaus
 
 Use this decision model unless the specific code path proves otherwise:
 
-1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`.
+1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`. The current `FORMULAS_INIT` records are legacy active seeds until the focused 4-formula hero-scent replacement is supplied and implemented.
 2. **Canonical enrichment and compliance support** come from `src/data/` registries interpreted by `src/lib/ifra_combined_package.js` and runtime helpers.
 3. **Supplier imports** are support/review data until approved and applied into supplier registries, normalization data, or embedded live pricing/catalog sections.
 4. **Evidence candidates** are review artifacts until approved and promoted.

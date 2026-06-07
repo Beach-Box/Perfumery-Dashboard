@@ -247,8 +247,13 @@ Observed embedded data counts from `src/App.jsx`:
 | Pricing catalog rows | 1,251 |
 | Supplier rows in `PRICING` | 1,590 |
 | Supplier price points | 10,101 |
-| Seeded formulas | 10 |
-| Seeded formula ingredient lines | 217 |
+| Seeded formulas | 10 legacy active seeds; archived for planned hero-scent reset |
+| Seeded formula ingredient lines | 217 legacy seed lines |
+
+The 10 current formula seeds are legacy active data scheduled to be replaced by
+4 focused hero-scent development formulas once the exact formula records are
+supplied. The legacy records are archived in
+[`docs/archive/legacy_formula_seeds_2026-06-07.md`](archive/legacy_formula_seeds_2026-06-07.md).
 
 Common `RAW_DB` fields observed:
 

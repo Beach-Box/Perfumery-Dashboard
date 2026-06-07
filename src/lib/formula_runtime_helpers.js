@@ -14,6 +14,43 @@ export const FORMULA_COMPARE_DEFAULT_STATE = {
   rightFormulaKey: null,
 };
 
+export const LEGACY_FORMULA_SEED_KEYS_2026_06_07 = Object.freeze([
+  "seed-cabana-confessions-1",
+  "seed-coastal-af-2",
+  "seed-dominican-drift-3",
+  "seed-heat-stroke-4",
+  "seed-low-tide-lust-5",
+  "seed-nauti-by-nature-6",
+  "seed-rum-riptide-7",
+  "seed-salty-skin-8",
+  "seed-seasick-satisfied-9",
+  "seed-wet-shore-10",
+]);
+
+export function isRetiredSeedFormulaRecord(
+  record,
+  retiredSeedKeys = LEGACY_FORMULA_SEED_KEYS_2026_06_07
+) {
+  const formulaKey = String(record?.formulaKey || "").trim();
+  if (!formulaKey || !new Set(retiredSeedKeys).has(formulaKey)) return false;
+  const sourceType = String(record?.sourceType || "").trim();
+  return (
+    Boolean(record?.isSeeded) ||
+    sourceType === "seeded" ||
+    sourceType === "seeded_override"
+  );
+}
+
+export function filterRetiredSeedFormulaRecords(
+  records = [],
+  retiredSeedKeys = LEGACY_FORMULA_SEED_KEYS_2026_06_07
+) {
+  if (!Array.isArray(records)) return [];
+  return records.filter(
+    (record) => !isRetiredSeedFormulaRecord(record, retiredSeedKeys)
+  );
+}
+
 export function formatHumanList(values = [], maxItems = 3) {
   const list = values.filter(Boolean).slice(0, maxItems);
   if (list.length === 0) return "";
