@@ -129,8 +129,8 @@ import { IngredientDetailMaterialTrustPanel } from "./components/IngredientDetai
 import { IngredientDetailMetricCards } from "./components/IngredientDetailMetricCards";
 import { ScoreBar } from "./components/ScoreBar";
 import { SupplierRefreshFeedbackPanel } from "./components/SupplierRefreshFeedbackPanel";
-import { SupplierLinkStatusBadge } from "./components/SupplierLinkStatusBadge";
 import { SupplierPricePointChips } from "./components/SupplierPricePointChips";
+import { SupplierVariantHeader } from "./components/SupplierVariantHeader";
 import { SupplierVariantBadges } from "./components/SupplierVariantBadges";
 import { SupplierVariantDetailRows } from "./components/SupplierVariantDetailRows";
 import { SupplierVariantRefreshButtons } from "./components/SupplierVariantRefreshButtons";
@@ -59505,71 +59505,19 @@ function IngredientDetailPanel({
                         alignItems: "flex-start",
                         gap: 8,
                         flexWrap: "wrap",
-                      }}
-                    >
-                      <div style={{ minWidth: 0, flex: "1 1 240px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <span
-	                            style={{
-	                              fontSize: 12,
-	                              fontWeight: 700,
-	                              color: supplierColor,
-	                            }}
-	                          >
-                            {supplierName}
-                          </span>
-                          <SupplierLinkStatusBadge
-                            linkStatus={linkStatus}
-                            linkNote={linkNote}
-                            linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
-                          />
-                          {url && (
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                fontSize: 9,
-                                color: "#475569",
-                                textDecoration: "none",
-                              }}
-                            >
-                              ↗ Visit
-                            </a>
-                          )}
-                        </div>
-                        {supplierLinkSummary && (
-                          <div
-                            style={{
-                              fontSize: 9,
-                              color: "#64748B",
-                              marginTop: 4,
-                              lineHeight: 1.5,
-                            }}
-                          >
-                            {supplierLinkSummary}
-                          </div>
-                        )}
-                        {registrySummaryRows.map((registryRow) => (
-                          <div
-                            key={registryRow.key}
-                            style={{
-                              marginTop: 4,
-                              fontSize: 8.5,
-                              color: "#94A3B8",
-                              lineHeight: 1.45,
-                            }}
-                          >
-                            {registryRow.text}
-                          </div>
-                        ))}
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: "1 1 240px" }}>
+                      <SupplierVariantHeader
+                        supplierName={supplierName}
+                        supplierColor={supplierColor}
+                        url={url}
+                        linkStatus={linkStatus}
+                        linkNote={linkNote}
+                        linkedDuplicateOfCatalogName={linkedDuplicateOfCatalogName}
+                        supplierLinkSummary={supplierLinkSummary}
+                        registrySummaryRows={registrySummaryRows}
+                      />
 	                        <SupplierVariantBadges badges={badges} />
 	                        <SupplierVariantDetailRows
 	                          detailRows={detailRows}
