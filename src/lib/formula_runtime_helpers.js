@@ -232,15 +232,22 @@ export function removeFormulaRecord(records, formulaKey) {
 export function buildFormulaLibrary(
   seedFormulas,
   persistedRecords,
-  { db = {} } = {}
+  { db = {}, retiredSeedKeys = null } = {}
 ) {
   const seeded = seedFormulas.map((formula, index) =>
     createSeedFormulaRecord(formula, index, { db })
   );
   const seededKeys = new Set(seeded.map((formula) => formula.formulaKey));
-  const persisted = persistedRecords.map((record, index) =>
-    createPersistedFormulaRecord(record, index, { db })
-  );
+  const hasRetiredSeedFilter =
+    (Array.isArray(retiredSeedKeys) && retiredSeedKeys.length > 0) ||
+    (retiredSeedKeys instanceof Set && retiredSeedKeys.size > 0);
+  const persisted = persistedRecords
+    .map((record, index) => createPersistedFormulaRecord(record, index, { db }))
+    .filter(
+      (record) =>
+        !hasRetiredSeedFilter ||
+        !isRetiredSeedFormulaRecord(record, retiredSeedKeys)
+    );
   const persistedByKey = new Map(
     persisted.map((record) => [record.formulaKey, record])
   );

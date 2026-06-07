@@ -68,13 +68,15 @@ Retired seed keys to handle during the future replacement:
 - `seed-seasick-satisfied-9`
 - `seed-wet-shore-10`
 
-Smallest future saved-build guardrail: teach `buildFormulaLibrary` about a
-retired-seed key set and filter persisted records whose `formulaKey` is retired
-and whose record is a seeded baseline or seeded override. Keep unrelated custom
+Smallest future saved-build guardrail: `buildFormulaLibrary` supports an
+optional `retiredSeedKeys` key set and can filter persisted records whose
+`formulaKey` is retired and whose record is a seeded baseline or seeded
+override. The current app call does not pass retired keys yet, so active runtime
+behavior is unchanged. During the 4-formula replacement, pass the retired legacy
+keys so old seed-derived overrides in `bb_saved_builds` do not reappear as
+active formulas after `FORMULAS_INIT` is replaced. Keep unrelated custom
 formulas and draft versions intact, even if they were derived from a retired
-seed, unless the user explicitly asks to remove them. This prevents old
-seed-derived overrides in `bb_saved_builds` from reappearing as active formulas
-after `FORMULAS_INIT` is replaced.
+seed, unless the user explicitly asks to remove them.
 
 Future active hero-scent seeds should use this shape:
 
