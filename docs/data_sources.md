@@ -187,6 +187,8 @@ Current keys include:
 - `bb_manual_record_edits_v1`
 - `bb_saved_builds`
 - `bb_formula_compare_state`
+- `bb_hero_candidate_status_v1`
+- `bb_hero_sensory_evaluations_v1`
 - `bb_critique_lens`
 - `bb_founder_launch_scenarios_v1`
 - `bb_supplier_import_local_review_v1`

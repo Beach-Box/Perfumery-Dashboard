@@ -16,6 +16,7 @@ export const APP_STORAGE_KEYS = {
   savedBuilds: "bb_saved_builds",
   formulaCompare: "bb_formula_compare_state",
   heroCandidateStatus: "bb_hero_candidate_status_v1",
+  heroSensoryEvaluations: "bb_hero_sensory_evaluations_v1",
   critiqueLens: "bb_critique_lens",
   founderLaunchScenarios: "bb_founder_launch_scenarios_v1",
   supplierImportLocalReview: "bb_supplier_import_local_review_v1",

@@ -119,6 +119,15 @@ import {
   sortHeroCandidateFormulas,
 } from "./lib/hero_candidate_helpers";
 import {
+  HERO_SENSORY_TEST_SURFACES,
+  buildHeroSensorySummary,
+  cleanHeroSensoryEvaluationState,
+  createEmptyHeroSensoryEvaluationRecord,
+  getHeroSensoryEvaluationsForFormula,
+  getLatestHeroSensoryEvaluation,
+  normalizeHeroSensoryEvaluationRecord,
+} from "./lib/hero_sensory_evaluation_helpers";
+import {
   getMaterialDisplayName,
   getMaterialRuntimeKeyCaption,
 } from "./lib/material_display_helpers";
@@ -61589,6 +61598,14 @@ export default function App() {
   const [heroCandidateStatuses, setHeroCandidateStatuses] = useState(() =>
     readJsonStorage(APP_STORAGE_KEYS.heroCandidateStatus, {})
   );
+  const [heroSensoryEvaluations, setHeroSensoryEvaluations] = useState(() =>
+    cleanHeroSensoryEvaluationState(
+      readJsonStorage(APP_STORAGE_KEYS.heroSensoryEvaluations, {})
+    )
+  );
+  const [heroSensoryEditFormulaKey, setHeroSensoryEditFormulaKey] =
+    useState("");
+  const [heroSensoryDraft, setHeroSensoryDraft] = useState(null);
   const [basketMode, setBasketMode] = useState("cheapest");
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
@@ -61765,6 +61782,12 @@ export default function App() {
   useEffect(() => {
     writeJsonStorage(APP_STORAGE_KEYS.heroCandidateStatus, heroCandidateStatuses);
   }, [heroCandidateStatuses]);
+  useEffect(() => {
+    writeJsonStorage(
+      APP_STORAGE_KEYS.heroSensoryEvaluations,
+      heroSensoryEvaluations
+    );
+  }, [heroSensoryEvaluations]);
   const formula = formulas[selFrag] || formulas[0];
   const formulaByKey = useMemo(
     () => new Map(formulas.map((entry) => [entry.formulaKey, entry])),
@@ -62179,6 +62202,10 @@ export default function App() {
           formulaNotes[entry.formulaKey] ??
           (entry.parentVersionId ? "" : formulaNotes[entry.name] ?? "") ??
           "";
+        const sensorySummary = buildHeroSensorySummary(
+          heroSensoryEvaluations,
+          entry.formulaKey
+        );
 
         return {
           formula: entry,
@@ -62200,9 +62227,11 @@ export default function App() {
           performance,
           performanceModel,
           trustSummary,
-          sensoryStatus: noteText.trim()
-            ? `Freeform note saved (${noteText.trim().length} chars); no structured sensory note yet`
-            : "No structured sensory note yet",
+          sensorySummary,
+          sensoryStatus: sensorySummary.statusLabel,
+          formulaNoteStatus: noteText.trim()
+            ? `Freeform note saved (${noteText.trim().length} chars)`
+            : "No freeform formula note",
         };
       }),
     [
@@ -62211,6 +62240,7 @@ export default function App() {
       critiqueLens,
       formulaNotes,
       formulaSupplierOverrides,
+      heroSensoryEvaluations,
       heroCandidateFormulas,
       ifraCategory,
       inventory,
@@ -62261,6 +62291,110 @@ export default function App() {
     },
     [formulaIndexByKey, heroCandidateFormulas, heroOriginalFormula]
   );
+  const openHeroSensoryDraft = useCallback(
+    (formulaKey, { createNew = false } = {}) => {
+      const normalizedFormulaKey = String(formulaKey || "").trim();
+      if (!normalizedFormulaKey) return;
+      const latestEvaluation = createNew
+        ? null
+        : getLatestHeroSensoryEvaluation(
+            getHeroSensoryEvaluationsForFormula(
+              heroSensoryEvaluations,
+              normalizedFormulaKey
+            )
+          );
+      setHeroSensoryEditFormulaKey(normalizedFormulaKey);
+      setHeroSensoryDraft(
+        latestEvaluation
+          ? normalizeHeroSensoryEvaluationRecord(latestEvaluation, {
+              formulaKey: normalizedFormulaKey,
+            })
+          : createEmptyHeroSensoryEvaluationRecord(normalizedFormulaKey)
+      );
+    },
+    [heroSensoryEvaluations]
+  );
+  const closeHeroSensoryDraft = useCallback(() => {
+    setHeroSensoryEditFormulaKey("");
+    setHeroSensoryDraft(null);
+  }, []);
+  const updateHeroSensoryDraftField = useCallback((field, value) => {
+    setHeroSensoryDraft((prev) =>
+      prev ? { ...prev, [field]: value } : prev
+    );
+  }, []);
+  const updateHeroSensoryDraftNestedField = useCallback(
+    (section, field, value) => {
+      setHeroSensoryDraft((prev) =>
+        prev
+          ? {
+              ...prev,
+              [section]: {
+                ...(prev[section] || {}),
+                [field]: value,
+              },
+            }
+          : prev
+      );
+    },
+    []
+  );
+  const updateHeroSensoryDraftDoseField = useCallback((field, value) => {
+    setHeroSensoryDraft((prev) =>
+      prev
+        ? {
+            ...prev,
+            dose: {
+              ...(prev.dose || {}),
+              [field]: value,
+            },
+          }
+        : prev
+    );
+  }, []);
+  const saveHeroSensoryDraft = useCallback(() => {
+    const formulaKey = String(heroSensoryEditFormulaKey || "").trim();
+    if (!formulaKey || !heroSensoryDraft) return;
+    const timestamp = new Date().toISOString();
+    const normalizedDraft = normalizeHeroSensoryEvaluationRecord(
+      {
+        ...heroSensoryDraft,
+        formulaKey,
+        updatedAt: timestamp,
+      },
+      { formulaKey, now: timestamp }
+    );
+    if (!normalizedDraft) return;
+
+    setHeroSensoryEvaluations((prev) => {
+      const cleanedState = cleanHeroSensoryEvaluationState(prev);
+      const existingFormulaState = cleanedState.byFormulaKey[formulaKey] || {
+        formulaKey,
+        evaluations: [],
+      };
+      const existingIndex = existingFormulaState.evaluations.findIndex(
+        (evaluation) => evaluation.id === normalizedDraft.id
+      );
+      const nextEvaluations =
+        existingIndex >= 0
+          ? existingFormulaState.evaluations.map((evaluation, index) =>
+              index === existingIndex ? normalizedDraft : evaluation
+            )
+          : [...existingFormulaState.evaluations, normalizedDraft];
+
+      return cleanHeroSensoryEvaluationState({
+        schemaVersion: 1,
+        byFormulaKey: {
+          ...cleanedState.byFormulaKey,
+          [formulaKey]: {
+            formulaKey,
+            evaluations: nextEvaluations,
+          },
+        },
+      });
+    });
+    closeHeroSensoryDraft();
+  }, [closeHeroSensoryDraft, heroSensoryDraft, heroSensoryEditFormulaKey]);
   const diluentMaterialName = founderProductContext.diluentMaterialName;
   const skuFragranceOilG =
     founderProductContext.fillVolumeMl * (founderProductContext.fragranceLoadPercent / 100);
@@ -80215,6 +80349,41 @@ export default function App() {
         ) : null}
       </div>
     );
+    const sensoryFieldStyle = {
+      width: "100%",
+      boxSizing: "border-box",
+      background: "#060E1E",
+      border: "1px solid #1E3A52",
+      borderRadius: 7,
+      color: "#CBD5E1",
+      fontSize: 9,
+      padding: "6px 7px",
+      outline: "none",
+    };
+    const sensoryLabelStyle = {
+      display: "grid",
+      gap: 4,
+      fontSize: 7.8,
+      color: "#64748B",
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      fontWeight: 700,
+    };
+    const renderSensorySummaryRow = (label, value) => (
+      <div
+        key={label}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 8,
+          fontSize: 8.2,
+          lineHeight: 1.45,
+        }}
+      >
+        <span style={{ color: "#64748B" }}>{label}</span>
+        <span style={{ color: "#CBD5E1", textAlign: "right" }}>{value}</span>
+      </div>
+    );
 
     return (
       <section
@@ -80318,6 +80487,7 @@ export default function App() {
               batchReport,
               finishedProductGuidance,
               performance,
+              sensorySummary,
               trustSummary,
             } = item;
             const readinessMeta =
@@ -80350,6 +80520,9 @@ export default function App() {
                 : `${IFRA_CATEGORY_LABELS[ifraCategory]} checked`;
             const selectedFormulaActive =
               candidateFormula.formulaKey === formula?.formulaKey;
+            const isSensoryDraftOpen =
+              heroSensoryEditFormulaKey === candidateFormula.formulaKey &&
+              Boolean(heroSensoryDraft);
 
             return (
               <article
@@ -80608,17 +80781,337 @@ export default function App() {
                         marginBottom: 5,
                       }}
                     >
-                      Sensory Note Status
+                      Sensory Wear Test
                     </div>
                     <div
+                      data-testid={`hero-sensory-summary-${candidateFormula.formulaKey}`}
                       style={{
-                        fontSize: 8.4,
-                        color: "#CBD5E1",
-                        lineHeight: 1.45,
+                        display: "grid",
+                        gap: 4,
                       }}
                     >
-                      {item.sensoryStatus}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            color:
+                              sensorySummary.statusKey === "empty"
+                                ? "#F59E0B"
+                                : "#86EFAC",
+                            fontSize: 8.8,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {item.sensoryStatus}
+                        </span>
+                        <span style={{ color: "#64748B", fontSize: 8 }}>
+                          {sensorySummary.evaluationCount} test
+                          {sensorySummary.evaluationCount === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                      {renderSensorySummaryRow(
+                        "Latest",
+                        sensorySummary.latestTestDateLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Surface",
+                        sensorySummary.latestSurfaceLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Preference",
+                        sensorySummary.preferenceLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Launch Confidence",
+                        sensorySummary.launchConfidenceLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Diffusion",
+                        sensorySummary.diffusionLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Longevity",
+                        sensorySummary.longevityLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Off-note",
+                        sensorySummary.offNoteLabel
+                      )}
+                      {renderSensorySummaryRow(
+                        "Next Mod",
+                        sensorySummary.nextModificationNeededLabel
+                      )}
+                      <div
+                        style={{
+                          marginTop: 2,
+                          fontSize: 7.8,
+                          color: "#64748B",
+                          lineHeight: 1.4,
+                        }}
+                      >
+                        {item.formulaNoteStatus}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 6,
+                          flexWrap: "wrap",
+                          marginTop: 5,
+                        }}
+                      >
+                        <button
+                          type="button"
+                          aria-label={`Add/Edit Wear Test for ${candidateFormula.name}`}
+                          onClick={() =>
+                            openHeroSensoryDraft(candidateFormula.formulaKey)
+                          }
+                          style={{
+                            background: "#0A1628",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 7,
+                            color: "#CBD5E1",
+                            padding: "5px 8px",
+                            fontSize: 8,
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Add/Edit Wear Test
+                        </button>
+                        {sensorySummary.evaluationCount > 0 && (
+                          <button
+                            type="button"
+                            aria-label={`Log New Wear Test for ${candidateFormula.name}`}
+                            onClick={() =>
+                              openHeroSensoryDraft(candidateFormula.formulaKey, {
+                                createNew: true,
+                              })
+                            }
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 7,
+                              color: "#94A3B8",
+                              padding: "5px 8px",
+                              fontSize: 8,
+                              fontWeight: 800,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Log New Test
+                          </button>
+                        )}
+                      </div>
                     </div>
+                    {isSensoryDraftOpen && (
+                      <div
+                        data-testid={`hero-sensory-form-${candidateFormula.formulaKey}`}
+                        style={{
+                          marginTop: 9,
+                          paddingTop: 9,
+                          borderTop: "1px solid #1E3A52",
+                          display: "grid",
+                          gap: 8,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                            gap: 7,
+                          }}
+                        >
+                          <label style={sensoryLabelStyle}>
+                            Test Date
+                            <input
+                              aria-label="Test date"
+                              type="date"
+                              value={heroSensoryDraft.testDate || ""}
+                              onChange={(event) =>
+                                updateHeroSensoryDraftField(
+                                  "testDate",
+                                  event.target.value
+                                )
+                              }
+                              style={sensoryFieldStyle}
+                            />
+                          </label>
+                          <label style={sensoryLabelStyle}>
+                            Evaluator
+                            <input
+                              aria-label="Evaluator"
+                              value={heroSensoryDraft.evaluator || ""}
+                              onChange={(event) =>
+                                updateHeroSensoryDraftField(
+                                  "evaluator",
+                                  event.target.value
+                                )
+                              }
+                              style={sensoryFieldStyle}
+                            />
+                          </label>
+                          <label style={sensoryLabelStyle}>
+                            Test Surface
+                            <select
+                              aria-label="Test surface"
+                              value={heroSensoryDraft.testSurface || "skin"}
+                              onChange={(event) =>
+                                updateHeroSensoryDraftField(
+                                  "testSurface",
+                                  event.target.value
+                                )
+                              }
+                              style={sensoryFieldStyle}
+                            >
+                              {HERO_SENSORY_TEST_SURFACES.map((surface) => (
+                                <option key={surface} value={surface}>
+                                  {surface}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label style={sensoryLabelStyle}>
+                            Dose / Sprays
+                            <input
+                              aria-label="Dose sprays"
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={heroSensoryDraft.dose?.sprays ?? ""}
+                              onChange={(event) =>
+                                updateHeroSensoryDraftDoseField(
+                                  "sprays",
+                                  event.target.value
+                                )
+                              }
+                              style={sensoryFieldStyle}
+                            />
+                          </label>
+                          {[
+                            ["diffusion", "Diffusion rating"],
+                            ["longevity", "Longevity rating"],
+                            ["preference", "Preference score"],
+                            ["launchConfidence", "Launch confidence"],
+                          ].map(([field, label]) => (
+                            <label key={field} style={sensoryLabelStyle}>
+                              {label}
+                              <input
+                                aria-label={label}
+                                type="number"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                value={heroSensoryDraft.ratings?.[field] ?? ""}
+                                onChange={(event) =>
+                                  updateHeroSensoryDraftNestedField(
+                                    "ratings",
+                                    field,
+                                    event.target.value
+                                  )
+                                }
+                                style={sensoryFieldStyle}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                        {[
+                          ["opening", "Opening impression"],
+                          ["heart", "Heart impression"],
+                          ["drydown", "Drydown impression"],
+                          ["skinFeel", "Skin feel"],
+                          ["offNotes", "Off-notes"],
+                          ["memorability", "Memorability"],
+                          ["emotionalBrandFit", "Emotional / brand fit"],
+                        ].map(([field, label]) => (
+                          <label key={field} style={sensoryLabelStyle}>
+                            {label}
+                            <textarea
+                              aria-label={label}
+                              value={heroSensoryDraft.impressions?.[field] || ""}
+                              onChange={(event) =>
+                                updateHeroSensoryDraftNestedField(
+                                  "impressions",
+                                  field,
+                                  event.target.value
+                                )
+                              }
+                              rows={2}
+                              style={{ ...sensoryFieldStyle, resize: "vertical" }}
+                            />
+                          </label>
+                        ))}
+                        <label style={sensoryLabelStyle}>
+                          Next Modification Needed
+                          <textarea
+                            aria-label="Next modification needed"
+                            value={heroSensoryDraft.nextModificationNeeded || ""}
+                            onChange={(event) =>
+                              updateHeroSensoryDraftField(
+                                "nextModificationNeeded",
+                                event.target.value
+                              )
+                            }
+                            rows={2}
+                            style={{ ...sensoryFieldStyle, resize: "vertical" }}
+                          />
+                        </label>
+                        <label style={sensoryLabelStyle}>
+                          Summary
+                          <textarea
+                            aria-label="Summary"
+                            value={heroSensoryDraft.summary || ""}
+                            onChange={(event) =>
+                              updateHeroSensoryDraftField(
+                                "summary",
+                                event.target.value
+                              )
+                            }
+                            rows={2}
+                            style={{ ...sensoryFieldStyle, resize: "vertical" }}
+                          />
+                        </label>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            onClick={saveHeroSensoryDraft}
+                            style={{
+                              background: "#0E4D6E",
+                              border: "1px solid #22D3EE40",
+                              borderRadius: 7,
+                              color: "#7DD3FC",
+                              padding: "6px 10px",
+                              fontSize: 8,
+                              fontWeight: 800,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Save Wear Test
+                          </button>
+                          <button
+                            type="button"
+                            onClick={closeHeroSensoryDraft}
+                            style={{
+                              background: "#0A1628",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 7,
+                              color: "#94A3B8",
+                              padding: "6px 10px",
+                              fontSize: 8,
+                              fontWeight: 800,
+                              cursor: "pointer",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div
@@ -80691,14 +81184,22 @@ export default function App() {
     );
   }, [
     batchPlannerTargetG,
+    closeHeroSensoryDraft,
     formula,
     heroCandidateItems,
     heroOriginalFormula,
+    heroSensoryDraft,
+    heroSensoryEditFormulaKey,
     ifraCategory,
     openHeroCandidateCompare,
     openHeroCandidateFormula,
+    openHeroSensoryDraft,
+    saveHeroSensoryDraft,
     selectedBasketModeMeta,
     setHeroCandidateFormulaStatus,
+    updateHeroSensoryDraftDoseField,
+    updateHeroSensoryDraftField,
+    updateHeroSensoryDraftNestedField,
   ]);
   return (
     <div
