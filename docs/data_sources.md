@@ -103,6 +103,32 @@ Active hero-scent seeds should use this shape:
 }
 ```
 
+### Hero Formula Material Support
+
+The active hero formulas use several bench names, dilutions, and black-box
+accords that are intentionally distinct from the base catalog rows. Reviewed
+support for these rows lives in
+[`src/data/hero_formula_material_support.json`](../src/data/hero_formula_material_support.json)
+and is applied through `src/lib/hero_formula_material_support.js`.
+
+This overlay does not change formula composition. It adds runtime support rows
+so exact formula ingredient names can resolve in catalog, pricing, supplier, and
+IFRA/activity workflows:
+
+- Diluted stocks map to clear parent materials and carry active percentages,
+  such as `Calone 1951 20%` resolving to `Calone 1951` with 20% active
+  behavior.
+- Stock-equivalent pricing rows are derived from parent pricing by scaling
+  package sizes by the dilution factor.
+- Formula-level accords such as `Botanical Musk Accord` and `Driftwood Accord`
+  remain black boxes. They get placeholder support rows and are not expanded
+  into components.
+- Safe name variants such as `Florol`/`Florol®` and
+  `Orbitone T Neo`/`Orbitone® T Neo` are linked as aliases while preserving the
+  formula display name.
+- Ambiguous rows remain review-needed until the user confirms the intended
+  parent material or supplier product.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.
@@ -112,6 +138,7 @@ The `src/data/` JSON files are the most explicit structured data layer. They sho
 | `src/data/ifra_combined_package.json` | Combined IFRA/runtime support package with metadata, identity map entries, compliance config, and stats. |
 | `src/data/ifra_master_standards.json` | Extracted IFRA master standards data from source PDF processing. |
 | `src/data/material_normalization.json` | Canonical material normalization, aliases, supplier links, helper seed support, and relationship data. |
+| `src/data/hero_formula_material_support.json` | Runtime support overlay for hero formula dilutions, black-box accords, safe aliases, and review-needed unresolved rows. |
 | `src/data/source_document_registry.json` | Registered source documents and intake targets. |
 | `src/data/evidence_candidate_registry.json` | Evidence candidates and candidate target state. |
 | `src/data/supplier_product_registry.json` | Supplier products, supplier keys, product mappings, statuses, and registry notes. |
@@ -128,6 +155,7 @@ The helper modules turn raw records and registries into app behavior.
 | --- | --- |
 | `browser_storage.js` | Defines localStorage keys and defensive JSON/text read/write helpers. |
 | `formula_runtime_helpers.js` | Formula keys, saved formula normalization, versioning, and comparison helpers. |
+| `hero_formula_material_support.js` | Applies hero formula support rows, dilution-aware pricing rows, and normalization overlay entries. |
 | `ifra_combined_package.js` | Main adapter for IFRA package data, material normalization, source/evidence/supplier registries, identity resolution, CAS comparison, and IFRA guidance helpers. |
 | `perfumer_runtime_helpers.js` | Major business logic: formula math, procurement, bench stocks, founder planning, material truth, critiques, substitutions, and supplier adapter/review helpers. |
 | `supplier_workbook_import_helpers.js` | Trusted workbook parsing, Fraterworks JSON/catalog import, compliance extraction, and reference workbook export helpers. |
@@ -207,7 +235,7 @@ Be careful with `--update-registry` and `--download` on discovery scripts becaus
 
 Use this decision model unless the specific code path proves otherwise:
 
-1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`. The current `FORMULAS_INIT` records are the focused 4-formula hero-scent development set; the prior 10-formula beach-line seeds are archived legacy references only.
+1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`. The current `FORMULAS_INIT` records are the focused 4-formula hero-scent development set; the prior 10-formula beach-line seeds are archived legacy references only. Hero formula material-support overlays may add generated runtime rows for exact formula ingredient names without changing those formula seed records.
 2. **Canonical enrichment and compliance support** come from `src/data/` registries interpreted by `src/lib/ifra_combined_package.js` and runtime helpers.
 3. **Supplier imports** are support/review data until approved and applied into supplier registries, normalization data, or embedded live pricing/catalog sections.
 4. **Evidence candidates** are review artifacts until approved and promoted.

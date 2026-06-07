@@ -1,0 +1,258 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Reviewed runtime support overlay for the active hero formula seed set. These rows improve catalog, pricing, supplier, and dilution resolution without changing formula composition.",
+    "updatedAt": "2026-06-07",
+    "guardrails": [
+      "Do not expand Botanical Musk or Driftwood accords from this overlay.",
+      "Do not infer ambiguous supplier-specific materials without user confirmation.",
+      "Diluted stock rows preserve formula display names while mapping active percentage to clear parent materials."
+    ]
+  },
+  "dilutedStocks": [
+    {
+      "name": "Ambroxan 50% TEC",
+      "parentName": "Ambroxan Crystals",
+      "canonicalMaterialKey": "ambroxan_crystals",
+      "activePercent": 50,
+      "carrierName": "TEC",
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Ambroxan 50%",
+      "parentName": "Ambroxan Crystals",
+      "canonicalMaterialKey": "ambroxan_crystals",
+      "activePercent": 50,
+      "carrierName": null,
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Cetalox 50% TEC",
+      "parentName": "Cetalox",
+      "canonicalMaterialKey": "cetalox",
+      "activePercent": 50,
+      "carrierName": "TEC",
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Ambrettolide 50% TEC",
+      "parentName": "Ambrettolide",
+      "canonicalMaterialKey": "ambrettolide",
+      "activePercent": 50,
+      "carrierName": "TEC",
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Oceanol 10%",
+      "parentName": "Oceanol",
+      "canonicalMaterialKey": "oceanol",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "mid",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Calone 1951 20%",
+      "parentName": "Calone 1951",
+      "canonicalMaterialKey": "calone_1951",
+      "activePercent": 20,
+      "carrierName": null,
+      "note": "mid",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Seaweed Absolute 10%",
+      "parentName": "Seaweed Absolute",
+      "canonicalMaterialKey": "seaweed_absolute",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "mid",
+      "type": "ABS"
+    },
+    {
+      "name": "Veramoss 20% TEC",
+      "parentName": "Veramoss",
+      "canonicalMaterialKey": "veramoss",
+      "activePercent": 20,
+      "carrierName": "TEC",
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Helional 25%",
+      "parentName": "Helional®",
+      "canonicalMaterialKey": "helional",
+      "activePercent": 25,
+      "carrierName": null,
+      "note": "mid",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Caryophyllene Oxide 10%",
+      "parentName": "Caryophyllene Oxide",
+      "canonicalMaterialKey": "caryophyllene_oxide",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Ethyl Vanillin 10%",
+      "parentName": "Ethyl Vanillin",
+      "canonicalMaterialKey": "ethyl_vanillin",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Geosmin 1% TEC",
+      "parentName": "Geosmin",
+      "canonicalMaterialKey": "geosmin",
+      "activePercent": 1,
+      "carrierName": "TEC",
+      "note": "base",
+      "type": "SYNTH"
+    },
+    {
+      "name": "Oakmoss Absolute 10%",
+      "parentName": "Oakmoss Absolute",
+      "canonicalMaterialKey": "oakmoss_absolute",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "base",
+      "type": "ABS"
+    },
+    {
+      "name": "Ylang Ylang Complete 10%",
+      "parentName": "Ylang-Ylang Complete Oil",
+      "canonicalMaterialKey": "ylang_ylang_complete_oil",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "mid",
+      "type": "EO"
+    }
+  ],
+  "accords": [
+    {
+      "name": "Botanical Musk Accord",
+      "canonicalMaterialKey": "hero_botanical_musk_accord",
+      "note": "base",
+      "type": "ACCORD",
+      "scentClass": "Musk",
+      "scentSummary": "Hero formula botanical musk accord",
+      "scentDesc": "Formula-level musk accord support row. Composition is intentionally not expanded until a later product decision supplies the accord recipe."
+    },
+    {
+      "name": "Botanical Musk Accord v2",
+      "canonicalMaterialKey": "hero_botanical_musk_accord",
+      "note": "base",
+      "type": "ACCORD",
+      "scentClass": "Musk",
+      "scentSummary": "Hero formula botanical musk accord v2",
+      "scentDesc": "Formula-level v2 musk accord support row. Treated as the same current accord family without changing the displayed formula ingredient name."
+    },
+    {
+      "name": "Driftwood Accord",
+      "canonicalMaterialKey": "hero_driftwood_accord",
+      "note": "base",
+      "type": "ACCORD",
+      "scentClass": "Woody",
+      "scentSummary": "Hero formula driftwood accord",
+      "scentDesc": "Formula-level driftwood accord support row. Composition is intentionally not expanded."
+    },
+    {
+      "name": "Driftwood Accord v2.2 NT",
+      "canonicalMaterialKey": "hero_driftwood_accord_v2_2_nt",
+      "note": "base",
+      "type": "ACCORD",
+      "scentClass": "Woody",
+      "scentSummary": "Hero formula driftwood accord v2.2 NT",
+      "scentDesc": "Distinct formula-level driftwood accord variant support row. It remains separate from Driftwood Accord."
+    },
+    {
+      "name": "Iso E + AmberXtreme 1%",
+      "canonicalMaterialKey": "hero_iso_e_amberxtreme_1pct",
+      "note": "base",
+      "type": "ACCORD",
+      "scentClass": "Woody Amber",
+      "scentSummary": "Bench blend of Iso E and AmberXtreme at 1%",
+      "scentDesc": "Bench blend support row. The component recipe is not inferred in this task."
+    }
+  ],
+  "aliases": [
+    {
+      "name": "Celestafleur",
+      "targetName": "Celestafleur™",
+      "canonicalMaterialKey": "celestafleur"
+    },
+    {
+      "name": "Florol",
+      "targetName": "Florol®",
+      "canonicalMaterialKey": "florol"
+    },
+    {
+      "name": "Clearwood",
+      "targetName": "Clearwood®",
+      "canonicalMaterialKey": "clearwood"
+    },
+    {
+      "name": "Orbitone T Neo",
+      "targetName": "Orbitone® T Neo",
+      "canonicalMaterialKey": "orbitone_t_neo"
+    },
+    {
+      "name": "Seaweed Abs 10%",
+      "targetName": "Seaweed Absolute 10%",
+      "canonicalMaterialKey": "seaweed_absolute",
+      "entryKind": "diluted_stock"
+    },
+    {
+      "name": "C-8",
+      "targetName": "Aldehyde C-8",
+      "canonicalMaterialKey": "aldehyde_c8"
+    }
+  ],
+  "reviewNeeded": [
+    {
+      "name": "Algenone",
+      "reason": "No clear current catalog or supplier parent was confirmed."
+    },
+    {
+      "name": "Cyclogalbanate",
+      "reason": "No clear current catalog or supplier parent was confirmed."
+    },
+    {
+      "name": "Cypriol",
+      "reason": "No clear current catalog or supplier parent was confirmed."
+    },
+    {
+      "name": "Hedione HC",
+      "reason": "Grade-specific material needs confirmation before mapping."
+    },
+    {
+      "name": "Vetiveryl Acetate",
+      "reason": "No clear current catalog or supplier parent was confirmed."
+    },
+    {
+      "name": "Aldehyde C-18",
+      "reason": "No clear current catalog or supplier parent was confirmed."
+    },
+    {
+      "name": "Pink Peppercorn Oil P&N",
+      "reason": "Supplier/source-specific identity needs user confirmation."
+    },
+    {
+      "name": "Lemon FCF",
+      "reason": "Multiple plausible lemon FCF/terpeneless catalog rows exist; user confirmation is needed."
+    },
+    {
+      "name": "Ylang Ylang 10%",
+      "reason": "Parent material is ambiguous; user confirmation is needed."
+    }
+  ]
+}

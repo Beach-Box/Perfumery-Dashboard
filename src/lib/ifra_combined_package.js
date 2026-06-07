@@ -4,6 +4,7 @@ import evidenceCandidateRegistry from "../data/evidence_candidate_registry.json"
 import sourceDocumentRegistry from "../data/source_document_registry.json" with { type: "json" };
 import supplierImportReviewQueue from "../data/supplier_import_review_queue.json" with { type: "json" };
 import supplierProductRegistry from "../data/supplier_product_registry.json" with { type: "json" };
+import { buildHeroFormulaMaterialNormalizationEntries } from "./hero_formula_material_support.js";
 
 // Starter IFRA combined package for Beach Box app integration
 const IFRA_SUPPLEMENTAL_MATERIALS = {
@@ -1069,7 +1070,12 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
 };
 
 export const IFRA_MASTER_DATASET_METADATA = ifraMasterDataset.metadata;
-export const MATERIAL_NORMALIZATION = materialNormalization;
+const HERO_FORMULA_MATERIAL_NORMALIZATION_ENTRIES =
+  buildHeroFormulaMaterialNormalizationEntries(materialNormalization);
+export const MATERIAL_NORMALIZATION = {
+  ...materialNormalization,
+  ...HERO_FORMULA_MATERIAL_NORMALIZATION_ENTRIES,
+};
 export const SOURCE_DOCUMENT_REGISTRY_METADATA =
   sourceDocumentRegistry.metadata;
 export const SOURCE_DOCUMENT_REGISTRY =
@@ -3398,13 +3404,32 @@ export function resolveIngredientIdentity(name) {
 
   const inherited = resolveIngredientIdentityDirect(canonicalName);
   if (!inherited) return null;
+  const normalizationEntry = getMaterialNormalizationEntry(name);
+  const stock = normalizationEntry?.stock
+    ? {
+        activeMaterialName:
+          normalizationEntry.stock.activeMaterialName ||
+          inherited.stock?.activeMaterialName ||
+          inherited.canonicalAppName ||
+          canonicalName,
+        activePercent:
+          normalizationEntry.stock.activePercent ?? inherited.stock?.activePercent,
+        carrierName:
+          normalizationEntry.stock.carrierName ?? inherited.stock?.carrierName ?? null,
+      }
+    : inherited.stock;
 
   return {
     ...inherited,
+    materialClass:
+      normalizationEntry?.entryKind === "diluted_stock"
+        ? "diluted_stock"
+        : inherited.materialClass,
+    stock,
     inheritedViaCanonicalMaterialKey: true,
     inheritedFromCatalogName: canonicalName,
     sourceCatalogName: name,
-    normalizationEntry: getMaterialNormalizationEntry(name),
+    normalizationEntry,
   };
 }
 
@@ -3447,6 +3472,15 @@ export function computeActiveRestrictedPercent({
     normalizedActivePercentOverride >= 0
   ) {
     return formulaPercent * (normalizedActivePercentOverride / 100);
+  }
+  const normalizationStockActivePercent = Number(
+    getMaterialNormalizationEntry(ingredientName)?.stock?.activePercent
+  );
+  if (
+    Number.isFinite(normalizationStockActivePercent) &&
+    normalizationStockActivePercent >= 0
+  ) {
+    return formulaPercent * (normalizationStockActivePercent / 100);
   }
   const resolved = resolveIngredientIdentity(ingredientName);
   if (!resolved) return null;

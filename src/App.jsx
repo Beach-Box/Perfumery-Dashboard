@@ -107,6 +107,10 @@ import {
   getSupplierIfraSupportLabel,
 } from "./lib/ifra_display_helpers";
 import {
+  buildHeroFormulaPricingSupportRows,
+  buildHeroFormulaRawDbSupportRows,
+} from "./lib/hero_formula_material_support";
+import {
   getMaterialDisplayName,
   getMaterialRuntimeKeyCaption,
 } from "./lib/material_display_helpers";
@@ -31598,6 +31602,8 @@ const RAW_DB = {
   ],
 };
 
+Object.assign(RAW_DB, buildHeroFormulaRawDbSupportRows(RAW_DB));
+
 const FIELDS = [
   "MW",
   "xLogP",
@@ -53916,6 +53922,8 @@ const PRICING = {
     },
   },
 };
+
+Object.assign(PRICING, buildHeroFormulaPricingSupportRows(PRICING));
 
 // ─────────────────────────────────────────────────────────────
 // FORMULAS (active hero-scent development seeds)
