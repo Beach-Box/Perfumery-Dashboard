@@ -57239,6 +57239,10 @@ function IngredientDetailPanel({
               ? `Linked duplicate of ${linkedDuplicateOfCatalogName}.`
               : null)
           : null;
+      const registrySummaryRows = registryMatches.slice(0, 2).map((record) => ({
+        key: record.supplierProductKey || record.productTitle,
+        text: `Registry: ${record.productTitle || record.urlSlug || "supplier row"}`,
+      }));
       const detailRows = [
         supplierVendorName
           ? { key: "vendor", text: `Vendor context: ${supplierVendorName}` }
@@ -57313,6 +57317,7 @@ function IngredientDetailPanel({
         linkedDuplicateOfCatalogName,
         supplierLinkSummary,
         registryMatches,
+        registrySummaryRows,
         badges: {
           isManualTrustedEdit: Boolean(
             supplierData?.manualTrustedEdit || supplierLayerRecord?.isManualEdit
@@ -59473,7 +59478,7 @@ function IngredientDetailPanel({
                   linkNote,
                   linkedDuplicateOfCatalogName,
                   supplierLinkSummary,
-                  registryMatches,
+                  registrySummaryRows,
                   badges,
                   detailRows,
                   refreshButtons,
@@ -59552,9 +59557,9 @@ function IngredientDetailPanel({
                             {supplierLinkSummary}
                           </div>
                         )}
-                        {registryMatches.slice(0, 2).map((record) => (
+                        {registrySummaryRows.map((registryRow) => (
                           <div
-                            key={record.supplierProductKey || record.productTitle}
+                            key={registryRow.key}
                             style={{
                               marginTop: 4,
                               fontSize: 8.5,
@@ -59562,7 +59567,7 @@ function IngredientDetailPanel({
                               lineHeight: 1.45,
                             }}
                           >
-                            Registry: {record.productTitle || record.urlSlug || "supplier row"}
+                            {registryRow.text}
                           </div>
                         ))}
 	                        <SupplierVariantBadges badges={badges} />
