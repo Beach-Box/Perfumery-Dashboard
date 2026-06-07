@@ -264,18 +264,39 @@
       "reviewState": "catalog_record_needed",
       "scentSummary": "Hero formula support record for Cyclogalbanate",
       "scentDesc": "Reviewed as its own active hero formula material. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred by this overlay."
-    }
-  ],
-  "reviewNeeded": [
+    },
     {
       "name": "Cypriol",
-      "confirmedSupplierName": "Perfumers Apprentice",
-      "reason": "User confirmed this is a Perfumers Apprentice product, but the current repo has no exact Perfumers Apprentice Cypriol supplier/catalog row to target safely."
+      "canonicalMaterialKey": "pa_cypriol_essential_oil",
+      "note": "base",
+      "type": "EO",
+      "supplierName": "Perfumers Apprentice",
+      "sourceUrl": "https://shop.perfumersapprentice.com/p-10991-cypriol-essential-oil.aspx",
+      "sourceProductTitle": "Cypriol Essential Oil",
+      "sourceConfidence": "user_confirmed_pa_source_url",
+      "reviewState": "source_backed_supplier_product",
+      "cas": "91771-62-9",
+      "inci": "Cyperus Scariosus Root Oil",
+      "scentClass": "Woody",
+      "scentSummary": "Perfumers Apprentice Cypriol Essential Oil",
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Cypriol line. Pricing and IFRA limits are intentionally not inferred by this overlay."
     },
     {
       "name": "Pink Peppercorn Oil P&N",
-      "confirmedSupplierName": "Perfumers Apprentice",
-      "reason": "User confirmed this is a Perfumers Apprentice product, but the current repo has no exact Perfumers Apprentice pink peppercorn oil supplier/catalog row to target safely."
+      "canonicalMaterialKey": "pa_pink_peppercorn_oil_pn",
+      "note": "top",
+      "type": "EO",
+      "supplierName": "Perfumers Apprentice",
+      "sourceUrl": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx",
+      "sourceProductTitle": "Pink Peppercorn Oil P&N **",
+      "sourceConfidence": "pa_source_url_reviewed",
+      "reviewState": "source_backed_supplier_product",
+      "cas": "68917-52-2",
+      "inci": "Schinus molle oil",
+      "scentClass": "Spicy",
+      "scentSummary": "Perfumers Apprentice Pink Peppercorn Oil P&N",
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Pink Peppercorn Oil P&N line. Pricing and IFRA limits are intentionally not inferred by this overlay."
     }
-  ]
+  ],
+  "reviewNeeded": []
 }

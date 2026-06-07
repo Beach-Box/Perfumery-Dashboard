@@ -120,9 +120,12 @@ function createSupportRecordRawDbRow(record = {}) {
     supplier: supplierName,
     char: description,
     rep: record.name || null,
+    cas: record.cas || null,
+    inci: record.inci || null,
     scentClass: record.scentClass || "Support Record",
     scentSummary: summary,
     scentDesc: description,
+    isUVCB: record.isUVCB ?? null,
     descriptorTags: ["Hero Formula", "Support Record"],
     vpConfidence: "review_needed",
   });
@@ -292,18 +295,28 @@ function createAccordNormalizationEntry(accord = {}) {
 
 function createSupportRecordNormalizationEntry(record = {}) {
   const supplierName = record.supplierName || HERO_SUPPORT_SUPPLIER_NAME;
+  const supplierLink = {
+    status: record.reviewState || "support_record",
+    note:
+      record.scentDesc ||
+      `${record.name} has a reviewed hero formula support record. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred.`,
+  };
+
+  if (record.sourceUrl) supplierLink.url = record.sourceUrl;
+  if (record.sourceProductTitle) {
+    supplierLink.productTitle = record.sourceProductTitle;
+  }
+  if (record.sourceConfidence) {
+    supplierLink.sourceConfidence = record.sourceConfidence;
+  }
+
   return {
     entryKind: record.entryKind || "canonical_material",
     canonicalMaterialKey: record.canonicalMaterialKey,
     reviewState: record.reviewState || "support_record",
     sourceConfidence: record.sourceConfidence || "reviewed_support_overlay",
     supplierLinks: {
-      [supplierName]: {
-        status: record.reviewState || "support_record",
-        note:
-          record.scentDesc ||
-          `${record.name} has a reviewed hero formula support record. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred.`,
-      },
+      [supplierName]: supplierLink,
     },
   };
 }

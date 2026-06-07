@@ -134,10 +134,10 @@ IFRA/activity workflows:
 - `Algenone` and `Cyclogalbanate` have minimal reviewed support records as
   their own materials. The overlay does not invent pricing, CAS, chemistry, or
   IFRA limits for those rows.
-- Ambiguous rows remain review-needed until the local data has an exact target.
-  `Cypriol` and `Pink Peppercorn Oil P&N` are confirmed as Perfumers Apprentice
-  products, but the current repo does not yet have exact Perfumers Apprentice
-  supplier/catalog rows for them.
+- `Cypriol` and `Pink Peppercorn Oil P&N` have source-backed Perfumers
+  Apprentice support records. Those rows preserve the formula display names and
+  carry reviewed source URLs/facts, but still do not infer pricing rows or IFRA
+  limits.
 
 ## Structured Registries In `src/data/`
 

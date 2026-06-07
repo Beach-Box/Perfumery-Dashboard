@@ -287,7 +287,58 @@ test("hero formula support creates minimal own-material support records without 
   );
 });
 
-test("hero formula support improves confirmed gap coverage and leaves missing PA rows for review", () => {
+test("hero formula support creates source-backed PA support records without pricing", () => {
+  const rawRows = buildHeroFormulaRawDbSupportRows({});
+
+  assert.equal(rawRows.Cypriol[8], "base");
+  assert.equal(rawRows.Cypriol[9], "EO");
+  assert.equal(rawRows.Cypriol[11], "Perfumers Apprentice");
+  assert.equal(rawRows.Cypriol[15], "91771-62-9");
+  assert.equal(rawRows.Cypriol[16], "Cyperus Scariosus Root Oil");
+  assert.equal(rawRows.Cypriol[17], "Woody");
+
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][8], "top");
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][9], "EO");
+  assert.equal(
+    rawRows["Pink Peppercorn Oil P&N"][11],
+    "Perfumers Apprentice"
+  );
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][15], "68917-52-2");
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][16], "Schinus molle oil");
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][17], "Spicy");
+
+  const pricingRows = buildHeroFormulaPricingSupportRows({});
+  assert.equal(pricingRows.Cypriol, undefined);
+  assert.equal(pricingRows["Pink Peppercorn Oil P&N"], undefined);
+
+  const cypriolSupplier =
+    MATERIAL_NORMALIZATION.Cypriol.supplierLinks["Perfumers Apprentice"];
+  assert.equal(
+    cypriolSupplier.url,
+    "https://shop.perfumersapprentice.com/p-10991-cypriol-essential-oil.aspx"
+  );
+  assert.equal(cypriolSupplier.productTitle, "Cypriol Essential Oil");
+  assert.equal(
+    MATERIAL_NORMALIZATION.Cypriol.reviewState,
+    "source_backed_supplier_product"
+  );
+
+  const pinkPepperSupplier =
+    MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"].supplierLinks[
+      "Perfumers Apprentice"
+    ];
+  assert.equal(
+    pinkPepperSupplier.url,
+    "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx"
+  );
+  assert.equal(pinkPepperSupplier.productTitle, "Pink Peppercorn Oil P&N **");
+  assert.equal(
+    MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"].reviewState,
+    "source_backed_supplier_product"
+  );
+});
+
+test("hero formula support covers all confirmed hero formula material gaps", () => {
   const reviewNeededNames = new Set(
     HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.map((item) => item.name)
   );
@@ -305,6 +356,8 @@ test("hero formula support improves confirmed gap coverage and leaves missing PA
     "Aldehyde C-18",
     "Lemon FCF",
     "Ylang Ylang 10%",
+    "Cypriol",
+    "Pink Peppercorn Oil P&N",
   ]) {
     assert.equal(
       resolvedOverlayNames.has(name),
@@ -318,12 +371,8 @@ test("hero formula support improves confirmed gap coverage and leaves missing PA
     );
   }
 
-  assert.equal(HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.length, 2);
-  assert.equal(reviewNeededNames.has("Pink Peppercorn Oil P&N"), true);
-  assert.equal(reviewNeededNames.has("Cypriol"), true);
-  assert.equal(51 - reviewNeededNames.size, 49);
-  assert.equal(MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"], undefined);
-  assert.equal(MATERIAL_NORMALIZATION.Cypriol, undefined);
+  assert.equal(HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.length, 0);
+  assert.equal(51 - reviewNeededNames.size, 51);
 });
 
 test("active hero formula seed composition is unchanged by support overlays", () => {
