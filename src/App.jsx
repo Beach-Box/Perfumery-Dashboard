@@ -118,6 +118,7 @@ import {
   normalizeHeroCandidateStatusState,
   sortHeroCandidateFormulas,
 } from "./lib/hero_candidate_helpers";
+import { buildHeroDecisionBrief } from "./lib/hero_decision_brief_helpers";
 import {
   HERO_SENSORY_TEST_SURFACES,
   buildHeroSensorySummary,
@@ -80281,6 +80282,7 @@ export default function App() {
     const variationItems = heroCandidateItems.filter(
       (item) => item.formula.formulaKey !== heroOriginalFormula?.formulaKey
     );
+    const heroDecisionBrief = buildHeroDecisionBrief(heroCandidateItems);
     const renderHeroTrustBadge = (trustSummary) => {
       const meta = trustSummary?.levelMeta || FOUNDER_TRUST_LEVEL_META.mixed;
       return (
@@ -80384,6 +80386,41 @@ export default function App() {
         <span style={{ color: "#CBD5E1", textAlign: "right" }}>{value}</span>
       </div>
     );
+    const renderDecisionBriefRow = (label, value, color = "#CBD5E1") => (
+      <div
+        key={label}
+        style={{
+          background: "#071826",
+          border: "1px solid #1E3A52",
+          borderRadius: 8,
+          padding: "8px 9px",
+          minHeight: 50,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 7.8,
+            color: "#64748B",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+            marginBottom: 5,
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            fontSize: 8.8,
+            color,
+            lineHeight: 1.45,
+            fontWeight: 700,
+          }}
+        >
+          {value}
+        </div>
+      </div>
+    );
 
     return (
       <section
@@ -80469,6 +80506,210 @@ export default function App() {
                 Original vs {item.formula.name}
               </button>
             ))}
+          </div>
+        </div>
+        <div
+          data-testid="hero-decision-brief"
+          style={{
+            background: "#060E1E",
+            border: "1px solid #1E3A52",
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 360px" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#FCD34D",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 4,
+                }}
+              >
+                Hero Decision Brief
+              </div>
+              <div
+                data-testid="hero-decision-brief-headline"
+                style={{
+                  fontSize: 13,
+                  color: "#E2E8F0",
+                  fontWeight: 800,
+                  lineHeight: 1.35,
+                }}
+              >
+                {heroDecisionBrief.headline}
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                }}
+              >
+                {heroDecisionBrief.decisionStateLabel}.{" "}
+                {heroDecisionBrief.sensoryEvidence.coverageLabel}.
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                minWidth: 220,
+                maxWidth: 360,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 5,
+                }}
+              >
+                Suggested Next Action
+              </div>
+              <div
+                data-testid="hero-decision-brief-next-action"
+                style={{
+                  fontSize: 9,
+                  color: "#FDE68A",
+                  lineHeight: 1.5,
+                  fontWeight: 700,
+                }}
+              >
+                {heroDecisionBrief.nextAction}
+              </div>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
+              gap: 8,
+            }}
+          >
+            {renderDecisionBriefRow(
+              "Sensory Evidence",
+              heroDecisionBrief.sensoryEvidence.statusLabel,
+              heroDecisionBrief.sensoryEvidence.statusKey === "empty"
+                ? "#F59E0B"
+                : "#86EFAC"
+            )}
+            {renderDecisionBriefRow(
+              "Best-Supported Sensory",
+              heroDecisionBrief.strongestSensoryLabel,
+              heroDecisionBrief.strongestSensoryCandidate ? "#7DD3FC" : "#94A3B8"
+            )}
+            {renderDecisionBriefRow(
+              "Top Technical Readiness",
+              heroDecisionBrief.topReadinessLabel,
+              "#C4B5FD"
+            )}
+            {renderDecisionBriefRow(
+              "Focused Technical Read",
+              heroDecisionBrief.focusedTechnicalLabel,
+              heroDecisionBrief.decisionCandidate ? "#CBD5E1" : "#94A3B8"
+            )}
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0,1fr) minmax(220px,0.8fr)",
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 8,
+                padding: "8px 9px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 5,
+                }}
+              >
+                Warnings / Guardrails
+              </div>
+              <div
+                data-testid="hero-decision-brief-warnings"
+                style={{
+                  display: "grid",
+                  gap: 4,
+                  fontSize: 8.6,
+                  color: heroDecisionBrief.warnings.length ? "#FCD34D" : "#86EFAC",
+                  lineHeight: 1.5,
+                }}
+              >
+                {heroDecisionBrief.warnings.length ? (
+                  heroDecisionBrief.warnings.map((warning) => (
+                    <div key={warning}>{warning}</div>
+                  ))
+                ) : (
+                  <div>No major decision guardrail is standing out right now.</div>
+                )}
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 8,
+                padding: "8px 9px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 700,
+                  marginBottom: 5,
+                }}
+              >
+                Finalists
+              </div>
+              <div
+                style={{
+                  fontSize: 8.6,
+                  color: heroDecisionBrief.finalists.length ? "#C4B5FD" : "#94A3B8",
+                  lineHeight: 1.5,
+                }}
+              >
+                {heroDecisionBrief.finalists.length
+                  ? heroDecisionBrief.finalists
+                      .map((item) => item.formula?.name || "Formula")
+                      .join(", ")
+                  : "No finalists marked yet"}
+              </div>
+            </div>
           </div>
         </div>
         <div

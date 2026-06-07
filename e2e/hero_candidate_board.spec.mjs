@@ -25,6 +25,13 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(board.getByText("Hero Scent Development")).toBeVisible();
   await expect(board.getByText("Original + 3 Test Variations")).toBeVisible();
 
+  const decisionBrief = page.getByTestId("hero-decision-brief");
+  await expect(decisionBrief).toBeVisible();
+  await expect(decisionBrief.getByText("Hero Decision Brief")).toBeVisible();
+  await expect(
+    page.getByTestId("hero-decision-brief-headline")
+  ).toHaveText("No launch candidate marked yet");
+
   for (const formulaName of HERO_FORMULA_NAMES) {
     await expect(board.getByText(formulaName).first()).toBeVisible();
   }
@@ -70,10 +77,16 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(skinAirSensory.getByText("2026-06-07")).toBeVisible();
   await expect(skinAirSensory.getByText("8.5/10")).toBeVisible();
   await expect(skinAirSensory.getByText("reduce damp edge")).toBeVisible();
+  await expect(decisionBrief.getByText("Partial wear testing")).toBeVisible();
+  await expect(
+    decisionBrief.getByText(/Skin-Air Bridge \(1 test .* confidence 8\/10/)
+  ).toBeVisible();
 
   await page.reload({ waitUntil: "domcontentloaded" });
   const reloadedBoard = page.getByTestId("hero-candidate-board");
   await expect(reloadedBoard).toBeVisible();
+  const reloadedDecisionBrief = page.getByTestId("hero-decision-brief");
+  await expect(reloadedDecisionBrief).toBeVisible();
   const reloadedSkinAirSensory = page.getByTestId(
     "hero-sensory-summary-seed-hero-skin-air-bridge"
   );
@@ -87,6 +100,9 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(
     page.getByTestId("hero-candidate-status-seed-hero-skin-air-bridge")
   ).toHaveText("Winner");
+  await expect(
+    page.getByTestId("hero-decision-brief-headline")
+  ).toHaveText("Current marked winner: Skin-Air Bridge");
 
   expect(pageErrors).toEqual([]);
 });
