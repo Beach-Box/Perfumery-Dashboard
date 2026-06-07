@@ -45,17 +45,23 @@ Seeded formulas are embedded in `FORMULAS_INIT`. These are the base formula reco
 
 Saved builds and formula notes are not written back into `FORMULAS_INIT`; they live in browser storage unless a future explicit promotion flow is added.
 
-The current 10-seed lineup is legacy active data. It is preserved in
+The active seed library is now the focused 4-formula hero-scent development set:
+`Random Concoction - Original`, `Skin-Air Bridge`, `Damp Shoreline v1`, and
+`Damp Shoreline v2`. These records use explicit stable `formulaKey` values plus
+`familyKey`, `variationRole`, `variationNumber`, `versionLabel`,
+`revisionNote`, and `developmentStatus` metadata so the set can be treated as
+one development family.
+
+The previous 10-seed beach-line concept is legacy data. It is preserved in
 [`docs/archive/legacy_formula_seeds_2026-06-07.md`](archive/legacy_formula_seeds_2026-06-07.md)
-and is scheduled to be replaced once the exact 4 active hero-scent formulas are
-supplied. Until that replacement task runs, the app should keep `FORMULAS_INIT`
-unchanged so active runtime behavior remains stable.
+for reference and should not be reintroduced into the active UI unless a future
+task explicitly creates a separate legacy/archive view.
 
-Future formula seed resets should use explicit stable `formulaKey` values. The
-current legacy seeds rely on generated keys from formula name plus array index,
-which makes replacement and localStorage migration more fragile.
+Future formula seed resets should continue using explicit stable `formulaKey`
+values. The retired legacy seeds relied on generated keys from formula name plus
+array index, which made replacement and localStorage migration more fragile.
 
-Retired seed keys to handle during the future replacement:
+Retired legacy seed keys handled during active library construction:
 
 - `seed-cabana-confessions-1`
 - `seed-coastal-af-2`
@@ -68,17 +74,16 @@ Retired seed keys to handle during the future replacement:
 - `seed-seasick-satisfied-9`
 - `seed-wet-shore-10`
 
-Smallest future saved-build guardrail: `buildFormulaLibrary` supports an
-optional `retiredSeedKeys` key set and can filter persisted records whose
-`formulaKey` is retired and whose record is a seeded baseline or seeded
-override. The current app call does not pass retired keys yet, so active runtime
-behavior is unchanged. During the 4-formula replacement, pass the retired legacy
-keys so old seed-derived overrides in `bb_saved_builds` do not reappear as
-active formulas after `FORMULAS_INIT` is replaced. Keep unrelated custom
-formulas and draft versions intact, even if they were derived from a retired
-seed, unless the user explicitly asks to remove them.
+Saved-build guardrail: `buildFormulaLibrary` supports an optional
+`retiredSeedKeys` key set and filters persisted records whose `formulaKey` is
+retired and whose record is a seeded baseline or seeded override. The app passes
+the retired legacy keys during active library construction so old seed-derived
+overrides in `bb_saved_builds` do not reappear as active formulas after
+`FORMULAS_INIT` has been replaced. Keep unrelated custom formulas and draft
+versions intact, even if they were derived from a retired seed, unless the user
+explicitly asks to remove them.
 
-Future active hero-scent seeds should use this shape:
+Active hero-scent seeds should use this shape:
 
 ```js
 {
@@ -202,7 +207,7 @@ Be careful with `--update-registry` and `--download` on discovery scripts becaus
 
 Use this decision model unless the specific code path proves otherwise:
 
-1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`. The current `FORMULAS_INIT` records are legacy active seeds until the focused 4-formula hero-scent replacement is supplied and implemented.
+1. **Base live app data** starts in embedded `RAW_DB`, `PRICING`, and `FORMULAS_INIT`. The current `FORMULAS_INIT` records are the focused 4-formula hero-scent development set; the prior 10-formula beach-line seeds are archived legacy references only.
 2. **Canonical enrichment and compliance support** come from `src/data/` registries interpreted by `src/lib/ifra_combined_package.js` and runtime helpers.
 3. **Supplier imports** are support/review data until approved and applied into supplier registries, normalization data, or embedded live pricing/catalog sections.
 4. **Evidence candidates** are review artifacts until approved and promoted.

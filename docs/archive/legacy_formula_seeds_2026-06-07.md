@@ -1,12 +1,11 @@
 # Legacy Formula Seeds Archive - 2026-06-07
 
 This archive preserves the 10 formula records that were active in `FORMULAS_INIT`
-before the planned focused hero-scent reset.
+before the focused hero-scent reset.
 
-These records are legacy launch-line concepts. They remain active in
-`src/App.jsx` until the exact 4 hero formulas are supplied and the active seed
-replacement task is run. This file is documentation only and is not imported by
-the app runtime.
+These records are legacy launch-line concepts. They are no longer active in
+`src/App.jsx` after the 4 hero formula seed replacement. This file is
+documentation only and is not imported by the app runtime.
 
 ## Summary
 

@@ -247,13 +247,15 @@ Observed embedded data counts from `src/App.jsx`:
 | Pricing catalog rows | 1,251 |
 | Supplier rows in `PRICING` | 1,590 |
 | Supplier price points | 10,101 |
-| Seeded formulas | 10 legacy active seeds; archived for planned hero-scent reset |
-| Seeded formula ingredient lines | 217 legacy seed lines |
+| Seeded formulas | 4 active hero-scent development seeds; prior 10 legacy seeds archived |
+| Seeded formula ingredient lines | 129 active hero seed lines |
 
-The 10 current formula seeds are legacy active data scheduled to be replaced by
-4 focused hero-scent development formulas once the exact formula records are
-supplied. The legacy records are archived in
-[`docs/archive/legacy_formula_seeds_2026-06-07.md`](archive/legacy_formula_seeds_2026-06-07.md).
+The active formula seeds are now the focused hero-scent development set:
+`Random Concoction - Original`, `Skin-Air Bridge`, `Damp Shoreline v1`, and
+`Damp Shoreline v2`. The previous 10-formula beach-line seed set is archived in
+[`docs/archive/legacy_formula_seeds_2026-06-07.md`](archive/legacy_formula_seeds_2026-06-07.md)
+and filtered out of active saved-build library construction when old
+seed-derived records exist in browser localStorage.
 
 Common `RAW_DB` fields observed:
 
