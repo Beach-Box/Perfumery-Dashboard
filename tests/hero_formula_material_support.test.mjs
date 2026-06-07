@@ -129,8 +129,66 @@ test("hero formula support creates alias rows and black-box accord records", () 
   );
 });
 
+test("hero formula support resolves confirmed aliases to existing catalog rows", () => {
+  const targetRows = {
+    "Hedione® High Cis": rawDbRow({ note: "mid", supplier: "Fraterworks" }),
+    "Vetiveryl Acetate 20326": rawDbRow({
+      note: "base",
+      supplier: "Fraterworks",
+    }),
+    "Gamma Nonalactone": rawDbRow({ note: "mid", supplier: "Fraterworks" }),
+    "Lemon “Superior” Oil, FCF": rawDbRow({
+      note: "top",
+      supplier: "Fraterworks",
+    }),
+  };
+  const rawRows = buildHeroFormulaRawDbSupportRows(targetRows);
+
+  assert.deepEqual(rawRows["Hedione HC"], targetRows["Hedione® High Cis"]);
+  assert.deepEqual(
+    rawRows["Vetiveryl Acetate"],
+    targetRows["Vetiveryl Acetate 20326"]
+  );
+  assert.deepEqual(rawRows["Aldehyde C-18"], targetRows["Gamma Nonalactone"]);
+  assert.deepEqual(
+    rawRows["Lemon FCF"],
+    targetRows["Lemon “Superior” Oil, FCF"]
+  );
+
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Lemon “Superior” Oil, FCF": {
+      Fraterworks: { S: [[4, "g", 4.72]], inStock: true },
+    },
+  });
+  assert.deepEqual(pricingRows["Lemon FCF"].Fraterworks.S, [[4, "g", 4.72]]);
+
+  assert.equal(
+    MATERIAL_NORMALIZATION["Hedione HC"].linkedDuplicateOfCatalogName,
+    "Hedione® High Cis"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Vetiveryl Acetate"].linkedDuplicateOfCatalogName,
+    "Vetiveryl Acetate 20326"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Aldehyde C-18"].linkedDuplicateOfCatalogName,
+    "Gamma Nonalactone"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Lemon FCF"].linkedDuplicateOfCatalogName,
+    "Lemon “Superior” Oil, FCF"
+  );
+
+  const aldehydeResolved = resolveIngredientIdentity("Aldehyde C-18");
+  assert.equal(aldehydeResolved.inheritedFromCatalogName, "Gamma Nonalactone");
+  assert.equal(aldehydeResolved.sourceCatalogName, "Aldehyde C-18");
+});
+
 test("hero formula normalization overlay supports diluted identity and aliases", () => {
-  assert.equal(MATERIAL_NORMALIZATION["Ambroxan 50% TEC"].entryKind, "diluted_stock");
+  assert.equal(
+    MATERIAL_NORMALIZATION["Ambroxan 50% TEC"].entryKind,
+    "diluted_stock"
+  );
   assert.equal(
     MATERIAL_NORMALIZATION["Seaweed Abs 10%"].linkedDuplicateOfCatalogName,
     "Seaweed Absolute 10%"
@@ -158,17 +216,114 @@ test("hero formula normalization overlay supports diluted identity and aliases",
   );
 });
 
-test("hero formula support leaves ambiguous user-confirmation items unresolved", () => {
+test("hero formula support maps Ylang Ylang shorthand as a 10% complete-oil stock", () => {
+  assert.equal(
+    MATERIAL_NORMALIZATION["Ylang Ylang 10%"].entryKind,
+    "diluted_stock"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Ylang Ylang 10%"].linkedDuplicateOfCatalogName,
+    "Ylang-Ylang Complete Oil"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Ylang Ylang 10%"].stock.activeMaterialName,
+    "Ylang-Ylang Complete Oil"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Ylang Ylang 10%"].stock.activePercent,
+    10
+  );
+  assert.equal(
+    computeActiveRestrictedPercent({
+      formulaPercent: 8,
+      ingredientName: "Ylang Ylang 10%",
+    }),
+    0.8
+  );
+
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Ylang-Ylang Complete Oil": {
+      Fraterworks: {
+        S: [[10, "g", 20]],
+        inStock: true,
+      },
+    },
+  });
+  assert.deepEqual(pricingRows["Ylang Ylang 10%"].Fraterworks.S, [
+    [100, "g", 20],
+  ]);
+});
+
+test("hero formula support creates minimal own-material support records without pricing", () => {
+  const rawRows = buildHeroFormulaRawDbSupportRows({});
+
+  assert.equal(rawRows.Algenone[8], "mid");
+  assert.equal(rawRows.Algenone[11], "Hero Formula Support");
+  assert.equal(rawRows.Algenone[17], "Support Record");
+  assert.equal(rawRows.Algenone[20], null);
+  assert.equal(rawRows.Cyclogalbanate[8], "mid");
+  assert.equal(rawRows.Cyclogalbanate[11], "Hero Formula Support");
+  assert.equal(rawRows.Cyclogalbanate[17], "Support Record");
+
+  const pricingRows = buildHeroFormulaPricingSupportRows({});
+  assert.equal(pricingRows.Algenone, undefined);
+  assert.equal(pricingRows.Cyclogalbanate, undefined);
+
+  assert.equal(
+    MATERIAL_NORMALIZATION.Algenone.entryKind,
+    "canonical_material"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION.Algenone.canonicalMaterialKey,
+    "hero_algenone"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION.Cyclogalbanate.canonicalMaterialKey,
+    "hero_cyclogalbanate"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION.Algenone.reviewState,
+    "catalog_record_needed"
+  );
+});
+
+test("hero formula support improves confirmed gap coverage and leaves missing PA rows for review", () => {
   const reviewNeededNames = new Set(
     HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.map((item) => item.name)
   );
+  const resolvedOverlayNames = new Set([
+    ...HERO_FORMULA_MATERIAL_SUPPORT.dilutedStocks.map((item) => item.name),
+    ...HERO_FORMULA_MATERIAL_SUPPORT.aliases.map((item) => item.name),
+    ...HERO_FORMULA_MATERIAL_SUPPORT.supportRecords.map((item) => item.name),
+  ]);
 
+  for (const name of [
+    "Algenone",
+    "Cyclogalbanate",
+    "Hedione HC",
+    "Vetiveryl Acetate",
+    "Aldehyde C-18",
+    "Lemon FCF",
+    "Ylang Ylang 10%",
+  ]) {
+    assert.equal(
+      resolvedOverlayNames.has(name),
+      true,
+      `${name} should resolve`
+    );
+    assert.equal(
+      reviewNeededNames.has(name),
+      false,
+      `${name} should not need review`
+    );
+  }
+
+  assert.equal(HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.length, 2);
   assert.equal(reviewNeededNames.has("Pink Peppercorn Oil P&N"), true);
-  assert.equal(reviewNeededNames.has("Lemon FCF"), true);
-  assert.equal(reviewNeededNames.has("Ylang Ylang 10%"), true);
+  assert.equal(reviewNeededNames.has("Cypriol"), true);
+  assert.equal(51 - reviewNeededNames.size, 49);
   assert.equal(MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"], undefined);
-  assert.equal(MATERIAL_NORMALIZATION["Lemon FCF"], undefined);
-  assert.equal(MATERIAL_NORMALIZATION["Ylang Ylang 10%"], undefined);
+  assert.equal(MATERIAL_NORMALIZATION.Cypriol, undefined);
 });
 
 test("active hero formula seed composition is unchanged by support overlays", () => {

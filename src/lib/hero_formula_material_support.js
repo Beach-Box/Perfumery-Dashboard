@@ -105,6 +105,29 @@ function createAccordRawDbRow(accord = {}) {
   });
 }
 
+function createSupportRecordRawDbRow(record = {}) {
+  const supplierName = record.supplierName || HERO_SUPPORT_SUPPLIER_NAME;
+  const summary =
+    record.scentSummary || `Hero formula support record for ${record.name}`;
+  const description =
+    record.scentDesc ||
+    "Reviewed hero formula support record. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred.";
+
+  return createRawDbRow({
+    note: record.note || null,
+    type: record.type || null,
+    ifra: false,
+    supplier: supplierName,
+    char: description,
+    rep: record.name || null,
+    scentClass: record.scentClass || "Support Record",
+    scentSummary: summary,
+    scentDesc: description,
+    descriptorTags: ["Hero Formula", "Support Record"],
+    vpConfidence: "review_needed",
+  });
+}
+
 function scaleSupplierPriceRowsForDilution(rows = [], activeFraction) {
   if (!activeFraction) return cloneJsonValue(rows);
   return rows.map((row) => {
@@ -167,6 +190,12 @@ export function buildHeroFormulaRawDbSupportRows(rawDb = {}) {
   for (const accord of HERO_FORMULA_MATERIAL_SUPPORT.accords || []) {
     if (!rawDb[accord.name]) {
       supportRows[accord.name] = createAccordRawDbRow(accord);
+    }
+  }
+
+  for (const record of HERO_FORMULA_MATERIAL_SUPPORT.supportRecords || []) {
+    if (!rawDb[record.name]) {
+      supportRows[record.name] = createSupportRecordRawDbRow(record);
     }
   }
 
@@ -261,6 +290,24 @@ function createAccordNormalizationEntry(accord = {}) {
   };
 }
 
+function createSupportRecordNormalizationEntry(record = {}) {
+  const supplierName = record.supplierName || HERO_SUPPORT_SUPPLIER_NAME;
+  return {
+    entryKind: record.entryKind || "canonical_material",
+    canonicalMaterialKey: record.canonicalMaterialKey,
+    reviewState: record.reviewState || "support_record",
+    sourceConfidence: record.sourceConfidence || "reviewed_support_overlay",
+    supplierLinks: {
+      [supplierName]: {
+        status: record.reviewState || "support_record",
+        note:
+          record.scentDesc ||
+          `${record.name} has a reviewed hero formula support record. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred.`,
+      },
+    },
+  };
+}
+
 function createAliasNormalizationEntry(alias = {}, targetEntry = null) {
   const isDilutedAlias = alias.entryKind === "diluted_stock";
   return {
@@ -295,6 +342,10 @@ export function buildHeroFormulaMaterialNormalizationEntries(baseEntries = {}) {
 
   for (const accord of HERO_FORMULA_MATERIAL_SUPPORT.accords || []) {
     entries[accord.name] = createAccordNormalizationEntry(accord);
+  }
+
+  for (const record of HERO_FORMULA_MATERIAL_SUPPORT.supportRecords || []) {
+    entries[record.name] = createSupportRecordNormalizationEntry(record);
   }
 
   for (const alias of HERO_FORMULA_MATERIAL_SUPPORT.aliases || []) {

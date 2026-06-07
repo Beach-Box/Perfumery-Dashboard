@@ -135,6 +135,15 @@
       "carrierName": null,
       "note": "mid",
       "type": "EO"
+    },
+    {
+      "name": "Ylang Ylang 10%",
+      "parentName": "Ylang-Ylang Complete Oil",
+      "canonicalMaterialKey": "ylang_ylang_complete_oil",
+      "activePercent": 10,
+      "carrierName": null,
+      "note": "mid",
+      "type": "EO"
     }
   ],
   "accords": [
@@ -215,44 +224,58 @@
       "name": "C-8",
       "targetName": "Aldehyde C-8",
       "canonicalMaterialKey": "aldehyde_c8"
+    },
+    {
+      "name": "Hedione HC",
+      "targetName": "Hedione® High Cis",
+      "canonicalMaterialKey": "hedione_high_cis"
+    },
+    {
+      "name": "Vetiveryl Acetate",
+      "targetName": "Vetiveryl Acetate 20326",
+      "canonicalMaterialKey": "vetiveryl_acetate_20326"
+    },
+    {
+      "name": "Aldehyde C-18",
+      "targetName": "Gamma Nonalactone",
+      "canonicalMaterialKey": "gamma_nonalactone"
+    },
+    {
+      "name": "Lemon FCF",
+      "targetName": "Lemon “Superior” Oil, FCF",
+      "canonicalMaterialKey": "lemon_superior_oil_fcf"
+    }
+  ],
+  "supportRecords": [
+    {
+      "name": "Algenone",
+      "canonicalMaterialKey": "hero_algenone",
+      "note": "mid",
+      "sourceConfidence": "user_confirmed_material_identity",
+      "reviewState": "catalog_record_needed",
+      "scentSummary": "Hero formula support record for Algenone",
+      "scentDesc": "Reviewed as its own active hero formula material. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred by this overlay."
+    },
+    {
+      "name": "Cyclogalbanate",
+      "canonicalMaterialKey": "hero_cyclogalbanate",
+      "note": "mid",
+      "sourceConfidence": "user_confirmed_material_identity",
+      "reviewState": "catalog_record_needed",
+      "scentSummary": "Hero formula support record for Cyclogalbanate",
+      "scentDesc": "Reviewed as its own active hero formula material. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred by this overlay."
     }
   ],
   "reviewNeeded": [
     {
-      "name": "Algenone",
-      "reason": "No clear current catalog or supplier parent was confirmed."
-    },
-    {
-      "name": "Cyclogalbanate",
-      "reason": "No clear current catalog or supplier parent was confirmed."
-    },
-    {
       "name": "Cypriol",
-      "reason": "No clear current catalog or supplier parent was confirmed."
-    },
-    {
-      "name": "Hedione HC",
-      "reason": "Grade-specific material needs confirmation before mapping."
-    },
-    {
-      "name": "Vetiveryl Acetate",
-      "reason": "No clear current catalog or supplier parent was confirmed."
-    },
-    {
-      "name": "Aldehyde C-18",
-      "reason": "No clear current catalog or supplier parent was confirmed."
+      "confirmedSupplierName": "Perfumers Apprentice",
+      "reason": "User confirmed this is a Perfumers Apprentice product, but the current repo has no exact Perfumers Apprentice Cypriol supplier/catalog row to target safely."
     },
     {
       "name": "Pink Peppercorn Oil P&N",
-      "reason": "Supplier/source-specific identity needs user confirmation."
-    },
-    {
-      "name": "Lemon FCF",
-      "reason": "Multiple plausible lemon FCF/terpeneless catalog rows exist; user confirmation is needed."
-    },
-    {
-      "name": "Ylang Ylang 10%",
-      "reason": "Parent material is ambiguous; user confirmation is needed."
+      "confirmedSupplierName": "Perfumers Apprentice",
+      "reason": "User confirmed this is a Perfumers Apprentice product, but the current repo has no exact Perfumers Apprentice pink peppercorn oil supplier/catalog row to target safely."
     }
   ]
 }

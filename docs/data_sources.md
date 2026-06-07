@@ -126,8 +126,18 @@ IFRA/activity workflows:
 - Safe name variants such as `Florol`/`Florol®` and
   `Orbitone T Neo`/`Orbitone® T Neo` are linked as aliases while preserving the
   formula display name.
-- Ambiguous rows remain review-needed until the user confirms the intended
-  parent material or supplier product.
+- Confirmed hero formula decisions now map `Hedione HC` to
+  `Hedione® High Cis`, `Vetiveryl Acetate` to
+  `Vetiveryl Acetate 20326`, `Aldehyde C-18` to `Gamma Nonalactone`,
+  `Lemon FCF` to the Fraterworks `Lemon “Superior” Oil, FCF` row, and
+  `Ylang Ylang 10%` to a 10% dilution of `Ylang-Ylang Complete Oil`.
+- `Algenone` and `Cyclogalbanate` have minimal reviewed support records as
+  their own materials. The overlay does not invent pricing, CAS, chemistry, or
+  IFRA limits for those rows.
+- Ambiguous rows remain review-needed until the local data has an exact target.
+  `Cypriol` and `Pink Peppercorn Oil P&N` are confirmed as Perfumers Apprentice
+  products, but the current repo does not yet have exact Perfumers Apprentice
+  supplier/catalog rows for them.
 
 ## Structured Registries In `src/data/`
 
