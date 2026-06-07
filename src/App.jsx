@@ -67488,11 +67488,11 @@ export default function App() {
     setLaunchPlanUnitsByFormula(launchRecommendation.recommendedUnitsByFormula);
     setActiveFounderScenarioId(null);
     setFounderScenarioName(
-      `${launchRecommendation.emphasisMeta.label} Budget Mix`
+      `${launchRecommendation.emphasisMeta.label} Budget Run`
     );
     setMainTab("founder");
     setLaunchRecommendationStatus(
-      "Loaded the recommended mix into the Founder launch planner."
+      "Loaded the recommended run into the Founder launch planner."
     );
   }, [launchRecommendation]);
   const saveLaunchRecommendationAsScenario = useCallback(() => {
@@ -67503,7 +67503,7 @@ export default function App() {
       return;
     }
     const recommendedScenario = createFounderLaunchScenarioRecord({
-      name: `${launchRecommendation.emphasisMeta.label} Launch Mix $${launchRecommendation.budget.toFixed(
+      name: `${launchRecommendation.emphasisMeta.label} Hero Launch Run $${launchRecommendation.budget.toFixed(
         0
       )}`,
       inputs: buildFounderScenarioInputState({
@@ -72558,7 +72558,7 @@ export default function App() {
                 }}
               >
                 Launch readiness is heuristic only. This view reuses the
-                current formula library, supplier basket costing, batch planner,
+                active hero candidates, supplier basket costing, batch planner,
                 critique/performance signals, and finished-product IFRA context
                 instead of inventing a separate business system.
               </p>
@@ -72767,8 +72767,8 @@ export default function App() {
                 maxWidth: 760,
               }}
             >
-              Start here when you want to assign units per formula. Blocked
-              formulas still stay plan-able; their pricing, inventory, and
+              Start here when you want to assign units per candidate. Blocked
+              candidates still stay plan-able; their pricing, inventory, and
               compliance issues remain visible as caveats below.
             </div>
           </div>
@@ -72832,7 +72832,7 @@ export default function App() {
                   maxWidth: 760,
                 }}
               >
-                Founder-oriented only. Select formulas and planned units, then
+                Founder-oriented only. Select candidates and planned units, then
                 the app reuses current SKU economics, basket mode, inventory,
                 and launch-readiness signals to estimate launch-run COGS,
                 revenue, buy-list gaps, and rough capital needs.
@@ -72891,7 +72891,7 @@ export default function App() {
                   cursor: "pointer",
                 }}
               >
-                Add Current Formula (100)
+                Add Current Candidate (100)
               </button>
               <button
                 type="button"
@@ -72954,7 +72954,7 @@ export default function App() {
               title: "Launch Planner Trust / Evidence",
               accent: "#F59E0B",
               footnote:
-                "This combines selected-formula basket support with shortage buy-list confidence under the active launch mix.",
+                "This combines selected-candidate basket support with shortage buy-list confidence under the active hero launch run.",
             })}
           </div>
 
@@ -72971,10 +72971,10 @@ export default function App() {
                 lineHeight: 1.65,
               }}
             >
-              No formulas are in the launch mix yet. Enter units for one or more
-              formulas, or use{" "}
+              No candidates are in the hero launch run yet. Enter units for one or more
+              candidates, or use{" "}
               <strong style={{ color: "#CBD5E1" }}>
-                Add Current Formula (100)
+                Add Current Candidate (100)
               </strong>
               , to turn the launch planner into a live capital, shortage, and
               buy-list read.
@@ -73010,7 +73010,7 @@ export default function App() {
                     letterSpacing: "0.08em",
                   }}
                 >
-                  Planned SKU Mix
+                  Planned Launch Units
                 </div>
                 <div
                   style={{
@@ -73032,7 +73032,7 @@ export default function App() {
                   maxWidth: 340,
                 }}
               >
-                Unit planning stays available for every formula here. Readiness,
+                Unit planning stays available for every candidate here. Readiness,
                 pricing, and inventory blockers still surface in the caveat and
                 launch-summary views instead of hiding the controls.
               </div>
@@ -73053,7 +73053,7 @@ export default function App() {
                   <tr style={{ borderBottom: "1px solid #1E3A52" }}>
                     {[
                       "Include",
-                      "Formula",
+                      "Candidate",
                       "Type",
                       "Readiness",
                       "Units",
@@ -73326,7 +73326,7 @@ export default function App() {
           >
             {[
               {
-                label: "Selected Formulas",
+                label: "Selected Candidates",
                 value: launchRunPlannerSummary.summary.selectedFormulaCount,
                 meta: `${launchRunPlannerSummary.summary.totalUnits} total units planned`,
                 color: "#7DD3FC",
@@ -73429,7 +73429,7 @@ export default function App() {
                   letterSpacing: "0.08em",
                 }}
               >
-                Saved Scenarios / Launch Mix Compare
+                Saved Scenarios / Launch Run Compare
               </div>
               <div
                 style={{
@@ -73440,7 +73440,7 @@ export default function App() {
                   maxWidth: 760,
                 }}
               >
-                Save the current Founder launch mix and shared assumptions, then
+                Save the current Founder hero launch run and shared assumptions, then
                 reload or compare scenarios against the current live pricing,
                 inventory, and readiness math. These are founder heuristics, not
                 ERP planning records.
@@ -73455,7 +73455,7 @@ export default function App() {
               }}
             >
               {[
-                `${currentScenarioFormulaCount} selected formula${
+                `${currentScenarioFormulaCount} selected candidate${
                   currentScenarioFormulaCount === 1 ? "" : "s"
                 }`,
                 `${currentScenarioUnits} total units`,
@@ -73523,8 +73523,8 @@ export default function App() {
                     lineHeight: 1.6,
                   }}
                 >
-                  Try names like Lean Launch, Best-Margin Launch, or Broad
-                  Launch. Updating the loaded scenario also handles renaming it.
+                  Try names like Lean Hero Launch, Best-Margin Hero Launch, or
+                  Final Candidate Run. Updating the loaded scenario also handles renaming it.
                 </div>
                 <div
                   style={{
@@ -73534,7 +73534,7 @@ export default function App() {
                     lineHeight: 1.6,
                   }}
                 >
-                  Stored in each scenario record: formulas + units, basket
+                  Stored in each scenario record: candidates + units, basket
                   mode, product context, fragrance/load context, IFRA category,
                   batch target, locked spray base context, and shared SKU
                   pricing inputs. Live formulas, pricing, inventory, and
@@ -73596,7 +73596,7 @@ export default function App() {
                       fontWeight: 700,
                     }}
                   >
-                    Current Mix
+                    Current Run
                   </div>
                   <div
                     style={{
@@ -73609,7 +73609,7 @@ export default function App() {
                     {currentScenarioUnits}
                   </div>
                   <div style={{ fontSize: 8.5, color: "#94A3B8" }}>
-                    units across {currentScenarioFormulaCount} selected formula
+                    units across {currentScenarioFormulaCount} selected candidate
                     {currentScenarioFormulaCount === 1 ? "" : "s"}
                   </div>
                 </div>
@@ -73659,7 +73659,7 @@ export default function App() {
                       ? currentFounderScenarioIsDirty
                         ? "Current Founder inputs differ from the loaded saved scenario."
                         : "Current Founder inputs match the loaded saved scenario."
-                      : "Save the current mix to make it reloadable after refresh."}
+                      : "Save the current run to make it reloadable after refresh."}
                   </div>
                 </div>
               </div>
@@ -73817,7 +73817,7 @@ export default function App() {
                   </div>
                 </div>
                 <div style={{ fontSize: 8.5, color: "#64748B" }}>
-                  Load, compare, duplicate, or delete saved mixes
+                  Load, compare, duplicate, or delete saved runs
                 </div>
               </div>
               <div style={{ display: "grid", gap: 8 }}>
@@ -73829,7 +73829,7 @@ export default function App() {
                       lineHeight: 1.65,
                     }}
                   >
-                    No saved launch scenarios yet. Save the current Founder mix
+                    No saved launch scenarios yet. Save the current Founder run
                     to create your first reloadable scenario.
                   </div>
                 ) : (
@@ -73944,7 +73944,7 @@ export default function App() {
                               selectionSummary.ifraLabel,
                               `${selectionSummary.batchTargetG.toFixed(0)}g target`,
                               selectionSummary.scenarioProductContext.diluentMaterialName,
-                              `${selectionSummary.selectedFormulaCount} formula${
+                              `${selectionSummary.selectedFormulaCount} candidate${
                                 selectionSummary.selectedFormulaCount === 1
                                   ? ""
                                   : "s"
@@ -74114,7 +74114,7 @@ export default function App() {
                     letterSpacing: "0.08em",
                   }}
                 >
-                  Launch Mix Scenario Compare
+                  Launch Run Scenario Compare
                 </div>
                 <div
                   style={{
@@ -74141,7 +74141,7 @@ export default function App() {
                 }}
               >
                 Select at least two saved scenarios to compare lean, margin-led,
-                or broader launch mixes side by side.
+                or fuller hero launch runs side by side.
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
@@ -74156,7 +74156,7 @@ export default function App() {
                     <tr style={{ borderBottom: "1px solid #1E3A52" }}>
                       {[
                         "Scenario",
-                        "Units / Mix",
+                        "Units / Run",
                         "Context",
                         "Trust",
                         "Launch Cash",
@@ -74474,7 +74474,7 @@ export default function App() {
               >
                 Heuristic founder guidance only. This recommender reuses the
                 current readiness, SKU economics, launch cash, and shortage
-                signals, then builds a budget-fitting mix with explicit
+                signals, then builds a budget-fitting run with explicit
                 inclusion and exclusion reasons. It is not an optimizer or a
                 guaranteed best answer.
               </div>
@@ -74484,8 +74484,8 @@ export default function App() {
                 `${launchRecommendation.emphasisMeta.label} mode`,
                 `$${launchRecommendationBudget.toFixed(0)} budget`,
                 launchRecommendationSkuLimit > 0
-                  ? `${launchRecommendationSkuLimit} SKU limit`
-                  : "No SKU limit",
+                  ? `${launchRecommendationSkuLimit} candidate limit`
+                  : "No candidate limit",
                 "24u fallback if no current plan units",
               ].map((tag) => (
                 <span
@@ -74580,7 +74580,7 @@ export default function App() {
                   marginBottom: 8,
                 }}
               >
-                Target SKU Count
+                Target Candidate Count
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input
@@ -74673,7 +74673,7 @@ export default function App() {
           >
             {[
               {
-                label: "Recommended SKUs",
+                label: "Recommended Candidates",
                 value: recommendationSummary.recommendedFormulaCount,
                 meta: `${recommendationSummary.totalUnits} total units`,
                 color: "#7DD3FC",
@@ -74784,7 +74784,7 @@ export default function App() {
                       color: "#E2E8F0",
                     }}
                   >
-                    Recommended Launch Mix
+                    Recommended Hero Launch Run
                   </div>
                   <div
                     style={{
@@ -74795,7 +74795,7 @@ export default function App() {
                     }}
                   >
                     Uses current launch-plan units where they exist; otherwise
-                    falls back to 24 units per formula.
+                    falls back to 24 units per candidate.
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -74824,7 +74824,7 @@ export default function App() {
                         : "not-allowed",
                     }}
                   >
-                    Load Recommended Mix
+                    Load Recommended Run
                   </button>
                   <button
                     type="button"
@@ -74863,10 +74863,10 @@ export default function App() {
                     lineHeight: 1.65,
                   }}
                 >
-                  No formula mix fits the current recommendation rules yet. Try
-                  raising the budget, lowering the SKU cap, or switching to a
+                  No candidate run fits the current recommendation rules yet. Try
+                  raising the budget, lowering the candidate cap, or switching to a
                   different emphasis mode. Sparse pricing or compliance support
-                  can also suppress otherwise promising mixes.
+                  can also suppress otherwise promising runs.
                 </div>
               ) : (
                 <div style={{ display: "grid", gap: 10 }}>
@@ -75031,7 +75031,7 @@ export default function App() {
                 >
                   {launchRecommendation.selectedCandidates.length > 0
                     ? recommendationCaveat
-                    : "No mix fit the current heuristic yet."}
+                    : "No run fit the current heuristic yet."}
                 </div>
                 <div
                   style={{
@@ -75041,7 +75041,7 @@ export default function App() {
                     lineHeight: 1.55,
                   }}
                 >
-                  This mix is being ranked under{" "}
+                  This run is being ranked under{" "}
                   <strong style={{ color: "#FCD34D" }}>
                     {launchRecommendation.emphasisMeta.label}
                   </strong>{" "}
@@ -75067,7 +75067,7 @@ export default function App() {
                     marginBottom: 8,
                   }}
                 >
-                  Excluded Formulas
+                  Excluded Candidates
                 </div>
                 <div style={{ display: "grid", gap: 8 }}>
                   {launchRecommendation.excludedCandidates.length === 0 ? (
@@ -75078,7 +75078,7 @@ export default function App() {
                         lineHeight: 1.6,
                       }}
                     >
-                      No tracked formula was excluded by the current heuristic.
+                      No tracked candidate was excluded by the current heuristic.
                     </div>
                   ) : (
                     launchRecommendation.excludedCandidates
@@ -75130,7 +75130,7 @@ export default function App() {
         >
           {[
             {
-              label: "Tracked Formulas",
+              label: "Tracked Candidates",
               value: founderDashboardSummary.summary.formulaCount,
               meta: `${founderDashboardSummary.summary.seededCount} seeded · ${founderDashboardSummary.summary.customCount} custom/versioned`,
               color: "#7DD3FC",
@@ -75557,7 +75557,7 @@ export default function App() {
           >
             {[
               {
-                label: "Modeled Formulas",
+                label: "Modeled Candidates",
                 value: modeledEconomicsCount,
                 meta: `${skuEconomicsSummary.summary.blockedCount} blocked by missing cost data`,
                 color: "#7DD3FC",
@@ -75698,7 +75698,7 @@ export default function App() {
                         lineHeight: 1.6,
                       }}
                     >
-                      No formulas currently surface in this bucket.
+                      No candidates currently surface in this bucket.
                     </div>
                   ) : title === "Top Per-SKU Cost Drivers" ? (
                     items.map((row) => (
@@ -75850,7 +75850,7 @@ export default function App() {
                     letterSpacing: "0.08em",
                   }}
                 >
-                  SKU Economics by Formula
+                  SKU Economics by Candidate
                 </div>
                 <div
                   style={{
@@ -75883,7 +75883,7 @@ export default function App() {
                 <thead>
                   <tr style={{ borderBottom: "1px solid #1E3A52" }}>
                     {[
-                      "Formula",
+                      "Candidate",
                       "Type",
                       "Oil Cost",
                       "Diluent",
@@ -76119,7 +76119,7 @@ export default function App() {
                     letterSpacing: "0.08em",
                   }}
                 >
-                  Formulas Nearest Production-Ready
+                  Candidates Nearest Production-Ready
                 </div>
                 <div
                   style={{
@@ -78686,7 +78686,7 @@ export default function App() {
                   letterSpacing: "0.08em",
                 }}
               >
-                Launch-Readiness Summary by Formula
+                Candidate Readiness Summary
               </div>
               <div
                 style={{
@@ -78697,7 +78697,7 @@ export default function App() {
                 }}
               >
                 A compact rollup of score, blockers, basket cost, and inventory
-                cap across the current formula library.
+                cap across the active hero candidates.
               </div>
             </div>
             <div style={{ fontSize: 9, color: "#64748B" }}>
@@ -78715,7 +78715,7 @@ export default function App() {
               <thead>
                 <tr style={{ borderBottom: "1px solid #1E3A52" }}>
                   {[
-                    "Formula",
+                    "Candidate",
                     "Type",
                     "Score",
                     "Status",
@@ -81501,7 +81501,7 @@ export default function App() {
                 margin: "2px 0 0",
               }}
             >
-              Live Ingredient Reference · Concentrate Builder · Odor Analysis
+              Hero Scent Development · Wear Tests · Launch Readiness
             </p>
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -82505,7 +82505,7 @@ export default function App() {
                     >
                       {[
                         [
-                          "Baseline Formula",
+                          "Original / Baseline",
                           compareLeftFormula?.formulaKey || "",
                           compareLeftLabel,
                           (nextKey) =>
@@ -82515,7 +82515,7 @@ export default function App() {
                             })),
                         ],
                         [
-                          "Compare Against",
+                          "Test Variation / Candidate",
                           compareRightFormula?.formulaKey || "",
                           compareRightLabel,
                           (nextKey) =>
@@ -84785,7 +84785,7 @@ export default function App() {
                 {subTab === "notes" && (
                   <div style={{ maxWidth: 680 }}>
                     <p style={{ fontSize: 11, color: "#64748B", marginBottom: 10, lineHeight: 1.6 }}>
-                      Iteration log for <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. Track changes, impressions, and next steps.
+                      Candidate notes and iteration log for <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. Track changes, impressions, and next steps.
                     </p>
                     <textarea
                       value={formulaNoteText}

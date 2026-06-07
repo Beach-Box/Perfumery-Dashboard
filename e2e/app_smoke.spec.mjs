@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 const APP_HEADING = /BEACH BOX\s+PERFUMERY DASHBOARD/i;
 const PRIMARY_TAB_LABELS = [
   "Founder",
-  "Formulas",
+  "Hero Lab",
   "Build",
   "Catalog",
   "Advisor",

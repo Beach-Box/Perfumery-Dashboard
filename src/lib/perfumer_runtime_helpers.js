@@ -7292,7 +7292,7 @@ function collectLaunchPlanTrustSignals(acc, launchPlan = null) {
   if (toFiniteNumber(launchPlan?.summary?.blockedEconomicsCount) > 0) {
     addTrustSignal(
       acc.missingSignals,
-      `${launchPlan.summary.blockedEconomicsCount} selected formula${
+      `${launchPlan.summary.blockedEconomicsCount} selected candidate${
         launchPlan.summary.blockedEconomicsCount === 1 ? "" : "s"
       } still have blocked SKU economics.`
     );
@@ -7300,7 +7300,7 @@ function collectLaunchPlanTrustSignals(acc, launchPlan = null) {
   if (toFiniteNumber(launchPlan?.summary?.blockedReadinessCount) > 0) {
     addTrustSignal(
       acc.blockerSignals,
-      `${launchPlan.summary.blockedReadinessCount} selected formula${
+      `${launchPlan.summary.blockedReadinessCount} selected candidate${
         launchPlan.summary.blockedReadinessCount === 1 ? "" : "s"
       } are still blocked in launch-readiness review.`
     );
@@ -7601,7 +7601,7 @@ export function buildFounderScenarioShareBrief({
     `Scenario: ${scenarioName}`,
     `Generated: ${generatedAt}`,
     ``,
-    `This brief reruns live founder math against the current formula library, pricing, inventory, and readiness signals. It is heuristic only, not an accounting statement.`,
+    `This brief reruns live founder math against the active hero candidates, pricing, inventory, and readiness signals. It is heuristic only, not an accounting statement.`,
     ``,
     `## Stored Scenario Context`,
     `- Basket mode: ${basketLabel}`,
@@ -7624,8 +7624,8 @@ export function buildFounderScenarioShareBrief({
     )}`,
     `- Labor buffer: $${toFiniteNumber(normalizedInputs.skuLaborCost).toFixed(2)}`,
     ``,
-    `## Formula Mix`,
-    ...(formulaMixLines.length ? formulaMixLines : ["- No formulas selected."]),
+    `## Candidate Run`,
+    ...(formulaMixLines.length ? formulaMixLines : ["- No candidates selected."]),
     ``,
     `## Live Runtime Snapshot`,
     `- Total units: ${Math.round(toFiniteNumber(launchSummary.totalUnits))}`,
@@ -8218,7 +8218,7 @@ export function buildLaunchRunPlannerSummary({
 
   if (blockedEconomicsItems.length > 0) {
     capitalCaveats.push(
-      `${blockedEconomicsItems.length} selected formula${
+      `${blockedEconomicsItems.length} selected candidate${
         blockedEconomicsItems.length === 1 ? "" : "s"
       } still have blocked SKU economics, so modeled launch COGS stays partial.`
     );
@@ -8239,14 +8239,14 @@ export function buildLaunchRunPlannerSummary({
   }
   if (selectedBlockedReadinessItems.length > 0) {
     capitalCaveats.push(
-      `${selectedBlockedReadinessItems.length} selected formula${
+      `${selectedBlockedReadinessItems.length} selected candidate${
         selectedBlockedReadinessItems.length === 1 ? "" : "s"
       } are still blocked in launch-readiness review.`
     );
   }
   if (selectedCautionItems.length > 0) {
     capitalCaveats.push(
-      `${selectedCautionItems.length} selected formula${
+      `${selectedCautionItems.length} selected candidate${
         selectedCautionItems.length === 1 ? "" : "s"
       } still carry caution-level data or inventory risk.`
     );
@@ -8385,7 +8385,7 @@ function buildRecommendationReasonList(candidate) {
     );
   }
   if (candidate.planSummary.shortageIngredientCount === 0) {
-    reasons.push("No shortage buy-list line is blocking this mix right now.");
+    reasons.push("No shortage buy-list line is blocking this run right now.");
   }
   if (candidate.topCapitalDriver) {
     reasons.push(
@@ -8591,7 +8591,7 @@ export function buildCapitalConstrainedLaunchRecommendation({
       excludedCandidates.push({
         ...candidate,
         exclusionReason:
-          "Skipped because the SKU limit was already filled by higher-priority formulas.",
+          "Skipped because the candidate limit was already filled by higher-priority candidates.",
       });
       return;
     }
