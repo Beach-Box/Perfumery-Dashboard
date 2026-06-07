@@ -111,6 +111,14 @@ import {
   buildHeroFormulaRawDbSupportRows,
 } from "./lib/hero_formula_material_support";
 import {
+  HERO_CANDIDATE_STATUS_META,
+  HERO_CANDIDATE_STATUS_ORDER,
+  applyHeroCandidateStatus,
+  getHeroCandidateRoleLabel,
+  normalizeHeroCandidateStatusState,
+  sortHeroCandidateFormulas,
+} from "./lib/hero_candidate_helpers";
+import {
   getMaterialDisplayName,
   getMaterialRuntimeKeyCaption,
 } from "./lib/material_display_helpers";
@@ -54989,6 +54997,23 @@ function getFinishedProductStatusRank(status) {
   return ranks[status] ?? 4;
 }
 
+function getFinishedProductStatusLabel(status) {
+  return (
+    {
+      offender: "Offender",
+      offender_with_missing: "Offender + Gaps",
+      warning: "Tight Headroom",
+      warning_with_missing: "Tight Headroom + Gaps",
+      appears_compliant: "Appears Within Limit",
+      appears_compliant_with_missing: "Within Checked Limits + Gaps",
+      blocked_missing: "Blocked by Missing Data",
+      no_restricted_rows: "No Restricted Rows Hit",
+    }[status] ||
+    status ||
+    "Status unavailable"
+  );
+}
+
 class IngredientDetailErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -61561,6 +61586,9 @@ export default function App() {
   const [formulaCompareState, setFormulaCompareState] = useState(() =>
     readFormulaCompareState()
   );
+  const [heroCandidateStatuses, setHeroCandidateStatuses] = useState(() =>
+    readJsonStorage(APP_STORAGE_KEYS.heroCandidateStatus, {})
+  );
   const [basketMode, setBasketMode] = useState("cheapest");
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
@@ -61724,6 +61752,19 @@ export default function App() {
       }),
     [savedBuilds]
   );
+  const heroCandidateFormulas = useMemo(
+    () => sortHeroCandidateFormulas(formulas),
+    [formulas]
+  );
+  useEffect(() => {
+    setHeroCandidateStatuses((prev) => {
+      const next = normalizeHeroCandidateStatusState(heroCandidateFormulas, prev);
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
+    });
+  }, [heroCandidateFormulas]);
+  useEffect(() => {
+    writeJsonStorage(APP_STORAGE_KEYS.heroCandidateStatus, heroCandidateStatuses);
+  }, [heroCandidateStatuses]);
   const formula = formulas[selFrag] || formulas[0];
   const formulaByKey = useMemo(
     () => new Map(formulas.map((entry) => [entry.formulaKey, entry])),
@@ -62050,6 +62091,176 @@ export default function App() {
   const selectedBasketModeMeta =
     SUPPLIER_BASKET_MODE_META[basketMode] ||
     SUPPLIER_BASKET_MODE_META.cheapest;
+  const normalizedHeroCandidateStatuses = useMemo(
+    () =>
+      normalizeHeroCandidateStatusState(
+        heroCandidateFormulas,
+        heroCandidateStatuses
+      ),
+    [heroCandidateFormulas, heroCandidateStatuses]
+  );
+  const heroOriginalFormula =
+    heroCandidateFormulas.find((entry) => entry.variationRole === "original") ||
+    heroCandidateFormulas[0] ||
+    null;
+  const heroCandidateItems = useMemo(
+    () =>
+      heroCandidateFormulas.map((entry) => {
+        const supplierOverrides =
+          formulaSupplierOverrides[entry.formulaKey] || {};
+        const basketStrategies = buildSupplierBasketStrategies(
+          entry.ingredients || [],
+          pricesState,
+          supplierOverrides,
+          { db: DB, pricing: PRICING }
+        );
+        const selectedBasket =
+          basketStrategies[basketMode] || basketStrategies.cheapest;
+        const chemistry = computeChemistry(entry.ingredients || []);
+        const performance = perfScore(entry.ingredients || []);
+        const performanceModel = buildPerformanceModelSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            chemistry,
+            performance,
+            computeChemistry,
+            perfScore,
+          }
+        );
+        const ifraRows = getFormulaIfraRows(entry.ingredients || [], ifraCategory);
+        const finishedProductGuidance = buildFinishedProductIfraGuidance({
+          items: entry.ingredients || [],
+          category: ifraCategory,
+          fragranceLoadPercent: selectedFragranceType.pct,
+        });
+        const batchReport = buildBatchPlannerReport({
+          ingredients: entry.ingredients || [],
+          targetBatchG: batchPlannerTargetG,
+          inventory,
+          pricesState,
+          supplierOverrides,
+          basketMode,
+          db: DB,
+          pricing: PRICING,
+        });
+        const critiqueReport = buildFormulaCritiqueReport({
+          formula: entry,
+          chemistry,
+          performance,
+          performanceModel,
+          basket: selectedBasket,
+          cheapestBasket: basketStrategies.cheapest || null,
+          basketModeMeta: selectedBasketModeMeta,
+          ifraRows,
+          lens: critiqueLens,
+          db: DB,
+        });
+        const launchReadiness = buildLaunchReadinessSummary({
+          formula: entry,
+          basket: selectedBasket,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performanceModel,
+          critiqueReport,
+          targetBatchG: batchPlannerTargetG,
+        });
+        const trustSummary = buildFounderTrustSummary({
+          basket: selectedBasket,
+          launchReadiness,
+          expectedLineCount: Array.isArray(entry.ingredients)
+            ? entry.ingredients.length
+            : null,
+        });
+        const status =
+          normalizedHeroCandidateStatuses[entry.formulaKey] || "active";
+        const noteText =
+          formulaNotes[entry.formulaKey] ??
+          (entry.parentVersionId ? "" : formulaNotes[entry.name] ?? "") ??
+          "";
+
+        return {
+          formula: entry,
+          roleLabel: getHeroCandidateRoleLabel(entry),
+          status,
+          statusMeta:
+            HERO_CANDIDATE_STATUS_META[status] ||
+            HERO_CANDIDATE_STATUS_META.active,
+          totalG: (entry.ingredients || []).reduce(
+            (sum, ingredient) => sum + (Number(ingredient?.g) || 0),
+            0
+          ),
+          ingredientCount: (entry.ingredients || []).length,
+          launchReadiness,
+          selectedBasket,
+          batchReport,
+          ifraRows,
+          finishedProductGuidance,
+          performance,
+          performanceModel,
+          trustSummary,
+          sensoryStatus: noteText.trim()
+            ? `Freeform note saved (${noteText.trim().length} chars); no structured sensory note yet`
+            : "No structured sensory note yet",
+        };
+      }),
+    [
+      basketMode,
+      batchPlannerTargetG,
+      critiqueLens,
+      formulaNotes,
+      formulaSupplierOverrides,
+      heroCandidateFormulas,
+      ifraCategory,
+      inventory,
+      normalizedHeroCandidateStatuses,
+      pricesState,
+      selectedBasketModeMeta,
+      selectedFragranceType,
+    ]
+  );
+  const setHeroCandidateFormulaStatus = useCallback(
+    (formulaKey, status) => {
+      setHeroCandidateStatuses((prev) =>
+        applyHeroCandidateStatus(prev, heroCandidateFormulas, formulaKey, status)
+      );
+    },
+    [heroCandidateFormulas]
+  );
+  const openHeroCandidateFormula = useCallback(
+    (formulaKey) => {
+      const nextIndex = formulaIndexByKey.get(formulaKey);
+      if (typeof nextIndex !== "number") return;
+      setSelFrag(nextIndex);
+      setSubTab("formula");
+    },
+    [formulaIndexByKey]
+  );
+  const openHeroCandidateCompare = useCallback(
+    (rightFormulaKey) => {
+      if (!heroOriginalFormula || !rightFormulaKey) return;
+      const comparisonKey =
+        rightFormulaKey === heroOriginalFormula.formulaKey
+          ? heroCandidateFormulas.find(
+              (entry) => entry.formulaKey !== heroOriginalFormula.formulaKey
+            )?.formulaKey
+          : rightFormulaKey;
+      if (!comparisonKey) return;
+      setFormulaCompareState({
+        leftFormulaKey: heroOriginalFormula.formulaKey,
+        rightFormulaKey: comparisonKey,
+      });
+      const nextIndex =
+        formulaIndexByKey.get(comparisonKey) ??
+        formulaIndexByKey.get(heroOriginalFormula.formulaKey);
+      if (typeof nextIndex === "number") {
+        setSelFrag(nextIndex);
+      }
+      setSubTab("compare");
+    },
+    [formulaIndexByKey, heroCandidateFormulas, heroOriginalFormula]
+  );
   const diluentMaterialName = founderProductContext.diluentMaterialName;
   const skuFragranceOilG =
     founderProductContext.fillVolumeMl * (founderProductContext.fragranceLoadPercent / 100);
@@ -79931,6 +80142,564 @@ export default function App() {
     selectedBasketModeMeta,
     setInventoryQtyValue,
   ]);
+  const heroCandidateBoardContent = useMemo(() => {
+    if (!heroCandidateItems.length) return null;
+    const variationItems = heroCandidateItems.filter(
+      (item) => item.formula.formulaKey !== heroOriginalFormula?.formulaKey
+    );
+    const renderHeroTrustBadge = (trustSummary) => {
+      const meta = trustSummary?.levelMeta || FOUNDER_TRUST_LEVEL_META.mixed;
+      return (
+        <span
+          style={{
+            background: meta.bg,
+            border: `1px solid ${meta.border}`,
+            borderRadius: 999,
+            padding: "2px 7px",
+            fontSize: 7.8,
+            fontWeight: 700,
+            color: meta.color,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {meta.label}
+        </span>
+      );
+    };
+    const renderMetric = (label, value, meta = "", color = "#CBD5E1") => (
+      <div
+        key={label}
+        style={{
+          background: "#071826",
+          border: "1px solid #1E3A52",
+          borderRadius: 8,
+          padding: "8px 9px",
+          minHeight: 58,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 7.8,
+            color: "#64748B",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 700,
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            marginTop: 4,
+            fontSize: 12,
+            color,
+            fontWeight: 800,
+            lineHeight: 1.25,
+          }}
+        >
+          {value}
+        </div>
+        {meta ? (
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 8,
+              color: "#64748B",
+              lineHeight: 1.35,
+            }}
+          >
+            {meta}
+          </div>
+        ) : null}
+      </div>
+    );
+
+    return (
+      <section
+        data-testid="hero-candidate-board"
+        style={{
+          background: CARD,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 14,
+          padding: 14,
+          marginBottom: 16,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}
+            >
+              Hero Scent Development
+            </div>
+            <div
+              style={{
+                marginTop: 4,
+                fontSize: 16,
+                color: "#E2E8F0",
+                fontWeight: 800,
+              }}
+            >
+              Original + 3 Test Variations
+            </div>
+            <div
+              style={{
+                marginTop: 5,
+                fontSize: 9,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+                maxWidth: 720,
+              }}
+            >
+              Compare the active hero formula family, mark the launch candidate,
+              and keep the existing formula detail tools available below.
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: 7,
+              flexWrap: "wrap",
+              justifyContent: "flex-end",
+              maxWidth: 560,
+            }}
+          >
+            {variationItems.map((item) => (
+              <button
+                key={`hero-quick-compare-${item.formula.formulaKey}`}
+                type="button"
+                onClick={() => openHeroCandidateCompare(item.formula.formulaKey)}
+                style={{
+                  background: "#060E1E",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 8,
+                  color: "#CBD5E1",
+                  padding: "6px 9px",
+                  fontSize: 8.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Original vs {item.formula.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+            gap: 10,
+          }}
+        >
+          {heroCandidateItems.map((item) => {
+            const {
+              formula: candidateFormula,
+              launchReadiness,
+              statusMeta,
+              selectedBasket,
+              batchReport,
+              finishedProductGuidance,
+              performance,
+              trustSummary,
+            } = item;
+            const readinessMeta =
+              LAUNCH_READINESS_STATUS_META[launchReadiness.status] ||
+              LAUNCH_READINESS_STATUS_META.early;
+            const blockerText =
+              launchReadiness.blockers[0] ||
+              launchReadiness.cautions[0] ||
+              "No major blockers surfaced.";
+            const inventoryText = batchReport?.canFulfill
+              ? `Can make ${batchPlannerTargetG.toFixed(0)}g`
+              : `${batchReport?.shortageCount || 0} shortage${
+                  batchReport?.shortageCount === 1 ? "" : "s"
+                }`;
+            const inventoryMeta = batchReport?.maxProducibleG != null
+              ? `${batchReport.maxProducibleG.toFixed(1)}g max batch`
+              : "Batch planner unavailable";
+            const ifraStatusLabel = getFinishedProductStatusLabel(
+              finishedProductGuidance?.overallStatus
+            );
+            const ifraMeta =
+              launchReadiness.compliance.failCount > 0
+                ? `${launchReadiness.compliance.failCount} fail row${
+                    launchReadiness.compliance.failCount === 1 ? "" : "s"
+                  }`
+                : launchReadiness.compliance.warnCount > 0
+                ? `${launchReadiness.compliance.warnCount} warn row${
+                    launchReadiness.compliance.warnCount === 1 ? "" : "s"
+                  }`
+                : `${IFRA_CATEGORY_LABELS[ifraCategory]} checked`;
+            const selectedFormulaActive =
+              candidateFormula.formulaKey === formula?.formulaKey;
+
+            return (
+              <article
+                key={candidateFormula.formulaKey}
+                data-testid="hero-candidate-card"
+                style={{
+                  background: selectedFormulaActive
+                    ? "linear-gradient(135deg,#082F49,#071826)"
+                    : "#060E1E",
+                  border: `1px solid ${
+                    selectedFormulaActive ? "#38BDF8" : "#1E3A52"
+                  }`,
+                  borderRadius: 12,
+                  padding: 12,
+                  boxShadow: selectedFormulaActive
+                    ? "0 0 14px #38BDF820"
+                    : "none",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    alignItems: "flex-start",
+                    marginBottom: 9,
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 999,
+                          color: "#94A3B8",
+                          padding: "2px 7px",
+                          fontSize: 7.8,
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {item.roleLabel}
+                      </span>
+                      <span
+                        data-testid={`hero-candidate-status-${candidateFormula.formulaKey}`}
+                        style={{
+                          background: statusMeta.bg,
+                          border: `1px solid ${statusMeta.border}`,
+                          borderRadius: 999,
+                          color: statusMeta.color,
+                          padding: "2px 7px",
+                          fontSize: 7.8,
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        {statusMeta.label}
+                      </span>
+                    </div>
+                    <h3
+                      style={{
+                        margin: 0,
+                        color: "#F8FAFC",
+                        fontSize: 14,
+                        lineHeight: 1.25,
+                      }}
+                    >
+                      {candidateFormula.name}
+                    </h3>
+                    <div
+                      style={{
+                        marginTop: 5,
+                        fontSize: 8.8,
+                        color: "#94A3B8",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {candidateFormula.versionLabel} -{" "}
+                      {candidateFormula.revisionNote || candidateFormula.desc}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openHeroCandidateFormula(candidateFormula.formulaKey)
+                    }
+                    style={{
+                      background: "#0A1628",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      color: "#CBD5E1",
+                      padding: "5px 8px",
+                      fontSize: 8,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    Open
+                  </button>
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                    gap: 7,
+                  }}
+                >
+                  {renderMetric(
+                    "Mass",
+                    `${item.totalG.toFixed(2)}g`,
+                    `${item.ingredientCount} ingredients`,
+                    "#7DD3FC"
+                  )}
+                  {renderMetric(
+                    "Launch Score",
+                    `${launchReadiness.totalScore.toFixed(0)}/100`,
+                    readinessMeta.label,
+                    readinessMeta.color
+                  )}
+                  {renderMetric(
+                    "Cost",
+                    selectedBasket?.totalCost != null
+                      ? `$${selectedBasket.totalCost.toFixed(2)}`
+                      : "Unavailable",
+                    `${selectedBasketModeMeta.label} basket`,
+                    "#34D399"
+                  )}
+                  {renderMetric(
+                    "Inventory",
+                    inventoryText,
+                    inventoryMeta,
+                    batchReport?.canFulfill ? "#34D399" : "#F59E0B"
+                  )}
+                  {renderMetric(
+                    "IFRA",
+                    ifraStatusLabel,
+                    ifraMeta,
+                    launchReadiness.compliance.hasHardBlock
+                      ? "#FCA5A5"
+                      : "#34D399"
+                  )}
+                  {renderMetric(
+                    "Performance",
+                    `L ${performance.longevity.toFixed(1)} / S ${performance.sillage.toFixed(1)} / P ${performance.projection.toFixed(1)}`,
+                    item.performanceModel?.headline || "Model unavailable",
+                    "#C4B5FD"
+                  )}
+                </div>
+                <div
+                  style={{
+                    marginTop: 9,
+                    display: "grid",
+                    gap: 7,
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: 5,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 7.8,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 700,
+                        }}
+                      >
+                        Material Support
+                      </span>
+                      {renderHeroTrustBadge(trustSummary)}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.4,
+                        color: "#CBD5E1",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {trustSummary?.supportLabel || "Support unavailable"}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 7.8,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 5,
+                      }}
+                    >
+                      Blockers / Gaps
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.4,
+                        color:
+                          launchReadiness.blockers.length > 0
+                            ? "#FCA5A5"
+                            : "#CBD5E1",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {blockerText}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 7.8,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                        marginBottom: 5,
+                      }}
+                    >
+                      Sensory Note Status
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.4,
+                        color: "#CBD5E1",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {item.sensoryStatus}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    flexWrap: "wrap",
+                    marginTop: 10,
+                  }}
+                >
+                  {HERO_CANDIDATE_STATUS_ORDER.map((statusKey) => {
+                    const meta =
+                      HERO_CANDIDATE_STATUS_META[statusKey] ||
+                      HERO_CANDIDATE_STATUS_META.active;
+                    const isActive = item.status === statusKey;
+                    return (
+                      <button
+                        key={`${candidateFormula.formulaKey}-${statusKey}`}
+                        type="button"
+                        aria-label={`Set ${candidateFormula.name} to ${meta.label}`}
+                        onClick={() =>
+                          setHeroCandidateFormulaStatus(
+                            candidateFormula.formulaKey,
+                            statusKey
+                          )
+                        }
+                        style={{
+                          background: isActive ? meta.bg : "#0A1628",
+                          border: `1px solid ${isActive ? meta.border : "#1E3A52"}`,
+                          borderRadius: 999,
+                          color: isActive ? meta.color : "#94A3B8",
+                          padding: "4px 8px",
+                          fontSize: 7.8,
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {meta.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {candidateFormula.formulaKey !== heroOriginalFormula?.formulaKey && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openHeroCandidateCompare(candidateFormula.formulaKey)
+                    }
+                    style={{
+                      width: "100%",
+                      marginTop: 9,
+                      background: "#0E4D6E",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: "#7DD3FC",
+                      padding: "7px 10px",
+                      fontSize: 8.5,
+                      fontWeight: 800,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Compare to Original
+                  </button>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }, [
+    batchPlannerTargetG,
+    formula,
+    heroCandidateItems,
+    heroOriginalFormula,
+    ifraCategory,
+    openHeroCandidateCompare,
+    openHeroCandidateFormula,
+    selectedBasketModeMeta,
+    setHeroCandidateFormulaStatus,
+  ]);
   return (
     <div
       style={{
@@ -80018,6 +80787,7 @@ export default function App() {
         {/* ═══════════════════════════════════════════════════════════ */}
         {mainTab === "formulas" && (
           <div>
+            {heroCandidateBoardContent}
             <div
               style={{
                 display: "grid",
