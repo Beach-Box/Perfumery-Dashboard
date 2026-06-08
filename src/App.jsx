@@ -224,6 +224,7 @@ import {
   FOUNDER_RECOMMENDER_EMPHASIS_META,
   FOUNDER_TRUST_LEVEL_META,
   getLivePricingForIngredient,
+  isCritiqueResultCurrent,
   LAUNCH_READINESS_STATUS_META,
   normalizeFounderLaunchScenarioRecord,
   normalizeLooseNumericInput,
@@ -61991,6 +61992,8 @@ export default function App() {
   const [critiqueLoading, setCritiqueLoading] = useState(false);
   const [critiqueFormula, setCritiqueFormula] = useState(null);
   const [critiqueLensUsed, setCritiqueLensUsed] = useState("perfumer");
+  const [critiqueGeneratedAt, setCritiqueGeneratedAt] = useState(null);
+  const [critiqueError, setCritiqueError] = useState("");
   useEffect(() => {
     writeTextStorage(APP_STORAGE_KEYS.critiqueLens, critiqueLens);
   }, [critiqueLens]);
@@ -62179,6 +62182,14 @@ export default function App() {
     : null;
   const critiqueTargetLabel = getFormulaDisplayLabel(critiqueTarget, {
     includeVersion: true,
+  });
+  const critiqueResultIsCurrent = isCritiqueResultCurrent({
+    critique: {
+      formulaKey: critiqueFormula,
+      lens: critiqueLensUsed,
+    },
+    formulaKey: formula?.formulaKey,
+    lens: critiqueLens,
   });
   const compareLeftFormula =
     formulaByKey.get(formulaCompareState.leftFormulaKey) || formula || null;
@@ -68562,14 +68573,24 @@ export default function App() {
   };
 
   const runAiCritique = async (targetFormula, critiqueReport) => {
+    const activeLens = critiqueLens || "perfumer";
+    const activeLensMeta = CRITIQUE_LENS_META[activeLens] || CRITIQUE_LENS_META.perfumer;
+    const targetFormulaKey = targetFormula?.formulaKey || "";
+    const targetFormulaLabel = getFormulaDisplayLabel(targetFormula, {
+      includeVersion: true,
+    });
+    if (!targetFormulaKey || !targetFormula?.ingredients?.length) {
+      setCritiqueError("AI critique refresh needs a selected formula with ingredients.");
+      return;
+    }
     if (!apiKeyRef.current) {
-      setCritiqueText("No API key set — add your Claude API key in the Suppliers tab.");
+      setCritiqueError(
+        `Could not refresh ${activeLensMeta.label} AI add-on for ${targetFormulaLabel}: no API key set. Add your Claude API key in the Suppliers tab.`
+      );
       return;
     }
     setCritiqueLoading(true);
-    setCritiqueText("");
-    setCritiqueFormula(targetFormula.formulaKey);
-    setCritiqueLensUsed(critiqueLens);
+    setCritiqueError("");
     try {
       const score = perfScore(targetFormula.ingredients);
       const prompt = buildAiCritiquePrompt({
@@ -68592,7 +68613,7 @@ export default function App() {
             cheapestBasket: formulaBasketStrategies.cheapest || null,
             basketModeMeta: selectedBasketModeMeta,
             ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
-            lens: critiqueLens,
+            lens: activeLens,
             db: DB,
           }),
         performance: score,
@@ -68612,14 +68633,26 @@ export default function App() {
           messages: [{ role: "user", content: prompt }],
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error?.message || `API request failed (${res.status})`);
+      }
       if (data.error) throw new Error(data.error.message || "API error");
       const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
       setCritiqueText(text || "No response from AI.");
+      setCritiqueFormula(targetFormulaKey);
+      setCritiqueLensUsed(activeLens);
+      setCritiqueGeneratedAt(new Date().toISOString());
+      setCritiqueError("");
     } catch (e) {
-      setCritiqueText("Error: " + String(e.message || e).slice(0, 120));
+      setCritiqueError(
+        `Could not refresh ${activeLensMeta.label} AI add-on for ${targetFormulaLabel}: ${String(
+          e.message || e
+        ).slice(0, 160)}`
+      );
+    } finally {
+      setCritiqueLoading(false);
     }
-    setCritiqueLoading(false);
   };
   const openFormulaFromDashboard = useCallback(
     (formulaKey, nextSubTab = "formula") => {
@@ -85369,11 +85402,29 @@ export default function App() {
                         ? "⏳ Analyzing…"
                         : `🤖 Generate ${selectedCritiqueLensMeta.label} AI Add-On`}
                     </button>
+                    {critiqueError && (
+                      <div
+                        role="alert"
+                        data-testid="ai-critique-refresh-error"
+                        style={{
+                          background: "#2A1806",
+                          border: "1px solid #92400E",
+                          borderRadius: 10,
+                          color: "#FCD34D",
+                          fontSize: 10,
+                          lineHeight: 1.55,
+                          padding: "8px 10px",
+                          marginBottom: 12,
+                        }}
+                      >
+                        {critiqueError}
+                      </div>
+                    )}
                     {critiqueText && (
                       <div
                         style={{
                           background: "#060E1E",
-                          border: `1px solid ${critiqueFormula === formula.formulaKey ? "#22D3EE40" : BORDER}`,
+                          border: `1px solid ${critiqueResultIsCurrent ? "#22D3EE40" : BORDER}`,
                           borderRadius: 10,
                           padding: 16,
                           fontSize: 11,
@@ -85382,8 +85433,7 @@ export default function App() {
                           whiteSpace: "pre-wrap",
                         }}
                       >
-                        {(critiqueFormula !== formula.formulaKey ||
-                          critiqueLensUsed !== critiqueLens) && (
+                        {!critiqueResultIsCurrent && (
                           <div style={{ fontSize: 10, color: "#F59E0B", marginBottom: 8 }}>
                             ⚠️ This AI add-on is for <strong>{critiqueTargetLabel || "another formula"}</strong>
                             {critiqueLensUsed
@@ -85393,6 +85443,19 @@ export default function App() {
                                 ).label.toLowerCase()} lens`
                               : ""}
                             {" — "}click the button above to refresh it for the current formula and lens.
+                          </div>
+                        )}
+                        {critiqueResultIsCurrent && critiqueGeneratedAt && (
+                          <div
+                            style={{
+                              fontSize: 9,
+                              color: "#64748B",
+                              marginBottom: 8,
+                            }}
+                          >
+                            Current {selectedCritiqueLensMeta.label.toLowerCase()} lens add-on
+                            generated for {selectedFormulaLabel} at{" "}
+                            {new Date(critiqueGeneratedAt).toLocaleString()}.
                           </div>
                         )}
                         {critiqueText.split(/(\*\*[^*]+\*\*)/).map((part, idx) =>

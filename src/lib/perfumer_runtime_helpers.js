@@ -2646,6 +2646,21 @@ export function buildFormulaCritiqueReport({
   };
 }
 
+export function isCritiqueResultCurrent({ critique, formulaKey, lens } = {}) {
+  const critiqueFormulaKey = String(critique?.formulaKey || "").trim();
+  const currentFormulaKey = String(formulaKey || "").trim();
+  const critiqueLens = String(critique?.lens || "").trim();
+  const currentLens = String(lens || "").trim();
+  return Boolean(
+    critiqueFormulaKey &&
+      currentFormulaKey &&
+      critiqueFormulaKey === currentFormulaKey &&
+      critiqueLens &&
+      currentLens &&
+      critiqueLens === currentLens
+  );
+}
+
 export function buildAiCritiquePrompt({
   targetFormula,
   critiqueReport,

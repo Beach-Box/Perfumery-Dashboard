@@ -56,6 +56,11 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(page.getByText("Data Coverage Estimate")).toBeVisible();
   await expect(page.getByText("IFRA Coverage Estimate")).toBeVisible();
   await page.getByRole("button", { name: /Hero Lab/i }).first().click();
+  await page.getByRole("button", { name: /AI Critique/i }).click();
+  await page.getByRole("button", { name: /Generate .* AI Add-On/i }).click();
+  await expect(page.getByTestId("ai-critique-refresh-error")).toContainText(
+    "no API key"
+  );
 
   const skinAirSensory = page.getByTestId(
     "hero-sensory-summary-seed-hero-skin-air-bridge"

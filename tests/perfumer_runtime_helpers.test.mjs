@@ -35,11 +35,55 @@ import {
   buildMaterialTruthGapPrioritization,
   buildSubstitutionReviewDraftFormula,
   createFounderLaunchScenarioRecord,
+  isCritiqueResultCurrent,
   normalizeFounderLaunchScenarioRecord,
   normalizeLooseNumericInput,
   parseVaporPressureInput,
   parseSupplierAdapterPackLines,
 } from "../src/lib/perfumer_runtime_helpers.js";
+
+test("isCritiqueResultCurrent requires matching formula and critique lens metadata", () => {
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: { formulaKey: "seed-hero-original", lens: "perfumer" },
+      formulaKey: "seed-hero-original",
+      lens: "perfumer",
+    }),
+    true
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: { formulaKey: "seed-hero-skin-air-bridge", lens: "perfumer" },
+      formulaKey: "seed-hero-original",
+      lens: "perfumer",
+    }),
+    false
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: { formulaKey: "seed-hero-original", lens: "compliance" },
+      formulaKey: "seed-hero-original",
+      lens: "perfumer",
+    }),
+    false
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: {},
+      formulaKey: "seed-hero-original",
+      lens: "perfumer",
+    }),
+    false
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: { formulaKey: "seed-hero-damp-shoreline-v2", lens: "cost" },
+      formulaKey: "seed-hero-damp-shoreline-v2",
+      lens: "cost",
+    }),
+    true
+  );
+});
 
 test("ingredient truth completeness surfaces canonical and supplier support from current registries", () => {
   const report = buildIngredientTruthCompletenessReport("Ylang-Ylang Extra Oil, Org");
