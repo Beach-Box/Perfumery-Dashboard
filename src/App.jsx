@@ -121,7 +121,10 @@ import {
   normalizeHeroCandidateStatusState,
   sortHeroCandidateFormulas,
 } from "./lib/hero_candidate_helpers";
-import { buildHeroDecisionBrief } from "./lib/hero_decision_brief_helpers";
+import {
+  buildHeroComparisonInterpreter,
+  buildHeroDecisionBrief,
+} from "./lib/hero_decision_brief_helpers";
 import {
   HERO_SENSORY_TEST_SURFACES,
   buildHeroSensorySummary,
@@ -81283,6 +81286,8 @@ export default function App() {
       (item) => item.formula.formulaKey !== heroOriginalFormula?.formulaKey
     );
     const heroDecisionBrief = buildHeroDecisionBrief(heroCandidateItems);
+    const heroComparisonInterpreter =
+      buildHeroComparisonInterpreter(heroCandidateItems);
     const heroBoardConfidenceSummary = mergeModelConfidenceSummaries(
       heroCandidateItems.map((item) => item.confidenceSummary)
     );
@@ -81421,6 +81426,96 @@ export default function App() {
           }}
         >
           {value}
+        </div>
+      </div>
+    );
+    const renderComparisonSection = (section) => (
+      <div
+        key={section.key}
+        style={{
+          background: "#071826",
+          border: "1px solid #1E3A52",
+          borderRadius: 9,
+          padding: "9px 10px",
+          display: "grid",
+          gap: 6,
+          minHeight: 154,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 8,
+              color: "#64748B",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              fontWeight: 800,
+              lineHeight: 1.25,
+            }}
+          >
+            {section.title}
+          </div>
+          {section.label ? (
+            <span
+              style={{
+                background: "#0A2540",
+                border: "1px solid #1D4ED8",
+                borderRadius: 999,
+                color: "#7DD3FC",
+                padding: "1px 6px",
+                fontSize: 7.2,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {section.label}
+            </span>
+          ) : null}
+        </div>
+        <div
+          style={{
+            fontSize: 10.5,
+            color: "#E2E8F0",
+            fontWeight: 800,
+            lineHeight: 1.35,
+          }}
+        >
+          {section.selectedFormulaName}
+        </div>
+        {section.rankedFormulaNames?.length > 1 ? (
+          <div
+            style={{
+              fontSize: 8,
+              color: "#94A3B8",
+              lineHeight: 1.45,
+            }}
+          >
+            Ranked:{" "}
+            {section.rankedFormulaNames
+              .slice(0, 3)
+              .map((name, index) => `${index + 1}. ${name}`)
+              .join(" · ")}
+          </div>
+        ) : null}
+        <div style={{ fontSize: 8.4, color: "#CBD5E1", lineHeight: 1.5 }}>
+          <span style={{ color: "#7DD3FC", fontWeight: 800 }}>Why: </span>
+          {section.reason}
+        </div>
+        <div style={{ fontSize: 8.4, color: "#FCD34D", lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 800 }}>Caveat: </span>
+          {section.caveat}
+        </div>
+        <div style={{ fontSize: 8.4, color: "#86EFAC", lineHeight: 1.5 }}>
+          {section.decisionUse}
         </div>
       </div>
     );
@@ -81740,6 +81835,199 @@ export default function App() {
                   : "No finalists marked yet"}
               </div>
             </div>
+          </div>
+        </div>
+        <div
+          data-testid="hero-comparison-interpreter"
+          style={{
+            background: "#060E1E",
+            border: "1px solid #1E3A52",
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 4,
+                }}
+              >
+                Hero Comparison Interpreter
+              </div>
+              <div
+                style={{
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                  maxWidth: 760,
+                }}
+              >
+                {heroComparisonInterpreter.modeLabel}. Compares launch
+                readiness, memorability, cost/logistics, technical risk, concept
+                fit, confidence gaps, and validation priority without declaring a
+                final winner.
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                minWidth: 230,
+                maxWidth: 380,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 5,
+                }}
+              >
+                Decision Caveats
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 4,
+                  fontSize: 8.4,
+                  color: "#FCD34D",
+                  lineHeight: 1.45,
+                }}
+              >
+                {heroComparisonInterpreter.caveats.map((caveat) => (
+                  <div key={caveat}>{caveat}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+              gap: 8,
+            }}
+          >
+            {heroComparisonInterpreter.sections.map(renderComparisonSection)}
+          </div>
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 9,
+              padding: "9px 10px",
+              overflowX: "auto",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 8,
+                color: "#64748B",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 800,
+                marginBottom: 7,
+              }}
+            >
+              Comparison Inputs
+            </div>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 8.2,
+                color: "#94A3B8",
+                minWidth: 760,
+              }}
+            >
+              <thead>
+                <tr>
+                  {[
+                    "Formula",
+                    "Readiness",
+                    "Basket",
+                    "Rows",
+                    "Cost Gaps",
+                    "IFRA",
+                    "Trace",
+                    "Accord Caveat",
+                    "Wear Tests",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      style={{
+                        textAlign: "left",
+                        padding: "5px 6px",
+                        color: "#64748B",
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {heroComparisonInterpreter.candidateSummaries.map((summary) => (
+                  <tr
+                    key={summary.formulaKey}
+                    style={{ borderTop: "1px solid #0A1628" }}
+                  >
+                    <td style={{ padding: "5px 6px", color: "#E2E8F0", fontWeight: 700 }}>
+                      {summary.name}
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.readinessScore.toFixed(0)}/100
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>{summary.costLabel}</td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.ingredientCount}
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.missingPriceCount} missing ·{" "}
+                      {summary.lowConfidenceSupplierMappingCount} low-conf
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>{summary.ifraLabel}</td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.traceHighImpactCount}
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.accordModelCaveatCount}
+                      {summary.componentCostedAccordCount > 0
+                        ? ` (${summary.componentCostedAccordCount} costed)`
+                        : ""}
+                    </td>
+                    <td style={{ padding: "5px 6px" }}>
+                      {summary.evaluationCount}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
         <div

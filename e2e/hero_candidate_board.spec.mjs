@@ -12,8 +12,13 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   page,
 }) => {
   const pageErrors = [];
+  const blockedApiCalls = [];
   page.on("pageerror", (error) => {
     pageErrors.push(error.message);
+  });
+  await page.route(/(openai|anthropic|\/api\/ai|\/api\/chat)/i, (route) => {
+    blockedApiCalls.push(route.request().url());
+    return route.abort();
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -36,6 +41,17 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(
     board.getByText(/Cost caveat: .*black-box accord/i).first()
   ).toBeVisible();
+
+  const comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");
+  await expect(comparisonInterpreter).toBeVisible();
+  await expect(comparisonInterpreter.getByText("Hero Comparison Interpreter")).toBeVisible();
+  await expect(comparisonInterpreter).toContainText("Best current launch candidate");
+  await expect(comparisonInterpreter).toContainText("Most memorable construction");
+  await expect(comparisonInterpreter).toContainText("First test priority");
+  await expect(comparisonInterpreter).toContainText("Do not change yet");
+  await expect(comparisonInterpreter).toContainText(
+    "No real wear-test evidence recorded yet"
+  );
 
   const decisionBrief = page.getByTestId("hero-decision-brief");
   await expect(decisionBrief).toBeVisible();
@@ -160,4 +176,5 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   ).toHaveText("Current marked winner: Skin-Air Bridge");
 
   expect(pageErrors).toEqual([]);
+  expect(blockedApiCalls).toEqual([]);
 });
