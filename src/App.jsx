@@ -54137,7 +54137,7 @@ const FORMULAS_INIT = [
     desc: "Second damp shoreline variation for the focused hero scent development set.",
     versionLabel: "v1.0",
     revisionNote:
-      "Spreadsheet transcription using Driftwood Accord v2.2 NT and Botanical Musk Accord v2.",
+      "Spreadsheet transcription using Driftwood Accord v2 and the current Botanical Musk Accord.",
     developmentStatus: "active",
     ingredients: [
       { name: "Iso E Super", g: 0.85, note: "base" },
@@ -54149,8 +54149,8 @@ const FORMULAS_INIT = [
       { name: "Cetalox", g: 0.31, note: "base" },
       { name: "Cashmeran", g: 0.12, note: "base" },
       { name: "Caryophyllene Oxide", g: 0.02, note: "base" },
-      { name: "Driftwood Accord v2.2 NT", g: 0.15, note: "base" },
-      { name: "Botanical Musk Accord v2", g: 1.3, note: "base" },
+      { name: "Driftwood Accord v2", g: 0.15, note: "base" },
+      { name: "Botanical Musk Accord", g: 1.3, note: "base" },
       { name: "Iso E + AmberXtreme 1%", g: 0.2, note: "base" },
       { name: "Cypriol", g: 0.06, note: "base" },
       { name: "Veramoss 20% TEC", g: 0.25, note: "base" },

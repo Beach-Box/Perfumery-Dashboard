@@ -989,6 +989,9 @@ function getSupplierMappingAssessment(
   } else if (linkStatus === "accord_listing") {
     qualityScore -= 2;
     reasons.push("Normalization treats this supplier row as an accord listing.");
+  } else if (linkStatus === "component_derived_accord") {
+    qualityScore += 2;
+    reasons.push("Accord pricing is derived from reviewed recipe components.");
   }
   if (supplierData?.url) {
     qualityScore += 1;
@@ -1032,6 +1035,33 @@ function buildSupplierPurchaseCandidates(
   const needG = Number(ingredient.g) || 0;
   const d = db[ingredient.name];
   const density = d?.density || d?.densityGmL || 1.0;
+  if (supplierData?.pricingMode === "unit_cost") {
+    const unitCostPerG = Number(supplierData.unitCostPerG);
+    if (
+      !Number.isFinite(unitCostPerG) ||
+      unitCostPerG <= 0 ||
+      !Number.isFinite(needG) ||
+      needG <= 0
+    ) {
+      return [];
+    }
+    const lineCost = unitCostPerG * needG;
+    return [
+      {
+        supplier: supplierName,
+        qty: Number(needG.toFixed(6)),
+        unit: "g",
+        price: lineCost,
+        grams: needG,
+        multi: 1,
+        totalPurchasedG: needG,
+        lineCost,
+        remaining: 0,
+        pricePerPurchasedGram: unitCostPerG,
+        pricingMode: "unit_cost",
+      },
+    ];
+  }
   if (!Array.isArray(supplierData?.S) || supplierData.S.length === 0) {
     return [];
   }

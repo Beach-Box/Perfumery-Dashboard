@@ -3,12 +3,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 import {
+  HERO_FORMULA_ACCORD_RECIPES,
   HERO_FORMULA_MATERIAL_SUPPORT,
   HERO_FORMULA_RAW_DB_FIELDS,
   buildHeroFormulaMaterialNormalizationEntries,
   buildHeroFormulaPricingSupportRows,
   buildHeroFormulaRawDbSupportRows,
+  getHeroFormulaAccordRecipe,
 } from "../src/lib/hero_formula_material_support.js";
+import { buildSupplierBasket } from "../src/lib/perfumer_runtime_helpers.js";
 import {
   MATERIAL_NORMALIZATION,
   computeActiveRestrictedPercent,
@@ -191,7 +194,7 @@ test("hero formula diluted stock normalization documents parent-derived molecula
   );
 });
 
-test("hero formula support creates alias rows and black-box accord records", () => {
+test("hero formula support creates alias rows and component-costed accord records", () => {
   const florolTargetRow = rawDbRow({
     note: "mid",
     type: "SYNTH",
@@ -209,12 +212,23 @@ test("hero formula support creates alias rows and black-box accord records", () 
   assert.equal(rawRows["Botanical Musk Accord"][1], null);
   assert.equal(rawRows["Botanical Musk Accord"][5], null);
   assert.equal(rawRows["Botanical Musk Accord"][25], null);
+  assert.ok(rawRows["Botanical Musk Accord"][24].includes("Component Costed Accord"));
 
-  const pricingRows = buildHeroFormulaPricingSupportRows({});
-  assert.equal(
-    pricingRows["Driftwood Accord v2.2 NT"]["Bench Accord"].S[0][2],
-    0
-  );
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Iso E Super": { TestSupplier: { S: [[10, "g", 10]], inStock: true } },
+    "Ambroxan Crystals": {
+      TestSupplier: { S: [[10, "g", 20]], inStock: true },
+    },
+    "Vetiveryl Acetate": {
+      TestSupplier: { S: [[10, "g", 30]], inStock: true },
+    },
+    Cashmeran: { TestSupplier: { S: [[10, "g", 40]], inStock: true } },
+  });
+  const driftwoodPricing = pricingRows["Driftwood Accord"]["Bench Accord"];
+  assert.equal(driftwoodPricing.pricingMode, "unit_cost");
+  assert.equal(driftwoodPricing.componentPricingStatus, "complete");
+  assert.equal(driftwoodPricing.unitCostPerG, 1.5386);
+  assert.deepEqual(driftwoodPricing.S[0], [1, "g", 1.5386]);
 });
 
 test("hero formula support resolves confirmed aliases to existing catalog rows", () => {
@@ -272,6 +286,71 @@ test("hero formula support resolves confirmed aliases to existing catalog rows",
   assert.equal(aldehydeResolved.sourceCatalogName, "Aldehyde C-18");
 });
 
+test("hero formula accord recipe registry preserves supplied recipes and legacy aliases", () => {
+  assert.deepEqual(
+    HERO_FORMULA_ACCORD_RECIPES.recipes.map((recipe) => recipe.name),
+    [
+      "Botanical Musk Accord",
+      "Driftwood Accord",
+      "Driftwood Accord v2",
+      "Iso E + AmberXtreme 1%",
+    ]
+  );
+
+  const botanicalRecipe = getHeroFormulaAccordRecipe("Botanical Musk Accord");
+  assert.equal(botanicalRecipe.totalAmount, 30.001);
+  assert.equal(botanicalRecipe.components[0].name, "Ethylene Brassylate");
+  assert.equal(botanicalRecipe.components[1].name, "Exaltolide");
+  assert.equal(botanicalRecipe.components[1].dilution, "50% TEC");
+
+  const driftwoodLegacyRecipe = getHeroFormulaAccordRecipe(
+    "Driftwood Accord v2.2 NT"
+  );
+  assert.equal(driftwoodLegacyRecipe.name, "Driftwood Accord v2");
+});
+
+test("hero formula accord pricing marks incomplete component costs instead of free rows", () => {
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Iso E Super": { TestSupplier: { S: [[10, "g", 10]], inStock: true } },
+  });
+  const driftwoodPricing = pricingRows["Driftwood Accord"]["Bench Accord"];
+
+  assert.equal(driftwoodPricing.componentPricingStatus, "incomplete");
+  assert.deepEqual(driftwoodPricing.S, []);
+  assert.ok(driftwoodPricing.missingComponents.includes("Ambroxan 50% TEC"));
+  assert.notEqual(driftwoodPricing.supportNote.includes("$0"), true);
+});
+
+test("hero formula accord rows stay single rows but basket cost is component-derived", () => {
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Iso E Super": { TestSupplier: { S: [[10, "g", 10]], inStock: true } },
+    "Ambroxan Crystals": {
+      TestSupplier: { S: [[10, "g", 20]], inStock: true },
+    },
+    "Vetiveryl Acetate": {
+      TestSupplier: { S: [[10, "g", 30]], inStock: true },
+    },
+    Cashmeran: { TestSupplier: { S: [[10, "g", 40]], inStock: true } },
+  });
+
+  const basket = buildSupplierBasket(
+    [{ name: "Driftwood Accord", g: 1.5, note: "base" }],
+    {},
+    {},
+    "cheapest",
+    { pricing: pricingRows }
+  );
+  const line = basket.lines[0];
+
+  assert.equal(line.ingredientName, "Driftwood Accord");
+  assert.equal(line.supplier, "Bench Accord");
+  assert.equal(line.status, "inferred");
+  assert.equal(line.line.pricingMode, "unit_cost");
+  assert.equal(Number(line.lineCost.toFixed(4)), 2.3079);
+  assert.equal(basket.totalCost > 0, true);
+  assert.equal(basket.missingCount, 0);
+});
+
 test("hero formula normalization overlay supports diluted identity and aliases", () => {
   assert.equal(
     MATERIAL_NORMALIZATION["Ambroxan 50% TEC"].entryKind,
@@ -283,6 +362,15 @@ test("hero formula normalization overlay supports diluted identity and aliases",
   );
   assert.equal(MATERIAL_NORMALIZATION.Florol.linkedDuplicateOfCatalogName, "Florol®");
   assert.equal(MATERIAL_NORMALIZATION["Botanical Musk Accord"].entryKind, "accord");
+  assert.equal(MATERIAL_NORMALIZATION["Driftwood Accord v2"].entryKind, "accord");
+  assert.equal(
+    MATERIAL_NORMALIZATION["Driftwood Accord v2.2 NT"].linkedDuplicateOfCatalogName,
+    "Driftwood Accord v2"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Driftwood Accord v2.2 NT"].entryKind,
+    "accord"
+  );
 
   const resolved = resolveIngredientIdentity("Ambroxan 50% TEC");
   assert.equal(resolved.materialClass, "diluted_stock");
@@ -787,7 +875,7 @@ test("hero formula support covers all confirmed hero formula material gaps", () 
   assert.equal(51 - reviewNeededNames.size, 51);
 });
 
-test("active hero formula seed composition is unchanged by support overlays", () => {
+test("active hero formula seed composition preserves grams with approved accord name corrections", () => {
   const source = fs.readFileSync("src/App.jsx", "utf8");
   const formulas = extractAppArrayConstant(source, "const FORMULAS_INIT = [");
 
@@ -819,5 +907,37 @@ test("active hero formula seed composition is unchanged by support overlays", ()
       (ingredient) => ingredient.name === "Driftwood Accord"
     ).g,
     0.606
+  );
+
+  const dampShorelineV2 = formulas.find(
+    (formula) => formula.name === "Damp Shoreline v2"
+  );
+  assert.equal(
+    dampShorelineV2.ingredients.find(
+      (ingredient) => ingredient.name === "Botanical Musk Accord"
+    ).g,
+    1.3
+  );
+  assert.equal(
+    dampShorelineV2.ingredients.find(
+      (ingredient) => ingredient.name === "Driftwood Accord v2"
+    ).g,
+    0.15
+  );
+  assert.equal(
+    formulas.some((formula) =>
+      formula.ingredients.some(
+        (ingredient) => ingredient.name === "Botanical Musk Accord v2"
+      )
+    ),
+    false
+  );
+  assert.equal(
+    formulas.some((formula) =>
+      formula.ingredients.some(
+        (ingredient) => ingredient.name === "Driftwood Accord v2.2 NT"
+      )
+    ),
+    false
   );
 });

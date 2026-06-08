@@ -1,0 +1,175 @@
+{
+  "metadata": {
+    "version": 1,
+    "description": "Known hero formula accord recipes used for component-derived costing. Accord rows remain single formula rows and are not expanded inside active formulas.",
+    "updatedAt": "2026-06-08",
+    "componentCostingNotes": [
+      "Component unit costs are derived from existing supplier pricing rows.",
+      "Diluted recipe components are costed as working-stock grams using existing diluted-stock pricing when available, or active parent material cost scaled by dilution percentage when no stock row exists.",
+      "Carrier cost is not inferred unless it appears in an existing priced stock row."
+    ]
+  },
+  "componentPricingAliases": [
+    {
+      "name": "Exaltolide",
+      "targetName": "Exaltolide®"
+    },
+    {
+      "name": "Muscenone",
+      "targetName": "Muscenone®"
+    },
+    {
+      "name": "Amber Xtreme",
+      "targetName": "AmberXtreme"
+    }
+  ],
+  "recipes": [
+    {
+      "name": "Botanical Musk Accord",
+      "recipeStatus": "known",
+      "costingMode": "component_derived",
+      "totalAmount": 30.001,
+      "unit": "g",
+      "components": [
+        {
+          "name": "Ethylene Brassylate",
+          "amount": 9.762,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Exaltolide",
+          "amount": 9.525,
+          "unit": "g",
+          "dilution": "50% TEC"
+        },
+        {
+          "name": "Habanolide",
+          "amount": 4.286,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Helvetolide",
+          "amount": 3.333,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Ambrettolide",
+          "amount": 2.857,
+          "unit": "g",
+          "dilution": "50% TEC"
+        },
+        {
+          "name": "Muscenone",
+          "amount": 0.119,
+          "unit": "g",
+          "dilution": "10% TEC"
+        },
+        {
+          "name": "Ambrette Seed CO2",
+          "amount": 0.119,
+          "unit": "g",
+          "dilution": "10% TEC"
+        }
+      ]
+    },
+    {
+      "name": "Driftwood Accord",
+      "recipeStatus": "known",
+      "costingMode": "component_derived",
+      "totalAmount": 10.0,
+      "unit": "g",
+      "components": [
+        {
+          "name": "Iso E Super",
+          "amount": 3.077,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Ambroxan 50% TEC",
+          "amount": 4.615,
+          "unit": "g",
+          "dilution": "50% TEC"
+        },
+        {
+          "name": "Vetiveryl Acetate",
+          "amount": 1.538,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Cashmeran",
+          "amount": 0.77,
+          "unit": "g",
+          "dilution": "neat"
+        }
+      ]
+    },
+    {
+      "name": "Driftwood Accord v2",
+      "aliases": [
+        "Driftwood Accord v2.2 NT"
+      ],
+      "recipeStatus": "known",
+      "costingMode": "component_derived",
+      "totalAmount": 10.047,
+      "unit": "g",
+      "components": [
+        {
+          "name": "Iso E Super",
+          "amount": 4.559,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Vetiveryl Acetate",
+          "amount": 2.017,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Ambroxan Crystals",
+          "amount": 2.404,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Caryophyllene Oxide",
+          "amount": 0.205,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Cashmeran",
+          "amount": 0.862,
+          "unit": "g",
+          "dilution": "neat"
+        }
+      ]
+    },
+    {
+      "name": "Iso E + AmberXtreme 1%",
+      "recipeStatus": "known",
+      "costingMode": "component_derived",
+      "totalAmount": 10.023,
+      "unit": "g",
+      "components": [
+        {
+          "name": "Iso E Super",
+          "amount": 9.914,
+          "unit": "g",
+          "dilution": "neat"
+        },
+        {
+          "name": "Amber Xtreme",
+          "amount": 0.109,
+          "unit": "g",
+          "dilution": "neat"
+        }
+      ]
+    }
+  ]
+}

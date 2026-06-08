@@ -129,9 +129,14 @@ IFRA/activity workflows:
   `dilutionFactor`.
 - Stock-equivalent pricing rows are derived from parent pricing by scaling
   package sizes by the dilution factor.
-- Formula-level accords such as `Botanical Musk Accord` and `Driftwood Accord`
-  remain black boxes. They get placeholder support rows and are not expanded
-  into components.
+- Formula-level accords such as `Botanical Musk Accord`, `Driftwood Accord`,
+  `Driftwood Accord v2`, and `Iso E + AmberXtreme 1%` remain single visible
+  formula rows. Known accord recipes in
+  `src/data/hero_formula_accord_recipes.json` are used for component-derived
+  costing only; the active formulas are not expanded into accord components.
+- If an accord recipe exists but a component lacks usable pricing, the accord is
+  marked with an incomplete component-pricing caveat rather than treated as
+  free. If no recipe exists, the accord remains unpriced.
 - Safe name variants such as `Florol`/`Florol®` and
   `Orbitone T Neo`/`Orbitone® T Neo` are linked as aliases while preserving the
   formula display name.
@@ -233,8 +238,9 @@ threshold unit and medium differences cleanly, such as `ng/L air` versus
 
 Accords, essential oils, absolutes, UVCBs, and trademark specialties remain
 caveated. Do not treat them as molecule-exact unless the source is explicit
-enough for that material. For black-box formula accords, preserve the current
-non-expanded treatment.
+enough for that material. Component-derived accord pricing does not make an
+accord molecule-exact and does not expand the active formula row for IFRA,
+chemistry, or sensory modeling.
 
 ### Modeling Confidence Badges
 
@@ -252,12 +258,12 @@ state, and finished-product IFRA guidance. A source-backed ODT or VP row should
 not be visually equivalent to a legacy or unprovenanced row. Missing ODT should
 stay visible as uncertainty, not as a zero-impact certainty.
 
-Black-box accords may still have placeholder `$0` support rows so the formula
-can remain usable while accord recipes are intentionally not expanded. Those
-rows should be surfaced with black-box/pricing caveats in decision surfaces
-until component-derived pricing and chemistry are approved. Likewise, a
-finished-product IFRA state of "no restricted rows" is a coverage estimate, not
-a blanket safety clearance.
+Known hero accords should use component-derived unit-cost rows instead of
+placeholder `$0` support rows. Missing recipe or missing component pricing should
+remain visible as pricing uncertainty, not as a free material. Component-priced
+accords may still carry accord caveats because their components are not expanded
+for IFRA, chemistry, or sensory modeling. Likewise, a finished-product IFRA state
+of "no restricted rows" is a coverage estimate, not a blanket safety clearance.
 
 ## Structured Registries In `src/data/`
 
@@ -268,7 +274,8 @@ The `src/data/` JSON files are the most explicit structured data layer. They sho
 | `src/data/ifra_combined_package.json` | Combined IFRA/runtime support package with metadata, identity map entries, compliance config, and stats. |
 | `src/data/ifra_master_standards.json` | Extracted IFRA master standards data from source PDF processing. |
 | `src/data/material_normalization.json` | Canonical material normalization, aliases, supplier links, helper seed support, and relationship data. |
-| `src/data/hero_formula_material_support.json` | Runtime support overlay for hero formula dilutions, black-box accords, safe aliases, and review-needed unresolved rows. |
+| `src/data/hero_formula_material_support.json` | Runtime support overlay for hero formula dilutions, accord support rows, safe aliases, and review-needed unresolved rows. |
+| `src/data/hero_formula_accord_recipes.json` | Known hero accord recipes used for component-derived costing while preserving single accord rows in active formulas. |
 | `src/data/source_document_registry.json` | Registered source documents and intake targets. |
 | `src/data/evidence_candidate_registry.json` | Evidence candidates and candidate target state. |
 | `src/data/supplier_product_registry.json` | Supplier products, supplier keys, product mappings, statuses, and registry notes. |

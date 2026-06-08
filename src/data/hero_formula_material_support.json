@@ -4,7 +4,7 @@
     "description": "Reviewed runtime support overlay for the active hero formula seed set. These rows improve catalog, pricing, supplier, and dilution resolution without changing formula composition.",
     "updatedAt": "2026-06-07",
     "guardrails": [
-      "Do not expand Botanical Musk or Driftwood accords from this overlay.",
+      "Do not expand formula-level accord rows inside active formulas; component recipes are used for costing only.",
       "Do not infer ambiguous supplier-specific materials without user confirmation.",
       "Diluted stock rows preserve formula display names while mapping active percentage to clear parent materials."
     ]
@@ -154,16 +154,7 @@
       "type": "ACCORD",
       "scentClass": "Musk",
       "scentSummary": "Hero formula botanical musk accord",
-      "scentDesc": "Formula-level musk accord support row. Composition is intentionally not expanded until a later product decision supplies the accord recipe."
-    },
-    {
-      "name": "Botanical Musk Accord v2",
-      "canonicalMaterialKey": "hero_botanical_musk_accord",
-      "note": "base",
-      "type": "ACCORD",
-      "scentClass": "Musk",
-      "scentSummary": "Hero formula botanical musk accord v2",
-      "scentDesc": "Formula-level v2 musk accord support row. Treated as the same current accord family without changing the displayed formula ingredient name."
+      "scentDesc": "Formula-level musk accord support row. Component recipe is used for costing only; the accord is not expanded inside active formulas."
     },
     {
       "name": "Driftwood Accord",
@@ -175,13 +166,13 @@
       "scentDesc": "Formula-level driftwood accord support row. Composition is intentionally not expanded."
     },
     {
-      "name": "Driftwood Accord v2.2 NT",
-      "canonicalMaterialKey": "hero_driftwood_accord_v2_2_nt",
+      "name": "Driftwood Accord v2",
+      "canonicalMaterialKey": "hero_driftwood_accord_v2",
       "note": "base",
       "type": "ACCORD",
       "scentClass": "Woody",
-      "scentSummary": "Hero formula driftwood accord v2.2 NT",
-      "scentDesc": "Distinct formula-level driftwood accord variant support row. It remains separate from Driftwood Accord."
+      "scentSummary": "Hero formula driftwood accord v2",
+      "scentDesc": "Distinct formula-level driftwood accord variant support row. Component recipe is used for costing only; it remains separate from Driftwood Accord."
     },
     {
       "name": "Iso E + AmberXtreme 1%",
@@ -244,6 +235,18 @@
       "name": "Lemon FCF",
       "targetName": "Lemon “Superior” Oil, FCF",
       "canonicalMaterialKey": "lemon_superior_oil_fcf"
+    },
+    {
+      "name": "Botanical Musk Accord v2",
+      "targetName": "Botanical Musk Accord",
+      "canonicalMaterialKey": "hero_botanical_musk_accord",
+      "entryKind": "accord"
+    },
+    {
+      "name": "Driftwood Accord v2.2 NT",
+      "targetName": "Driftwood Accord v2",
+      "canonicalMaterialKey": "hero_driftwood_accord_v2",
+      "entryKind": "accord"
     }
   ],
   "supportRecords": [

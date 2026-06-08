@@ -1,6 +1,8 @@
 import heroFormulaMaterialSupport from "../data/hero_formula_material_support.json" with { type: "json" };
+import heroFormulaAccordRecipes from "../data/hero_formula_accord_recipes.json" with { type: "json" };
 
 export const HERO_FORMULA_MATERIAL_SUPPORT = heroFormulaMaterialSupport;
+export const HERO_FORMULA_ACCORD_RECIPES = heroFormulaAccordRecipes;
 
 export const HERO_FORMULA_RAW_DB_FIELDS = [
   "MW",
@@ -37,6 +39,8 @@ export const HERO_FORMULA_RAW_DB_FIELDS = [
 
 const HERO_SUPPORT_SUPPLIER_NAME = "Hero Formula Support";
 const BENCH_ACCORD_SUPPLIER_NAME = "Bench Accord";
+const ACCORD_RECIPE_PRICING_MODE = "component_derived";
+const UNIT_COST_PRICING_MODE = "unit_cost";
 
 function cloneJsonValue(value) {
   if (Array.isArray(value)) return value.map((item) => cloneJsonValue(item));
@@ -48,11 +52,219 @@ function cloneJsonValue(value) {
   return value;
 }
 
+function normalizeLookupName(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function roundCost(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue)
+    ? Number(numericValue.toFixed(6))
+    : null;
+}
+
 function normalizePercentFraction(percent) {
   const value = Number(percent);
   if (!Number.isFinite(value) || value <= 0) return null;
   return Number((value / 100).toFixed(8));
 }
+
+function parseDilutionFraction(value) {
+  const text = String(value || "").trim();
+  if (!text || normalizeLookupName(text) === "neat") return null;
+  const match = text.match(/(\d+(?:\.\d+)?)\s*%/);
+  return match ? normalizePercentFraction(match[1]) : null;
+}
+
+function nameContainsPercent(value) {
+  return /\d+(?:\.\d+)?\s*%/.test(String(value || ""));
+}
+
+function buildAccordRecipeLookup() {
+  const lookup = new Map();
+  for (const recipe of HERO_FORMULA_ACCORD_RECIPES.recipes || []) {
+    if (!recipe?.name) continue;
+    lookup.set(normalizeLookupName(recipe.name), recipe);
+    for (const alias of recipe.aliases || []) {
+      lookup.set(normalizeLookupName(alias), recipe);
+    }
+  }
+  return lookup;
+}
+
+function buildComponentPricingAliasLookup() {
+  return new Map(
+    (HERO_FORMULA_ACCORD_RECIPES.componentPricingAliases || [])
+      .filter((alias) => alias?.name && alias?.targetName)
+      .map((alias) => [normalizeLookupName(alias.name), alias.targetName])
+  );
+}
+
+const ACCORD_RECIPE_BY_NAME = buildAccordRecipeLookup();
+const COMPONENT_PRICING_ALIAS_BY_NAME = buildComponentPricingAliasLookup();
+
+export function getHeroFormulaAccordRecipe(name) {
+  const recipe = ACCORD_RECIPE_BY_NAME.get(normalizeLookupName(name));
+  return recipe ? cloneJsonValue(recipe) : null;
+}
+
+function getComponentPriceAlias(name) {
+  return COMPONENT_PRICING_ALIAS_BY_NAME.get(normalizeLookupName(name)) || null;
+}
+
+function buildComponentPricingCandidates(component = {}) {
+  const candidates = [];
+  const componentName = component.name;
+  if (!componentName) return candidates;
+
+  const dilutionFraction = parseDilutionFraction(component.dilution);
+  if (dilutionFraction && !nameContainsPercent(componentName)) {
+    candidates.push({
+      name: `${componentName} ${component.dilution}`,
+      appliesDilutionScaling: false,
+    });
+  }
+
+  candidates.push({
+    name: componentName,
+    appliesDilutionScaling:
+      Boolean(dilutionFraction) && !nameContainsPercent(componentName),
+  });
+
+  const aliasTarget = getComponentPriceAlias(componentName);
+  if (aliasTarget) {
+    candidates.push({
+      name: aliasTarget,
+      appliesDilutionScaling:
+        Boolean(dilutionFraction) && !nameContainsPercent(aliasTarget),
+    });
+  }
+
+  return candidates;
+}
+
+function getCheapestGramUnitPrice(supplierPricing = {}) {
+  let best = null;
+  for (const [supplierName, supplierData] of Object.entries(supplierPricing || {})) {
+    for (const row of supplierData?.S || []) {
+      if (!Array.isArray(row) || row.length < 3) continue;
+      const [qty, unit, price] = row;
+      if (unit !== "g") continue;
+      const numericQty = Number(qty);
+      const numericPrice = Number(price);
+      if (
+        !Number.isFinite(numericQty) ||
+        numericQty <= 0 ||
+        !Number.isFinite(numericPrice) ||
+        numericPrice <= 0
+      ) {
+        continue;
+      }
+      const pricePerGram = numericPrice / numericQty;
+      if (!best || pricePerGram < best.pricePerGram) {
+        best = {
+          supplierName,
+          qty: numericQty,
+          unit,
+          price: numericPrice,
+          pricePerGram,
+        };
+      }
+    }
+  }
+  return best;
+}
+
+function resolveComponentPricing(component = {}, pricing = {}) {
+  const dilutionFraction = parseDilutionFraction(component.dilution);
+  const candidates = buildComponentPricingCandidates(component);
+
+  for (const candidate of candidates) {
+    const supplierPricing = pricing[candidate.name];
+    if (!supplierPricing) continue;
+    const bestPrice = getCheapestGramUnitPrice(supplierPricing);
+    if (!bestPrice) continue;
+    const effectivePricePerGram =
+      candidate.appliesDilutionScaling && dilutionFraction
+        ? bestPrice.pricePerGram * dilutionFraction
+        : bestPrice.pricePerGram;
+    return {
+      componentName: component.name,
+      pricingName: candidate.name,
+      supplierName: bestPrice.supplierName,
+      sourcePackage: {
+        qty: bestPrice.qty,
+        unit: bestPrice.unit,
+        price: bestPrice.price,
+      },
+      basePricePerGram: roundCost(bestPrice.pricePerGram),
+      dilutionFraction: candidate.appliesDilutionScaling
+        ? dilutionFraction
+        : null,
+      effectivePricePerGram: roundCost(effectivePricePerGram),
+    };
+  }
+
+  return null;
+}
+
+function buildAccordRecipeCost(recipe = {}, pricing = {}) {
+  const components = Array.isArray(recipe.components) ? recipe.components : [];
+  const componentCosts = [];
+  const missingComponents = [];
+  let totalComponentCost = 0;
+
+  for (const component of components) {
+    const amount = Number(component?.amount);
+    const resolved = resolveComponentPricing(component, pricing);
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      !resolved ||
+      !Number.isFinite(resolved.effectivePricePerGram)
+    ) {
+      missingComponents.push(component?.name || "Unnamed component");
+      continue;
+    }
+
+    const componentCost = amount * resolved.effectivePricePerGram;
+    totalComponentCost += componentCost;
+    componentCosts.push({
+      name: component.name,
+      amount,
+      unit: component.unit || "g",
+      dilution: component.dilution || "neat",
+      pricingName: resolved.pricingName,
+      supplierName: resolved.supplierName,
+      sourcePackage: resolved.sourcePackage,
+      basePricePerGram: resolved.basePricePerGram,
+      dilutionFraction: resolved.dilutionFraction,
+      effectivePricePerGram: resolved.effectivePricePerGram,
+      componentCost: roundCost(componentCost),
+    });
+  }
+
+  const totalAmount = Number(recipe.totalAmount);
+  if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+    return {
+      status: "incomplete",
+      missingComponents: ["Recipe total amount"],
+      componentCosts,
+      unitCostPerG: null,
+    };
+  }
+
+  return {
+    status: missingComponents.length ? "incomplete" : "complete",
+    missingComponents,
+    componentCosts,
+    unitCostPerG: missingComponents.length
+      ? null
+      : roundCost(totalComponentCost / totalAmount),
+    totalComponentCost: roundCost(totalComponentCost),
+  };
+}
+
 
 function createRawDbRow(record = {}) {
   return HERO_FORMULA_RAW_DB_FIELDS.map((field) => record[field] ?? null);
@@ -134,6 +346,7 @@ function createDilutedStockRawDbRow(stock = {}, parentRow = null) {
 }
 
 function createAccordRawDbRow(accord = {}) {
+  const recipe = getHeroFormulaAccordRecipe(accord.name);
   return createRawDbRow({
     HBD: 0,
     HBA: 0,
@@ -150,10 +363,16 @@ function createAccordRawDbRow(accord = {}) {
     scentSummary: accord.scentSummary || accord.name,
     scentDesc:
       accord.scentDesc ||
-      "Formula-level accord support row. Composition is intentionally not expanded.",
+      (recipe
+        ? "Formula-level accord support row. Recipe is used for component-derived costing only."
+        : "Formula-level accord support row. Composition is intentionally not expanded."),
     densityGmL2: 1,
     isUVCB: true,
-    descriptorTags: ["Hero Formula", "Accord"],
+    descriptorTags: [
+      "Hero Formula",
+      "Accord",
+      ...(recipe ? ["Component Costed Accord"] : []),
+    ],
     vpConfidence: "not_applicable",
     isIsomerMix: true,
   });
@@ -219,18 +438,63 @@ function createDilutedStockPricing(parentPricing = {}, stock = {}) {
   );
 }
 
-function createAccordPricing() {
+function createAccordPricing(accord = {}, pricing = {}) {
+  const recipe = getHeroFormulaAccordRecipe(accord.name);
+  if (!recipe) {
+    return {
+      [BENCH_ACCORD_SUPPLIER_NAME]: {
+        url: null,
+        S: [],
+        inStock: false,
+        pricingMode: ACCORD_RECIPE_PRICING_MODE,
+        componentPricingStatus: "missing_recipe",
+        supportNote:
+          "No component recipe is available for this formula-level accord. It is intentionally unpriced rather than treated as $0.",
+      },
+    };
+  }
+
+  const recipeCost = buildAccordRecipeCost(recipe, pricing);
+  if (recipeCost.status !== "complete" || !recipeCost.unitCostPerG) {
+    return {
+      [BENCH_ACCORD_SUPPLIER_NAME]: {
+        url: null,
+        S: [],
+        inStock: false,
+        pricingMode: ACCORD_RECIPE_PRICING_MODE,
+        recipeName: recipe.name,
+        recipeStatus: recipe.recipeStatus || "known",
+        componentPricingStatus: "incomplete",
+        missingComponents: recipeCost.missingComponents,
+        componentCosts: recipeCost.componentCosts,
+        supportNote:
+          "Component-derived accord costing is incomplete because one or more recipe components lack usable gram-based pricing.",
+      },
+    };
+  }
+
   return {
     [BENCH_ACCORD_SUPPLIER_NAME]: {
       url: null,
+      pricingMode: UNIT_COST_PRICING_MODE,
+      costingMode: ACCORD_RECIPE_PRICING_MODE,
+      linkStatus: "component_derived_accord",
+      recipeName: recipe.name,
+      recipeStatus: recipe.recipeStatus || "known",
+      recipeTotalAmount: recipe.totalAmount,
+      recipeUnit: recipe.unit || "g",
+      unitCostPerG: recipeCost.unitCostPerG,
+      componentPricingStatus: "complete",
+      componentCosts: recipeCost.componentCosts,
+      missingComponents: [],
       S: [
-        [1, "g", 0],
-        [10, "g", 0],
-        [100, "g", 0],
+        [1, "g", recipeCost.unitCostPerG],
+        [10, "g", roundCost(recipeCost.unitCostPerG * 10)],
+        [100, "g", roundCost(recipeCost.unitCostPerG * 100)],
       ],
       inStock: true,
       supportNote:
-        "Placeholder pricing support for a black-box formula accord. Replace with component-derived pricing when the accord recipe is approved.",
+        "Component-derived accord pricing from the reviewed hero formula accord recipe. Formula rows remain single accord rows.",
     },
   };
 }
@@ -281,13 +545,21 @@ export function buildHeroFormulaPricingSupportRows(pricing = {}) {
     supportPricing[stock.name] = createDilutedStockPricing(parentPricing, stock);
   }
 
-  for (const accord of HERO_FORMULA_MATERIAL_SUPPORT.accords || []) {
-    if (!pricing[accord.name]) {
-      supportPricing[accord.name] = createAccordPricing();
-    }
+  const combinedPricing = { ...pricing, ...supportPricing };
+  for (const alias of HERO_FORMULA_MATERIAL_SUPPORT.aliases || []) {
+    if (combinedPricing[alias.name]) continue;
+    const targetPricing = combinedPricing[alias.targetName];
+    if (!targetPricing) continue;
+    supportPricing[alias.name] = cloneJsonValue(targetPricing);
+    combinedPricing[alias.name] = supportPricing[alias.name];
   }
 
-  const combinedPricing = { ...pricing, ...supportPricing };
+  for (const accord of HERO_FORMULA_MATERIAL_SUPPORT.accords || []) {
+    if (combinedPricing[accord.name]) continue;
+    supportPricing[accord.name] = createAccordPricing(accord, combinedPricing);
+    combinedPricing[accord.name] = supportPricing[accord.name];
+  }
+
   for (const alias of HERO_FORMULA_MATERIAL_SUPPORT.aliases || []) {
     if (combinedPricing[alias.name]) continue;
     const targetPricing = combinedPricing[alias.targetName];
@@ -343,14 +615,17 @@ function createDilutedStockNormalizationEntry(stock = {}) {
 }
 
 function createAccordNormalizationEntry(accord = {}) {
+  const recipe = getHeroFormulaAccordRecipe(accord.name);
   return {
     entryKind: "accord",
     canonicalMaterialKey: accord.canonicalMaterialKey,
     supplierLinks: {
       [BENCH_ACCORD_SUPPLIER_NAME]: {
-        status: "accord_listing",
+        status: recipe ? "component_derived_accord" : "accord_listing",
         note:
-          "Formula-level black-box accord support row. Do not expand until the accord recipe is explicitly supplied.",
+          recipe
+            ? "Formula-level accord support row with component-derived pricing. Do not expand inside active formulas."
+            : "Formula-level black-box accord support row. Do not expand until the accord recipe is explicitly supplied.",
       },
     },
   };
@@ -386,8 +661,13 @@ function createSupportRecordNormalizationEntry(record = {}) {
 
 function createAliasNormalizationEntry(alias = {}, targetEntry = null) {
   const isDilutedAlias = alias.entryKind === "diluted_stock";
+  const isAccordAlias = alias.entryKind === "accord";
   return {
-    entryKind: isDilutedAlias ? "diluted_stock" : "supplier_product",
+    entryKind: isDilutedAlias
+      ? "diluted_stock"
+      : isAccordAlias
+      ? "accord"
+      : "supplier_product",
     canonicalMaterialKey:
       alias.canonicalMaterialKey || targetEntry?.canonicalMaterialKey || null,
     linkedDuplicateOfCatalogName: alias.targetName,
