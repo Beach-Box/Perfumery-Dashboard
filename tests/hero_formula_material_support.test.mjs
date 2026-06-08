@@ -9,6 +9,7 @@ import {
   buildHeroFormulaMaterialNormalizationEntries,
   buildHeroFormulaPricingSupportRows,
   buildHeroFormulaRawDbSupportRows,
+  createHeroSupportRecordPricing,
   getHeroFormulaAccordRecipe,
 } from "../src/lib/hero_formula_material_support.js";
 import { buildSupplierBasket } from "../src/lib/perfumer_runtime_helpers.js";
@@ -430,26 +431,37 @@ test("hero formula support maps Ylang Ylang shorthand as a 10% complete-oil stoc
   ]);
 });
 
-test("hero formula support creates minimal own-material support records without pricing", () => {
+test("hero formula support creates reviewed PA price rows for source-backed materials", () => {
   const rawRows = buildHeroFormulaRawDbSupportRows({});
 
   assert.equal(rawRows.Algenone[0], null);
   assert.equal(rawRows.Algenone[5], null);
   assert.equal(rawRows.Algenone[25], null);
   assert.equal(rawRows.Algenone[8], "mid");
-  assert.equal(rawRows.Algenone[11], "Hero Formula Support");
-  assert.equal(rawRows.Algenone[17], "Support Record");
-  assert.equal(rawRows.Algenone[20], null);
+  assert.equal(rawRows.Algenone[11], "Perfumers Apprentice");
+  assert.equal(rawRows.Algenone[15], "Mixture");
+  assert.equal(rawRows.Algenone[17], "Marine");
   assert.equal(rawRows.Cyclogalbanate[0], null);
   assert.equal(rawRows.Cyclogalbanate[5], null);
   assert.equal(rawRows.Cyclogalbanate[25], null);
   assert.equal(rawRows.Cyclogalbanate[8], "mid");
-  assert.equal(rawRows.Cyclogalbanate[11], "Hero Formula Support");
-  assert.equal(rawRows.Cyclogalbanate[17], "Support Record");
+  assert.equal(rawRows.Cyclogalbanate[11], "Perfumers Apprentice");
+  assert.equal(rawRows.Cyclogalbanate[15], "68901-15-5");
+  assert.equal(rawRows.Cyclogalbanate[17], "Green");
 
   const pricingRows = buildHeroFormulaPricingSupportRows({});
-  assert.equal(pricingRows.Algenone, undefined);
-  assert.equal(pricingRows.Cyclogalbanate, undefined);
+  assert.deepEqual(pricingRows.Algenone["Perfumers Apprentice"].S, [
+    [4, "ml", 7.5],
+    [15, "ml", 18.75],
+    [50, "g", 31],
+    [250, "g", 131],
+    [500, "g", 209.5],
+  ]);
+  assert.deepEqual(pricingRows.Cyclogalbanate["Perfumers Apprentice"].S, [
+    [4, "ml", 6.5],
+    [15, "ml", 12.5],
+    [50, "g", 21.75],
+  ]);
 
   assert.equal(
     MATERIAL_NORMALIZATION.Algenone.entryKind,
@@ -457,19 +469,19 @@ test("hero formula support creates minimal own-material support records without 
   );
   assert.equal(
     MATERIAL_NORMALIZATION.Algenone.canonicalMaterialKey,
-    "hero_algenone"
+    "pa_algenone_synarome"
   );
   assert.equal(
     MATERIAL_NORMALIZATION.Cyclogalbanate.canonicalMaterialKey,
-    "hero_cyclogalbanate"
+    "pa_cyclogalbanate_glycoflor"
   );
   assert.equal(
     MATERIAL_NORMALIZATION.Algenone.reviewState,
-    "catalog_record_needed"
+    "source_backed_supplier_product"
   );
 });
 
-test("hero formula support creates source-backed PA support records without pricing", () => {
+test("hero formula support creates source-backed PA support records with reviewed pricing", () => {
   const rawRows = buildHeroFormulaRawDbSupportRows({});
 
   assert.equal(rawRows.Cypriol[0], null);
@@ -496,8 +508,22 @@ test("hero formula support creates source-backed PA support records without pric
   assert.equal(rawRows["Pink Peppercorn Oil P&N"][17], "Spicy");
 
   const pricingRows = buildHeroFormulaPricingSupportRows({});
-  assert.equal(pricingRows.Cypriol, undefined);
-  assert.equal(pricingRows["Pink Peppercorn Oil P&N"], undefined);
+  assert.deepEqual(pricingRows.Cypriol["Perfumers Apprentice"].S, [
+    [4, "ml", 11.75],
+    [15, "ml", 28.75],
+    [50, "g", 47.75],
+    [250, "g", 219],
+    [500, "g", 379],
+  ]);
+  assert.deepEqual(
+    pricingRows["Pink Peppercorn Oil P&N"]["Perfumers Apprentice"].S,
+    [
+      [4, "ml", 8],
+      [15, "ml", 24],
+      [50, "g", 37],
+      [250, "g", 157],
+    ]
+  );
 
   const cypriolSupplier =
     MATERIAL_NORMALIZATION.Cypriol.supplierLinks["Perfumers Apprentice"];
@@ -523,6 +549,58 @@ test("hero formula support creates source-backed PA support records without pric
   assert.equal(
     MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"].reviewState,
     "source_backed_supplier_product"
+  );
+});
+
+test("source-backed support records without price tiers remain missing instead of free", () => {
+  const pricing = createHeroSupportRecordPricing({
+    name: "Unpriced PA Material",
+    supplierName: "Perfumers Apprentice",
+    sourceUrl: "https://shop.perfumersapprentice.com/example.aspx",
+    sourceProductTitle: "Unpriced PA Material",
+  });
+
+  assert.deepEqual(pricing["Perfumers Apprentice"].S, []);
+  assert.equal(pricing["Perfumers Apprentice"].inStock, false);
+  assert.equal(
+    pricing["Perfumers Apprentice"].priceReviewStatus,
+    "current_price_needed"
+  );
+
+  const basket = buildSupplierBasket(
+    [{ name: "Unpriced PA Material", g: 0.1, note: "mid" }],
+    {},
+    {},
+    "cheapest",
+    { pricing: { "Unpriced PA Material": pricing } }
+  );
+
+  assert.equal(basket.lines[0].status, "missing");
+  assert.equal(basket.lines[0].lineCost, null);
+  assert.equal(basket.totalCost, 0);
+  assert.equal(basket.missingCount, 1);
+});
+
+test("remaining non-accord hero pricing gaps no longer count as zero-cost lines", () => {
+  const pricingRows = buildHeroFormulaPricingSupportRows({});
+  const basket = buildSupplierBasket(
+    [
+      { name: "Algenone", g: 0.18, note: "mid" },
+      { name: "Cyclogalbanate", g: 0.04, note: "mid" },
+      { name: "Cypriol", g: 0.06, note: "base" },
+      { name: "Pink Peppercorn Oil P&N", g: 0.05, note: "top" },
+    ],
+    {},
+    {},
+    "cheapest",
+    { pricing: pricingRows }
+  );
+
+  assert.equal(basket.missingCount, 0);
+  assert.equal(basket.lines.every((line) => line.lineCost > 0), true);
+  assert.equal(
+    basket.lines.every((line) => line.supplier === "Perfumers Apprentice"),
+    true
   );
 });
 

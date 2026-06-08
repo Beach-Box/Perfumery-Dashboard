@@ -404,6 +404,45 @@ function createSupportRecordRawDbRow(record = {}) {
   });
 }
 
+function normalizeSupportPriceTiers(priceTiers = []) {
+  return (Array.isArray(priceTiers) ? priceTiers : [])
+    .map((tier) => {
+      const qty = Number(tier?.qty);
+      const price = Number(tier?.price);
+      const unit = String(tier?.unit || "").trim();
+      if (!Number.isFinite(qty) || qty <= 0 || !unit) return null;
+      if (!Number.isFinite(price) || price <= 0) return null;
+      return [qty, unit, price];
+    })
+    .filter(Boolean);
+}
+
+export function createHeroSupportRecordPricing(record = {}) {
+  if (!record?.name || !record?.supplierName) return null;
+  const tiers = normalizeSupportPriceTiers(record.priceTiers);
+  const hasReviewedPrices = tiers.length > 0;
+  return {
+    [record.supplierName]: {
+      url: record.sourceUrl || null,
+      S: tiers,
+      inStock: hasReviewedPrices,
+      linkStatus: "primary_listing",
+      sourceProductTitle: record.sourceProductTitle || null,
+      sourceConfidence:
+        record.priceSourceConfidence ||
+        record.sourceConfidence ||
+        "reviewed_supplier_product",
+      priceSourceUpdatedAt: record.priceSourceUpdatedAt || null,
+      priceReviewStatus: hasReviewedPrices
+        ? "reviewed_current_price_tiers"
+        : "current_price_needed",
+      supportNote: hasReviewedPrices
+        ? "Reviewed supplier price tiers from the confirmed source product page."
+        : "Source-backed supplier product. Current size/price tiers are still needed, so this row should remain a pricing caveat.",
+    },
+  };
+}
+
 function scaleSupplierPriceRowsForDilution(rows = [], activeFraction) {
   if (!activeFraction) return cloneJsonValue(rows);
   return rows.map((row) => {
@@ -543,6 +582,13 @@ export function buildHeroFormulaPricingSupportRows(pricing = {}) {
     const parentPricing = pricing[stock.parentName];
     if (!parentPricing) continue;
     supportPricing[stock.name] = createDilutedStockPricing(parentPricing, stock);
+  }
+
+  for (const record of HERO_FORMULA_MATERIAL_SUPPORT.supportRecords || []) {
+    if (pricing[record.name]) continue;
+    const recordPricing = createHeroSupportRecordPricing(record);
+    if (!recordPricing) continue;
+    supportPricing[record.name] = recordPricing;
   }
 
   const combinedPricing = { ...pricing, ...supportPricing };

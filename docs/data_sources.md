@@ -145,13 +145,15 @@ IFRA/activity workflows:
   `Vetiveryl Acetate 20326`, `Aldehyde C-18` to `Gamma Nonalactone`,
   `Lemon FCF` to the Fraterworks `Lemon “Superior” Oil, FCF` row, and
   `Ylang Ylang 10%` to a 10% dilution of `Ylang-Ylang Complete Oil`.
-- `Algenone` and `Cyclogalbanate` have minimal reviewed support records as
-  their own materials. The overlay does not invent pricing, CAS, chemistry, or
-  IFRA limits for those rows.
-- `Cypriol` and `Pink Peppercorn Oil P&N` have source-backed Perfumers
-  Apprentice support records. Those rows preserve the formula display names and
-  carry reviewed source URLs/facts, but still do not infer pricing rows or IFRA
-  limits.
+- `Algenone`, `Cyclogalbanate`, `Cypriol`, and `Pink Peppercorn Oil P&N` have
+  source-backed Perfumers Apprentice support records. Those rows preserve the
+  formula display names and carry reviewed source URLs/facts.
+- Reviewed Perfumers Apprentice price tiers for those four rows are represented
+  in the hero support overlay only when the source product page exposes exact
+  current size/price tiers. If a future source-backed support row has no tiers,
+  it should remain a pricing caveat / current-price-needed row rather than being
+  treated as free. The overlay still does not infer chemistry or IFRA limits for
+  these rows.
 
 ### Reviewed Molecular Data
 

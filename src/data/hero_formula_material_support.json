@@ -252,21 +252,81 @@
   "supportRecords": [
     {
       "name": "Algenone",
-      "canonicalMaterialKey": "hero_algenone",
+      "canonicalMaterialKey": "pa_algenone_synarome",
       "note": "mid",
-      "sourceConfidence": "user_confirmed_material_identity",
-      "reviewState": "catalog_record_needed",
-      "scentSummary": "Hero formula support record for Algenone",
-      "scentDesc": "Reviewed as its own active hero formula material. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred by this overlay."
+      "type": "SYNTH",
+      "supplierName": "Perfumers Apprentice",
+      "sourceUrl": "https://shop.perfumersapprentice.com/p-9357-algenone-synarome.aspx",
+      "sourceProductTitle": "Algenone (Synarome)",
+      "sourceConfidence": "pa_product_page_reviewed",
+      "priceSourceConfidence": "reviewed_pa_product_page_2026_06_08",
+      "priceSourceUpdatedAt": "2026-06-08",
+      "reviewState": "source_backed_supplier_product",
+      "cas": "Mixture",
+      "scentClass": "Marine",
+      "scentSummary": "Perfumers Apprentice Algenone (Synarome)",
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Algenone line. Price tiers are captured from the confirmed PA product page; chemistry and IFRA limits are intentionally not inferred by this overlay.",
+      "priceTiers": [
+        {
+          "qty": 4,
+          "unit": "ml",
+          "price": 7.5
+        },
+        {
+          "qty": 15,
+          "unit": "ml",
+          "price": 18.75
+        },
+        {
+          "qty": 50,
+          "unit": "g",
+          "price": 31
+        },
+        {
+          "qty": 250,
+          "unit": "g",
+          "price": 131
+        },
+        {
+          "qty": 500,
+          "unit": "g",
+          "price": 209.5
+        }
+      ]
     },
     {
       "name": "Cyclogalbanate",
-      "canonicalMaterialKey": "hero_cyclogalbanate",
+      "canonicalMaterialKey": "pa_cyclogalbanate_glycoflor",
       "note": "mid",
-      "sourceConfidence": "user_confirmed_material_identity",
-      "reviewState": "catalog_record_needed",
-      "scentSummary": "Hero formula support record for Cyclogalbanate",
-      "scentDesc": "Reviewed as its own active hero formula material. Chemistry, CAS, IFRA limits, and pricing are intentionally not inferred by this overlay."
+      "type": "SYNTH",
+      "supplierName": "Perfumers Apprentice",
+      "sourceUrl": "https://shop.perfumersapprentice.com/p-6042-cyclogalbanate-glycoflor.aspx",
+      "sourceProductTitle": "Cyclogalbanate (Glycoflor)",
+      "sourceConfidence": "pa_product_page_reviewed",
+      "priceSourceConfidence": "reviewed_pa_product_page_2026_06_08",
+      "priceSourceUpdatedAt": "2026-06-08",
+      "reviewState": "source_backed_supplier_product",
+      "cas": "68901-15-5",
+      "scentClass": "Green",
+      "scentSummary": "Perfumers Apprentice Cyclogalbanate (Glycoflor)",
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Cyclogalbanate line. Price tiers are captured from the confirmed PA product page; chemistry and IFRA limits are intentionally not inferred by this overlay.",
+      "priceTiers": [
+        {
+          "qty": 4,
+          "unit": "ml",
+          "price": 6.5
+        },
+        {
+          "qty": 15,
+          "unit": "ml",
+          "price": 12.5
+        },
+        {
+          "qty": 50,
+          "unit": "g",
+          "price": 21.75
+        }
+      ]
     },
     {
       "name": "Cypriol",
@@ -277,12 +337,41 @@
       "sourceUrl": "https://shop.perfumersapprentice.com/p-10991-cypriol-essential-oil.aspx",
       "sourceProductTitle": "Cypriol Essential Oil",
       "sourceConfidence": "user_confirmed_pa_source_url",
+      "priceSourceConfidence": "reviewed_pa_product_page_2026_06_08",
+      "priceSourceUpdatedAt": "2026-06-08",
       "reviewState": "source_backed_supplier_product",
       "cas": "91771-62-9",
       "inci": "Cyperus Scariosus Root Oil",
       "scentClass": "Woody",
       "scentSummary": "Perfumers Apprentice Cypriol Essential Oil",
-      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Cypriol line. Pricing and IFRA limits are intentionally not inferred by this overlay."
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Cypriol line. Price tiers are captured from the confirmed PA product page; IFRA limits are intentionally not inferred by this overlay.",
+      "priceTiers": [
+        {
+          "qty": 4,
+          "unit": "ml",
+          "price": 11.75
+        },
+        {
+          "qty": 15,
+          "unit": "ml",
+          "price": 28.75
+        },
+        {
+          "qty": 50,
+          "unit": "g",
+          "price": 47.75
+        },
+        {
+          "qty": 250,
+          "unit": "g",
+          "price": 219
+        },
+        {
+          "qty": 500,
+          "unit": "g",
+          "price": 379
+        }
+      ]
     },
     {
       "name": "Pink Peppercorn Oil P&N",
@@ -293,12 +382,36 @@
       "sourceUrl": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx",
       "sourceProductTitle": "Pink Peppercorn Oil P&N **",
       "sourceConfidence": "pa_source_url_reviewed",
+      "priceSourceConfidence": "reviewed_pa_product_page_2026_06_08",
+      "priceSourceUpdatedAt": "2026-06-08",
       "reviewState": "source_backed_supplier_product",
       "cas": "68917-52-2",
       "inci": "Schinus molle oil",
       "scentClass": "Spicy",
       "scentSummary": "Perfumers Apprentice Pink Peppercorn Oil P&N",
-      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Pink Peppercorn Oil P&N line. Pricing and IFRA limits are intentionally not inferred by this overlay."
+      "scentDesc": "Reviewed Perfumers Apprentice source-backed support row for the active hero formula Pink Peppercorn Oil P&N line. Price tiers are captured from the confirmed PA product page; IFRA limits are intentionally not inferred by this overlay.",
+      "priceTiers": [
+        {
+          "qty": 4,
+          "unit": "ml",
+          "price": 8
+        },
+        {
+          "qty": 15,
+          "unit": "ml",
+          "price": 24
+        },
+        {
+          "qty": 50,
+          "unit": "g",
+          "price": 37
+        },
+        {
+          "qty": 250,
+          "unit": "g",
+          "price": 157
+        }
+      ]
     }
   ],
   "reviewNeeded": []
