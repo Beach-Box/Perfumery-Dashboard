@@ -24,6 +24,18 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(board).toBeVisible();
   await expect(board.getByText("Hero Scent Development")).toBeVisible();
   await expect(board.getByText("Original + 3 Test Variations")).toBeVisible();
+  await expect(
+    page.getByTestId("hero-model-confidence-cue")
+  ).toContainText("Model outputs are directional estimates");
+  await expect(page.getByTestId("model-confidence-summary")).toContainText(
+    "Model Confidence Summary"
+  );
+  await expect(page.getByTestId("model-confidence-summary")).toContainText(
+    "Black-box accords"
+  );
+  await expect(
+    board.getByText(/Cost caveat: .*black-box accord/i).first()
+  ).toBeVisible();
 
   const decisionBrief = page.getByTestId("hero-decision-brief");
   await expect(decisionBrief).toBeVisible();
@@ -35,6 +47,15 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   for (const formulaName of HERO_FORMULA_NAMES) {
     await expect(board.getByText(formulaName).first()).toBeVisible();
   }
+
+  await board.getByRole("button", { name: "Original vs Skin-Air Bridge" }).click();
+  await expect(page.getByText("Model Confidence").first()).toBeVisible();
+  await expect(page.getByText("Directional comparison").first()).toBeVisible();
+  await page.getByRole("button", { name: /Advisor/i }).first().click();
+  await expect(page.getByText(/Formula Report Card/)).toBeVisible();
+  await expect(page.getByText("Data Coverage Estimate")).toBeVisible();
+  await expect(page.getByText("IFRA Coverage Estimate")).toBeVisible();
+  await page.getByRole("button", { name: /Hero Lab/i }).first().click();
 
   const skinAirSensory = page.getByTestId(
     "hero-sensory-summary-seed-hero-skin-air-bridge"

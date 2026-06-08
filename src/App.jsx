@@ -55762,6 +55762,7 @@ function ModelConfidenceBadges({
   max = 6,
   compact = false,
   extraBadges = [],
+  hideGeneric = compact,
 }) {
   const badgeSummary =
     summary || {
@@ -55769,9 +55770,14 @@ function ModelConfidenceBadges({
         estimated_model: 1,
       },
     };
+  const hiddenCategories = new Set(
+    hideGeneric ? ["estimated_model", "directional_only"] : []
+  );
   const badges = [
     ...(Array.isArray(extraBadges) ? extraBadges : []),
-    ...getFormulaConfidenceBadges(badgeSummary, { max }),
+    ...getFormulaConfidenceBadges(badgeSummary, { max: 20 }).filter(
+      (badge) => !hiddenCategories.has(badge.category)
+    ),
   ].slice(0, max);
   if (!badges.length) return null;
   return (
@@ -55803,6 +55809,129 @@ function ModelConfidenceBadges({
           {badge.label}
         </span>
       ))}
+    </div>
+  );
+}
+
+function getConfidenceCount(summary, category) {
+  return Number(summary?.categoryCounts?.[category]) || 0;
+}
+
+function mergeModelConfidenceSummaries(summaries = []) {
+  const categoryCounts = {};
+  return (Array.isArray(summaries) ? summaries : []).reduce(
+    (aggregate, summary) => {
+      Object.entries(summary?.categoryCounts || {}).forEach(([category, count]) => {
+        aggregate.categoryCounts[category] =
+          (aggregate.categoryCounts[category] || 0) + (Number(count) || 0);
+      });
+      aggregate.sourceBackedOdtCount += Number(summary?.sourceBackedOdtCount) || 0;
+      aggregate.legacyOdtCount += Number(summary?.legacyOdtCount) || 0;
+      aggregate.missingThresholdCount += Number(summary?.missingThresholdCount) || 0;
+      aggregate.totalMaterials += Number(summary?.totalMaterials) || 0;
+      return aggregate;
+    },
+    {
+      categoryCounts,
+      sourceBackedOdtCount: 0,
+      legacyOdtCount: 0,
+      missingThresholdCount: 0,
+      totalMaterials: 0,
+    }
+  );
+}
+
+function getCostConfidenceCaveat(summary) {
+  const blackBoxCount = getConfidenceCount(summary, "black_box_accord");
+  const pricingCount = getConfidenceCount(summary, "missing_pricing");
+  if (blackBoxCount > 0) {
+    return `Cost caveat: ${blackBoxCount} black-box accord row${
+      blackBoxCount === 1 ? "" : "s"
+    } may be unresolved or unpriced, so displayed cost may be understated.`;
+  }
+  if (pricingCount > 0) {
+    return `Cost caveat: ${pricingCount} pricing row${
+      pricingCount === 1 ? "" : "s"
+    } are missing or placeholder-supported, so displayed cost may be understated.`;
+  }
+  return "";
+}
+
+function ModelConfidenceSummaryPanel({ summary, compact = false }) {
+  if (!summary) return null;
+  const rows = [
+    ["Source-backed thresholds", Number(summary.sourceBackedOdtCount) || 0, "#86EFAC"],
+    ["Legacy thresholds", Number(summary.legacyOdtCount) || 0, "#FCD34D"],
+    ["Missing thresholds", Number(summary.missingThresholdCount) || 0, "#FCD34D"],
+    ["Inherited dilution", getConfidenceCount(summary, "parent_inherited"), "#7DD3FC"],
+    ["Proxy/UVCB", getConfidenceCount(summary, "proxy_or_uvcb"), "#FCD34D"],
+    ["Black-box accords", getConfidenceCount(summary, "black_box_accord"), "#FCA5A5"],
+    ["Pricing caveats", getConfidenceCount(summary, "missing_pricing"), "#FCA5A5"],
+    ["IFRA caveats", getConfidenceCount(summary, "missing_ifra"), "#FCA5A5"],
+  ];
+  return (
+    <div
+      data-testid="model-confidence-summary"
+      style={{
+        background: "#071826",
+        border: "1px solid #1E3A52",
+        borderRadius: 8,
+        padding: compact ? "7px 9px" : "9px 10px",
+        display: "grid",
+        gap: 7,
+      }}
+    >
+      <div
+        style={{
+          fontSize: compact ? 7.6 : 8,
+          color: "#64748B",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          fontWeight: 800,
+        }}
+      >
+        Model Confidence Summary
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+          gap: 5,
+        }}
+      >
+        {rows.map(([label, value, color]) => (
+          <div
+            key={label}
+            style={{
+              background: "#060E1E",
+              border: "1px solid #1E3A52",
+              borderRadius: 7,
+              padding: "5px 6px",
+              minHeight: 38,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 7.4,
+                color: "#64748B",
+                lineHeight: 1.25,
+              }}
+            >
+              {label}
+            </div>
+            <div
+              style={{
+                marginTop: 2,
+                fontSize: 12,
+                color,
+                fontWeight: 800,
+              }}
+            >
+              {value}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -62598,6 +62727,16 @@ export default function App() {
       }),
     [compareRightBasket, compareRightFormula, ifraCategory, selectedFragranceType]
   );
+  const compareCostConfidenceCaveat = useMemo(
+    () =>
+      getCostConfidenceCaveat(
+        mergeModelConfidenceSummaries([
+          compareLeftConfidenceSummary,
+          compareRightConfidenceSummary,
+        ])
+      ),
+    [compareLeftConfidenceSummary, compareRightConfidenceSummary]
+  );
   const activeFounderScenario = useMemo(
     () =>
       savedFounderScenarios.find((scenario) => scenario.id === activeFounderScenarioId) ||
@@ -69338,13 +69477,14 @@ export default function App() {
   };
   const renderModelConfidenceBadges = (
     summary,
-    { max = 6, compact = false, extraBadges = [] } = {}
+    { max = 6, compact = false, extraBadges = [], hideGeneric = compact } = {}
   ) => (
     <ModelConfidenceBadges
       summary={summary}
       max={max}
       compact={compact}
       extraBadges={extraBadges}
+      hideGeneric={hideGeneric}
     />
   );
   const renderPerformanceModelCard = (
@@ -80475,6 +80615,9 @@ export default function App() {
       (item) => item.formula.formulaKey !== heroOriginalFormula?.formulaKey
     );
     const heroDecisionBrief = buildHeroDecisionBrief(heroCandidateItems);
+    const heroBoardConfidenceSummary = mergeModelConfidenceSummaries(
+      heroCandidateItems.map((item) => item.confidenceSummary)
+    );
     const renderHeroTrustBadge = (trustSummary) => {
       const meta = trustSummary?.levelMeta || FOUNDER_TRUST_LEVEL_META.mixed;
       return (
@@ -80701,6 +80844,33 @@ export default function App() {
           </div>
         </div>
         <div
+          style={{
+            background: "#071826",
+            border: "1px solid #1E3A52",
+            borderRadius: 10,
+            padding: "9px 10px",
+            marginBottom: 12,
+            display: "grid",
+            gap: 8,
+          }}
+        >
+          <div
+            data-testid="hero-model-confidence-cue"
+            style={{
+              fontSize: 8.8,
+              color: "#94A3B8",
+              lineHeight: 1.55,
+            }}
+          >
+            Model outputs are directional estimates. Caveats below identify where
+            data is inherited, proxy-based, legacy, missing, or black-box.
+          </div>
+          <ModelConfidenceSummaryPanel
+            summary={heroBoardConfidenceSummary}
+            compact
+          />
+        </div>
+        <div
           data-testid="hero-decision-brief"
           style={{
             background: "#060E1E",
@@ -80924,6 +81094,7 @@ export default function App() {
               trustSummary,
               confidenceSummary,
             } = item;
+            const candidateCostCaveat = getCostConfidenceCaveat(confidenceSummary);
             const readinessMeta =
               LAUNCH_READINESS_STATUS_META[launchReadiness.status] ||
               LAUNCH_READINESS_STATUS_META.early;
@@ -81099,7 +81270,23 @@ export default function App() {
                     selectedBasket?.totalCost != null
                       ? `$${selectedBasket.totalCost.toFixed(2)}`
                       : "Unavailable",
-                    `${selectedBasketModeMeta.label} basket`,
+                    candidateCostCaveat ? (
+                      <>
+                        <div>{selectedBasketModeMeta.label} basket</div>
+                        <div
+                          data-testid={`hero-cost-caveat-${candidateFormula.formulaKey}`}
+                          style={{
+                            color: "#FCD34D",
+                            marginTop: 3,
+                            lineHeight: 1.35,
+                          }}
+                        >
+                          {candidateCostCaveat}
+                        </div>
+                      </>
+                    ) : (
+                      `${selectedBasketModeMeta.label} basket`
+                    ),
                     "#34D399"
                   )}
                   {renderMetric(
@@ -82880,6 +83067,18 @@ export default function App() {
                             </div>
                             <div
                               style={{
+                                fontSize: 8.6,
+                                color: "#94A3B8",
+                                lineHeight: 1.55,
+                                marginBottom: 8,
+                              }}
+                            >
+                              Directional comparison: badges call out data
+                              quality differences behind the cost, performance,
+                              chemistry, and IFRA estimates.
+                            </div>
+                            <div
+                              style={{
                                 display: "grid",
                                 gridTemplateColumns:
                                   "repeat(auto-fit,minmax(220px,1fr))",
@@ -82928,7 +83127,19 @@ export default function App() {
                             {
                               label: `${selectedBasketModeMeta.label} Delta`,
                               value: `${compareBasketDelta >= 0 ? "+" : ""}$${compareBasketDelta.toFixed(2)}`,
-                              meta: `$${(compareLeftBasket?.totalCost || 0).toFixed(2)} → $${(compareRightBasket?.totalCost || 0).toFixed(2)}`,
+                              meta: compareCostConfidenceCaveat ? (
+                                <>
+                                  <div>
+                                    ${(compareLeftBasket?.totalCost || 0).toFixed(2)} → $
+                                    {(compareRightBasket?.totalCost || 0).toFixed(2)}
+                                  </div>
+                                  <div style={{ color: "#FCD34D", marginTop: 3 }}>
+                                    {compareCostConfidenceCaveat}
+                                  </div>
+                                </>
+                              ) : (
+                                `$${(compareLeftBasket?.totalCost || 0).toFixed(2)} → $${(compareRightBasket?.totalCost || 0).toFixed(2)}`
+                              ),
                               color:
                                 compareBasketDelta > 0
                                   ? "#F59E0B"
@@ -87508,6 +87719,21 @@ export default function App() {
                         max: 5,
                         compact: true,
                       })}
+                    </div>
+                    <div
+                      style={{
+                        marginBottom: 12,
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "7px 9px",
+                        fontSize: 8.6,
+                        color: "#94A3B8",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      Report-card bars are directional estimates and coverage
+                      checks, not final production clearance.
                     </div>
                     {bars.map(({ label, score, color, tip }) => (
                       <div key={label} style={{ marginBottom: 10 }}>

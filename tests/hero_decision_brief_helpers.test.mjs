@@ -275,8 +275,10 @@ test("brief surfaces selected winner model confidence caveats as advisory warnin
             categoryCounts: {
               black_box_accord: 1,
               missing_pricing: 1,
+              missing_ifra: 1,
               legacy: 2,
               missing_threshold: 3,
+              proxy_or_uvcb: 1,
               estimated_model: 1,
               directional_only: 1,
             },
@@ -288,12 +290,24 @@ test("brief surfaces selected winner model confidence caveats as advisory warnin
 
   assert.ok(
     brief.warnings.some((warning) =>
-      warning.includes("Skin-Air Bridge model caveat: 1 black-box accord row")
+      warning.includes(
+        "Skin-Air Bridge model caveat: cost remains directional"
+      )
     )
   );
   assert.ok(
     brief.warnings.some((warning) =>
-      warning.includes("Threshold and vapor-pressure support is mixed")
+      warning.includes("1 IFRA coverage row")
+    )
+  );
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("threshold and vapor-pressure support is mixed")
+    )
+  );
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("1 proxy/UVCB material")
     )
   );
   assert.ok(

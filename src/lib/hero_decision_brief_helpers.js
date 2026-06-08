@@ -1,5 +1,3 @@
-import { buildFormulaConfidenceWarningLabels } from "./model_confidence_helpers.js";
-
 const LOW_LAUNCH_CONFIDENCE_THRESHOLD = 6;
 
 function getCandidateName(item) {
@@ -26,6 +24,75 @@ function formatCandidateList(items = []) {
 
 function formatRating(value) {
   return value == null ? "not scored" : `${value}/10`;
+}
+
+function getConfidenceCount(item, category) {
+  return Number(item?.confidenceSummary?.categoryCounts?.[category]) || 0;
+}
+
+function formatCount(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function buildDecisionModelCaveatWarnings(item) {
+  const name = getCandidateName(item);
+  const warnings = [];
+  const blackBoxCount = getConfidenceCount(item, "black_box_accord");
+  const pricingCount = getConfidenceCount(item, "missing_pricing");
+  const ifraCount = getConfidenceCount(item, "missing_ifra");
+  const legacyCount = getConfidenceCount(item, "legacy");
+  const missingThresholdCount = getConfidenceCount(item, "missing_threshold");
+  const proxyCount = getConfidenceCount(item, "proxy_or_uvcb");
+
+  if (blackBoxCount > 0 || pricingCount > 0) {
+    const costParts = [];
+    if (blackBoxCount > 0) {
+      costParts.push(formatCount(blackBoxCount, "black-box accord row"));
+    }
+    if (pricingCount > 0) {
+      costParts.push(formatCount(pricingCount, "pricing caveat row"));
+    }
+    warnings.push(
+      `${name} model caveat: cost remains directional because ${costParts.join(
+        " and "
+      )} may use placeholder support.`
+    );
+  }
+
+  if (ifraCount > 0) {
+    warnings.push(
+      `${name} model caveat: ${formatCount(
+        ifraCount,
+        "IFRA coverage row"
+      )} need cautious reading.`
+    );
+  }
+
+  if (legacyCount > 0 || missingThresholdCount > 0) {
+    const thresholdParts = [];
+    if (legacyCount > 0) {
+      thresholdParts.push(formatCount(legacyCount, "legacy ODT/VP row"));
+    }
+    if (missingThresholdCount > 0) {
+      thresholdParts.push(formatCount(missingThresholdCount, "missing-threshold row"));
+    }
+    warnings.push(
+      `${name} model caveat: threshold and vapor-pressure support is mixed (${thresholdParts.join(
+        ", "
+      )}); treat perceived-impact charts as directional.`
+    );
+  }
+
+  if (proxyCount > 0) {
+    warnings.push(
+      `${name} model caveat: ${formatCount(
+        proxyCount,
+        "proxy/UVCB material"
+      )} should be treated as directional model support.`
+    );
+  }
+
+  return warnings;
 }
 
 function buildIfraStatusLabel(item) {
@@ -199,11 +266,9 @@ export function buildHeroDecisionBrief(candidateItems = []) {
   }
 
   if (decisionCandidate) {
-    buildFormulaConfidenceWarningLabels(decisionCandidate.confidenceSummary)
-      .slice(0, 3)
-      .forEach((warning) => {
-        warnings.push(`${getCandidateName(decisionCandidate)} model caveat: ${warning}`);
-      });
+    buildDecisionModelCaveatWarnings(decisionCandidate).forEach((warning) => {
+      warnings.push(warning);
+    });
     if (getEvaluationCount(decisionCandidate) > 0) {
       warnings.push(
         `${getCandidateName(decisionCandidate)} sensory read summarizes the latest wear test snapshot; review the full history before final production planning.`
@@ -299,7 +364,7 @@ export function buildHeroDecisionBrief(candidateItems = []) {
     topReadinessLabel,
     focusedTechnicalLabel,
     focusedBlocker,
-    warnings: warnings.slice(0, 6),
+    warnings: warnings.slice(0, 8),
     nextAction,
   };
 }
