@@ -207,13 +207,11 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
       "Cat 4 and related limits were promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
     ],
   },
-  "bergamot eo fcf": {
-    canonicalName: "Bergamot EO FCF",
+  "bergamot expressed": {
+    canonicalName: "Bergamot expressed",
     cas: ["68648-33-9"],
     synonyms: [
       "bergamot expressed",
-      "bergamot eo fcf",
-      "bergamot fcf",
       "bergamot oil",
       "bergamot",
     ],
@@ -235,6 +233,47 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
     },
     notes: [
       "Cat 4 limit was promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
+      "This regular expressed bergamot helper record must not be applied to explicitly FCF / furocoumarin-free bergamot rows.",
+    ],
+  },
+  "bergamot eo fcf": {
+    canonicalName: "Bergamot EO FCF",
+    cas: ["68648-33-9"],
+    synonyms: [
+      "bergamot eo fcf",
+      "bergamot fcf",
+      "bergamot oil fcf",
+      "bergamot oil fcf, cote d'ivoire",
+      "bergamot oil fcf, côte d'ivoire",
+      "bergamot oil fcf organic",
+      "bergamot oil fcf, organic",
+      "bergamot oil fcf terpeneless",
+      "bergamot oil fcf, terpeneless",
+      "bergamot superior oil fcf",
+      "bergamot superior oil, fcf",
+    ],
+    recommendationType: null,
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [3],
+    },
+    missingLimitReason:
+      "FCF / furocoumarin-free support — regular expressed bergamot phototoxic limit not applied. Verify supplier IFRA/SDS for final compliance.",
+    notes: [
+      "Explicit FCF / furocoumarin-free bergamot support row.",
+      "The prior helper mapped this row to regular expressed bergamot and applied the phototoxic Cat 4 limit, which created a false positive for FCF formula rows.",
+      "No source-backed replacement Cat 4 limit has been promoted here; keep supplier IFRA/SDS verification as the final compliance step.",
     ],
   },
   "lemon eo italy": {
@@ -1797,16 +1836,19 @@ export const INGREDIENT_IDENTITY_MAP = {
   },
   "Bergamot EO FCF": {
     canonicalAppName: "Bergamot EO FCF",
-    normalizedName: "Bergamot expressed",
-    matchStrategy: "pdf_text_match_needs_verification",
+    normalizedName: "Bergamot EO FCF",
+    matchStrategy: "manual_fcf_identity_split",
     resolvedIfraMaterial: "bergamot eo fcf",
     materialClass: "not_yet_resolved",
     aliases: [
-      "Bergamot expressed",
       "Bergamot EO FCF",
       "Bergamot FCF",
-      "Bergamot oil",
-      "Bergamot",
+      "Bergamot Oil FCF",
+      "Bergamot Oil FCF, Cote d'Ivoire",
+      "Bergamot Oil FCF, Côte d'Ivoire",
+      "Bergamot Oil FCF, Organic",
+      "Bergamot Oil FCF, Terpeneless",
+      "Bergamot “Superior” Oil, FCF",
     ],
     stock: null,
     dbNoteRole: "top",
@@ -1817,7 +1859,31 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchStatus: "full_text_match",
     pdfMatchedAlias: "Bergamot oil",
     pdfMatchedPage: 3.0,
-    reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+    reviewNote:
+      "FCF / furocoumarin-free support — regular expressed bergamot phototoxic limit is not applied. Verify supplier IFRA/SDS for final compliance.",
+  },
+  "Bergamot expressed": {
+    canonicalAppName: "Bergamot expressed",
+    normalizedName: "Bergamot expressed",
+    matchStrategy: "manual_regular_expressed_identity",
+    resolvedIfraMaterial: "bergamot expressed",
+    materialClass: "not_yet_resolved",
+    aliases: [
+      "Bergamot expressed",
+      "Bergamot oil",
+      "Bergamot",
+    ],
+    stock: null,
+    dbNoteRole: "top",
+    dbMaterialType: "EO",
+    currentAppIfraFlag: true,
+    currentAppIfraText:
+      "Regular expressed bergamot oil helper identity. Phototoxic/furocoumarin restrictions remain active for non-FCF bergamot rows.",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Bergamot oil",
+    pdfMatchedPage: 3.0,
+    reviewNote:
+      "Regular expressed bergamot identity keeps the repo seed Cat 4 restriction for non-FCF rows.",
   },
   Coumarin: {
     canonicalAppName: "Coumarin",
@@ -4455,7 +4521,9 @@ export function buildFinishedProductIfraGuidance({
       } else if (limit == null) {
         dataState = "missing";
         status = "blocked";
-        missingReason = `${categoryLabel} limit is missing for this material in the current IFRA dataset.`;
+        missingReason =
+          material?.missingLimitReason ||
+          `${categoryLabel} limit is missing for this material in the current IFRA dataset.`;
       } else {
         dataState = resolvedIdentity.inheritedViaCanonicalMaterialKey
           ? "inferred"

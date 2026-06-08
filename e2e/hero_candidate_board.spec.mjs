@@ -71,6 +71,25 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem("bb_api_key")))
     .toBe("sk-ant-test-local");
+  const weaknessesTriage = page
+    .getByTestId("ai-critique-triage-section-weaknesses")
+    .first();
+  await weaknessesTriage
+    .getByRole("button", { name: "Dismiss / False Positive" })
+    .click();
+  await expect(
+    page.getByTestId("ai-critique-triage-status-weaknesses").first()
+  ).toContainText("False positive / data issue");
+  await weaknessesTriage
+    .getByLabel("Triage note for Weaknesses")
+    .fill("Bergamot FCF data issue");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        localStorage.getItem("bb_ai_critique_issue_triage_v1")
+      )
+    )
+    .toContain("Bergamot FCF data issue");
 
   const skinAirSensory = page.getByTestId(
     "hero-sensory-summary-seed-hero-skin-air-bridge"

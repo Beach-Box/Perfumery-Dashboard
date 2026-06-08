@@ -2661,6 +2661,117 @@ export function isCritiqueResultCurrent({ critique, formulaKey, lens } = {}) {
   );
 }
 
+export const AI_CRITIQUE_TRIAGE_STATUS_META = {
+  accepted: {
+    label: "Accept",
+    shortLabel: "Accepted",
+    color: "#86EFAC",
+    bg: "#052E16",
+    border: "#166534",
+  },
+  false_positive: {
+    label: "Dismiss / False Positive",
+    shortLabel: "False positive / data issue",
+    color: "#FCD34D",
+    bg: "#2A1806",
+    border: "#92400E",
+  },
+  data_issue: {
+    label: "Mark as Data Issue",
+    shortLabel: "Data issue",
+    color: "#7DD3FC",
+    bg: "#071826",
+    border: "#1E3A52",
+  },
+  needs_verification: {
+    label: "Mark as Needs Verification",
+    shortLabel: "Needs verification",
+    color: "#C4B5FD",
+    bg: "#120C26",
+    border: "#4338CA",
+  },
+};
+
+export const AI_CRITIQUE_TRIAGE_SECTION_ORDER = [
+  "strengths",
+  "weaknesses",
+  "sensoryIssues",
+  "costIssues",
+  "suggestedChanges",
+  "uncertainty",
+];
+
+export function buildAiCritiqueIssueTriageKey({
+  formulaKey,
+  lens,
+  issueId,
+} = {}) {
+  const safeFormulaKey = String(formulaKey || "").trim();
+  const safeLens = String(lens || "").trim();
+  const safeIssueId = String(issueId || "").trim();
+  if (!safeFormulaKey || !safeLens || !safeIssueId) return "";
+  return `${safeFormulaKey}::${safeLens}::${safeIssueId}`;
+}
+
+export function normalizeAiCritiqueIssueTriageState(rawState = {}) {
+  if (!rawState || typeof rawState !== "object" || Array.isArray(rawState)) {
+    return {};
+  }
+
+  return Object.entries(rawState).reduce((acc, [recordKey, record]) => {
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      return acc;
+    }
+    const formulaKey = String(record.formulaKey || "").trim();
+    const lens = String(record.lens || "").trim();
+    const issueId = String(record.issueId || "").trim();
+    const status = String(record.status || "").trim();
+    if (!AI_CRITIQUE_TRIAGE_STATUS_META[status]) return acc;
+    const key =
+      buildAiCritiqueIssueTriageKey({ formulaKey, lens, issueId }) ||
+      String(recordKey || "").trim();
+    if (!key) return acc;
+
+    const note = String(record.note || "").trim();
+    const updatedAt = String(record.updatedAt || "").trim();
+    acc[key] = {
+      formulaKey,
+      lens,
+      issueId,
+      status,
+      note,
+      updatedAt,
+    };
+    return acc;
+  }, {});
+}
+
+export function applyAiCritiqueIssueTriageState(
+  rawState = {},
+  { formulaKey, lens, issueId, status, note = "", updatedAt = null } = {}
+) {
+  const key = buildAiCritiqueIssueTriageKey({ formulaKey, lens, issueId });
+  if (!key) return normalizeAiCritiqueIssueTriageState(rawState);
+
+  const next = normalizeAiCritiqueIssueTriageState(rawState);
+  if (!AI_CRITIQUE_TRIAGE_STATUS_META[status]) {
+    delete next[key];
+    return next;
+  }
+
+  next[key] = {
+    formulaKey: String(formulaKey || "").trim(),
+    lens: String(lens || "").trim(),
+    issueId: String(issueId || "").trim(),
+    status,
+    note: String(note || "").trim(),
+    updatedAt:
+      updatedAt ||
+      (typeof Date !== "undefined" ? new Date().toISOString() : ""),
+  };
+  return next;
+}
+
 export function buildAiCritiquePrompt({
   targetFormula,
   critiqueReport,

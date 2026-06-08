@@ -214,6 +214,8 @@ import {
   buildSkuEconomicsDashboardSummary,
   buildPerformanceModelSummary,
   buildSupplierBasketStrategies,
+  AI_CRITIQUE_TRIAGE_SECTION_ORDER,
+  AI_CRITIQUE_TRIAGE_STATUS_META,
   CRITIQUE_LENS_META,
   CRITIQUE_LENS_ORDER,
   createFounderLaunchScenarioRecord,
@@ -224,8 +226,11 @@ import {
   FOUNDER_RECOMMENDER_EMPHASIS_META,
   FOUNDER_TRUST_LEVEL_META,
   getLivePricingForIngredient,
+  applyAiCritiqueIssueTriageState,
+  buildAiCritiqueIssueTriageKey,
   isCritiqueResultCurrent,
   LAUNCH_READINESS_STATUS_META,
+  normalizeAiCritiqueIssueTriageState,
   normalizeFounderLaunchScenarioRecord,
   normalizeLooseNumericInput,
   parseSupplierAdapterPackLines,
@@ -61998,9 +62003,20 @@ export default function App() {
   const [critiqueLensUsed, setCritiqueLensUsed] = useState("perfumer");
   const [critiqueGeneratedAt, setCritiqueGeneratedAt] = useState(null);
   const [critiqueError, setCritiqueError] = useState("");
+  const [aiCritiqueIssueTriage, setAiCritiqueIssueTriage] = useState(() =>
+    normalizeAiCritiqueIssueTriageState(
+      readJsonStorage(APP_STORAGE_KEYS.aiCritiqueIssueTriage, {})
+    )
+  );
   useEffect(() => {
     writeTextStorage(APP_STORAGE_KEYS.critiqueLens, critiqueLens);
   }, [critiqueLens]);
+  useEffect(() => {
+    writeJsonStorage(
+      APP_STORAGE_KEYS.aiCritiqueIssueTriage,
+      aiCritiqueIssueTriage
+    );
+  }, [aiCritiqueIssueTriage]);
   const [pricesState, setPricesState] = useState(() => {
     const overrides = readJsonStorage(APP_STORAGE_KEYS.supplierData, null);
     if (overrides && typeof overrides === "object") {
@@ -69761,6 +69777,208 @@ export default function App() {
         bg: "#120C26",
         border: "#4338CA",
       },
+      uncertainty: {
+        title: "Uncertainty",
+        color: "#FBBF24",
+        bg: "#2A1806",
+        border: "#92400E",
+      },
+    };
+    const triageFormulaKey = formula?.formulaKey || "";
+    const triageLens = report.lens || critiqueLens || "perfumer";
+    const renderSectionTriageControls = (sectionKey) => {
+      const meta = sectionMeta[sectionKey];
+      const issueId = `section-${sectionKey}`;
+      const triageKey = buildAiCritiqueIssueTriageKey({
+        formulaKey: triageFormulaKey,
+        lens: triageLens,
+        issueId,
+      });
+      const triageRecord = aiCritiqueIssueTriage[triageKey] || null;
+      const statusMeta = triageRecord
+        ? AI_CRITIQUE_TRIAGE_STATUS_META[triageRecord.status]
+        : null;
+      const updateTriage = ({ status, note = triageRecord?.note || "" }) => {
+        setAiCritiqueIssueTriage((prev) =>
+          applyAiCritiqueIssueTriageState(prev, {
+            formulaKey: triageFormulaKey,
+            lens: triageLens,
+            issueId,
+            status,
+            note,
+          })
+        );
+      };
+      if (!triageFormulaKey || !triageKey) return null;
+
+      return (
+        <div
+          style={{
+            borderTop: `1px solid ${meta.border}`,
+            display: "grid",
+            gap: 7,
+            marginTop: 10,
+            paddingTop: 9,
+          }}
+        >
+          <div
+            style={{
+              color: "#64748B",
+              fontSize: 8.5,
+              lineHeight: 1.45,
+            }}
+          >
+            This critique may reflect current dashboard data. If the underlying
+            catalog/IFRA data is wrong, fix the data source rather than the
+            formula.
+          </div>
+          {triageRecord && statusMeta && (
+            <div
+              data-testid={`ai-critique-triage-status-${sectionKey}`}
+              style={{
+                background: statusMeta.bg,
+                border: `1px solid ${statusMeta.border}`,
+                borderRadius: 8,
+                color: statusMeta.color,
+                fontSize: 8.5,
+                fontWeight: 800,
+                lineHeight: 1.4,
+                padding: "5px 7px",
+              }}
+            >
+              {statusMeta.shortLabel}
+            </div>
+          )}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            {Object.entries(AI_CRITIQUE_TRIAGE_STATUS_META).map(
+              ([status, statusConfig]) => (
+                <button
+                  key={`${sectionKey}-${status}`}
+                  type="button"
+                  onClick={() => updateTriage({ status })}
+                  style={{
+                    background:
+                      triageRecord?.status === status
+                        ? statusConfig.bg
+                        : "#071426",
+                    border: `1px solid ${
+                      triageRecord?.status === status
+                        ? statusConfig.border
+                        : BORDER
+                    }`,
+                    borderRadius: 999,
+                    color:
+                      triageRecord?.status === status
+                        ? statusConfig.color
+                        : "#94A3B8",
+                    cursor: "pointer",
+                    fontSize: 8,
+                    fontWeight: 800,
+                    padding: "4px 7px",
+                  }}
+                >
+                  {statusConfig.label}
+                </button>
+              )
+            )}
+            {triageRecord && (
+              <button
+                type="button"
+                onClick={() => updateTriage({ status: "" })}
+                style={{
+                  background: "#060E1E",
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 999,
+                  color: "#64748B",
+                  cursor: "pointer",
+                  fontSize: 8,
+                  fontWeight: 800,
+                  padding: "4px 7px",
+                }}
+              >
+                Clear triage
+              </button>
+            )}
+          </div>
+          {triageRecord && (
+            <input
+              aria-label={`Triage note for ${meta.title}`}
+              placeholder="Optional triage note"
+              value={triageRecord.note || ""}
+              onChange={(event) =>
+                updateTriage({
+                  status: triageRecord.status,
+                  note: event.target.value,
+                })
+              }
+              style={{
+                background: "#060E1E",
+                border: `1px solid ${BORDER}`,
+                borderRadius: 7,
+                color: "#CBD5E1",
+                fontSize: 8.5,
+                outline: "none",
+                padding: "5px 7px",
+              }}
+            />
+          )}
+        </div>
+      );
+    };
+    const renderCritiqueSection = (key) => {
+      const meta = sectionMeta[key];
+      const issueId = `section-${key}`;
+      const triageKey = buildAiCritiqueIssueTriageKey({
+        formulaKey: triageFormulaKey,
+        lens: triageLens,
+        issueId,
+      });
+      const triageRecord = aiCritiqueIssueTriage[triageKey] || null;
+      const isMuted = triageRecord?.status === "false_positive";
+      const items = report[key] || [];
+      return (
+        <div
+          key={key}
+          data-testid={`ai-critique-triage-section-${key}`}
+          style={{
+            background: meta.bg,
+            border: `1px solid ${meta.border}`,
+            borderRadius: 10,
+            opacity: isMuted ? 0.62 : 1,
+            padding: 12,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: meta.color,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              marginBottom: 8,
+            }}
+          >
+            {meta.title}
+          </div>
+          <div style={{ display: "grid", gap: 7 }}>
+            {items.map((item) => (
+              <div
+                key={`${key}-${item}`}
+                style={{
+                  fontSize: 9.5,
+                  color: isMuted ? "#64748B" : "#CBD5E1",
+                  lineHeight: 1.55,
+                  textDecoration: isMuted ? "line-through" : "none",
+                  textDecorationThickness: isMuted ? "1px" : "auto",
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+          {renderSectionTriageControls(key)}
+        </div>
+      );
     };
     return (
       <div
@@ -69840,80 +70058,12 @@ export default function App() {
             marginTop: 12,
           }}
         >
-          {Object.entries(sectionMeta).map(([key, meta]) => (
-            <div
-              key={key}
-              style={{
-                background: meta.bg,
-                border: `1px solid ${meta.border}`,
-                borderRadius: 10,
-                padding: 12,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 9,
-                  fontWeight: 700,
-                  color: meta.color,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  marginBottom: 8,
-                }}
-              >
-                {meta.title}
-              </div>
-              <div style={{ display: "grid", gap: 7 }}>
-                {(report[key] || []).map((item) => (
-                  <div
-                    key={`${key}-${item}`}
-                    style={{
-                      fontSize: 9.5,
-                      color: "#CBD5E1",
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+          {AI_CRITIQUE_TRIAGE_SECTION_ORDER.filter((key) => key !== "uncertainty").map(
+            (key) => renderCritiqueSection(key)
+          )}
         </div>
-        <div
-          style={{
-            marginTop: 12,
-            background: "#2A1806",
-            border: "1px solid #92400E",
-            borderRadius: 10,
-            padding: 12,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: "#FBBF24",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: 8,
-            }}
-          >
-            Uncertainty
-          </div>
-          <div style={{ display: "grid", gap: 7 }}>
-            {(report.uncertainty || []).map((item) => (
-              <div
-                key={`uncertainty-${item}`}
-                style={{
-                  fontSize: 9.2,
-                  color: "#FCD34D",
-                  lineHeight: 1.55,
-                }}
-              >
-                {item}
-              </div>
-            ))}
-          </div>
+        <div style={{ marginTop: 12 }}>
+          {renderCritiqueSection("uncertainty")}
         </div>
       </div>
     );
@@ -87629,7 +87779,7 @@ export default function App() {
                     title: "⚖️ IFRA Compliance Watch",
                     color: "#F87171",
                     ingredients: Object.keys(DB).filter(
-                      (k) => getIngredientIfraData(k).state === "listed"
+                      (k) => getIngredientIfraData(k).hasDefinedLimit
                     ),
                     tip: "These ingredients carry IFRA restrictions. Verify concentration limits before finalizing any formula intended for skin application.",
                   },

@@ -2,15 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  buildFinishedProductIfraGuidance,
   buildIngredientTruthCompletenessReport,
   compareMaterialCasSupportValues,
   computeActiveRestrictedPercent,
   formatMaterialCasSupportValue,
+  getIfraMaterialRecord,
+  resolveIngredientIdentity,
 } from "../src/lib/ifra_combined_package.js";
 import {
+  applyAiCritiqueIssueTriageState,
   buildBenchStockDuplicateDraft,
   buildBenchStockEffectiveActivePercent,
   buildBenchStockRuntimeSummary,
+  buildAiCritiqueIssueTriageKey,
   buildCapitalConstrainedLaunchRecommendation,
   buildMaterialSubstitutionSuggestions,
   buildVaporPressureDisplay,
@@ -36,6 +41,7 @@ import {
   buildSubstitutionReviewDraftFormula,
   createFounderLaunchScenarioRecord,
   isCritiqueResultCurrent,
+  normalizeAiCritiqueIssueTriageState,
   normalizeFounderLaunchScenarioRecord,
   normalizeLooseNumericInput,
   parseVaporPressureInput,
@@ -83,6 +89,102 @@ test("isCritiqueResultCurrent requires matching formula and critique lens metada
     }),
     true
   );
+});
+
+test("Bergamot FCF is separated from regular expressed bergamot IFRA restriction", () => {
+  const fcfIdentity = resolveIngredientIdentity("Bergamot EO FCF");
+  const fcfMaterial = getIfraMaterialRecord("Bergamot EO FCF");
+  assert.equal(fcfIdentity.resolvedIfraMaterial, "bergamot eo fcf");
+  assert.equal(fcfMaterial.limits.cat4, null);
+  assert.match(fcfMaterial.missingLimitReason, /furocoumarin-free/i);
+
+  const bergamotFcfMaterial = getIfraMaterialRecord("Bergamot FCF");
+  assert.equal(bergamotFcfMaterial.limits.cat4, null);
+  const catalogFcfIdentity = resolveIngredientIdentity(
+    "Bergamot Oil FCF, Côte d'Ivoire"
+  );
+  assert.equal(catalogFcfIdentity.resolvedIfraMaterial, "bergamot eo fcf");
+
+  const regularIdentity = resolveIngredientIdentity("Bergamot oil");
+  const regularMaterial = getIfraMaterialRecord("Bergamot oil");
+  assert.equal(regularIdentity.resolvedIfraMaterial, "bergamot expressed");
+  assert.equal(regularMaterial.limits.cat4, 0.4);
+
+  const regularGuidance = buildFinishedProductIfraGuidance({
+    items: [{ name: "Bergamot oil", g: 1 }],
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+  assert.equal(regularGuidance.offenderRows.length, 1);
+  assert.equal(regularGuidance.offenderRows[0].name, "Bergamot oil");
+
+  const fcfGuidance = buildFinishedProductIfraGuidance({
+    items: [{ name: "Bergamot EO FCF", g: 1 }],
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+  assert.equal(fcfGuidance.offenderRows.length, 0);
+  assert.equal(fcfGuidance.warningRows.length, 0);
+  assert.equal(fcfGuidance.missingRows.length, 1);
+  assert.match(fcfGuidance.missingRows[0].missingReason, /regular expressed/i);
+});
+
+test("non-FCF citrus IFRA restriction remains active", () => {
+  const lemonMaterial = getIfraMaterialRecord("Lemon EO Italy");
+  assert.equal(lemonMaterial.limits.cat4, 2.0);
+
+  const lemonGuidance = buildFinishedProductIfraGuidance({
+    items: [{ name: "Lemon EO Italy", g: 1 }],
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+  assert.equal(lemonGuidance.offenderRows.length, 1);
+  assert.equal(lemonGuidance.offenderRows[0].name, "Lemon EO Italy");
+});
+
+test("AI critique issue triage state is keyed by formula, lens, and issue", () => {
+  const triageKey = buildAiCritiqueIssueTriageKey({
+    formulaKey: "seed-hero-skin-air-bridge",
+    lens: "compliance",
+    issueId: "section-weaknesses",
+  });
+  assert.equal(
+    triageKey,
+    "seed-hero-skin-air-bridge::compliance::section-weaknesses"
+  );
+
+  const applied = applyAiCritiqueIssueTriageState(
+    {},
+    {
+      formulaKey: "seed-hero-skin-air-bridge",
+      lens: "compliance",
+      issueId: "section-weaknesses",
+      status: "false_positive",
+      note: "Bergamot FCF data source issue",
+      updatedAt: "2026-06-08T12:00:00.000Z",
+    }
+  );
+  assert.equal(applied[triageKey].status, "false_positive");
+  assert.equal(applied[triageKey].note, "Bergamot FCF data source issue");
+
+  const normalized = normalizeAiCritiqueIssueTriageState({
+    [triageKey]: applied[triageKey],
+    invalid: {
+      formulaKey: "seed-hero-skin-air-bridge",
+      lens: "compliance",
+      issueId: "section-strengths",
+      status: "not-real",
+    },
+  });
+  assert.deepEqual(Object.keys(normalized), [triageKey]);
+
+  const cleared = applyAiCritiqueIssueTriageState(applied, {
+    formulaKey: "seed-hero-skin-air-bridge",
+    lens: "compliance",
+    issueId: "section-weaknesses",
+    status: "",
+  });
+  assert.equal(cleared[triageKey], undefined);
 });
 
 test("ingredient truth completeness surfaces canonical and supplier support from current registries", () => {
