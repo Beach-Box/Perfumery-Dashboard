@@ -57,10 +57,20 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(page.getByText("IFRA Coverage Estimate")).toBeVisible();
   await page.getByRole("button", { name: /Hero Lab/i }).first().click();
   await page.getByRole("button", { name: /AI Critique/i }).click();
+  const aiKeySettings = page.getByTestId("ai-critique-api-key-settings");
+  await expect(aiKeySettings).toContainText("Anthropic API Key");
+  await expect(aiKeySettings).toContainText("Saved only in this browser");
   await page.getByRole("button", { name: /Generate .* AI Add-On/i }).click();
   await expect(page.getByTestId("ai-critique-refresh-error")).toContainText(
-    "no API key"
+    "no Anthropic API key"
   );
+  await expect(page.getByTestId("ai-critique-refresh-error")).toContainText(
+    "AI Settings"
+  );
+  await page.getByTestId("ai-critique-api-key-input").fill("sk-ant-test-local");
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem("bb_api_key")))
+    .toBe("sk-ant-test-local");
 
   const skinAirSensory = page.getByTestId(
     "hero-sensory-summary-seed-hero-skin-air-bridge"

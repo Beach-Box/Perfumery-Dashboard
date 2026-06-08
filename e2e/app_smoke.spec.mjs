@@ -40,6 +40,14 @@ test("app boots and primary tabs are reachable", async ({ page }) => {
     await button.click();
     await expect(heading, `${label} tab should keep app shell mounted`).toBeVisible();
     await expect(button, `${label} tab should remain reachable`).toBeVisible();
+    if (label === "Suppliers") {
+      await page
+        .getByText("Advanced Tools / Diagnostics: Live Supplier Overrides, Search, and Refresh")
+        .click();
+      await expect(
+        page.getByPlaceholder("sk-ant-... (Claude AI critique + supplier refresh)")
+      ).toBeVisible();
+    }
     expect(pageErrors, `${label} tab should not throw page errors`).toEqual([]);
   }
 });

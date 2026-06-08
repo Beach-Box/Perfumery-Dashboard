@@ -61781,6 +61781,10 @@ export default function App() {
   const apiKeyRef = useRef(apiKey);
   const founderLaunchPlannerRef = useRef(null);
   const supplierWorkbookInputRef = useRef(null);
+  const saveApiKey = (nextApiKey) => {
+    setApiKey(nextApiKey);
+    writeTextStorage(APP_STORAGE_KEYS.apiKey, nextApiKey);
+  };
   useEffect(() => {
     apiKeyRef.current = apiKey;
   }, [apiKey]);
@@ -68585,7 +68589,7 @@ export default function App() {
     }
     if (!apiKeyRef.current) {
       setCritiqueError(
-        `Could not refresh ${activeLensMeta.label} AI add-on for ${targetFormulaLabel}: no API key set. Add your Claude API key in the Suppliers tab.`
+        `Could not refresh ${activeLensMeta.label} AI add-on for ${targetFormulaLabel}: no Anthropic API key set. Add it in AI Settings on this panel, or in Supplier tools.`
       );
       return;
     }
@@ -85380,8 +85384,76 @@ export default function App() {
                     })}
                     <p style={{ fontSize: 11, color: "#64748B", margin: 0, lineHeight: 1.6 }}>
                       Add an AI pass on top of the current structured {selectedCritiqueLensMeta.label.toLowerCase()}-lens critique for{" "}
-                      <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. The prompt is grounded in the app&apos;s current performance, cost, and compliance signals. Requires API key in Suppliers tab.
+                      <strong style={{ color: ACC }}>{selectedFormulaLabel}</strong>. The prompt is grounded in the app&apos;s current performance, cost, and compliance signals. Requires an Anthropic API key saved locally in this browser.
                     </p>
+                    <details
+                      open={!apiKey}
+                      data-testid="ai-critique-api-key-settings"
+                      style={{
+                        background: "#071426",
+                        border: `1px solid ${apiKey ? BORDER : "#F59E0B60"}`,
+                        borderRadius: 10,
+                        padding: "9px 11px",
+                      }}
+                    >
+                      <summary
+                        style={{
+                          cursor: "pointer",
+                          color: apiKey ? "#94A3B8" : "#FCD34D",
+                          fontSize: 10,
+                          fontWeight: 800,
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        AI Settings · {apiKey ? "Anthropic key saved locally" : "Anthropic key needed"}
+                      </summary>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 6,
+                          marginTop: 9,
+                        }}
+                      >
+                        <label
+                          htmlFor="ai-critique-anthropic-api-key"
+                          style={{
+                            color: "#E2E8F0",
+                            fontSize: 10,
+                            fontWeight: 800,
+                          }}
+                        >
+                          Anthropic API Key
+                        </label>
+                        <input
+                          id="ai-critique-anthropic-api-key"
+                          data-testid="ai-critique-api-key-input"
+                          aria-label="Anthropic API Key"
+                          type="password"
+                          placeholder="sk-ant-..."
+                          value={apiKey}
+                          onChange={(e) => saveApiKey(e.target.value)}
+                          style={{
+                            background: "#060E1E",
+                            border: `1px solid ${BORDER}`,
+                            borderRadius: 7,
+                            color: "#CBD5E1",
+                            padding: "7px 10px",
+                            fontSize: 10,
+                            outline: "none",
+                          }}
+                        />
+                        <p
+                          style={{
+                            color: "#64748B",
+                            fontSize: 9.5,
+                            lineHeight: 1.55,
+                            margin: 0,
+                          }}
+                        >
+                          Saved only in this browser. Used for Claude AI Critique and AI-assisted supplier refresh.
+                        </p>
+                      </div>
+                    </details>
                     <button
                       onClick={() => runAiCritique(formula, formulaCritiqueReport)}
                       disabled={critiqueLoading}
@@ -91262,7 +91334,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* API Key for AI Price Refresh */}
+                    {/* Shared Anthropic key for AI critique and supplier refresh */}
                     <div
                       style={{
                         display: "flex",
@@ -91283,19 +91355,13 @@ export default function App() {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        🔑 AI REFRESH KEY
+                        🔑 Anthropic API Key
                       </span>
                       <input
                         type="password"
-                        placeholder="sk-ant-... (required for 🔄 price refresh)"
+                        placeholder="sk-ant-... (Claude AI critique + supplier refresh)"
                         value={apiKey}
-                        onChange={(e) => {
-                          setApiKey(e.target.value);
-                          writeTextStorage(
-                            APP_STORAGE_KEYS.apiKey,
-                            e.target.value
-                          );
-                        }}
+                        onChange={(e) => saveApiKey(e.target.value)}
                         style={{
                           flex: 1,
                           background: "#060E1E",
