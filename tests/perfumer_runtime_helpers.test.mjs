@@ -30,6 +30,7 @@ import {
   buildFounderScenarioInputState,
   buildFounderScenarioShareBrief,
   buildFounderTrustSummary,
+  buildLaunchReadinessSummary,
   buildLaunchRunPlannerSummary,
   buildMaterialTruthGapPrioritization,
   buildSubstitutionReviewDraftFormula,
@@ -803,6 +804,55 @@ test("buildFounderTrustSummary flags sparse support when missing data drives the
   assert.ok(trustSummary.missingSignals.length >= 1);
   assert.equal(trustSummary.blockerDependsOnMissing, true);
   assert.ok(trustSummary.uncertainSignals.length >= 1);
+});
+
+test("launch readiness surfaces black-box accord pricing caveats without changing basket missing counts", () => {
+  const summary = buildLaunchReadinessSummary({
+    formula: {
+      ingredients: [{ name: "Driftwood Accord", note: "base", g: 1 }],
+      versionLabel: "Test",
+    },
+    basket: {
+      lines: [
+        {
+          ingredientName: "Driftwood Accord",
+          status: "confirmed",
+          lineCost: 0,
+        },
+      ],
+      missingCount: 0,
+      uncertainCount: 0,
+      supplierCount: 1,
+      totalCost: 0,
+    },
+    batchReport: {
+      canFulfill: true,
+      coveragePercent: 100,
+      shortageCount: 0,
+      shortageTotalG: 0,
+      maxProducibleG: 100,
+    },
+    ifraRows: [],
+    finishedProductGuidance: {
+      overallStatus: "appears_compliant",
+    },
+    performanceModel: {
+      axisScores: {},
+      headline: "Model available.",
+    },
+    modelConfidenceSummary: {
+      categoryCounts: {
+        black_box_accord: 1,
+        missing_pricing: 1,
+      },
+    },
+    targetBatchG: 100,
+  });
+
+  assert.ok(
+    summary.cautions.some((caution) => caution.includes("black-box accord row"))
+  );
+  assert.equal(summary.pricing.missingCount, 0);
 });
 
 test("material truth prioritization ranks weak materials by usage, spend, and founder relevance", () => {

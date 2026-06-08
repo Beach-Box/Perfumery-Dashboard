@@ -236,6 +236,29 @@ caveated. Do not treat them as molecule-exact unless the source is explicit
 enough for that material. For black-box formula accords, preserve the current
 non-expanded treatment.
 
+### Modeling Confidence Badges
+
+Decision-facing modeling surfaces may show compact confidence badges such as
+`Model estimate`, `Directional`, `Source-backed`, `Legacy ODT/VP`,
+`Missing threshold`, `Inherited dilution`, `Proxy/UVCB`, `Black-box accord`,
+`Pricing caveat`, and `IFRA gap`. These labels are advisory context for the
+current model output. They do not create new molecular values, pricing values,
+IFRA limits, or formula composition.
+
+The badge layer uses existing runtime metadata: `vpConfidence`,
+`odorThresholdSource`, `dilutionFactor`, inherited parent-stock rows,
+descriptor/caveat tags, accord support records, UVCB/proxy flags, basket pricing
+state, and finished-product IFRA guidance. A source-backed ODT or VP row should
+not be visually equivalent to a legacy or unprovenanced row. Missing ODT should
+stay visible as uncertainty, not as a zero-impact certainty.
+
+Black-box accords may still have placeholder `$0` support rows so the formula
+can remain usable while accord recipes are intentionally not expanded. Those
+rows should be surfaced with black-box/pricing caveats in decision surfaces
+until component-derived pricing and chemistry are approved. Likewise, a
+finished-product IFRA state of "no restricted rows" is a coverage estimate, not
+a blanket safety clearance.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.

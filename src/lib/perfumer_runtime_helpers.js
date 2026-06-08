@@ -2940,6 +2940,7 @@ export function buildLaunchReadinessSummary({
   finishedProductGuidance,
   performanceModel,
   critiqueReport,
+  modelConfidenceSummary,
   targetBatchG = 0,
 } = {}) {
   const ingredients = formula?.ingredients || [];
@@ -3062,6 +3063,20 @@ export function buildLaunchReadinessSummary({
       `${basket.uncertainCount} supplier mapping${
         basket.uncertainCount === 1 ? "" : "s"
       } are still low-confidence.`
+    );
+  }
+  const confidenceCounts = modelConfidenceSummary?.categoryCounts || {};
+  if (toFiniteNumber(confidenceCounts.black_box_accord) > 0) {
+    cautions.push(
+      `${confidenceCounts.black_box_accord} black-box accord row${
+        confidenceCounts.black_box_accord === 1 ? "" : "s"
+      } use placeholder component/cost support.`
+    );
+  } else if (toFiniteNumber(confidenceCounts.missing_pricing) > 0) {
+    cautions.push(
+      `${confidenceCounts.missing_pricing} pricing row${
+        confidenceCounts.missing_pricing === 1 ? "" : "s"
+      } are missing or placeholder-supported.`
     );
   }
   if ((axisScores.clutterImbalance || 0) >= 6) {

@@ -1,3 +1,5 @@
+import { buildFormulaConfidenceWarningLabels } from "./model_confidence_helpers.js";
+
 const LOW_LAUNCH_CONFIDENCE_THRESHOLD = 6;
 
 function getCandidateName(item) {
@@ -196,6 +198,19 @@ export function buildHeroDecisionBrief(candidateItems = []) {
     }
   }
 
+  if (decisionCandidate) {
+    buildFormulaConfidenceWarningLabels(decisionCandidate.confidenceSummary)
+      .slice(0, 3)
+      .forEach((warning) => {
+        warnings.push(`${getCandidateName(decisionCandidate)} model caveat: ${warning}`);
+      });
+    if (getEvaluationCount(decisionCandidate) > 0) {
+      warnings.push(
+        `${getCandidateName(decisionCandidate)} sensory read summarizes the latest wear test snapshot; review the full history before final production planning.`
+      );
+    }
+  }
+
   if (sensoryEvidence.unevaluatedCandidateCount >= 2) {
     warnings.push(
       `${sensoryEvidence.unevaluatedCandidateCount} hero formulas still have no structured wear test.`
@@ -284,7 +299,7 @@ export function buildHeroDecisionBrief(candidateItems = []) {
     topReadinessLabel,
     focusedTechnicalLabel,
     focusedBlocker,
-    warnings: warnings.slice(0, 4),
+    warnings: warnings.slice(0, 6),
     nextAction,
   };
 }

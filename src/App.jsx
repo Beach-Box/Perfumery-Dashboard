@@ -129,6 +129,12 @@ import {
   normalizeHeroSensoryEvaluationRecord,
 } from "./lib/hero_sensory_evaluation_helpers";
 import {
+  buildFormulaConfidenceSummary,
+  buildMaterialConfidenceCaveats,
+  buildIfraCoverageEstimate,
+  getFormulaConfidenceBadges,
+} from "./lib/model_confidence_helpers";
+import {
   getMaterialDisplayName,
   getMaterialRuntimeKeyCaption,
 } from "./lib/material_display_helpers";
@@ -55751,6 +55757,56 @@ function buildDossierTrustPanelContent(
   };
 }
 
+function ModelConfidenceBadges({
+  summary,
+  max = 6,
+  compact = false,
+  extraBadges = [],
+}) {
+  const badgeSummary =
+    summary || {
+      categoryCounts: {
+        estimated_model: 1,
+      },
+    };
+  const badges = [
+    ...(Array.isArray(extraBadges) ? extraBadges : []),
+    ...getFormulaConfidenceBadges(badgeSummary, { max }),
+  ].slice(0, max);
+  if (!badges.length) return null;
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 5,
+        flexWrap: "wrap",
+        alignItems: "center",
+      }}
+    >
+      {badges.map((badge) => (
+        <span
+          key={`${badge.category}-${badge.label}`}
+          title={badge.description}
+          style={{
+            background: badge.bg || "#111827",
+            border: `1px solid ${badge.border || "#334155"}`,
+            borderRadius: 999,
+            padding: compact ? "1px 6px" : "2px 7px",
+            fontSize: compact ? 7.2 : 7.8,
+            fontWeight: 800,
+            color: badge.color || "#CBD5E1",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {badge.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function IngredientDetailPanel({
   name,
   onClose,
@@ -55849,6 +55905,20 @@ function IngredientDetailPanel({
     () => buildMaterialBehaviorSignals(name, { db: DB }),
     [name]
   );
+  const materialModelConfidenceSummary = useMemo(() => {
+    const categoryCounts = {};
+    buildMaterialConfidenceCaveats(name, {
+      record: d,
+      basketLine: {
+        status: "confirmed",
+        lineCost: 1,
+        mappingConfidence: "confirmed",
+      },
+    }).forEach((caveat) => {
+      categoryCounts[caveat.category] = (categoryCounts[caveat.category] || 0) + 1;
+    });
+    return { categoryCounts };
+  }, [d, name]);
   const materialCompletenessReport = useMemo(
     () =>
       buildIngredientTruthCompletenessReport(name, {
@@ -59080,6 +59150,13 @@ function IngredientDetailPanel({
             >
               Molecular + Technical Signals
             </p>
+            <div style={{ marginBottom: 10 }}>
+              <ModelConfidenceBadges
+                summary={materialModelConfidenceSummary}
+                max={4}
+                compact
+              />
+            </div>
             {[
               ["MW (g/mol)", d.MW],
               ["xLogP", d.xLogP],
@@ -62198,6 +62275,14 @@ export default function App() {
           category: ifraCategory,
           fragranceLoadPercent: selectedFragranceType.pct,
         });
+        const confidenceSummary = buildFormulaConfidenceSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            basket: selectedBasket,
+            finishedProductGuidance,
+          }
+        );
         const batchReport = buildBatchPlannerReport({
           ingredients: entry.ingredients || [],
           targetBatchG: batchPlannerTargetG,
@@ -62228,6 +62313,7 @@ export default function App() {
           finishedProductGuidance,
           performanceModel,
           critiqueReport,
+          modelConfidenceSummary: confidenceSummary,
           targetBatchG: batchPlannerTargetG,
         });
         const trustSummary = buildFounderTrustSummary({
@@ -62268,6 +62354,7 @@ export default function App() {
           performance,
           performanceModel,
           trustSummary,
+          confidenceSummary,
           sensorySummary,
           sensoryStatus: sensorySummary.statusLabel,
           formulaNoteStatus: noteText.trim()
@@ -62481,6 +62568,36 @@ export default function App() {
       formulaComparison.rightPerformance.sillage +
       formulaComparison.rightPerformance.projection
     : 0;
+  const compareLeftConfidenceSummary = useMemo(
+    () =>
+      buildFormulaConfidenceSummary(compareLeftFormula?.ingredients || [], {
+        db: DB,
+        basket: compareLeftBasket,
+        finishedProductGuidance: compareLeftFormula
+          ? buildFinishedProductIfraGuidance({
+              items: compareLeftFormula.ingredients || [],
+              category: ifraCategory,
+              fragranceLoadPercent: selectedFragranceType.pct,
+            })
+          : null,
+      }),
+    [compareLeftBasket, compareLeftFormula, ifraCategory, selectedFragranceType]
+  );
+  const compareRightConfidenceSummary = useMemo(
+    () =>
+      buildFormulaConfidenceSummary(compareRightFormula?.ingredients || [], {
+        db: DB,
+        basket: compareRightBasket,
+        finishedProductGuidance: compareRightFormula
+          ? buildFinishedProductIfraGuidance({
+              items: compareRightFormula.ingredients || [],
+              category: ifraCategory,
+              fragranceLoadPercent: selectedFragranceType.pct,
+            })
+          : null,
+      }),
+    [compareRightBasket, compareRightFormula, ifraCategory, selectedFragranceType]
+  );
   const activeFounderScenario = useMemo(
     () =>
       savedFounderScenarios.find((scenario) => scenario.id === activeFounderScenarioId) ||
@@ -62609,6 +62726,14 @@ export default function App() {
           fragranceLoadPercent:
             scenarioFounderProductContext.fragranceLoadPercent,
         });
+        const confidenceSummary = buildFormulaConfidenceSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            basket: selectedBasket,
+            finishedProductGuidance,
+          }
+        );
         const batchReport = buildBatchPlannerReport({
           ingredients: entry.ingredients || [],
           targetBatchG: scenarioBatchTargetG,
@@ -62639,6 +62764,7 @@ export default function App() {
           finishedProductGuidance,
           performanceModel,
           critiqueReport,
+          modelConfidenceSummary: confidenceSummary,
           targetBatchG: scenarioBatchTargetG,
         });
 
@@ -62654,6 +62780,7 @@ export default function App() {
           finishedProductGuidance,
           performanceModel,
           critiqueReport,
+          confidenceSummary,
           launchReadiness,
         };
       });
@@ -66441,6 +66568,24 @@ export default function App() {
       }),
     [buildUsageRows, ifraCategory, selectedFragranceType]
   );
+  const formulaConfidenceSummary = useMemo(
+    () =>
+      buildFormulaConfidenceSummary(formulaModelingItems, {
+        db: DB,
+        basket: selectedFormulaBasket,
+        finishedProductGuidance: formulaFinishedProductGuidance,
+      }),
+    [formulaFinishedProductGuidance, formulaModelingItems, selectedFormulaBasket]
+  );
+  const buildConfidenceSummary = useMemo(
+    () =>
+      buildFormulaConfidenceSummary(buildModelingItems, {
+        db: DB,
+        basket: selectedBuildBasket,
+        finishedProductGuidance: buildFinishedProductGuidance,
+      }),
+    [buildFinishedProductGuidance, buildModelingItems, selectedBuildBasket]
+  );
   const formulaCritiqueReport = useMemo(
     () =>
       buildFormulaCritiqueReport({
@@ -67028,6 +67173,14 @@ export default function App() {
           category: ifraCategory,
           fragranceLoadPercent: founderFragranceType.pct,
         });
+        const confidenceSummary = buildFormulaConfidenceSummary(
+          entry.ingredients || [],
+          {
+            db: DB,
+            basket: selectedBasket,
+            finishedProductGuidance,
+          }
+        );
         const batchReport = buildBatchPlannerReport({
           ingredients: entry.ingredients || [],
           targetBatchG: batchPlannerTargetG,
@@ -67058,6 +67211,7 @@ export default function App() {
           finishedProductGuidance,
           performanceModel,
           critiqueReport,
+          modelConfidenceSummary: confidenceSummary,
           targetBatchG: batchPlannerTargetG,
         });
         const ingredientTruthReports = (entry.ingredients || []).map((ingredient) =>
@@ -67141,6 +67295,7 @@ export default function App() {
           finishedProductGuidance,
           performanceModel,
           critiqueReport,
+          confidenceSummary,
           launchReadiness,
           ingredientTruthReports,
           ingredientTruthRollup,
@@ -69181,9 +69336,20 @@ export default function App() {
       </div>
     );
   };
+  const renderModelConfidenceBadges = (
+    summary,
+    { max = 6, compact = false, extraBadges = [] } = {}
+  ) => (
+    <ModelConfidenceBadges
+      summary={summary}
+      max={max}
+      compact={compact}
+      extraBadges={extraBadges}
+    />
+  );
   const renderPerformanceModelCard = (
     summary,
-    { title = "Performance Model Estimate", compact = false } = {}
+    { title = "Performance Model Estimate", compact = false, confidenceSummary = null } = {}
   ) => {
     if (!summary) return null;
     return (
@@ -69228,21 +69394,7 @@ export default function App() {
               {summary.headline}
             </div>
           </div>
-          <span
-            style={{
-              background: "#0A2540",
-              border: "1px solid #1D4ED8",
-              borderRadius: 999,
-              padding: "2px 8px",
-              fontSize: 8,
-              fontWeight: 700,
-              color: "#7DD3FC",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
-          >
-            Estimate
-          </span>
+          {renderModelConfidenceBadges(confidenceSummary, { max: 4, compact: true })}
         </div>
         <div
           style={{
@@ -80770,6 +80922,7 @@ export default function App() {
               performance,
               sensorySummary,
               trustSummary,
+              confidenceSummary,
             } = item;
             const readinessMeta =
               LAUNCH_READINESS_STATUS_META[launchReadiness.status] ||
@@ -80895,6 +81048,12 @@ export default function App() {
                       {candidateFormula.versionLabel} -{" "}
                       {candidateFormula.revisionNote || candidateFormula.desc}
                     </div>
+                    <div style={{ marginTop: 7 }}>
+                      {renderModelConfidenceBadges(confidenceSummary, {
+                        max: 5,
+                        compact: true,
+                      })}
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -80930,7 +81089,7 @@ export default function App() {
                     "#7DD3FC"
                   )}
                   {renderMetric(
-                    "Launch Score",
+                    "Launch Readiness Estimate",
                     `${launchReadiness.totalScore.toFixed(0)}/100`,
                     readinessMeta.label,
                     readinessMeta.color
@@ -80958,7 +81117,7 @@ export default function App() {
                       : "#34D399"
                   )}
                   {renderMetric(
-                    "Performance",
+                    "Performance Estimate",
                     `L ${performance.longevity.toFixed(1)} / S ${performance.sillage.toFixed(1)} / P ${performance.projection.toFixed(1)}`,
                     item.performanceModel?.headline || "Model unavailable",
                     "#C4B5FD"
@@ -82071,6 +82230,7 @@ export default function App() {
                         <div style={{ marginTop: 10 }}>
                           {renderPerformanceModelCard(formulaPerformanceModel, {
                             title: `Performance Model Estimate — ${selectedFormulaLabel}`,
+                            confidenceSummary: formulaConfidenceSummary,
                           })}
                         </div>
                       </div>
@@ -82697,6 +82857,67 @@ export default function App() {
                             gap: 10,
                           }}
                         >
+                          <div
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 10,
+                              padding: "10px 12px",
+                              gridColumn: "1 / -1",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 9,
+                                color: "#64748B",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 700,
+                                marginBottom: 7,
+                              }}
+                            >
+                              Model Confidence
+                            </div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                  "repeat(auto-fit,minmax(220px,1fr))",
+                                gap: 8,
+                              }}
+                            >
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: 8.4,
+                                    color: "#94A3B8",
+                                    marginBottom: 5,
+                                  }}
+                                >
+                                  {compareLeftLabel}
+                                </div>
+                                {renderModelConfidenceBadges(
+                                  compareLeftConfidenceSummary,
+                                  { max: 5, compact: true }
+                                )}
+                              </div>
+                              <div>
+                                <div
+                                  style={{
+                                    fontSize: 8.4,
+                                    color: "#94A3B8",
+                                    marginBottom: 5,
+                                  }}
+                                >
+                                  {compareRightLabel}
+                                </div>
+                                {renderModelConfidenceBadges(
+                                  compareRightConfidenceSummary,
+                                  { max: 5, compact: true }
+                                )}
+                              </div>
+                            </div>
+                          </div>
                           {[
                             {
                               label: "Ingredient Diff",
@@ -82716,7 +82937,7 @@ export default function App() {
                                   : "#CBD5E1",
                             },
                             {
-                              label: "Performance Delta",
+                              label: "Performance Estimate Delta",
                               value: `${
                                 compareRightPerformanceTotal -
                                   compareLeftPerformanceTotal >=
@@ -82731,7 +82952,7 @@ export default function App() {
                               color: "#34D399",
                             },
                             {
-                              label: "Chemistry Delta",
+                              label: "Chemistry Directional Delta",
                               value: `${
                                 formulaComparison.chemistryDelta.totalIntensity >=
                                 0
@@ -82870,7 +83091,7 @@ export default function App() {
                                 marginBottom: 8,
                               }}
                             >
-                              Performance Delta
+                              Performance Estimate Delta
                             </div>
                             {[
                               [
@@ -82946,7 +83167,7 @@ export default function App() {
                                 marginBottom: 8,
                               }}
                             >
-                              Chemistry Delta
+                              Chemistry Directional Delta
                             </div>
                             {[
                               [
@@ -83090,6 +83311,7 @@ export default function App() {
                               {
                                 title: compareLeftLabel,
                                 compact: true,
+                                confidenceSummary: compareLeftConfidenceSummary,
                               }
                             )}
                             {renderPerformanceModelCard(
@@ -83097,6 +83319,7 @@ export default function App() {
                               {
                                 title: compareRightLabel,
                                 compact: true,
+                                confidenceSummary: compareRightConfidenceSummary,
                               }
                             )}
                           </div>
@@ -83770,8 +83993,14 @@ export default function App() {
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
-                        Evaporation Timeline — OV Intensity Over Time
+                        Evaporation Timeline - Directional OV Estimate Over Time
                       </p>
+                      <div style={{ marginBottom: 10 }}>
+                        {renderModelConfidenceBadges(formulaConfidenceSummary, {
+                          max: 5,
+                          compact: true,
+                        })}
+                      </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                         {activeIngs.map((i) => (
                           <span key={i.name} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 8.5, color: "#94A3B8" }}>
@@ -83836,11 +84065,17 @@ export default function App() {
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 4px", textTransform: "uppercase" }}>
-                        Odor Value Map — log(ODT) vs log(C<sub>sat</sub>)
+                        Odor Value Map - Directional Estimate
                       </p>
                       <p style={{ fontSize: 8.5, color: "#334155", margin: "0 0 12px" }}>
-                        Diagonal bands = constant OV. Point size = formula weight fraction. Points above the OV=1 band are perceptible.
+                        Diagonal bands = constant OV. Point size = formula weight fraction. Points above the OV=1 band are perceptible where source support is adequate.
                       </p>
+                      <div style={{ marginBottom: 10 }}>
+                        {renderModelConfidenceBadges(formulaConfidenceSummary, {
+                          max: 5,
+                          compact: true,
+                        })}
+                      </div>
                       <ResponsiveContainer width="100%" height={340}>
                         <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>
                           <XAxis dataKey="x" type="number" name="log₁₀(ODT)" tick={{ fill: "#94A3B8", fontSize: 8 }} label={{ value: "log₁₀(ODT  ppbv)", position: "insideBottom", offset: -10, fill: "#64748B", fontSize: 9 }} domain={["auto","auto"]} />
@@ -86025,7 +86260,7 @@ export default function App() {
                             margin: "0 0 16px",
                           }}
                         >
-                          Performance Scores
+                          Performance Estimate
                         </p>
                         <ScoreBar
                           label="🕰️ Longevity"
@@ -86072,6 +86307,7 @@ export default function App() {
                         title: `Performance Model Estimate — ${
                           buildName.trim() || "Current Build"
                         }`,
+                        confidenceSummary: buildConfidenceSummary,
                       })}
                     </div>
                   </div>
@@ -86086,7 +86322,7 @@ export default function App() {
                     return (
                       <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 14, marginBottom: 12 }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                          <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", margin: 0 }}>IFRA Compliance</p>
+                          <p style={{ fontSize: 10, fontWeight: 700, color: "#475569", textTransform: "uppercase", margin: 0 }}>IFRA Coverage Estimate</p>
                           <div style={{ fontSize: 9, color: "#64748B" }}>
                             Current build · {selectedFragranceType.label}
                           </div>
@@ -86150,7 +86386,7 @@ export default function App() {
                             : anyFail
                             ? "🚫 IFRA Violations Detected — Reduce highlighted ingredients"
                             : allOk
-                            ? `✅ IFRA Compliant — ${IFRA_CATEGORY_LABELS[ifraCategory]}`
+                            ? `✅ IFRA checked within current rows — ${IFRA_CATEGORY_LABELS[ifraCategory]}`
                             : "⚠️ Some ingredients approaching limit — review before production"}
                         </div>
                       </div>
@@ -86174,8 +86410,14 @@ export default function App() {
                           margin: "0 0 10px",
                         }}
                       >
-                        Odor Value Distribution
+                        Odor Value Distribution Estimate
                       </p>
+                      <div style={{ marginBottom: 10 }}>
+                        {renderModelConfidenceBadges(buildConfidenceSummary, {
+                          max: 5,
+                          compact: true,
+                        })}
+                      </div>
                       <ResponsiveContainer width="100%" height={180}>
                         <BarChart
                           data={[...buildChem]
@@ -86949,6 +87191,7 @@ export default function App() {
                 {renderPerformanceModelCard(formulaPerformanceModel, {
                   title: `Performance Model Estimate — ${selectedFormulaLabel}`,
                   compact: true,
+                  confidenceSummary: formulaConfidenceSummary,
                 })}
               </div>
               <div style={{ marginBottom: 12 }}>
@@ -87234,12 +87477,14 @@ export default function App() {
                 })();
                 const withData = ings.filter(i => DB[i.name]?.VP > 0 && DB[i.name]?.ODT > 0);
                 const dataCompleteness = (withData.reduce((s, i) => s + i.g, 0) / totalG) * 10;
-                const ifraScore = (() => {
+                const ifraEstimate = (() => {
                   const ifraRows = getFormulaIfraRows(ings, "cat4");
-                  if (ifraRows.length === 0) return 10;
-                  const violations = ifraRows.filter(r => r.status === "fail");
-                  return Math.max(0, 10 - violations.length * 3);
+                  return buildIfraCoverageEstimate({
+                    ifraRows,
+                    finishedProductGuidance: formulaFinishedProductGuidance,
+                  });
                 })();
+                const ifraScore = ifraEstimate.score;
                 const accordScore = (() => {
                   const classes = [...new Set(ings.map(i => DB[i.name]?.scentClass).filter(Boolean))];
                   if (classes.length === 0) return 5;
@@ -87248,16 +87493,22 @@ export default function App() {
                 const perfScore2 = (formulaScore.longevity + formulaScore.sillage + formulaScore.projection) / 3;
                 const bars = [
                   { label: "Structure", score: structureScore, color: "#22C55E", tip: "Top 20% / Mid 40% / Base 40% ideal" },
-                  { label: "Data Completeness", score: dataCompleteness, color: "#22D3EE", tip: "% of formula weight with VP+ODT data" },
-                  { label: "IFRA Safety (Cat 4)", score: ifraScore, color: "#F59E0B", tip: "Compliance with IFRA Cat 4 fine fragrance limits" },
+                  { label: "Data Coverage Estimate", score: dataCompleteness, color: "#22D3EE", tip: "% of formula weight with VP+ODT data" },
+                  { label: "IFRA Coverage Estimate", score: ifraScore, color: "#F59E0B", tip: ifraEstimate.tip },
                   { label: "Accord Coherence", score: accordScore, color: "#818CF8", tip: "Fewer distinct scent families = higher coherence" },
-                  { label: "Performance", score: perfScore2, color: "#F472B6", tip: "Average of longevity, sillage, projection" },
+                  { label: "Performance Estimate", score: perfScore2, color: "#F472B6", tip: "Average of longevity, sillage, projection" },
                 ];
                 return (
                   <div style={{ background: CARD, borderRadius: 14, border: `1px solid ${BORDER}`, padding: 16, marginBottom: 12 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 14px" }}>
-                      📋 Formula Report Card
-                    </p>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start", flexWrap: "wrap", marginBottom: 14 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>
+                        📋 Formula Report Card
+                      </p>
+                      {renderModelConfidenceBadges(formulaConfidenceSummary, {
+                        max: 5,
+                        compact: true,
+                      })}
+                    </div>
                     {bars.map(({ label, score, color, tip }) => (
                       <div key={label} style={{ marginBottom: 10 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
@@ -100787,7 +101038,7 @@ export default function App() {
                         : "#F59E0B",
                   },
                   {
-                    label: "Performance Delta",
+                    label: "Performance Estimate Delta",
                     value: `${(
                       (substitutionReviewComparison?.performanceDelta?.projection || 0) +
                       (substitutionReviewComparison?.performanceDelta?.longevity || 0)

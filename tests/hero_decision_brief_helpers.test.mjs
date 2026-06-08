@@ -26,6 +26,7 @@ function makeCandidate({
   canFulfill = true,
   shortageCount = 0,
   supportLabel = "51/51 supported",
+  confidenceSummary = null,
 } = {}) {
   return {
     formula: {
@@ -54,6 +55,7 @@ function makeCandidate({
       supportLabel,
       levelMeta: { label: "Supported" },
     },
+    confidenceSummary,
     sensorySummary: {
       evaluationCount,
       latestEvaluation:
@@ -257,6 +259,49 @@ test("brief flags low-confidence winner and blockers", () => {
     brief.nextAction,
     "Resolve blockers before treating Skin-Air Bridge as production-ready."
   );
+});
+
+test("brief surfaces selected winner model confidence caveats as advisory warnings", () => {
+  const items = BASE_ITEMS.map((item) =>
+    item.formula.formulaKey === "seed-hero-skin-air-bridge"
+      ? makeCandidate({
+          formulaKey: item.formula.formulaKey,
+          name: item.formula.name,
+          status: "winner",
+          evaluationCount: 2,
+          launchConfidence: 8,
+          preference: 8,
+          confidenceSummary: {
+            categoryCounts: {
+              black_box_accord: 1,
+              missing_pricing: 1,
+              legacy: 2,
+              missing_threshold: 3,
+              estimated_model: 1,
+              directional_only: 1,
+            },
+          },
+        })
+      : item
+  );
+  const brief = buildHeroDecisionBrief(items);
+
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("Skin-Air Bridge model caveat: 1 black-box accord row")
+    )
+  );
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("Threshold and vapor-pressure support is mixed")
+    )
+  );
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("latest wear test snapshot")
+    )
+  );
+  assert.equal(brief.decisionCandidate.formula.name, "Skin-Air Bridge");
 });
 
 test("brief summarizes complete multi-test sensory coverage", () => {
