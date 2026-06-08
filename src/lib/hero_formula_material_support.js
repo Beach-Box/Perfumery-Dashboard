@@ -112,6 +112,100 @@ function getComponentPriceAlias(name) {
   return COMPONENT_PRICING_ALIAS_BY_NAME.get(normalizeLookupName(name)) || null;
 }
 
+function stripWorkingStockSuffix(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+\d+(?:\.\d+)?\s*%\s*(?:TEC|DPG|IPM|alcohol)?$/i, "")
+    .trim();
+}
+
+function buildAccordComponentLookupNames(component = {}) {
+  const names = new Set();
+  const pushName = (value) => {
+    const text = String(value || "").trim();
+    if (!text) return;
+    names.add(text);
+    const stripped = stripWorkingStockSuffix(text);
+    if (stripped && stripped !== text) names.add(stripped);
+  };
+
+  pushName(component.name);
+  pushName(getComponentPriceAlias(component.name));
+  if (component.dilution && !nameContainsPercent(component.name)) {
+    pushName(`${component.name} ${component.dilution}`);
+  }
+
+  return Array.from(names);
+}
+
+export function getHeroFormulaAccordComponents(name) {
+  const recipe = getHeroFormulaAccordRecipe(name);
+  if (!recipe) return null;
+  return {
+    accordName: recipe.name,
+    recipeStatus: recipe.recipeStatus || "known",
+    totalAmount: recipe.totalAmount ?? null,
+    unit: recipe.unit || "g",
+    components: (recipe.components || []).map((component) => ({
+      name: component.name,
+      amount: component.amount ?? null,
+      unit: component.unit || recipe.unit || "g",
+      dilution: component.dilution || "neat",
+      lookupNames: buildAccordComponentLookupNames(component),
+    })),
+  };
+}
+
+export function buildHeroFormulaAccordRepresentation(items = []) {
+  const accordRows = [];
+  const representedByNormalizedName = {};
+
+  (Array.isArray(items) ? items : []).forEach((item) => {
+    const recipe = getHeroFormulaAccordComponents(item?.name);
+    if (!recipe) return;
+    const row = {
+      formulaRowName: item.name,
+      accordName: recipe.accordName,
+      recipeStatus: recipe.recipeStatus,
+      totalAmount: recipe.totalAmount,
+      unit: recipe.unit,
+      components: recipe.components,
+    };
+    accordRows.push(row);
+    recipe.components.forEach((component) => {
+      component.lookupNames.forEach((lookupName) => {
+        const normalized = normalizeLookupName(lookupName);
+        if (!normalized) return;
+        if (!representedByNormalizedName[normalized]) {
+          representedByNormalizedName[normalized] = [];
+        }
+        representedByNormalizedName[normalized].push({
+          accordName: recipe.accordName,
+          formulaRowName: item.name,
+          componentName: component.name,
+          amount: component.amount,
+          unit: component.unit,
+          dilution: component.dilution,
+        });
+      });
+    });
+  });
+
+  return {
+    accordRows,
+    representedByNormalizedName,
+    representedNames: Object.keys(representedByNormalizedName),
+  };
+}
+
+export function getHeroFormulaAccordRepresentationForMaterial(
+  materialName,
+  representation = {}
+) {
+  const normalized = normalizeLookupName(materialName);
+  return representation?.representedByNormalizedName?.[normalized] || [];
+}
+
 function buildComponentPricingCandidates(component = {}) {
   const candidates = [];
   const componentName = component.name;

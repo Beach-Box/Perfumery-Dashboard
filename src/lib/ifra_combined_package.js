@@ -4,7 +4,10 @@ import evidenceCandidateRegistry from "../data/evidence_candidate_registry.json"
 import sourceDocumentRegistry from "../data/source_document_registry.json" with { type: "json" };
 import supplierImportReviewQueue from "../data/supplier_import_review_queue.json" with { type: "json" };
 import supplierProductRegistry from "../data/supplier_product_registry.json" with { type: "json" };
-import { buildHeroFormulaMaterialNormalizationEntries } from "./hero_formula_material_support.js";
+import {
+  buildHeroFormulaMaterialNormalizationEntries,
+  getHeroFormulaAccordRecipe,
+} from "./hero_formula_material_support.js";
 
 // Starter IFRA combined package for Beach Box app integration
 const IFRA_SUPPLEMENTAL_MATERIALS = {
@@ -3524,6 +3527,112 @@ export function getIfraUiState(name) {
     return "not_found_in_uploaded_pdf";
 
   return "unresolved_identity";
+}
+
+function hasDefinedIfraLimit(material = {}) {
+  return Object.values(material?.limits || {}).some((limit) => limit != null);
+}
+
+function getIfraAuditMatchKind(name, material = {}) {
+  const normalizedName = normalizeText(name);
+  const normalizedCanonical = normalizeText(material?.canonicalName);
+  if (normalizedName && normalizedCanonical && normalizedName === normalizedCanonical) {
+    return "exact";
+  }
+  return "alias";
+}
+
+export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
+  const counts = {
+    exactIfraMatch: 0,
+    aliasIfraMatch: 0,
+    intentionallyNotMatchedNoStandard: 0,
+    missingAlias: 0,
+    accordLevelOnly: 0,
+    sourceUnavailable: 0,
+  };
+
+  const rows = (Array.isArray(items) ? items : []).map((item) => {
+    const name = item?.name || "";
+    const record = db?.[name] || {};
+    const recipe = getHeroFormulaAccordRecipe(name);
+    if (recipe || record?.type === "ACCORD") {
+      counts.accordLevelOnly += 1;
+      return {
+        name,
+        category: "accordLevelOnly",
+        label: "Accord-level row; component IFRA not expanded",
+        recipeName: recipe?.name || null,
+        matchedMaterial: null,
+      };
+    }
+
+    const identity = resolveIngredientIdentity(name);
+    const material = getIfraMaterialRecord(name);
+    const state = getIfraUiState(name);
+
+    if (material && material.status === "active" && hasDefinedIfraLimit(material)) {
+      const matchKind = getIfraAuditMatchKind(name, material);
+      if (matchKind === "exact") counts.exactIfraMatch += 1;
+      else counts.aliasIfraMatch += 1;
+      return {
+        name,
+        category: matchKind === "exact" ? "exactIfraMatch" : "aliasIfraMatch",
+        label: matchKind === "exact" ? "Exact IFRA match" : "Alias matched",
+        matchedMaterial: material.canonicalName,
+        resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+        limitSummary: material.limits || {},
+      };
+    }
+
+    if (
+      state === "functional_solvent" ||
+      material?.status === "not_found_in_uploaded_pdf"
+    ) {
+      counts.intentionallyNotMatchedNoStandard += 1;
+      return {
+        name,
+        category: "intentionallyNotMatchedNoStandard",
+        label: "No known restriction in current data",
+        matchedMaterial: material?.canonicalName || identity?.canonicalAppName || null,
+        resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+      };
+    }
+
+    if (material && material.status === "active" && !hasDefinedIfraLimit(material)) {
+      counts.sourceUnavailable += 1;
+      return {
+        name,
+        category: "sourceUnavailable",
+        label: material.missingLimitReason ? "Source data missing" : "No known restriction in current data",
+        matchedMaterial: material.canonicalName,
+        resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+        missingLimitReason: material.missingLimitReason || null,
+      };
+    }
+
+    if (identity && !material) {
+      counts.sourceUnavailable += 1;
+      return {
+        name,
+        category: "sourceUnavailable",
+        label: "Source data missing",
+        matchedMaterial: null,
+        resolvedIfraMaterial: identity.resolvedIfraMaterial || null,
+      };
+    }
+
+    counts.missingAlias += 1;
+    return {
+      name,
+      category: "missingAlias",
+      label: "No IFRA record matched",
+      matchedMaterial: null,
+      resolvedIfraMaterial: null,
+    };
+  });
+
+  return { counts, rows };
 }
 
 export function computeActiveRestrictedPercent({

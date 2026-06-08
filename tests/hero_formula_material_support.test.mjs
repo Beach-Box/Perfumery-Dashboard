@@ -9,7 +9,9 @@ import {
   buildHeroFormulaMaterialNormalizationEntries,
   buildHeroFormulaPricingSupportRows,
   buildHeroFormulaRawDbSupportRows,
+  buildHeroFormulaAccordRepresentation,
   createHeroSupportRecordPricing,
+  getHeroFormulaAccordComponents,
   getHeroFormulaAccordRecipe,
 } from "../src/lib/hero_formula_material_support.js";
 import {
@@ -312,6 +314,45 @@ test("hero formula accord recipe registry preserves supplied recipes and legacy 
     "Driftwood Accord v2.2 NT"
   );
   assert.equal(driftwoodLegacyRecipe.name, "Driftwood Accord v2");
+});
+
+test("hero formula accord representation exposes known recipe components", () => {
+  const botanicalComponents = getHeroFormulaAccordComponents(
+    "Botanical Musk Accord"
+  );
+  assert.equal(botanicalComponents.accordName, "Botanical Musk Accord");
+  assert.ok(
+    botanicalComponents.components.some(
+      (component) =>
+        component.name === "Habanolide" &&
+        component.lookupNames.includes("Habanolide")
+    )
+  );
+
+  const driftwoodComponents = getHeroFormulaAccordComponents("Driftwood Accord");
+  assert.ok(
+    driftwoodComponents.components.some(
+      (component) =>
+        component.name === "Iso E Super" &&
+        component.lookupNames.includes("Iso E Super")
+    )
+  );
+
+  const representation = buildHeroFormulaAccordRepresentation([
+    { name: "Botanical Musk Accord", g: 1.3 },
+    { name: "Driftwood Accord", g: 0.6 },
+    { name: "Unknown Accord", g: 0.4 },
+  ]);
+  assert.equal(representation.accordRows.length, 2);
+  assert.equal(
+    representation.representedByNormalizedName.habanolide[0].accordName,
+    "Botanical Musk Accord"
+  );
+  assert.equal(
+    representation.representedByNormalizedName["iso e super"][0].accordName,
+    "Driftwood Accord"
+  );
+  assert.equal(representation.representedByNormalizedName["unknown accord"], undefined);
 });
 
 test("hero formula accord pricing marks incomplete component costs instead of free rows", () => {

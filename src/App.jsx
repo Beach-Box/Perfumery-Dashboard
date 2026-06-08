@@ -36,6 +36,7 @@ import {
   SUPPLIER_PRODUCT_REGISTRY,
   buildSupplierProductKey,
   buildIngredientTruthCompletenessReport,
+  auditFormulaIfraCoverage,
   compareMaterialCasSupportValues,
   buildFinishedProductIfraGuidance,
   formatMaterialCasSupportValue,
@@ -109,6 +110,8 @@ import {
 import {
   buildHeroFormulaPricingSupportRows,
   buildHeroFormulaRawDbSupportRows,
+  buildHeroFormulaAccordRepresentation,
+  getHeroFormulaAccordComponents,
 } from "./lib/hero_formula_material_support";
 import {
   HERO_CANDIDATE_STATUS_META,
@@ -54253,6 +54256,262 @@ function computeChemistry(ingredients) {
   });
 }
 
+function getMaterialWeightForAnalysis(item = {}) {
+  return Number(item?.activeG ?? item?.resolvedGrams ?? item?.g) || 0;
+}
+
+function getTopAnalysisNames(items = [], limit = 3) {
+  return [...items]
+    .filter((item) => item?.name)
+    .sort(
+      (a, b) =>
+        getMaterialWeightForAnalysis(b) - getMaterialWeightForAnalysis(a)
+    )
+    .slice(0, limit)
+    .map((item) => item.name);
+}
+
+function formatAnalysisList(values = [], fallback = "not enough resolved data") {
+  return values.filter(Boolean).length
+    ? formatHumanList(values.filter(Boolean), 3)
+    : fallback;
+}
+
+function getChemistryDataCoverage(chem = []) {
+  return chem.reduce(
+    (acc, item) => {
+      if (!item?.d) {
+        acc.missingRecord += 1;
+        return acc;
+      }
+      if (!Number.isFinite(Number(item.d.MW))) acc.missingMW += 1;
+      if (!Number.isFinite(Number(item.d.VP)) || Number(item.d.VP) <= 0) {
+        acc.missingVP += 1;
+      }
+      if (!Number.isFinite(Number(item.d.xLogP))) acc.missingLogP += 1;
+      if (!Number.isFinite(Number(item.d.ODT)) || Number(item.d.ODT) <= 0) {
+        acc.missingOdt += 1;
+      }
+      if (item.d.isUVCB) acc.uvcb += 1;
+      if (item.d.type === "ACCORD") acc.accord += 1;
+      return acc;
+    },
+    {
+      missingRecord: 0,
+      missingMW: 0,
+      missingVP: 0,
+      missingLogP: 0,
+      missingOdt: 0,
+      uvcb: 0,
+      accord: 0,
+    }
+  );
+}
+
+function formatDirectionalValue(value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return "n/a";
+  if (numericValue === 0) return "0";
+  if (Math.abs(numericValue) >= 10000 || Math.abs(numericValue) < 0.01) {
+    return numericValue.toExponential(2);
+  }
+  if (Math.abs(numericValue) >= 100) return numericValue.toFixed(0);
+  if (Math.abs(numericValue) >= 10) return numericValue.toFixed(1);
+  return numericValue.toFixed(2);
+}
+
+function getOdorThresholdSourceBucket(item = {}) {
+  const source = item?.d?.odorThresholdSource;
+  if (source?.unit || source?.sourceUnit) {
+    return String(source.unit || source.sourceUnit).trim();
+  }
+  if (item?.odorValueIsModeled) return "legacy/unsourced ODT";
+  return null;
+}
+
+function buildOdorValueChartModel(chem = []) {
+  const modeledRows = [...chem]
+    .filter((item) => item?.d && item.odorValueIsModeled && item.OV > 0)
+    .sort((a, b) => b.OV - a.OV);
+  const missingOdtCount = chem.filter(
+    (item) => item?.d && item.odorThresholdMissing
+  ).length;
+  const unitBuckets = Array.from(
+    new Set(modeledRows.map(getOdorThresholdSourceBucket).filter(Boolean))
+  );
+  const sourceBackedCount = modeledRows.filter(
+    (item) => item.d?.odorThresholdSource
+  ).length;
+  const legacyCount = modeledRows.length - sourceBackedCount;
+  const chartRows = modeledRows.slice(0, 12).map((item) => ({
+    name: item.name.length > 16 ? item.name.slice(0, 15) + "..." : item.name,
+    fullName: item.name,
+    scaledOV: Number(Math.log10((item.OV || 0) + 1).toFixed(4)),
+    rawOV: item.OV,
+    rawOVLabel: formatDirectionalValue(item.OV),
+    note: item.note,
+    sourceUnit: getOdorThresholdSourceBucket(item) || "ODT source unknown",
+  }));
+
+  return {
+    modeledRows,
+    chartRows,
+    missingOdtCount,
+    unitBuckets,
+    sourceBackedCount,
+    legacyCount,
+    hasMixedUnits: unitBuckets.length > 1,
+    isLimitedSingleBar: modeledRows.length === 1,
+    topName: modeledRows[0]?.name || null,
+  };
+}
+
+function buildOdorFamilyProfile(chem = []) {
+  const familyTotals = {};
+  chem.forEach((item) => {
+    if (!item?.d) return;
+    const family = item.d.scentClass || item.d.note || "Other";
+    const weight =
+      (Number(item.intensity) || Number(item.OV) || 1) *
+      (Number(item.wfrac) || 0);
+    familyTotals[family] = (familyTotals[family] || 0) + weight;
+  });
+  const sortedFamilies = Object.entries(familyTotals)
+    .map(([family, weight]) => ({ family, weight }))
+    .filter((row) => row.weight > 0)
+    .sort((a, b) => b.weight - a.weight);
+  const dominant = sortedFamilies.slice(0, 4).map((row) => row.family);
+  const commonFamilies = [
+    "Citrus",
+    "Marine",
+    "Floral",
+    "Woody",
+    "Musk",
+    "Amber",
+    "Green",
+    "Spicy",
+  ];
+  const present = new Set(dominant.map((family) => family.toLowerCase()));
+  const underrepresented = commonFamilies.filter(
+    (family) => !present.has(family.toLowerCase())
+  );
+  return { sortedFamilies, dominant, underrepresented };
+}
+
+function buildChemistryInterpretationRows(chem = [], summary = {}) {
+  const coverage = getChemistryDataCoverage(chem);
+  const vpRows = chem
+    .filter((item) => item?.d?.VP > 0)
+    .sort((a, b) => b.d.VP - a.d.VP);
+  const highLogPRows = chem
+    .filter((item) => Number(item?.d?.xLogP) >= 4)
+    .sort((a, b) => getMaterialWeightForAnalysis(b) - getMaterialWeightForAnalysis(a));
+  const topVolatileNames = getTopAnalysisNames(vpRows, 3);
+  const substantiveNames = getTopAnalysisNames(highLogPRows, 3);
+  const hasBroadVolatility =
+    vpRows.length > 1 &&
+    Number(vpRows[0].d.VP) / Number(vpRows[vpRows.length - 1].d.VP) > 50;
+  return [
+    {
+      label: "What this shows",
+      text:
+        "The chemistry charts compare lipophilicity, vapor pressure, polarity, and odor-threshold-derived impact for the formula's active aromatic rows.",
+    },
+    {
+      label: "Current read",
+      text: `${
+        hasBroadVolatility
+          ? "This formula has a broad volatility spread, which supports a staged drydown."
+          : "The volatility spread is relatively compressed, so stage separation may depend more on accord structure than raw vapor pressure."
+      } ${formatAnalysisList(topVolatileNames)} look most likely to shape the lift, while ${formatAnalysisList(
+        substantiveNames
+      )} point toward skin retention.`,
+    },
+    {
+      label: "Decision use",
+      text: `Weighted logP is ${formatDirectionalValue(
+        summary.weightedXLogP
+      )}; use that with VP to balance diffusion against cling. High-impact traces should be tested by dose, not judged only by chart height.`,
+    },
+    {
+      label: "Uncertainty",
+      text: `${coverage.missingOdt} row${
+        coverage.missingOdt === 1 ? "" : "s"
+      } lack odor-threshold data; ${coverage.uvcb + coverage.accord} natural, UVCB, or accord row${
+        coverage.uvcb + coverage.accord === 1 ? "" : "s"
+      } are modeled directionally rather than as exact molecules.`,
+    },
+  ];
+}
+
+function buildLongevityInterpretationRows(chem = []) {
+  const persistentRows = chem
+    .filter((item) => item?.d && item.note === "base" && Number(item.d.xLogP) > 0)
+    .sort((a, b) => (Number(b.d.xLogP) || 0) - (Number(a.d.xLogP) || 0));
+  const likelyShortRows = chem
+    .filter((item) => item?.d && item.note === "top")
+    .sort((a, b) => (Number(b.d.VP) || 0) - (Number(a.d.VP) || 0));
+  const missingRows = chem.filter(
+    (item) => !item?.d || !Number.isFinite(Number(item.d.xLogP))
+  );
+  return [
+    `Only materials with enough substantivity data or base-note persistence receive modeled longevity contribution. Empty bars may mean low expected persistence or insufficient data.`,
+    `Main longevity anchors: ${formatAnalysisList(
+      getTopAnalysisNames(persistentRows, 4)
+    )}.`,
+    `Likely short-lived lift: ${formatAnalysisList(
+      getTopAnalysisNames(likelyShortRows, 4)
+    )}.`,
+    `Data gaps: ${missingRows.length} row${
+      missingRows.length === 1 ? "" : "s"
+    } need better xLogP or persistence support. Test on strip, skin, and fabric at 2 hr, 6 hr, and next day.`,
+  ];
+}
+
+function buildTimelineInterpretationRows({ openingNames, heartNames, drydownNames, hasFallbackVp }) {
+  return [
+    `Opening is modeled around ${formatAnalysisList(
+      openingNames,
+      "no resolved top-note drivers"
+    )}.`,
+    `Heart development should watch ${formatAnalysisList(
+      heartNames,
+      "the formula's mid-note bridge"
+    )}; interactions here can decide whether the formula feels airy, floral, marine, or detergent-like.`,
+    `Drydown is likely led by ${formatAnalysisList(
+      drydownNames,
+      "base materials with available persistence data"
+    )}.`,
+    `${
+      hasFallbackVp
+        ? "Dashed/fallback rows use note-role decay estimates because VP data is missing."
+        : "All plotted rows have vapor-pressure support for this directional timeline."
+    } Validate at 5 min, 30 min, 2 hr, 6 hr, and next day.`,
+  ];
+}
+
+function buildOdorMapInterpretationRows(chem = [], formulaLabel = "this formula") {
+  const profile = buildOdorFamilyProfile(chem);
+  const accordOrNaturalCount = chem.filter(
+    (item) => item?.d?.type === "ACCORD" || item?.d?.isUVCB
+  ).length;
+  return [
+    `Dominant families: ${formatAnalysisList(
+      profile.dominant,
+      "not enough odor-family data"
+    )}.`,
+    `Underrepresented families in the current map include ${formatAnalysisList(
+      profile.underrepresented.slice(0, 3),
+      "none obvious"
+    )}.`,
+    `Watch tension where high-impact marine, aldehydic, green, or spicy rows sit far from the main family cluster; those can read as sparkle or as clash depending on dose.`,
+    `For ${formulaLabel}, use the map as a fit check against the intended concept, then confirm whether the dominant families feel cohesive on skin.`,
+    `${accordOrNaturalCount} accord or natural/UVCB row${
+      accordOrNaturalCount === 1 ? "" : "s"
+    } are caveated because the component chemistry is not expanded in this view.`,
+  ];
+}
+
 // ─────────────────────────────────────────────────────────────
 // INVENTORY ENGINE
 // Convert grams needed → closest supplier size to purchase
@@ -56439,8 +56698,21 @@ function IngredientDetailPanel({
         basketMode,
         ifraCategory,
         amountG: activeContext?.line?.g || 10,
+        formulaItems:
+          activeContext?.items ||
+          currentFormula?.ingredients ||
+          buildItems ||
+          [],
       }),
-    [activeContext, basketMode, ifraCategory, name, pricesState]
+    [
+      activeContext,
+      basketMode,
+      buildItems,
+      currentFormula,
+      ifraCategory,
+      name,
+      pricesState,
+    ]
   );
 
   const formulaAwarePreviewMap = useMemo(() => {
@@ -66710,6 +66982,33 @@ export default function App() {
   );
   const formulaChemistrySummary = useMemo(
     () => summarizeComputedChemistry(chem),
+    [chem]
+  );
+  const formulaIfraCoverageAudit = useMemo(
+    () => auditFormulaIfraCoverage(formulaUsageRows, { db: DB }),
+    [formulaUsageRows]
+  );
+  const formulaIfraCoverageByName = useMemo(
+    () =>
+      new Map(
+        (formulaIfraCoverageAudit.rows || []).map((row) => [row.name, row])
+      ),
+    [formulaIfraCoverageAudit]
+  );
+  const formulaAccordRepresentation = useMemo(
+    () => buildHeroFormulaAccordRepresentation(formula?.ingredients || []),
+    [formula]
+  );
+  const formulaChemistryInterpretationRows = useMemo(
+    () => buildChemistryInterpretationRows(chem, formulaChemistrySummary),
+    [chem, formulaChemistrySummary]
+  );
+  const formulaOdorValueChartModel = useMemo(
+    () => buildOdorValueChartModel(chem),
+    [chem]
+  );
+  const formulaLongevityInterpretationRows = useMemo(
+    () => buildLongevityInterpretationRows(chem),
     [chem]
   );
   const buildChemistrySummary = useMemo(
@@ -82744,6 +83043,92 @@ export default function App() {
                             </div>
                           ))}
                         </div>
+                        <div
+                          style={{
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            padding: "8px 10px",
+                            marginBottom: 10,
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 8.4,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 800,
+                              marginBottom: 6,
+                            }}
+                          >
+                            IFRA Matching Audit
+                          </div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns:
+                                "repeat(auto-fit,minmax(120px,1fr))",
+                              gap: 6,
+                              fontSize: 8.5,
+                              color: "#94A3B8",
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {[
+                              [
+                                "Exact IFRA match",
+                                formulaIfraCoverageAudit.counts.exactIfraMatch,
+                              ],
+                              [
+                                "Alias IFRA match",
+                                formulaIfraCoverageAudit.counts.aliasIfraMatch,
+                              ],
+                              [
+                                "No standard/current data",
+                                formulaIfraCoverageAudit.counts
+                                  .intentionallyNotMatchedNoStandard,
+                              ],
+                              [
+                                "Missing alias",
+                                formulaIfraCoverageAudit.counts.missingAlias,
+                              ],
+                              [
+                                "Accord-level only",
+                                formulaIfraCoverageAudit.counts.accordLevelOnly,
+                              ],
+                              [
+                                "Source data missing",
+                                formulaIfraCoverageAudit.counts.sourceUnavailable,
+                              ],
+                            ].map(([label, value]) => (
+                              <div key={label}>
+                                <span style={{ color: "#CBD5E1", fontWeight: 800 }}>
+                                  {value}
+                                </span>{" "}
+                                {label}
+                              </div>
+                            ))}
+                          </div>
+                          <div
+                            style={{
+                              marginTop: 6,
+                              fontSize: 8,
+                              color: "#64748B",
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            Current structured IFRA data is partial; unmatched rows
+                            are not shown as violations, and accord component IFRA is
+                            not expanded in this view.{" "}
+                            {formulaAccordRepresentation.accordRows.length} known
+                            recipe accord row
+                            {formulaAccordRepresentation.accordRows.length === 1
+                              ? ""
+                              : "s"}{" "}
+                            can show components for costing/interpretation context.
+                          </div>
+                        </div>
                         <table
                           style={{
                             width: "100%",
@@ -82817,6 +83202,10 @@ export default function App() {
                             const total =
                               formulaBenchStockRuntime.totals.totalStockGrams || 1;
                             const vaporPressureDisplay = buildVaporPressureDisplay(d);
+                            const ifraAuditRow =
+                              formulaIfraCoverageByName.get(ing.name) || null;
+                            const accordComponents =
+                              getHeroFormulaAccordComponents(ing.name);
                             return (
                               <tr
                                 key={
@@ -82898,6 +83287,57 @@ export default function App() {
                                       key: {runtimeKeyCaption}
                                     </div>
                                   ) : null}
+                                  {accordComponents ? (
+                                    <details
+                                      style={{
+                                        marginTop: 5,
+                                        color: "#94A3B8",
+                                        fontSize: 8.2,
+                                      }}
+                                    >
+                                      <summary
+                                        style={{
+                                          cursor: "pointer",
+                                          color: "#7DD3FC",
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        Known recipe components
+                                      </summary>
+                                      <div
+                                        style={{
+                                          marginTop: 4,
+                                          display: "grid",
+                                          gap: 3,
+                                          lineHeight: 1.35,
+                                        }}
+                                      >
+                                        {accordComponents.components.map(
+                                          (component) => (
+                                            <div
+                                              key={`${ing.name}-${component.name}`}
+                                            >
+                                              {component.name} ·{" "}
+                                              {component.amount}
+                                              {component.unit || "g"} ·{" "}
+                                              {component.dilution || "neat"}
+                                            </div>
+                                          )
+                                        )}
+                                      </div>
+                                    </details>
+                                  ) : d?.type === "ACCORD" ? (
+                                    <div
+                                      style={{
+                                        fontSize: 8.1,
+                                        color: "#FCD34D",
+                                        marginTop: 4,
+                                      }}
+                                    >
+                                      Accord recipe missing; chemistry and IFRA stay
+                                      accord-level.
+                                    </div>
+                                  ) : null}
                                 </td>
                                 <td
                                   style={{
@@ -82919,6 +83359,26 @@ export default function App() {
                                         : null
                                     }
                                   />
+                                  {ifraAuditRow ? (
+                                    <div
+                                      style={{
+                                        marginTop: 3,
+                                        fontSize: 7.8,
+                                        color:
+                                          ifraAuditRow.category === "missingAlias" ||
+                                          ifraAuditRow.category ===
+                                            "sourceUnavailable"
+                                            ? "#FCD34D"
+                                            : ifraAuditRow.category ===
+                                              "accordLevelOnly"
+                                            ? "#7DD3FC"
+                                            : "#94A3B8",
+                                        lineHeight: 1.25,
+                                      }}
+                                    >
+                                      {ifraAuditRow.label}
+                                    </div>
+                                  ) : null}
                                 </td>
                                 <td
                                   style={{
@@ -83104,6 +83564,41 @@ export default function App() {
                           })}
                         </tbody>
                       </table>
+                        <div
+                          style={{
+                            marginTop: 10,
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            padding: "9px 10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 8.4,
+                              color: "#64748B",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                              fontWeight: 800,
+                              marginBottom: 6,
+                            }}
+                          >
+                            Longevity Contribution Read
+                          </div>
+                          <div
+                            style={{
+                              display: "grid",
+                              gap: 4,
+                              fontSize: 8.6,
+                              color: "#94A3B8",
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {formulaLongevityInterpretationRows.map((line) => (
+                              <div key={line}>{line}</div>
+                            ))}
+                          </div>
+                        </div>
                     </div>
                   </div>
                   </div>
@@ -83983,6 +84478,72 @@ export default function App() {
                   </div>
                 )}
                 {subTab === "chemistry" && (
+                  <>
+                    <div
+                      data-testid="chemistry-interpretation"
+                      style={{
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 10,
+                        padding: 12,
+                        marginBottom: 12,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 9,
+                          color: "#64748B",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 800,
+                          marginBottom: 8,
+                        }}
+                      >
+                        Chemistry Interpretation
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit,minmax(220px,1fr))",
+                          gap: 8,
+                        }}
+                      >
+                        {formulaChemistryInterpretationRows.map((row) => (
+                          <div
+                            key={row.label}
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              padding: "8px 9px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 8,
+                                color: "#7DD3FC",
+                                fontWeight: 800,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.06em",
+                                marginBottom: 4,
+                              }}
+                            >
+                              {row.label}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 8.7,
+                                color: "#94A3B8",
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {row.text}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   <div
                     style={{
                       display: "grid",
@@ -84095,6 +84656,7 @@ export default function App() {
                       );
                     })}
                   </div>
+                  </>
                 )}
                 {subTab === "analysis" && (
                   <>
@@ -84140,6 +84702,67 @@ export default function App() {
                     );
                   })()}
                   <div
+                    data-testid="odor-analysis-interpretation"
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 10,
+                      padding: 12,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 800,
+                        marginBottom: 7,
+                      }}
+                    >
+                      Odor Analysis Interpretation
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 8.8,
+                        color: "#94A3B8",
+                        lineHeight: 1.55,
+                        display: "grid",
+                        gap: 5,
+                      }}
+                    >
+                      <div>
+                        Odor value is shown as a directional impact signal.
+                        Because ODT data is sparse and often measured in different
+                        media/units, extreme values should be treated as a warning
+                        to test carefully, not as a precise ranking.
+                      </div>
+                      <div>
+                        Modeled ODT rows:{" "}
+                        <span style={{ color: "#CBD5E1", fontWeight: 800 }}>
+                          {formulaOdorValueChartModel.modeledRows.length}
+                        </span>
+                        {" · "}source-backed:{" "}
+                        {formulaOdorValueChartModel.sourceBackedCount}
+                        {" · "}legacy/unsourced:{" "}
+                        {formulaOdorValueChartModel.legacyCount}
+                        {" · "}missing ODT:{" "}
+                        {formulaOdorValueChartModel.missingOdtCount}
+                        {formulaOdorValueChartModel.hasMixedUnits
+                          ? " · mixed threshold units present"
+                          : ""}
+                      </div>
+                      <div>
+                        Top modeled impact:{" "}
+                        {formulaOdorValueChartModel.topName || "not enough data"}.
+                        Trace high-impact materials can dominate the model, so use
+                        the chart to choose blotter/skin dose tests rather than to
+                        declare final balance.
+                      </div>
+                    </div>
+                  </div>
+                  <div
                     style={{
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
@@ -84165,50 +84788,88 @@ export default function App() {
                       >
                         Odor Value (OV) — Perceptual Contribution
                       </p>
-                      <ResponsiveContainer width="100%" height={220}>
-                        <BarChart
-                          data={[...chem]
-                            .filter((i) => i.OV > 0 && i.d)
-                            .sort((a, b) => b.OV - a.OV)
-                            .slice(0, 12)
-                            .map((i) => ({
-                              name:
-                                i.name.length > 16
-                                  ? i.name.slice(0, 15) + "…"
-                                  : i.name,
-                              OV: i.OV,
-                              note: i.note,
-                            }))}
-                          margin={{ top: 4, right: 4, left: 8, bottom: 65 }}
+                      {formulaOdorValueChartModel.isLimitedSingleBar ? (
+                        <div
+                          style={{
+                            minHeight: 220,
+                            display: "grid",
+                            alignContent: "center",
+                            color: "#94A3B8",
+                            fontSize: 9,
+                            lineHeight: 1.6,
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            padding: 12,
+                          }}
                         >
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fill: "#94A3B8", fontSize: 8 }}
-                            angle={-45}
-                            textAnchor="end"
-                            interval={0}
-                          />
-                          <YAxis
-                            tick={{ fill: "#94A3B8", fontSize: 8 }}
-                            tickFormatter={(v) => v.toExponential(0)}
-                          />
-                          <Tooltip
-                            contentStyle={{
-                              background: "#0A1628",
-                              border: `1px solid ${BORDER}`,
-                              borderRadius: 8,
-                              fontSize: 11,
-                            color: "#CBD5E1",
-                            }}
-                          itemStyle={{ color: "#94A3B8" }}
-                          labelStyle={{ color: "#94A3B8" }}
-                          />
-                          <Bar dataKey="OV" radius={[3, 3, 0, 0]}>
-                            {[...chem]
-                              .filter((i) => i.OV > 0 && i.d)
-                              .sort((a, b) => b.OV - a.OV)
-                              .slice(0, 12)
-                              .map((e, i) => (
+                          Only one material currently has enough modeled ODT data
+                          for an odor-value bar. Showing a single oversized bar
+                          would imply precision the data does not support; use the
+                          interpretation panel and test that material carefully.
+                        </div>
+                      ) : formulaOdorValueChartModel.chartRows.length === 0 ? (
+                        <div
+                          style={{
+                            minHeight: 220,
+                            display: "grid",
+                            alignContent: "center",
+                            color: "#94A3B8",
+                            fontSize: 9,
+                            lineHeight: 1.6,
+                            background: "#071826",
+                            border: "1px solid #1E3A52",
+                            borderRadius: 8,
+                            padding: 12,
+                          }}
+                        >
+                          No material currently has enough compatible VP and ODT
+                          data for a useful odor-value distribution.
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={220}>
+                          <BarChart
+                            data={formulaOdorValueChartModel.chartRows}
+                            margin={{ top: 4, right: 4, left: 8, bottom: 65 }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fill: "#94A3B8", fontSize: 8 }}
+                              angle={-45}
+                              textAnchor="end"
+                              interval={0}
+                            />
+                            <YAxis
+                              tick={{ fill: "#94A3B8", fontSize: 8 }}
+                              tickFormatter={(v) => v.toFixed(1)}
+                              label={{
+                                value: "log10(OV+1)",
+                                angle: -90,
+                                position: "insideLeft",
+                                fill: "#64748B",
+                                fontSize: 8,
+                              }}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                background: "#0A1628",
+                                border: `1px solid ${BORDER}`,
+                                borderRadius: 8,
+                                fontSize: 11,
+                                color: "#CBD5E1",
+                              }}
+                              itemStyle={{ color: "#94A3B8" }}
+                              labelStyle={{ color: "#94A3B8" }}
+                              formatter={(value, _name, props) => [
+                                props?.payload?.rawOVLabel ||
+                                  formatDirectionalValue(value),
+                                `Directional OV · ${
+                                  props?.payload?.sourceUnit || "ODT source unknown"
+                                }`,
+                              ]}
+                            />
+                            <Bar dataKey="scaledOV" radius={[3, 3, 0, 0]}>
+                              {formulaOdorValueChartModel.chartRows.map((e, i) => (
                                 <Cell
                                   key={i}
                                   fill={
@@ -84220,9 +84881,10 @@ export default function App() {
                                   }
                                 />
                               ))}
-                          </Bar>
-                        </BarChart>
-                      </ResponsiveContainer>
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
                     </div>
                     <div
                       style={{
@@ -84436,6 +85098,12 @@ export default function App() {
                   const baseNames = formulaModelingItems
                     .filter((i) => i.note === "base")
                     .map((i) => i.name);
+                  const timelineInterpretationRows = buildTimelineInterpretationRows({
+                    openingNames: topNames,
+                    heartNames: midNames,
+                    drydownNames: baseNames,
+                    hasFallbackVp: activeIngs.some((i) => !i.hasRealVP),
+                  });
                   return (
                     <div style={{ background: "#060E1E", borderRadius: 12, padding: 16, border: `1px solid ${BORDER}` }}>
                       <p style={{ fontSize: 10, fontWeight: 700, color: "#64748B", margin: "0 0 12px", textTransform: "uppercase" }}>
@@ -84446,6 +85114,25 @@ export default function App() {
                           max: 5,
                           compact: true,
                         })}
+                      </div>
+                      <div
+                        data-testid="timeline-interpretation"
+                        style={{
+                          marginBottom: 10,
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "9px 10px",
+                          display: "grid",
+                          gap: 4,
+                          fontSize: 8.7,
+                          color: "#94A3B8",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {timelineInterpretationRows.map((line) => (
+                          <div key={line}>{line}</div>
+                        ))}
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                         {activeIngs.map((i) => (
@@ -84499,6 +85186,8 @@ export default function App() {
                     { label: "OV=10", offset: 1 },
                     { label: "OV=100", offset: 2 },
                   ];
+                  const odorMapInterpretationRows =
+                    buildOdorMapInterpretationRows(chem, selectedFormulaLabel);
                   const CustomDot = (props) => {
                     const { cx, cy, payload } = props;
                     return (
@@ -84521,6 +85210,25 @@ export default function App() {
                           max: 5,
                           compact: true,
                         })}
+                      </div>
+                      <div
+                        data-testid="odor-map-interpretation"
+                        style={{
+                          marginBottom: 10,
+                          background: "#071826",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "9px 10px",
+                          display: "grid",
+                          gap: 4,
+                          fontSize: 8.7,
+                          color: "#94A3B8",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {odorMapInterpretationRows.map((line) => (
+                          <div key={line}>{line}</div>
+                        ))}
                       </div>
                       <ResponsiveContainer width="100%" height={340}>
                         <ScatterChart margin={{ top: 10, right: 20, left: 10, bottom: 20 }}>

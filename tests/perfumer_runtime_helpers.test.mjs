@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import {
   buildFinishedProductIfraGuidance,
   buildIngredientTruthCompletenessReport,
+  auditFormulaIfraCoverage,
   compareMaterialCasSupportValues,
   computeActiveRestrictedPercent,
   formatMaterialCasSupportValue,
@@ -15,6 +16,7 @@ import {
   buildBenchStockDuplicateDraft,
   buildBenchStockEffectiveActivePercent,
   buildBenchStockRuntimeSummary,
+  computeDilutedFormulaLineGrams,
   buildAiCritiqueIssueTriageKey,
   buildAiCritiqueGroundTruth,
   buildAiCritiquePrompt,
@@ -179,6 +181,38 @@ test("non-FCF citrus IFRA restriction remains active", () => {
   });
   assert.equal(lemonGuidance.offenderRows.length, 1);
   assert.equal(lemonGuidance.offenderRows[0].name, "Lemon EO Italy");
+});
+
+test("formula IFRA coverage audit classifies matches, gaps, and accord rows conservatively", () => {
+  const audit = auditFormulaIfraCoverage(
+    [
+      { name: "Lemon EO Italy", g: 0.2 },
+      { name: "Bergamot Oil FCF, Côte d'Ivoire", g: 0.3 },
+      { name: "TEC", g: 1 },
+      { name: "Botanical Musk Accord", g: 1.3 },
+      { name: "No Such Material", g: 0.1 },
+    ],
+    {
+      db: {
+        "Botanical Musk Accord": { type: "ACCORD" },
+      },
+    }
+  );
+
+  assert.equal(audit.counts.exactIfraMatch, 1);
+  assert.equal(audit.counts.aliasIfraMatch, 0);
+  assert.equal(audit.counts.sourceUnavailable, 1);
+  assert.equal(audit.counts.intentionallyNotMatchedNoStandard, 1);
+  assert.equal(audit.counts.accordLevelOnly, 1);
+  assert.equal(audit.counts.missingAlias, 1);
+  assert.equal(
+    audit.rows.find((row) => row.name === "Botanical Musk Accord").label,
+    "Accord-level row; component IFRA not expanded"
+  );
+  assert.equal(
+    audit.rows.find((row) => row.name === "No Such Material").label,
+    "No IFRA record matched"
+  );
 });
 
 test("AI critique issue triage state is keyed by formula, lens, and issue", () => {
@@ -909,6 +943,97 @@ test("bench stock runtime summary computes stock, active, and carrier grams corr
   assert.ok(Math.abs(runtime.totals.totalBenchCarrierGrams - 2.1188) < 1e-9);
 });
 
+test("diluted formula line gram helper computes carrier for common working-stock strengths", () => {
+  assert.deepEqual(
+    computeDilutedFormulaLineGrams({ stockGrams: 0.8, dilutionPercent: 25 }),
+    {
+      stockGrams: 0.8,
+      activeGrams: 0.2,
+      carrierGrams: 0.6,
+      dilutionFactor: 0.25,
+      isDiluted: true,
+    }
+  );
+  assert.deepEqual(
+    computeDilutedFormulaLineGrams({ stockGrams: 0.25, dilutionFactor: 0.2 }),
+    {
+      stockGrams: 0.25,
+      activeGrams: 0.05,
+      carrierGrams: 0.2,
+      dilutionFactor: 0.2,
+      isDiluted: true,
+    }
+  );
+  assert.equal(
+    computeDilutedFormulaLineGrams({ stockGrams: 0.4, dilutionPercent: 10 })
+      .carrierGrams,
+    0.36
+  );
+  assert.equal(
+    computeDilutedFormulaLineGrams({ stockGrams: 0.5, dilutionFactor: 0.5 })
+      .carrierGrams,
+    0.25
+  );
+});
+
+test("diluted formula line gram helper keeps neat and malformed dilution rows safe", () => {
+  assert.deepEqual(
+    computeDilutedFormulaLineGrams({ stockGrams: 1.2, dilutionPercent: 100 }),
+    {
+      stockGrams: 1.2,
+      activeGrams: 1.2,
+      carrierGrams: 0,
+      dilutionFactor: null,
+      isDiluted: false,
+    }
+  );
+  assert.deepEqual(
+    computeDilutedFormulaLineGrams({ stockGrams: 1.2, dilutionPercent: "nope" }),
+    {
+      stockGrams: 1.2,
+      activeGrams: 1.2,
+      carrierGrams: 0,
+      dilutionFactor: null,
+      isDiluted: false,
+    }
+  );
+});
+
+test("runtime summary displays carrier grams for diluted catalog rows without changing totals", () => {
+  const runtime = buildBenchStockRuntimeSummary(
+    [
+      { name: "Material 25%", g: 0.8, note: "mid" },
+      { name: "Material 20%", g: 0.25, note: "mid" },
+      { name: "Material 10%", g: 0.4, note: "mid" },
+      { name: "Material 50%", g: 0.5, note: "base" },
+      { name: "Neat Material", g: 1, note: "base" },
+      { name: "Malformed Dilution", g: 0.3, note: "mid" },
+    ],
+    {
+      db: {
+        "Material 25%": { note: "mid", type: "SYNTH", dilutionPercent: 25 },
+        "Material 20%": { note: "mid", type: "SYNTH", dilutionFactor: 0.2 },
+        "Material 10%": { note: "mid", type: "SYNTH", dilutionFactor: 0.1 },
+        "Material 50%": { note: "base", type: "SYNTH", dilutionFactor: 0.5 },
+        "Neat Material": { note: "base", type: "SYNTH" },
+        "Malformed Dilution": {
+          note: "mid",
+          type: "SYNTH",
+          dilutionFactor: "bad",
+        },
+      },
+    }
+  );
+
+  assert.equal(runtime.rows[0].carrierGrams, 0.6);
+  assert.equal(runtime.rows[1].carrierGrams, 0.2);
+  assert.equal(runtime.rows[2].carrierGrams, 0.36);
+  assert.equal(runtime.rows[3].carrierGrams, 0.25);
+  assert.equal(runtime.rows[4].carrierGrams, 0);
+  assert.equal(runtime.rows[5].carrierGrams, 0);
+  assert.equal(runtime.totals.totalStockGrams, 3.25);
+});
+
 test("bench stock IFRA calculations respect active grams instead of raw stock grams", () => {
   assert.equal(
     computeActiveRestrictedPercent({
@@ -1098,6 +1223,131 @@ test("substitution suggestions avoid unrelated carriers and broad accord mismatc
   assert.equal(candidateNames.includes("Rum Absolute"), false);
   assert.equal(candidateNames.includes("Oud Supreme"), false);
   assert.equal(suggestions.advisoryMessage, null);
+});
+
+test("substitution suggestions suppress Botanical Musk Accord components already represented by recipe", () => {
+  const suggestions = buildMaterialSubstitutionSuggestions(
+    "Botanical Musk Accord",
+    {
+      formulaItems: [{ name: "Botanical Musk Accord", g: 1.3, note: "base" }],
+      db: {
+        "Botanical Musk Accord": {
+          note: "base",
+          type: "ACCORD",
+          scentClass: "Musk",
+          scentSummary: "Soft botanical macrocyclic musk accord.",
+          rep: "musk",
+          descriptorTags: ["Musk", "Botanical"],
+          xLogP: 5,
+          VP: 0.0002,
+        },
+        Habanolide: {
+          note: "base",
+          type: "SYNTH",
+          scentClass: "Musk",
+          scentSummary: "Soft macrocyclic musk.",
+          rep: "musk",
+          descriptorTags: ["Musk", "Botanical"],
+          xLogP: 5.3,
+          VP: 0.0001,
+        },
+        "Clean Musk Accord": {
+          note: "base",
+          type: "ACCORD",
+          scentClass: "Musk",
+          scentSummary: "Soft macrocyclic musk accord.",
+          rep: "musk",
+          descriptorTags: ["Musk"],
+          xLogP: 5.1,
+          VP: 0.00012,
+        },
+      },
+    }
+  );
+
+  const candidateNames = Object.values(suggestions.categories).flat().map(
+    (candidate) => candidate.name
+  );
+  assert.equal(candidateNames.includes("Habanolide"), false);
+  assert.ok(candidateNames.includes("Clean Musk Accord"));
+  assert.ok(suggestions.accordRepresentation.suppressedCandidateCount > 0);
+  assert.match(suggestions.advisoryMessage, /known accord component/i);
+});
+
+test("substitution suggestions suppress Driftwood Accord components already represented by recipe", () => {
+  const suggestions = buildMaterialSubstitutionSuggestions("Driftwood Accord", {
+    formulaItems: [{ name: "Driftwood Accord", g: 0.6, note: "base" }],
+    db: {
+      "Driftwood Accord": {
+        note: "base",
+        type: "ACCORD",
+        scentClass: "Woody",
+        scentSummary: "Transparent woody amber accord.",
+        rep: "woody amber",
+        descriptorTags: ["Woody", "Amber"],
+        xLogP: 4.8,
+        VP: 0.001,
+      },
+      "Iso E Super": {
+        note: "base",
+        type: "SYNTH",
+        scentClass: "Woody",
+        scentSummary: "Transparent woody amber diffusion.",
+        rep: "woody amber",
+        descriptorTags: ["Woody", "Amber"],
+        xLogP: 4.7,
+        VP: 0.0011,
+      },
+      "Dry Woods Accord": {
+        note: "base",
+        type: "ACCORD",
+        scentClass: "Woody",
+        scentSummary: "Transparent woody amber accord.",
+        rep: "woody amber",
+        descriptorTags: ["Woody", "Amber"],
+        xLogP: 4.9,
+        VP: 0.001,
+      },
+    },
+  });
+
+  const candidateNames = Object.values(suggestions.categories).flat().map(
+    (candidate) => candidate.name
+  );
+  assert.equal(candidateNames.includes("Iso E Super"), false);
+  assert.ok(candidateNames.includes("Dry Woods Accord"));
+  assert.ok(suggestions.accordRepresentation.suppressedCandidateCount > 0);
+});
+
+test("substitution suggestions keep unknown accords safe without recipe suppression", () => {
+  const suggestions = buildMaterialSubstitutionSuggestions("Unknown Accord", {
+    formulaItems: [{ name: "Unknown Accord", g: 0.4, note: "base" }],
+    db: {
+      "Unknown Accord": {
+        note: "base",
+        type: "ACCORD",
+        scentClass: "Woody",
+        scentSummary: "Transparent woody accord.",
+        rep: "woody",
+        descriptorTags: ["Woody"],
+        xLogP: 4,
+        VP: 0.001,
+      },
+      "Iso E Super": {
+        note: "base",
+        type: "SYNTH",
+        scentClass: "Woody",
+        scentSummary: "Transparent woody diffusion.",
+        rep: "woody",
+        descriptorTags: ["Woody"],
+        xLogP: 4.2,
+        VP: 0.001,
+      },
+    },
+  });
+
+  assert.equal(suggestions.accordRepresentation.suppressedCandidateCount, 0);
+  assert.equal(suggestions.accordRepresentation.accordRows.length, 0);
 });
 
 test("buildFounderTrustSummary marks well-supported baskets as supported", () => {

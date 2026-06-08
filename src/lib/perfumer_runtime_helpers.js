@@ -19,6 +19,10 @@ import {
   pushUniqueItem,
   sortFormulaIngredients,
 } from "./formula_runtime_helpers.js";
+import {
+  buildHeroFormulaAccordRepresentation,
+  getHeroFormulaAccordRepresentationForMaterial,
+} from "./hero_formula_material_support.js";
 
 export const SUPPLIER_BASKET_MODE_META = {
   cheapest: {
@@ -785,12 +789,101 @@ export function buildBenchStockDuplicateDraft(
   };
 }
 
-function inferParentEffectiveActivePercent(parentRecord = {}) {
+function inferParentEffectiveActivePercent(parentRecord = {}, item = {}) {
+  const itemDilutionPercent = normalizeLooseNumericInput(item?.dilutionPercent);
+  if (
+    itemDilutionPercent != null &&
+    itemDilutionPercent > 0 &&
+    itemDilutionPercent <= 100
+  ) {
+    return itemDilutionPercent;
+  }
+  const itemDilutionFactor = Number(item?.dilutionFactor);
+  if (
+    Number.isFinite(itemDilutionFactor) &&
+    itemDilutionFactor > 0 &&
+    itemDilutionFactor <= 1
+  ) {
+    return Number((itemDilutionFactor * 100).toFixed(6));
+  }
+  const recordDilutionPercent = normalizeLooseNumericInput(
+    parentRecord?.dilutionPercent
+  );
+  if (
+    recordDilutionPercent != null &&
+    recordDilutionPercent > 0 &&
+    recordDilutionPercent <= 100
+  ) {
+    return recordDilutionPercent;
+  }
   const dilutionFactor = Number(parentRecord?.dilutionFactor);
   if (Number.isFinite(dilutionFactor) && dilutionFactor > 0 && dilutionFactor <= 1) {
     return Number((dilutionFactor * 100).toFixed(6));
   }
   return 100;
+}
+
+export function computeDilutedFormulaLineGrams({
+  stockGrams,
+  activeGrams = null,
+  dilutionFactor = null,
+  dilutionPercent = null,
+  isCarrierMaterial = false,
+} = {}) {
+  const safeStockGrams = Math.max(0, Number(stockGrams) || 0);
+  if (isCarrierMaterial) {
+    return {
+      stockGrams: safeStockGrams,
+      activeGrams: 0,
+      carrierGrams: Number(safeStockGrams.toFixed(6)),
+      dilutionFactor: null,
+      isDiluted: false,
+    };
+  }
+
+  const hasDilutionFactor = dilutionFactor != null && dilutionFactor !== "";
+  const parsedFactor = hasDilutionFactor ? Number(dilutionFactor) : null;
+  const parsedPercent = normalizeLooseNumericInput(dilutionPercent);
+  const normalizedFactor =
+    Number.isFinite(parsedFactor) && parsedFactor > 0 && parsedFactor < 1
+      ? parsedFactor
+      : parsedPercent != null && parsedPercent > 0 && parsedPercent < 100
+      ? parsedPercent / 100
+      : null;
+
+  const hasActiveGrams = activeGrams != null && activeGrams !== "";
+  const parsedActiveGrams = hasActiveGrams ? Number(activeGrams) : null;
+  const resolvedActiveGrams =
+    normalizedFactor != null
+      ? safeStockGrams * normalizedFactor
+      : hasActiveGrams &&
+        Number.isFinite(parsedActiveGrams) &&
+        parsedActiveGrams >= 0 &&
+        parsedActiveGrams <= safeStockGrams
+      ? parsedActiveGrams
+      : safeStockGrams;
+  const isDiluted =
+    normalizedFactor != null ||
+    (hasActiveGrams &&
+      Number.isFinite(parsedActiveGrams) &&
+      parsedActiveGrams >= 0 &&
+      parsedActiveGrams < safeStockGrams);
+  const resolvedCarrierGrams = isDiluted
+    ? Math.max(0, safeStockGrams - resolvedActiveGrams)
+    : 0;
+
+  return {
+    stockGrams: safeStockGrams,
+    activeGrams: Number(resolvedActiveGrams.toFixed(6)),
+    carrierGrams: Number(resolvedCarrierGrams.toFixed(6)),
+    dilutionFactor:
+      normalizedFactor != null
+        ? Number(normalizedFactor.toFixed(8))
+        : safeStockGrams > 0 && isDiluted
+        ? Number((resolvedActiveGrams / safeStockGrams).toFixed(8))
+        : null,
+    isDiluted,
+  };
 }
 
 export function buildBenchStockRuntimeSummary(
@@ -814,7 +907,7 @@ export function buildBenchStockRuntimeSummary(
         normalizeLooseNumericInput(
           stock?.parentEffectiveActivePercent ??
             item?.parentEffectiveActivePercent
-        ) ?? inferParentEffectiveActivePercent(parentRecord);
+        ) ?? inferParentEffectiveActivePercent(parentRecord, item);
       const stockDilutionPercent =
         normalizeLooseNumericInput(
           stock?.dilutionPercent ?? item?.stockDilutionPercent
@@ -828,18 +921,16 @@ export function buildBenchStockRuntimeSummary(
       const stockGrams = Math.max(0, Number(item?.g) || 0);
       const isCarrierMaterial =
         parentRecord?.note === "carrier" || parentRecord?.type === "CARRIER";
-      const activeGrams = isCarrierMaterial
-        ? 0
-        : Number(((stockGrams * effectiveActivePercent) / 100).toFixed(6));
-      const carrierGrams = Number(
-        (
-          stock
-            ? Math.max(0, stockGrams - activeGrams)
-            : isCarrierMaterial
-            ? stockGrams
-            : 0
-        ).toFixed(6)
-      );
+      const gramsBreakdown = computeDilutedFormulaLineGrams({
+        stockGrams,
+        dilutionPercent: isCarrierMaterial ? null : effectiveActivePercent,
+        isCarrierMaterial,
+      });
+      const activeGrams = gramsBreakdown.activeGrams;
+      const carrierGrams =
+        stock || gramsBreakdown.isDiluted || isCarrierMaterial
+          ? gramsBreakdown.carrierGrams
+          : 0;
       const gramsOnHand =
         normalizeLooseNumericInput(stock?.gramsOnHand ?? item?.gramsOnHand) ?? null;
 
@@ -9695,6 +9786,7 @@ export function buildMaterialSubstitutionSuggestions(
     basketMode = "cheapest",
     ifraCategory = "cat4",
     amountG = 10,
+    formulaItems = [],
   } = {}
 ) {
   const originalRecord = db?.[materialName];
@@ -9729,6 +9821,14 @@ export function buildMaterialSubstitutionSuggestions(
     originalRecord,
     materialName
   );
+  const accordRepresentation =
+    buildHeroFormulaAccordRepresentation(formulaItems);
+  const representedThroughAccords =
+    getHeroFormulaAccordRepresentationForMaterial(
+      materialName,
+      accordRepresentation
+    );
+  let accordRepresentedCandidateSkipCount = 0;
   const originalMetadataStrength =
     [originalRecord.note, originalRecord.type, originalRecord.scentClass].filter(Boolean)
       .length +
@@ -9743,6 +9843,15 @@ export function buildMaterialSubstitutionSuggestions(
   const candidates = Object.entries(db)
     .map(([candidateName, candidateRecord]) => {
       if (!candidateRecord || candidateName === materialName) return null;
+      const candidateRepresentedThrough =
+        getHeroFormulaAccordRepresentationForMaterial(
+          candidateName,
+          accordRepresentation
+        );
+      if (candidateRepresentedThrough.length > 0) {
+        accordRepresentedCandidateSkipCount += 1;
+        return null;
+      }
       if (
         originalRecord.type !== "CARRIER" &&
         candidateRecord.type === "CARRIER"
@@ -10019,8 +10128,35 @@ export function buildMaterialSubstitutionSuggestions(
     originalIdentity?.canonicalMaterialKey ||
     null;
 
-  return {
+  const accordNames = Array.from(
+    new Set(representedThroughAccords.map((entry) => entry.accordName))
+  );
+  const representedThroughMessage = accordNames.length
+    ? `Already represented through ${formatHumanList(accordNames, 2)}.`
+    : null;
+  const suppressedAccordMessage =
+    accordRepresentedCandidateSkipCount > 0
+      ? `${accordRepresentedCandidateSkipCount} known accord component${
+          accordRepresentedCandidateSkipCount === 1 ? "" : "s"
+        } suppressed from suggestions because ${
+          accordNames.length
+            ? formatHumanList(accordNames, 2)
+            : "a known accord"
+        } already represents them.`
+      : null;
+  const advisoryMessages = [
     advisoryMessage,
+    representedThroughMessage,
+    suppressedAccordMessage,
+  ].filter(Boolean);
+
+  return {
+    advisoryMessage: advisoryMessages.length ? advisoryMessages.join(" ") : null,
+    accordRepresentation: {
+      accordRows: accordRepresentation.accordRows,
+      representedThrough: representedThroughAccords,
+      suppressedCandidateCount: accordRepresentedCandidateSkipCount,
+    },
     baseline: {
       materialName,
       amountG,
