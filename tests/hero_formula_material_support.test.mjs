@@ -519,6 +519,72 @@ test("Oceanol diluted stock inherits high-impact caveat metadata without changin
   assert.equal(oceanolStock.rep, "Oceanol");
 });
 
+test("high-impact trace caveats are present and inherited by active diluted stocks", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const supportRows = buildHeroFormulaRawDbSupportRows(rawDb);
+
+  const calone = rawDbRecordFromRow(rawDb["Calone 1951"]);
+  const caloneStock = rawDbRecordFromRow(supportRows["Calone 1951 20%"]);
+  assert.deepEqual(calone.descriptorTags, [
+    "Marine",
+    "Ozonic",
+    "High Impact Marine",
+    "Legacy ODT Caveat",
+  ]);
+  assert.deepEqual(caloneStock.descriptorTags, calone.descriptorTags);
+  assert.equal(caloneStock.dilutionFactor, 0.2);
+  assert.equal(caloneStock.VP, calone.VP);
+  assert.equal(caloneStock.ODT, calone.ODT);
+
+  const geosmin = rawDbRecordFromRow(rawDb.Geosmin);
+  const geosminStock = rawDbRecordFromRow(supportRows["Geosmin 1% TEC"]);
+  assert.deepEqual(geosmin.descriptorTags, [
+    "Earthy",
+    "High Impact Earthy",
+    "Legacy ODT Caveat",
+  ]);
+  assert.deepEqual(geosminStock.descriptorTags, geosmin.descriptorTags);
+  assert.equal(geosminStock.dilutionFactor, 0.01);
+  assert.equal(geosminStock.VP, geosmin.VP);
+  assert.equal(geosminStock.ODT, geosmin.ODT);
+
+  const seaweed = rawDbRecordFromRow(rawDb["Seaweed Absolute"]);
+  const seaweedStock = rawDbRecordFromRow(supportRows["Seaweed Absolute 10%"]);
+  assert.deepEqual(seaweed.descriptorTags, [
+    "Marine",
+    "Natural / Absolute",
+    "Mixture Proxy Caveat",
+  ]);
+  assert.deepEqual(seaweedStock.descriptorTags, seaweed.descriptorTags);
+  assert.equal(seaweedStock.dilutionFactor, 0.1);
+  assert.equal(seaweedStock.VP, seaweed.VP);
+  assert.equal(seaweedStock.ODT, seaweed.ODT);
+
+  assert.deepEqual(rawDbRecordFromRow(rawDb.Maritima).descriptorTags, [
+    "Marine",
+    "High Impact Marine",
+    "Low VP Caveat",
+  ]);
+  assert.deepEqual(rawDbRecordFromRow(rawDb["Aldehyde C-8"]).descriptorTags, [
+    "Aldehydic",
+    "High Impact Aldehydic",
+    "ODT Needed",
+  ]);
+});
+
+test("high-impact trace caveats do not invent new numeric ODT values", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+
+  assert.equal(rawDbRecordFromRow(rawDb.Oceanol).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb["Aldehyde C-8"]).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb["Calone 1951"]).ODT, 0.00001);
+  assert.equal(rawDbRecordFromRow(rawDb.Geosmin).ODT, 0.00001);
+  assert.equal(rawDbRecordFromRow(rawDb["Seaweed Absolute"]).ODT, 0.1);
+});
+
 test("chemistry engine keeps missing ODT from becoming fake odor-value certainty", () => {
   const source = fs.readFileSync("src/App.jsx", "utf8");
 

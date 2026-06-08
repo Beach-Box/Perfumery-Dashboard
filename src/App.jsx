@@ -897,7 +897,7 @@ const RAW_DB = {
     "The original marine odorant — extraordinarily powerful at ppb levels. Cold, metallic, melon-marine character that instantly evokes the sea. At correct dosage (0.1-0.5% of formula) it's transformative. At too high it becomes overpowering and synthetic.",
     null,
     1.02,
-    null, null, null, null, null, null, null
+    null, null, ["Marine", "Ozonic", "High Impact Marine", "Legacy ODT Caveat"], null, null, null, null
   ],
   "Aldehyde C-11 Undecylenic": [
     170.29,
@@ -1372,7 +1372,7 @@ const RAW_DB = {
     "The raw, feral smell of seaweed on a beach at low tide — iodine, brine, dark green marine algae character. More animalic and complex than synthetic marine materials. Adds authentic coastal roughness to marine accords.",
     null,
     1.0,
-    null, null, null, null, null, null, null
+    null, null, ["Marine", "Natural / Absolute", "Mixture Proxy Caveat"], null, null, null, null
   ],
   "Tobacco Absolute": [
     192.21,
@@ -9591,7 +9591,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, "iff_compendium_23c", null, null
+    null, null, ["Marine", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null
   ],
   "Strawberry Furanone": [
     null,
@@ -20566,7 +20566,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, "tgsc_epi_exp_25c", null, null
+    null, null, ["Aldehydic", "High Impact Aldehydic", "ODT Needed"], null, "tgsc_epi_exp_25c", null, null
   ],
   Osyrol: [
     null,
@@ -26041,7 +26041,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, "tgsc_est_25c", null, null
+    null, null, ["Earthy", "High Impact Earthy", "Legacy ODT Caveat"], null, "tgsc_est_25c", null, null
   ],
   "Clearwood®": [
     null,

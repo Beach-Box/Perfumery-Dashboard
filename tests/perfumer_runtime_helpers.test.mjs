@@ -250,6 +250,66 @@ test("material behavior signals do not imply odor-threshold certainty when ODT i
   assert.match(impactFacet.detail, /Odor-threshold data is limited/);
 });
 
+test("material behavior signals surface legacy ODT, missing ODT, and mixture caveats", () => {
+  const geosminSignals = buildMaterialBehaviorSignals("Geosmin", {
+    db: {
+      Geosmin: {
+        MW: 182.31,
+        VP: 0.001,
+        ODT: 0.00001,
+        xLogP: 3.3,
+        descriptorTags: ["Earthy", "High Impact Earthy", "Legacy ODT Caveat"],
+      },
+    },
+  });
+  assert.ok(
+    geosminSignals.notes.some((note) =>
+      note.includes("legacy or insufficiently sourced")
+    )
+  );
+
+  const aldehydeSignals = buildMaterialBehaviorSignals("Aldehyde C-8", {
+    db: {
+      "Aldehyde C-8": {
+        MW: 128.21,
+        VP: 1.18,
+        ODT: null,
+        descriptorTags: ["Aldehydic", "High Impact Aldehydic", "ODT Needed"],
+      },
+    },
+  });
+  assert.equal(
+    aldehydeSignals.facets.find((facet) => facet.key === "impact").rating,
+    "Unknown"
+  );
+  assert.ok(
+    aldehydeSignals.notes.some((note) =>
+      note.includes("qualitative decision support")
+    )
+  );
+  assert.ok(
+    aldehydeSignals.notes.some((note) =>
+      note.includes("ODT is still needed")
+    )
+  );
+
+  const seaweedSignals = buildMaterialBehaviorSignals("Seaweed Absolute", {
+    db: {
+      "Seaweed Absolute": {
+        VP: 0.02,
+        ODT: 0.1,
+        type: "ABS",
+        descriptorTags: ["Marine", "Natural / Absolute", "Mixture Proxy Caveat"],
+      },
+    },
+  });
+  assert.ok(
+    seaweedSignals.notes.some((note) =>
+      note.includes("proxy-level support")
+    )
+  );
+});
+
 test("ingredient truth completeness keeps explicit manual conflicts cautious", () => {
   const report = buildIngredientTruthCompletenessReport("QA Manual Identity Conflict", {
     record: {

@@ -8750,14 +8750,41 @@ function getMaterialDescriptorTags(record = {}) {
   return Array.from(new Set(fallback));
 }
 
-function hasLowVpHighImpactCaveat(record = {}) {
-  const tags = getMaterialDescriptorTags(record)
+function getMaterialDescriptorTagText(record = {}) {
+  return getMaterialDescriptorTags(record)
     .map((tag) => String(tag).toLowerCase())
     .join(" ");
+}
+
+function hasLowVpHighImpactCaveat(record = {}) {
+  const tags = getMaterialDescriptorTagText(record);
   return (
     tags.includes("low vp caveat") ||
     tags.includes("high impact marine") ||
     tags.includes("high impact ozonic")
+  );
+}
+
+function hasOdorThresholdNeededCaveat(record = {}) {
+  const tags = getMaterialDescriptorTagText(record);
+  return tags.includes("odt needed") || tags.includes("threshold needed");
+}
+
+function hasLegacyOdtCaveat(record = {}) {
+  return getMaterialDescriptorTagText(record).includes("legacy odt caveat");
+}
+
+function hasMixtureProxyCaveat(record = {}) {
+  return getMaterialDescriptorTagText(record).includes("mixture proxy caveat");
+}
+
+function hasHighImpactTraceCaveat(record = {}) {
+  const tags = getMaterialDescriptorTagText(record);
+  return (
+    tags.includes("high impact marine") ||
+    tags.includes("high impact ozonic") ||
+    tags.includes("high impact aldehydic") ||
+    tags.includes("high impact earthy")
   );
 }
 
@@ -9020,6 +9047,26 @@ export function buildMaterialBehaviorSignals(materialName, { db = {} } = {}) {
   if (hasLowVpHighImpactCaveat(record)) {
     notes.push(
       "Low vapor pressure does not automatically mean low perceived impact; use source-backed odor-threshold or potency data when available."
+    );
+  }
+  if (hasHighImpactTraceCaveat(record) && !Number.isFinite(odt)) {
+    notes.push(
+      "High-impact caveat tags are qualitative decision support until odor-threshold data is source-backed."
+    );
+  }
+  if (hasOdorThresholdNeededCaveat(record)) {
+    notes.push(
+      "ODT is still needed before the odor-value model can quantify this material's perceived impact."
+    );
+  }
+  if (hasLegacyOdtCaveat(record)) {
+    notes.push(
+      "Current ODT support is legacy or insufficiently sourced; treat modeled impact as directional."
+    );
+  }
+  if (hasMixtureProxyCaveat(record)) {
+    notes.push(
+      "Mixture or absolute behavior is proxy-level support, not molecule-exact chemistry."
     );
   }
 

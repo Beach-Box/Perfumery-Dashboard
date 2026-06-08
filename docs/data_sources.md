@@ -188,6 +188,14 @@ impact guidance is available. For example, Oceanol keeps the IFF-reported
 IFF's qualitative "Top High / Heart High / Base High" note-impact and
 performance guidance.
 
+Caveat descriptor tags are decision-support metadata, not numeric chemistry.
+Tags such as `Low VP Caveat`, `High Impact Marine`, `High Impact Aldehydic`,
+`High Impact Earthy`, `ODT Needed`, `Legacy ODT Caveat`, and
+`Mixture Proxy Caveat` should help the dashboard explain uncertainty without
+creating false precision. Missing ODT should remain missing in the odor-value
+model, legacy ODT values should be treated as directional until source-backed,
+and mixture / absolute proxy values should not be interpreted as molecule-exact.
+
 Do not add odor-threshold fields (`ODT` or `odorThreshold_ngL`) unless the source
 is explicit about the threshold value and units. Do not average conflicting
 thresholds without a documented convention. Density should be added only when a
