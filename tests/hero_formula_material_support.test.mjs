@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 import {
   HERO_FORMULA_MATERIAL_SUPPORT,
+  HERO_FORMULA_RAW_DB_FIELDS,
   buildHeroFormulaMaterialNormalizationEntries,
   buildHeroFormulaPricingSupportRows,
   buildHeroFormulaRawDbSupportRows,
@@ -15,38 +16,13 @@ import {
 } from "../src/lib/ifra_combined_package.js";
 
 function rawDbRow(overrides = {}) {
-  const fields = [
-    "MW",
-    "xLogP",
-    "TPSA",
-    "HBD",
-    "HBA",
-    "VP",
-    "ODT",
-    "n",
-    "note",
-    "type",
-    "ifra",
-    "supplier",
-    "char",
-    "rep",
-    "densityGmL",
-    "cas",
-    "inci",
-    "scentClass",
-    "scentSummary",
-    "scentDesc",
-    "ifraLimit",
-    "densityGmL2",
-    "dilutionFactor",
-    "isUVCB",
-    "descriptorTags",
-    "odorThreshold_ngL",
-    "vpConfidence",
-    "isIsomerMix",
-    "ifraLimits",
-  ];
-  return fields.map((field) => overrides[field] ?? null);
+  return HERO_FORMULA_RAW_DB_FIELDS.map((field) => overrides[field] ?? null);
+}
+
+function rawDbRecordFromRow(row = []) {
+  return Object.fromEntries(
+    HERO_FORMULA_RAW_DB_FIELDS.map((field, index) => [field, row[index]])
+  );
 }
 
 function extractAppArrayConstant(source, marker) {
@@ -78,6 +54,39 @@ function extractAppArrayConstant(source, marker) {
     }
   }
   throw new Error(`${marker} array end was not found`);
+}
+
+function extractAppObjectConstant(source, marker) {
+  const start = source.indexOf(marker);
+  assert.notEqual(start, -1, `${marker} should exist`);
+  const objectStart = source.indexOf("{", start);
+  let depth = 0;
+  let inString = false;
+  let quote = "";
+  let escaped = false;
+
+  for (let i = objectStart; i < source.length; i += 1) {
+    const ch = source[i];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === quote) inString = false;
+      continue;
+    }
+    if (ch === "\"" || ch === "'" || ch === "`") {
+      inString = true;
+      quote = ch;
+      continue;
+    }
+    if (ch === "{") depth += 1;
+    if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return Function(`return (${source.slice(objectStart, i + 1)});`)();
+      }
+    }
+  }
+  throw new Error(`${marker} object end was not found`);
 }
 
 test("hero formula diluted stocks build exact DB rows and stock-equivalent pricing", () => {
@@ -427,6 +436,62 @@ test("hero formula support creates source-backed PA support records without pric
     MATERIAL_NORMALIZATION["Pink Peppercorn Oil P&N"].reviewState,
     "source_backed_supplier_product"
   );
+});
+
+test("priority hero materials expose reviewed molecular fields", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const expectedRecords = {
+    Oceanol: {
+      MW: 182,
+      xLogP: 2.97,
+      VP: 0.000051,
+      densityGmL: 0,
+      vpConfidence: "iff_compendium_23c",
+    },
+    "Phenyl Ethyl Acetate": {
+      MW: 164.2,
+      xLogP: 2.3,
+      VP: 0.056,
+      densityGmL: 1.032,
+      vpConfidence: "tgsc_est_25c",
+    },
+    "Allyl Amyl Glycolate": {
+      MW: 186.25,
+      xLogP: 2.3,
+      VP: 0.04,
+      densityGmL: 0,
+      vpConfidence: "tgsc_est_25c",
+    },
+    "Cyclamen Aldehyde": {
+      MW: 190.28,
+      xLogP: 3.3,
+      VP: 0.009,
+      densityGmL: 0,
+      vpConfidence: "tgsc_est_25c",
+    },
+    "Aldehyde C-8": {
+      MW: 128.21,
+      xLogP: 2.7,
+      VP: 1.18,
+      densityGmL: 0,
+      vpConfidence: "tgsc_epi_exp_25c",
+    },
+  };
+
+  for (const [name, expected] of Object.entries(expectedRecords)) {
+    assert.equal(rawDb[name].length, HERO_FORMULA_RAW_DB_FIELDS.length);
+    const record = rawDbRecordFromRow(rawDb[name]);
+    for (const [field, value] of Object.entries(expected)) {
+      assert.equal(record[field], value, `${name} ${field}`);
+    }
+    assert.equal(record.ODT, null, `${name} ODT should remain unsourced`);
+    assert.equal(
+      record.odorThreshold_ngL,
+      null,
+      `${name} odor threshold should remain unsourced`
+    );
+  }
 });
 
 test("hero formula support covers all confirmed hero formula material gaps", () => {

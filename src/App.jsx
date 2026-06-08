@@ -8919,12 +8919,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   Oceanol: [
-    null,
-    4.72,
+    182,
+    2.97,
     null,
     0,
     0,
-    null,
+    0.000051,
     null,
     null,
     "mid",
@@ -8941,7 +8941,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "iff_compendium_23c", null, null
   ],
   Petalux: [
     null,
@@ -9294,12 +9294,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Phenyl Ethyl Acetate": [
-    null,
-    4.72,
+    164.2,
+    2.3,
     null,
     0,
     0,
-    null,
+    0.056,
     null,
     null,
     "mid",
@@ -9308,7 +9308,7 @@ const RAW_DB = {
     "Fraterworks",
     "Aromatic isolate by Fraterworks",
     null,
-    0,
+    1.032,
     null,
     "Phenyl Ethyl Acetate",
     "Aromatic",
@@ -9316,7 +9316,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_est_25c", null, null
   ],
   Dihydrolinalool: [
     null,
@@ -20544,12 +20544,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Aldehyde C-8": [
-    null,
-    4.13,
+    128.21,
+    2.7,
     null,
     0,
     0,
-    null,
+    1.18,
     null,
     null,
     "top",
@@ -20566,7 +20566,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_epi_exp_25c", null, null
   ],
   Osyrol: [
     null,
@@ -20719,12 +20719,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Allyl Amyl Glycolate": [
-    null,
-    0.944,
+    186.25,
+    2.3,
     null,
     0,
     0,
-    null,
+    0.04,
     null,
     null,
     "mid",
@@ -20741,7 +20741,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_est_25c", null, null
   ],
   "Jasmoneige™": [
     null,
@@ -22194,12 +22194,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Cyclamen Aldehyde": [
-    null,
-    0.944,
+    190.28,
+    3.3,
     null,
     0,
     0,
-    null,
+    0.009,
     null,
     null,
     "mid",
@@ -22216,7 +22216,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_est_25c", null, null
   ],
   "Compound Red®": [
     null,

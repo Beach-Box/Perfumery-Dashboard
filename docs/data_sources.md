@@ -145,6 +145,40 @@ IFRA/activity workflows:
   carry reviewed source URLs/facts, but still do not infer pricing rows or IFRA
   limits.
 
+### Reviewed Molecular Data
+
+Molecular/performance fields in `RAW_DB` should be source-backed rather than
+filled from memory or informal perfumery heuristics. For hero-formula materials,
+the first reviewed priority pass added explicit fields only where a source gave
+usable values:
+
+- `Oceanol`: IFF compendium MW, logP, and VP in mmHg at 23 C.
+- `Phenyl Ethyl Acetate`: PubChem MW/xLogP, TGSC estimated VP in mmHg at
+  25 C, and supplier/spec density at 25 C.
+- `Allyl Amyl Glycolate`: PubChem/TGSC MW and xLogP plus TGSC estimated VP in
+  mmHg at 25 C.
+- `Cyclamen Aldehyde`: PubChem/TGSC MW and xLogP plus TGSC estimated VP in
+  mmHg at 25 C.
+- `Aldehyde C-8`: PubChem MW/xLogP plus TGSC EPI experimental-database VP in
+  mmHg at 25 C.
+
+The live `VP` field is treated as mmHg. New VP values should include a
+`vpConfidence` tag that names the source family, temperature, and whether the
+value is estimated or experimental where the current schema can express it.
+Examples include `iff_compendium_23c`, `tgsc_est_25c`, and
+`tgsc_epi_exp_25c`.
+
+Do not add odor-threshold fields (`ODT` or `odorThreshold_ngL`) unless the source
+is explicit about the threshold value and units. Do not average conflicting
+thresholds without a documented convention. Density should be added only when a
+source provides a clear single value and temperature; source ranges remain
+review notes until the schema supports ranges.
+
+Accords, essential oils, absolutes, UVCBs, and trademark specialties remain
+caveated. Do not treat them as molecule-exact unless the source is explicit
+enough for that material. For black-box formula accords, preserve the current
+non-expanded treatment.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.
