@@ -118,6 +118,12 @@ IFRA/activity workflows:
 - Diluted stocks map to clear parent materials and carry active percentages,
   such as `Calone 1951 20%` resolving to `Calone 1951` with 20% active
   behavior.
+- Confirmed diluted stock rows may inherit parent molecular fields such as
+  `MW`, `VP`, `xLogP`, odor-threshold fields, density, and mixture flags for
+  performance modeling. These inherited values are parent-derived modeling
+  support, not new source values on the diluted stock itself; the stock row
+  still preserves its formula display name, carrier, active percentage, and
+  `dilutionFactor`.
 - Stock-equivalent pricing rows are derived from parent pricing by scaling
   package sizes by the dilution factor.
 - Formula-level accords such as `Botanical Musk Accord` and `Driftwood Accord`

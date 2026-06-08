@@ -57,10 +57,53 @@ function createRawDbRow(record = {}) {
   return HERO_FORMULA_RAW_DB_FIELDS.map((field) => record[field] ?? null);
 }
 
-function createDilutedStockRawDbRow(stock = {}) {
+function rawDbRowToRecord(row = null) {
+  if (!Array.isArray(row)) return null;
+  return Object.fromEntries(
+    HERO_FORMULA_RAW_DB_FIELDS.map((field, index) => [field, row[index]])
+  );
+}
+
+const PARENT_INHERITED_MOLECULAR_FIELDS = [
+  "MW",
+  "VP",
+  "xLogP",
+  "odorThreshold_ngL",
+  "ODT",
+  "densityGmL",
+  "vpConfidence",
+  "isUVCB",
+  "isIsomerMix",
+];
+
+function hasParentMolecularValue(field, value) {
+  if (value == null) return false;
+  if (field === "vpConfidence") {
+    return typeof value === "string" && value.trim() !== "";
+  }
+  if (field === "isUVCB" || field === "isIsomerMix") {
+    return typeof value === "boolean";
+  }
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return false;
+  if (field === "xLogP") return true;
+  return numericValue > 0;
+}
+
+function inheritParentMolecularFields(record = {}, parentRecord = null) {
+  if (!parentRecord) return;
+
+  for (const field of PARENT_INHERITED_MOLECULAR_FIELDS) {
+    if (hasParentMolecularValue(field, record[field])) continue;
+    if (!hasParentMolecularValue(field, parentRecord[field])) continue;
+    record[field] = cloneJsonValue(parentRecord[field]);
+  }
+}
+
+function createDilutedStockRawDbRow(stock = {}, parentRow = null) {
   const fraction = normalizePercentFraction(stock.activePercent);
   const carrierText = stock.carrierName ? ` in ${stock.carrierName}` : "";
-  return createRawDbRow({
+  const record = {
     HBD: 0,
     HBA: 0,
     note: stock.note || "base",
@@ -69,14 +112,16 @@ function createDilutedStockRawDbRow(stock = {}) {
     supplier: HERO_SUPPORT_SUPPLIER_NAME,
     char: `${stock.activePercent}% dilution of ${stock.parentName}${carrierText}.`,
     rep: stock.parentName,
-    densityGmL: 1,
     scentClass: "Diluted Stock",
     scentSummary: `${stock.activePercent}% ${stock.parentName} working stock`,
     scentDesc:
       `Hero formula support row for ${stock.name}. Chemistry and IFRA identity inherit from ${stock.parentName}; dilution factor preserves active-material behavior.`,
-    densityGmL2: 1,
     dilutionFactor: fraction,
-  });
+  };
+
+  inheritParentMolecularFields(record, rawDbRowToRecord(parentRow));
+
+  return createRawDbRow(record);
 }
 
 function createAccordRawDbRow(accord = {}) {
@@ -186,7 +231,10 @@ export function buildHeroFormulaRawDbSupportRows(rawDb = {}) {
 
   for (const stock of HERO_FORMULA_MATERIAL_SUPPORT.dilutedStocks || []) {
     if (!rawDb[stock.name]) {
-      supportRows[stock.name] = createDilutedStockRawDbRow(stock);
+      supportRows[stock.name] = createDilutedStockRawDbRow(
+        stock,
+        rawDb[stock.parentName]
+      );
     }
   }
 
@@ -263,10 +311,16 @@ function createCanonicalMaterialEntry(name, canonicalMaterialKey) {
 }
 
 function createDilutedStockNormalizationEntry(stock = {}) {
+  const isMixtureLikeParent = stock.type === "EO" || stock.type === "ABS";
   return {
     entryKind: "diluted_stock",
     canonicalMaterialKey: stock.canonicalMaterialKey,
     linkedDuplicateOfCatalogName: stock.parentName,
+    molecularSource: "parent_inherited",
+    molecularParentName: stock.parentName,
+    molecularInheritanceConfidence: isMixtureLikeParent
+      ? "parent_proxy_mixture"
+      : "parent_material",
     stock: {
       activeMaterialName: stock.parentName,
       activePercent: stock.activePercent,

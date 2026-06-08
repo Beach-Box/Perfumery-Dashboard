@@ -107,6 +107,81 @@ test("hero formula diluted stocks build exact DB rows and stock-equivalent prici
   ]);
 });
 
+test("hero formula diluted stocks inherit parent molecular fields without losing stock behavior", () => {
+  const rawRows = buildHeroFormulaRawDbSupportRows({
+    "Calone 1951": rawDbRow({
+      MW: 207.27,
+      xLogP: 2.7,
+      VP: 0.003,
+      ODT: 0.02,
+      note: "top",
+      type: "SYNTH",
+      densityGmL: 1.03,
+      odorThreshold_ngL: 0.02,
+      vpConfidence: "source_backed_parent",
+      isUVCB: false,
+      isIsomerMix: true,
+    }),
+  });
+
+  const stockRow = rawRows["Calone 1951 20%"];
+
+  assert.equal(stockRow[0], 207.27);
+  assert.equal(stockRow[1], 2.7);
+  assert.equal(stockRow[5], 0.003);
+  assert.equal(stockRow[6], 0.02);
+  assert.equal(stockRow[14], 1.03);
+  assert.equal(stockRow[22], 0.2);
+  assert.equal(stockRow[23], false);
+  assert.equal(stockRow[25], 0.02);
+  assert.equal(stockRow[26], "source_backed_parent");
+  assert.equal(stockRow[27], true);
+
+  assert.equal(stockRow[8], "mid");
+  assert.equal(stockRow[9], "SYNTH");
+  assert.equal(stockRow[11], "Hero Formula Support");
+  assert.equal(stockRow[13], "Calone 1951");
+  assert.equal(stockRow[17], "Diluted Stock");
+});
+
+test("hero formula diluted stocks inherit only fields that exist on partial parents", () => {
+  const rawRows = buildHeroFormulaRawDbSupportRows({
+    Oceanol: rawDbRow({
+      xLogP: 1.24,
+      note: "mid",
+      type: "SYNTH",
+    }),
+  });
+
+  const stockRow = rawRows["Oceanol 10%"];
+
+  assert.equal(stockRow[0], null);
+  assert.equal(stockRow[1], 1.24);
+  assert.equal(stockRow[5], null);
+  assert.equal(stockRow[6], null);
+  assert.equal(stockRow[22], 0.1);
+});
+
+test("hero formula diluted stock normalization documents parent-derived molecular support", () => {
+  assert.equal(
+    MATERIAL_NORMALIZATION["Calone 1951 20%"].molecularSource,
+    "parent_inherited"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Calone 1951 20%"].molecularParentName,
+    "Calone 1951"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Calone 1951 20%"].molecularInheritanceConfidence,
+    "parent_material"
+  );
+  assert.equal(
+    MATERIAL_NORMALIZATION["Seaweed Absolute 10%"]
+      .molecularInheritanceConfidence,
+    "parent_proxy_mixture"
+  );
+});
+
 test("hero formula support creates alias rows and black-box accord records", () => {
   const florolTargetRow = rawDbRow({
     note: "mid",
@@ -121,6 +196,10 @@ test("hero formula support creates alias rows and black-box accord records", () 
   assert.deepEqual(rawRows.Florol, florolTargetRow);
   assert.equal(rawRows["Botanical Musk Accord"][9], "ACCORD");
   assert.equal(rawRows["Botanical Musk Accord"][23], true);
+  assert.equal(rawRows["Botanical Musk Accord"][0], null);
+  assert.equal(rawRows["Botanical Musk Accord"][1], null);
+  assert.equal(rawRows["Botanical Musk Accord"][5], null);
+  assert.equal(rawRows["Botanical Musk Accord"][25], null);
 
   const pricingRows = buildHeroFormulaPricingSupportRows({});
   assert.equal(
@@ -257,10 +336,16 @@ test("hero formula support maps Ylang Ylang shorthand as a 10% complete-oil stoc
 test("hero formula support creates minimal own-material support records without pricing", () => {
   const rawRows = buildHeroFormulaRawDbSupportRows({});
 
+  assert.equal(rawRows.Algenone[0], null);
+  assert.equal(rawRows.Algenone[5], null);
+  assert.equal(rawRows.Algenone[25], null);
   assert.equal(rawRows.Algenone[8], "mid");
   assert.equal(rawRows.Algenone[11], "Hero Formula Support");
   assert.equal(rawRows.Algenone[17], "Support Record");
   assert.equal(rawRows.Algenone[20], null);
+  assert.equal(rawRows.Cyclogalbanate[0], null);
+  assert.equal(rawRows.Cyclogalbanate[5], null);
+  assert.equal(rawRows.Cyclogalbanate[25], null);
   assert.equal(rawRows.Cyclogalbanate[8], "mid");
   assert.equal(rawRows.Cyclogalbanate[11], "Hero Formula Support");
   assert.equal(rawRows.Cyclogalbanate[17], "Support Record");
@@ -290,6 +375,9 @@ test("hero formula support creates minimal own-material support records without 
 test("hero formula support creates source-backed PA support records without pricing", () => {
   const rawRows = buildHeroFormulaRawDbSupportRows({});
 
+  assert.equal(rawRows.Cypriol[0], null);
+  assert.equal(rawRows.Cypriol[5], null);
+  assert.equal(rawRows.Cypriol[25], null);
   assert.equal(rawRows.Cypriol[8], "base");
   assert.equal(rawRows.Cypriol[9], "EO");
   assert.equal(rawRows.Cypriol[11], "Perfumers Apprentice");
@@ -297,6 +385,9 @@ test("hero formula support creates source-backed PA support records without pric
   assert.equal(rawRows.Cypriol[16], "Cyperus Scariosus Root Oil");
   assert.equal(rawRows.Cypriol[17], "Woody");
 
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][0], null);
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][5], null);
+  assert.equal(rawRows["Pink Peppercorn Oil P&N"][25], null);
   assert.equal(rawRows["Pink Peppercorn Oil P&N"][8], "top");
   assert.equal(rawRows["Pink Peppercorn Oil P&N"][9], "EO");
   assert.equal(
