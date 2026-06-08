@@ -28,6 +28,9 @@ Observed fields include:
 
 - Identity/descriptive: `n`, `note`, `type`, `cas`, `inci`, `scentClass`, `scentSummary`, `scentDesc`, `descriptorTags`.
 - Chemistry/physical: `MW`, `xLogP`, `TPSA`, `HBD`, `HBA`, `VP`, `densityGmL`, `densityGmL2`, `odorThreshold_ngL`, `vpConfidence`, `isIsomerMix`.
+- Threshold provenance: `ODT` values that are reviewed/source-backed should
+  carry `odorThresholdSource` with source, unit, medium, method, conversion
+  where applicable, and confidence.
 - Compliance and usage: `ifra`, `ifraLimit`, `ifraLimits`, `dilutionFactor`, `isUVCB`.
 - Supplier/commerce: `supplier`, `char`, `rep`.
 
@@ -202,11 +205,31 @@ thresholds without a documented convention. Density should be added only when a
 source provides a clear single value and temperature; source ranges remain
 review notes until the schema supports ranges.
 
+The live `ODT` field is currently treated as an air / ppbv-style threshold for
+odor-value modeling unless a row explicitly documents otherwise through
+`odorThresholdSource`. Source-backed hero ODT additions should preserve the
+source value, source unit, modeled app value, modeled unit, medium, method, and
+confidence in that provenance object:
+
+- `Aldehyde C-8`: [EPA HERO record 1454083](https://hero.epa.gov/reference/1454083/)
+  for Cometto-Muniz and Abraham reports octanal at `0.17 ppb` in vapor/air
+  detection against carbon-filtered air. The app stores `ODT: 0.17` with
+  `unit: "ppbv air"` and `confidence: "reviewed_source_backed"`.
+- `Maritima`: [Google Patents `US20100130624A1`](https://patents.google.com/patent/US20100130624A1/en)
+  reports Maritima threshold value in air as `0.155 ppm` using a defined
+  sampling-bag sensory method with about 8 subjects. The app stores the
+  converted `ODT: 155` ppbv and records `0.155 ppm * 1000 = 155 ppbv` in
+  `odorThresholdSource`. Treat this as medium-confidence patent-source support,
+  not peer-reviewed threshold data.
+
 Existing legacy `ODT` values on target rows are not automatically upgraded to
 reviewed odor-threshold data. For example, the second hero molecular pass left
 the pre-existing `ODT` values on `Veramoss` and `Geosmin` in place but did not
 add `odorThreshold_ngL` because the reviewed sources did not provide an
 app-compatible threshold value with enough source, unit, and medium detail.
+`Calone 1951` and `Geosmin` remain caveated until the app can represent
+threshold unit and medium differences cleanly, such as `ng/L air` versus
+`ng/L water`.
 
 Accords, essential oils, absolutes, UVCBs, and trademark specialties remain
 caveated. Do not treat them as molecule-exact unless the source is explicit

@@ -477,6 +477,24 @@ test("priority hero materials expose reviewed molecular fields", () => {
       VP: 1.18,
       densityGmL: 0,
       vpConfidence: "tgsc_epi_exp_25c",
+      descriptorTags: ["Aldehydic", "High Impact Aldehydic"],
+    },
+  };
+  const expectedOdtByName = {
+    "Aldehyde C-8": {
+      ODT: 0.17,
+      odorThresholdSource: {
+        source: "EPA HERO 1454083 / Cometto-Muniz and Abraham 2010",
+        url: "https://hero.epa.gov/reference/1454083/",
+        sourceValue: 0.17,
+        sourceUnit: "ppb air",
+        value: 0.17,
+        unit: "ppbv air",
+        medium: "air/vapor",
+        method:
+          "3-alternative forced-choice vapor detection against carbon-filtered air.",
+        confidence: "reviewed_source_backed",
+      },
     },
   };
 
@@ -486,11 +504,20 @@ test("priority hero materials expose reviewed molecular fields", () => {
     for (const [field, value] of Object.entries(expected)) {
       assert.deepEqual(record[field], value, `${name} ${field}`);
     }
-    assert.equal(record.ODT, null, `${name} ODT should remain unsourced`);
+    assert.equal(
+      record.ODT,
+      expectedOdtByName[name]?.ODT ?? null,
+      `${name} ODT`
+    );
     assert.equal(
       record.odorThreshold_ngL,
       null,
       `${name} odor threshold should remain unsourced`
+    );
+    assert.deepEqual(
+      record.odorThresholdSource ?? null,
+      expectedOdtByName[name]?.odorThresholdSource ?? null,
+      `${name} odor threshold source`
     );
   }
 });
@@ -569,20 +596,60 @@ test("high-impact trace caveats are present and inherited by active diluted stoc
   assert.deepEqual(rawDbRecordFromRow(rawDb["Aldehyde C-8"]).descriptorTags, [
     "Aldehydic",
     "High Impact Aldehydic",
-    "ODT Needed",
   ]);
 });
 
-test("high-impact trace caveats do not invent new numeric ODT values", () => {
+test("source-backed ODT metadata is recorded for Aldehyde C-8 and Maritima", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+
+  const aldehydeC8 = rawDbRecordFromRow(rawDb["Aldehyde C-8"]);
+  assert.equal(aldehydeC8.ODT, 0.17);
+  assert.deepEqual(aldehydeC8.odorThresholdSource, {
+    source: "EPA HERO 1454083 / Cometto-Muniz and Abraham 2010",
+    url: "https://hero.epa.gov/reference/1454083/",
+    sourceValue: 0.17,
+    sourceUnit: "ppb air",
+    value: 0.17,
+    unit: "ppbv air",
+    medium: "air/vapor",
+    method:
+      "3-alternative forced-choice vapor detection against carbon-filtered air.",
+    confidence: "reviewed_source_backed",
+  });
+
+  const maritima = rawDbRecordFromRow(rawDb.Maritima);
+  assert.equal(maritima.ODT, 155);
+  assert.deepEqual(maritima.odorThresholdSource, {
+    source: "Google Patents US20100130624A1",
+    url: "https://patents.google.com/patent/US20100130624A1/en",
+    sourceValue: 0.155,
+    sourceUnit: "ppm air",
+    value: 155,
+    unit: "ppbv air",
+    medium: "air",
+    conversion: "0.155 ppm * 1000 = 155 ppbv",
+    method:
+      "Defined sampling-bag sensory threshold method with about 8 subjects at ambient temperature.",
+    confidence: "reviewed_patent_source_medium",
+  });
+});
+
+test("high-impact trace ODT updates stay scoped to source-backed targets", () => {
   const source = fs.readFileSync("src/App.jsx", "utf8");
   const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
 
   assert.equal(rawDbRecordFromRow(rawDb.Oceanol).ODT, null);
-  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, null);
-  assert.equal(rawDbRecordFromRow(rawDb["Aldehyde C-8"]).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, 155);
+  assert.equal(rawDbRecordFromRow(rawDb["Aldehyde C-8"]).ODT, 0.17);
   assert.equal(rawDbRecordFromRow(rawDb["Calone 1951"]).ODT, 0.00001);
   assert.equal(rawDbRecordFromRow(rawDb.Geosmin).ODT, 0.00001);
   assert.equal(rawDbRecordFromRow(rawDb["Seaweed Absolute"]).ODT, 0.1);
+  assert.equal(
+    rawDbRecordFromRow(rawDb["Calone 1951"]).odorThresholdSource ?? null,
+    null
+  );
+  assert.equal(rawDbRecordFromRow(rawDb.Geosmin).odorThresholdSource ?? null, null);
 });
 
 test("chemistry engine keeps missing ODT from becoming fake odor-value certainty", () => {
@@ -594,7 +661,7 @@ test("chemistry engine keeps missing ODT from becoming fake odor-value certainty
   assert.match(source, /odorValueIsModeled: Boolean\(vp && odt\)/);
 });
 
-test("second-tier hero materials expose reviewed molecular fields without new threshold claims", () => {
+test("second-tier hero materials expose reviewed molecular fields with scoped threshold claims", () => {
   const source = fs.readFileSync("src/App.jsx", "utf8");
   const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
   const expectedRecords = {
@@ -650,7 +717,7 @@ test("second-tier hero materials expose reviewed molecular fields without new th
 
   assert.equal(rawDbRecordFromRow(rawDb.Veramoss).ODT, 0.01);
   assert.equal(rawDbRecordFromRow(rawDb.Geosmin).ODT, 0.00001);
-  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, 155);
   assert.equal(rawDbRecordFromRow(rawDb["Ethyl Linalyl Acetate"]).ODT, null);
   assert.equal(rawDbRecordFromRow(rawDb["Florol®"]).ODT, null);
 });

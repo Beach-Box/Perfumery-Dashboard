@@ -32,6 +32,7 @@ export const HERO_FORMULA_RAW_DB_FIELDS = [
   "vpConfidence",
   "isIsomerMix",
   "ifraLimits",
+  "odorThresholdSource",
 ];
 
 const HERO_SUPPORT_SUPPLIER_NAME = "Hero Formula Support";
@@ -75,6 +76,7 @@ const PARENT_INHERITED_MOLECULAR_FIELDS = [
   "isUVCB",
   "isIsomerMix",
   "descriptorTags",
+  "odorThresholdSource",
 ];
 
 function hasParentMolecularValue(field, value) {
@@ -87,6 +89,9 @@ function hasParentMolecularValue(field, value) {
   }
   if (field === "descriptorTags") {
     return Array.isArray(value) && value.length > 0;
+  }
+  if (field === "odorThresholdSource") {
+    return value && typeof value === "object" && Object.keys(value).length > 0;
   }
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) return false;

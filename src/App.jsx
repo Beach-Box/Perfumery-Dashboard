@@ -8941,7 +8941,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, ["Marine", "Ozonic", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null
+    null, null, ["Marine", "Ozonic", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null, null
   ],
   Petalux: [
     null,
@@ -9316,7 +9316,7 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, null, null, "tgsc_est_25c", null, null
+    null, null, null, null, "tgsc_est_25c", null, null, null
   ],
   Dihydrolinalool: [
     null,
@@ -9366,7 +9366,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, "tgsc_est_25c", null, null
+    null, null, null, null, "tgsc_est_25c", null, null, null
   ],
   Aldemone: [
     null,
@@ -9575,7 +9575,7 @@ const RAW_DB = {
     0,
     0,
     0.000086,
-    null,
+    155,
     null,
     "mid",
     "SYNTH",
@@ -9591,7 +9591,19 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, ["Marine", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null
+    null, null, ["Marine", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null,
+    {
+      source: "Google Patents US20100130624A1",
+      url: "https://patents.google.com/patent/US20100130624A1/en",
+      sourceValue: 0.155,
+      sourceUnit: "ppm air",
+      value: 155,
+      unit: "ppbv air",
+      medium: "air",
+      conversion: "0.155 ppm * 1000 = 155 ppbv",
+      method: "Defined sampling-bag sensory threshold method with about 8 subjects at ambient temperature.",
+      confidence: "reviewed_patent_source_medium",
+    }
   ],
   "Strawberry Furanone": [
     null,
@@ -20550,7 +20562,7 @@ const RAW_DB = {
     0,
     0,
     1.18,
-    null,
+    0.17,
     null,
     "top",
     "ISOLATE",
@@ -20566,7 +20578,18 @@ const RAW_DB = {
     "Aromatic isolate by Fraterworks",
     null,
     null,
-    null, null, ["Aldehydic", "High Impact Aldehydic", "ODT Needed"], null, "tgsc_epi_exp_25c", null, null
+    null, null, ["Aldehydic", "High Impact Aldehydic"], null, "tgsc_epi_exp_25c", null, null,
+    {
+      source: "EPA HERO 1454083 / Cometto-Muniz and Abraham 2010",
+      url: "https://hero.epa.gov/reference/1454083/",
+      sourceValue: 0.17,
+      sourceUnit: "ppb air",
+      value: 0.17,
+      unit: "ppbv air",
+      medium: "air/vapor",
+      method: "3-alternative forced-choice vapor detection against carbon-filtered air.",
+      confidence: "reviewed_source_backed",
+    }
   ],
   Osyrol: [
     null,
@@ -20741,7 +20764,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, "tgsc_est_25c", null, null
+    null, null, null, null, "tgsc_est_25c", null, null, null
   ],
   "Jasmoneige™": [
     null,
@@ -22216,7 +22239,7 @@ const RAW_DB = {
     "Aromatic synth by Givaudan",
     null,
     null,
-    null, null, null, null, "tgsc_est_25c", null, null
+    null, null, null, null, "tgsc_est_25c", null, null, null
   ],
   "Compound Red®": [
     null,
@@ -24141,7 +24164,7 @@ const RAW_DB = {
     "Green synth by IFF",
     null,
     null,
-    null, null, null, null, "iff_compendium_23c", null, null
+    null, null, null, null, "iff_compendium_23c", null, null, null
   ],
   "Florol®": [
     173,
@@ -24166,7 +24189,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, "firmenich_spec_pa_to_mmhg_20c", null, null
+    null, null, null, null, "firmenich_spec_pa_to_mmhg_20c", null, null, null
   ],
   "Benzyl Isovalerate": [
     null,
@@ -26041,7 +26064,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, ["Earthy", "High Impact Earthy", "Legacy ODT Caveat"], null, "tgsc_est_25c", null, null
+    null, null, ["Earthy", "High Impact Earthy", "Legacy ODT Caveat"], null, "tgsc_est_25c", null, null, null
   ],
   "Clearwood®": [
     null,
@@ -31652,6 +31675,7 @@ const FIELDS = [
   "vpConfidence",
   "isIsomerMix",
   "ifraLimits",
+  "odorThresholdSource",
 ];
 const DB = Object.fromEntries(
   Object.entries(RAW_DB).map(([k, v]) => {
@@ -31705,6 +31729,7 @@ const CANONICAL_CHEMISTRY_FIELDS = [
   "odorThreshold_ngL",
   "vpConfidence",
   "isIsomerMix",
+  "odorThresholdSource",
 ];
 
 const CANONICAL_HELPER_SOURCE_FIELDS = [
