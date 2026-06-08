@@ -34,6 +34,12 @@ test("hero formula detail shows carrier grams, accord components, and interpreta
   await expect(page.getByText("Carrier g")).toBeVisible();
   await expect(page.getByText("0.2943").first()).toBeVisible();
   await expect(page.getByText("IFRA Matching Audit")).toBeVisible();
+  await expect(page.getByTestId("ifra-coverage-summary")).toContainText(
+    "Matched standards"
+  );
+  await expect(page.getByTestId("ifra-coverage-summary")).toContainText(
+    "not launch clearance"
+  );
 
   const recipeSummary = page.getByText("Known recipe components").first();
   await expect(recipeSummary).toBeVisible();

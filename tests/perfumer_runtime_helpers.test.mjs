@@ -171,6 +171,22 @@ test("Bergamot FCF is separated from regular expressed bergamot IFRA restriction
   assert.equal(fcfGuidance.warningRows.length, 0);
   assert.equal(fcfGuidance.missingRows.length, 1);
   assert.match(fcfGuidance.missingRows[0].missingReason, /regular expressed/i);
+
+  const lemonFcfIdentity = resolveIngredientIdentity("Lemon FCF");
+  const lemonFcfMaterial = getIfraMaterialRecord("Lemon FCF");
+  assert.equal(lemonFcfIdentity.resolvedIfraMaterial, "lemon fcf");
+  assert.equal(lemonFcfMaterial.limits.cat4, null);
+  assert.match(lemonFcfMaterial.missingLimitReason, /cold-pressed lemon/i);
+
+  const lemonFcfGuidance = buildFinishedProductIfraGuidance({
+    items: [{ name: "Lemon FCF", g: 1 }],
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+  assert.equal(lemonFcfGuidance.offenderRows.length, 0);
+  assert.equal(lemonFcfGuidance.warningRows.length, 0);
+  assert.equal(lemonFcfGuidance.missingRows.length, 1);
+  assert.match(lemonFcfGuidance.missingRows[0].missingReason, /cold-pressed lemon/i);
 });
 
 test("non-FCF citrus IFRA restriction remains active", () => {
@@ -204,18 +220,100 @@ test("formula IFRA coverage audit classifies matches, gaps, and accord rows cons
 
   assert.equal(audit.counts.exactIfraMatch, 1);
   assert.equal(audit.counts.aliasIfraMatch, 0);
-  assert.equal(audit.counts.sourceUnavailable, 1);
+  assert.equal(audit.counts.fcfSpecialCase, 1);
+  assert.equal(audit.counts.sourceUnavailable, 0);
   assert.equal(audit.counts.intentionallyNotMatchedNoStandard, 1);
+  assert.equal(audit.counts.noKnownRestriction, 1);
   assert.equal(audit.counts.accordLevelOnly, 1);
   assert.equal(audit.counts.missingAlias, 1);
+  assert.equal(audit.counts.knownRestrictionRows, 1);
   assert.equal(
     audit.rows.find((row) => row.name === "Botanical Musk Accord").label,
     "Accord-level row; component IFRA not expanded"
   );
   assert.equal(
     audit.rows.find((row) => row.name === "No Such Material").label,
-    "No IFRA record matched"
+    "No IFRA record matched in current structured data"
   );
+  assert.equal(
+    audit.rows.find((row) => row.name === "Bergamot Oil FCF, Côte d'Ivoire")
+      .label,
+    "Special handling: FCF/furocoumarin-free citrus"
+  );
+
+  const supplierAudit = auditFormulaIfraCoverage(
+    [{ name: "Seaweed Absolute 10%", g: 0.2 }],
+    { db: { "Seaweed Absolute 10%": { type: "ABS" } } }
+  );
+  assert.equal(supplierAudit.counts.supplierSdsNeeded, 1);
+  assert.equal(supplierAudit.rows[0].label, "Supplier IFRA/SDS needed");
+
+  const missingGuidance = buildFinishedProductIfraGuidance({
+    items: [{ name: "No Such Material", g: 1 }],
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+  assert.equal(missingGuidance.offenderRows.length, 0);
+  assert.equal(missingGuidance.warningRows.length, 0);
+  assert.equal(missingGuidance.missingRows.length, 1);
+});
+
+test("active hero IFRA aliases map to structured master standards without mutating formula rows", () => {
+  const cashmeran = getIfraMaterialRecord("Cashmeran");
+  assert.equal(
+    resolveIngredientIdentity("Cashmeran").resolvedIfraMaterial,
+    "cashmeran"
+  );
+  assert.equal(cashmeran.limits.cat4, 3.8);
+
+  const helional = getIfraMaterialRecord("Helional®");
+  assert.equal(
+    resolveIngredientIdentity("Helional®").resolvedIfraMaterial,
+    "helional"
+  );
+  assert.equal(helional.limits.cat4, 2.6);
+  assert.equal(
+    computeActiveRestrictedPercent({
+      formulaPercent: 4,
+      ingredientName: "Helional 25%",
+    }),
+    1
+  );
+
+  const cyclamen = getIfraMaterialRecord("Cyclamen Aldehyde");
+  assert.equal(
+    resolveIngredientIdentity("Cyclamen Aldehyde").resolvedIfraMaterial,
+    "cyclamen aldehyde"
+  );
+  assert.equal(cyclamen.limits.cat4, 0.95);
+
+  const ylang = getIfraMaterialRecord("Ylang Ylang Complete 10%");
+  assert.equal(
+    resolveIngredientIdentity("Ylang Ylang 10%").resolvedIfraMaterial,
+    "ylang ylang extracts"
+  );
+  assert.equal(ylang.limits.cat4, 0.73);
+  assert.ok(
+    Math.abs(
+      computeActiveRestrictedPercent({
+        formulaPercent: 3,
+        ingredientName: "Ylang Ylang Complete 10%",
+      }) - 0.3
+    ) < 0.000001
+  );
+
+  const formulaRows = [
+    { name: "Cashmeran", g: 0.12 },
+    { name: "Helional 25%", g: 0.31 },
+    { name: "Cyclamen Aldehyde", g: 0.13 },
+    { name: "Ylang Ylang Complete 10%", g: 0.112 },
+  ];
+  const before = JSON.stringify(formulaRows);
+  const audit = auditFormulaIfraCoverage(formulaRows);
+  assert.equal(JSON.stringify(formulaRows), before);
+  assert.equal(audit.counts.exactIfraMatch, 1);
+  assert.equal(audit.counts.aliasIfraMatch, 3);
+  assert.equal(audit.counts.knownRestrictionRows, 4);
 });
 
 test("formula timeline contribution model decays absolute contribution over time", () => {

@@ -67103,6 +67103,58 @@ export default function App() {
       }),
     [formulaUsageRows, ifraCategory, selectedFragranceType]
   );
+  const formulaIfraCoverageSummaryRows = useMemo(() => {
+    const counts = formulaIfraCoverageAudit?.counts || {};
+    const exactCount = counts.exactIfraMatch || 0;
+    const aliasCount = counts.aliasIfraMatch || 0;
+    const sourceUnavailableCount = counts.sourceUnavailable || 0;
+    const noKnownCount =
+      counts.noKnownRestriction ??
+      counts.intentionallyNotMatchedNoStandard ??
+      0;
+    const specialCaseCount = counts.fcfSpecialCase || 0;
+    const offenderCount =
+      formulaFinishedProductGuidance?.offenderRows?.length || 0;
+    const warningCount = formulaFinishedProductGuidance?.warningRows?.length || 0;
+    return [
+      {
+        label: "Matched standards",
+        value: exactCount + aliasCount,
+        detail: `${exactCount} exact, ${aliasCount} alias`,
+        color: "#34D399",
+      },
+      {
+        label: "Potential alias gaps",
+        value: counts.missingAlias || 0,
+        detail: "identity/CAS alias review needed",
+        color: "#FCD34D",
+      },
+      {
+        label: "Supplier/SDS needed",
+        value: counts.supplierSdsNeeded || 0,
+        detail: "naturals, UVCBs, or supplier-specific rows",
+        color: "#FBBF24",
+      },
+      {
+        label: "Accord-level limitations",
+        value: counts.accordLevelOnly || 0,
+        detail: "component IFRA not expanded",
+        color: "#7DD3FC",
+      },
+      {
+        label: "No current structured standard",
+        value: noKnownCount + sourceUnavailableCount + specialCaseCount,
+        detail: `${sourceUnavailableCount} source unavailable, ${specialCaseCount} FCF special`,
+        color: "#A78BFA",
+      },
+      {
+        label: "Known restrictions/offenders",
+        value: counts.knownRestrictionRows || 0,
+        detail: `${offenderCount} offender, ${warningCount} warning`,
+        color: offenderCount ? "#F87171" : warningCount ? "#FCD34D" : "#94A3B8",
+      },
+    ];
+  }, [formulaFinishedProductGuidance, formulaIfraCoverageAudit]);
   const buildFinishedProductGuidance = useMemo(
     () =>
       buildFinishedProductIfraGuidance({
@@ -83469,6 +83521,7 @@ export default function App() {
                           ))}
                         </div>
                         <div
+                          data-testid="ifra-coverage-summary"
                           style={{
                             background: "#071826",
                             border: "1px solid #1E3A52",
@@ -83493,45 +83546,39 @@ export default function App() {
                             style={{
                               display: "grid",
                               gridTemplateColumns:
-                                "repeat(auto-fit,minmax(120px,1fr))",
+                                "repeat(auto-fit,minmax(150px,1fr))",
                               gap: 6,
                               fontSize: 8.5,
                               color: "#94A3B8",
                               lineHeight: 1.4,
                             }}
                           >
-                            {[
-                              [
-                                "Exact IFRA match",
-                                formulaIfraCoverageAudit.counts.exactIfraMatch,
-                              ],
-                              [
-                                "Alias IFRA match",
-                                formulaIfraCoverageAudit.counts.aliasIfraMatch,
-                              ],
-                              [
-                                "No standard/current data",
-                                formulaIfraCoverageAudit.counts
-                                  .intentionallyNotMatchedNoStandard,
-                              ],
-                              [
-                                "Missing alias",
-                                formulaIfraCoverageAudit.counts.missingAlias,
-                              ],
-                              [
-                                "Accord-level only",
-                                formulaIfraCoverageAudit.counts.accordLevelOnly,
-                              ],
-                              [
-                                "Source data missing",
-                                formulaIfraCoverageAudit.counts.sourceUnavailable,
-                              ],
-                            ].map(([label, value]) => (
-                              <div key={label}>
-                                <span style={{ color: "#CBD5E1", fontWeight: 800 }}>
-                                  {value}
-                                </span>{" "}
-                                {label}
+                            {formulaIfraCoverageSummaryRows.map((row) => (
+                              <div key={row.label}>
+                                <div>
+                                  <span
+                                    style={{
+                                      color: row.color,
+                                      fontWeight: 800,
+                                    }}
+                                  >
+                                    {row.value}
+                                  </span>{" "}
+                                  <span
+                                    style={{ color: "#CBD5E1", fontWeight: 800 }}
+                                  >
+                                    {row.label}
+                                  </span>
+                                </div>
+                                <div
+                                  style={{
+                                    marginTop: 2,
+                                    color: "#64748B",
+                                    fontSize: 7.8,
+                                  }}
+                                >
+                                  {row.detail}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -83543,9 +83590,10 @@ export default function App() {
                               lineHeight: 1.45,
                             }}
                           >
-                            Current structured IFRA data is partial; unmatched rows
-                            are not shown as violations, and accord component IFRA is
-                            not expanded in this view.{" "}
+                            Decision guidance only; this is not launch clearance.
+                            No IFRA record matched in current structured data is a
+                            coverage gap, not a safe finding. Accord component IFRA
+                            is not expanded in this view.{" "}
                             {formulaAccordRepresentation.accordRows.length} known
                             recipe accord row
                             {formulaAccordRepresentation.accordRows.length === 1
@@ -83792,11 +83840,21 @@ export default function App() {
                                         color:
                                           ifraAuditRow.category === "missingAlias" ||
                                           ifraAuditRow.category ===
-                                            "sourceUnavailable"
+                                            "sourceUnavailable" ||
+                                          ifraAuditRow.category ===
+                                            "supplierSdsNeeded"
                                             ? "#FCD34D"
+                                            : ifraAuditRow.category ===
+                                              "fcfSpecialCase"
+                                            ? "#7DD3FC"
                                             : ifraAuditRow.category ===
                                               "accordLevelOnly"
                                             ? "#7DD3FC"
+                                            : ifraAuditRow.category ===
+                                                "exactIfraMatch" ||
+                                              ifraAuditRow.category ===
+                                                "aliasIfraMatch"
+                                            ? "#86EFAC"
                                             : "#94A3B8",
                                         lineHeight: 1.25,
                                       }}

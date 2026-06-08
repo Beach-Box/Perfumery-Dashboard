@@ -309,6 +309,39 @@ const IFRA_SUPPLEMENTAL_MATERIALS = {
       "Cat 4 limit was promoted from the repo IFRA seed in beach-box-perfumery/apply_ifra_v2.py.",
     ],
   },
+  "lemon fcf": {
+    canonicalName: "Lemon FCF",
+    cas: ["84929-31-7"],
+    synonyms: [
+      "lemon fcf",
+      "lemon eo fcf",
+      "lemon oil fcf",
+      "furocoumarin-free lemon",
+      "lemon furocoumarin free",
+    ],
+    recommendationType: null,
+    status: "active",
+    publicationYear: null,
+    amendment: null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: {
+      cat4: null,
+    },
+    limitUnit: "%",
+    source: {
+      document: "Beach Box repo IFRA seed",
+      pages: [10],
+    },
+    missingLimitReason:
+      "FCF / furocoumarin-free support - regular cold-pressed lemon phototoxic limit not applied. Verify supplier IFRA/SDS for final compliance.",
+    notes: [
+      "Explicit FCF / furocoumarin-free lemon support row.",
+      "No source-backed replacement Cat 4 limit has been promoted here; keep supplier IFRA/SDS verification as the final compliance step.",
+    ],
+  },
   "jasmine sambac absolute": {
     canonicalName: "Jasmine Sambac Absolute",
     cas: ["91771-65-6"],
@@ -1742,6 +1775,8 @@ const IFRA_MASTER_DATASET_MATERIALS = Object.fromEntries(
 );
 
 const IFRA_MASTER_DATASET_ALIAS_MAP = {
+  cashmeran: "6,7-dihydro-1,1,2,3,3-pentamethyl-4(5h)-indanone (dpmi)",
+  helional: "alpha-methyl-1,3-benzodioxole-5-propionaldehyde (mmdhca)",
   "hexyl cinnamic aldehyde": "alpha-hexyl cinnamic aldehyde",
   "oakmoss absolute": "oakmoss extracts",
   "jasmine sambac absolute": "jasmine absolute (sambac)",
@@ -1864,6 +1899,30 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedPage: 3.0,
     reviewNote:
       "FCF / furocoumarin-free support — regular expressed bergamot phototoxic limit is not applied. Verify supplier IFRA/SDS for final compliance.",
+  },
+  "Lemon FCF": {
+    canonicalAppName: "Lemon FCF",
+    normalizedName: "Lemon FCF",
+    matchStrategy: "manual_fcf_identity_split",
+    resolvedIfraMaterial: "lemon fcf",
+    materialClass: "not_yet_resolved",
+    aliases: [
+      "Lemon FCF",
+      "Lemon EO FCF",
+      "Lemon Oil FCF",
+      "Furocoumarin-Free Lemon",
+    ],
+    stock: null,
+    dbNoteRole: "top",
+    dbMaterialType: "EO",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Lemon FCF helper identity keeps furocoumarin-free lemon separate from the regular cold-pressed lemon phototoxic restriction.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote:
+      "FCF / furocoumarin-free support - regular cold-pressed lemon phototoxic limit is not applied. Verify supplier IFRA/SDS for final compliance.",
   },
   "Bergamot expressed": {
     canonicalAppName: "Bergamot expressed",
@@ -2050,6 +2109,138 @@ export const INGREDIENT_IDENTITY_MAP = {
     pdfMatchedAlias: "Lemon oil",
     pdfMatchedPage: 10.0,
     reviewNote: "Has likely PDF match \u2014 verify exact standard and Cat 4",
+  },
+  Cashmeran: {
+    canonicalAppName: "Cashmeran",
+    normalizedName: "Cashmeran",
+    matchStrategy: "master_standard_commercial_name_alias",
+    resolvedIfraMaterial: "cashmeran",
+    materialClass: "not_yet_resolved",
+    aliases: ["Cashmeran", "Cashmeran®"],
+    stock: null,
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Commercial-name alias for the extracted IFRA master standard 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI).",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Cashmeran (commercial name)",
+    pdfMatchedPage: 98.0,
+    reviewNote:
+      "Mapped through a commercial-name synonym already present in the structured IFRA master dataset.",
+  },
+  Helional: {
+    canonicalAppName: "Helional",
+    normalizedName: "Helional",
+    matchStrategy: "master_standard_commercial_name_alias",
+    resolvedIfraMaterial: "helional",
+    materialClass: "not_yet_resolved",
+    aliases: ["Helional", "Helional®"],
+    stock: null,
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Commercial-name alias for the extracted IFRA master standard alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA).",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Helional (commercial name)",
+    pdfMatchedPage: 191.0,
+    reviewNote:
+      "Mapped through a commercial-name synonym already present in the structured IFRA master dataset.",
+  },
+  "Helional 25%": {
+    canonicalAppName: "Helional 25%",
+    normalizedName: "Helional",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "helional",
+    materialClass: "diluted_stock",
+    aliases: ["Helional 25%", "Helional 25"],
+    stock: {
+      activeMaterialName: "Helional",
+      activePercent: 25,
+      carrierName: null,
+    },
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "25% Helional stock mapped to the structured IFRA master standard for Helional/MMDHCA; finished-product guidance uses the active fraction.",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Helional (commercial name)",
+    pdfMatchedPage: 191.0,
+    reviewNote:
+      "Diluted stock alias mapped through the Helional commercial-name synonym already present in the structured IFRA master dataset.",
+  },
+  "Cyclamen Aldehyde": {
+    canonicalAppName: "Cyclamen Aldehyde",
+    normalizedName: "Cyclamen Aldehyde",
+    matchStrategy: "master_standard_name_alias",
+    resolvedIfraMaterial: "cyclamen aldehyde",
+    materialClass: "not_yet_resolved",
+    aliases: ["Cyclamen Aldehyde"],
+    stock: null,
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Structured IFRA master standard match for Cyclamen aldehyde.",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Cyclamen aldehyde",
+    pdfMatchedPage: 89.0,
+    reviewNote:
+      "Mapped to the exact Cyclamen aldehyde standard already present in the structured IFRA master dataset.",
+  },
+  "Ylang Ylang Complete": {
+    canonicalAppName: "Ylang Ylang Complete",
+    normalizedName: "Ylang Ylang Complete",
+    matchStrategy: "master_standard_natural_extract_alias",
+    resolvedIfraMaterial: "ylang ylang extracts",
+    materialClass: "not_yet_resolved",
+    aliases: [
+      "Ylang Ylang Complete",
+      "Ylang-Ylang Complete",
+      "Ylang-Ylang Complete Oil",
+      "Ylang Ylang Oil Complete",
+    ],
+    stock: null,
+    dbNoteRole: "mid",
+    dbMaterialType: "EO",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Ylang ylang complete oil mapped to the structured IFRA master standard for ylang ylang extracts; supplier IFRA/SDS remains the final check for the exact UVCB product.",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Ylang ylang oil",
+    pdfMatchedPage: 269.0,
+    reviewNote:
+      "Mapped through ylang ylang oil/extract synonyms already present in the structured IFRA master dataset.",
+  },
+  "Ylang Ylang Complete 10%": {
+    canonicalAppName: "Ylang Ylang Complete 10%",
+    normalizedName: "Ylang Ylang Complete",
+    matchStrategy: "stock_name_parse",
+    resolvedIfraMaterial: "ylang ylang extracts",
+    materialClass: "diluted_stock",
+    aliases: [
+      "Ylang Ylang Complete 10%",
+      "Ylang Ylang 10%",
+      "Ylang-Ylang Complete 10%",
+      "Ylang-Ylang Complete Oil 10%",
+    ],
+    stock: {
+      activeMaterialName: "Ylang Ylang Complete",
+      activePercent: 10,
+      carrierName: null,
+    },
+    dbNoteRole: "mid",
+    dbMaterialType: "EO",
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "10% ylang ylang complete stock mapped to the structured IFRA master standard for ylang ylang extracts; finished-product guidance uses the active fraction.",
+    pdfMatchStatus: "full_text_match",
+    pdfMatchedAlias: "Ylang ylang oil",
+    pdfMatchedPage: 269.0,
+    reviewNote:
+      "Diluted stock alias mapped through ylang ylang oil/extract synonyms already present in the structured IFRA master dataset.",
   },
   "Balsam Peru EO": {
     canonicalAppName: "Balsam Peru EO",
@@ -3542,14 +3733,73 @@ function getIfraAuditMatchKind(name, material = {}) {
   return "alias";
 }
 
+const SUPPLIER_IFRA_SDS_MATERIAL_TYPES = new Set([
+  "ABS",
+  "CO2",
+  "EO",
+  "EXTRACT",
+  "NAT",
+  "NATURAL",
+  "OIL",
+  "RESINOID",
+  "TINCTURE",
+]);
+
+const SUPPLIER_IFRA_SDS_NAME_PATTERNS = [
+  /\babsolute\b/,
+  /\beo\b/,
+  /\boil\b/,
+  /\bco2\b/,
+  /\bextract\b/,
+  /\bresinoid\b/,
+  /\btincture\b/,
+];
+
+function hasFcfSignal({ name, material, identity } = {}) {
+  const values = [
+    name,
+    material?.canonicalName,
+    material?.missingLimitReason,
+    identity?.matchStrategy,
+    identity?.reviewNote,
+    ...(material?.synonyms || []),
+    ...(identity?.aliases || []),
+  ];
+  return values.some((value) => {
+    const normalized = normalizeText(value);
+    return (
+      normalized.includes("fcf") ||
+      normalized.includes("furocoumarin-free") ||
+      normalized.includes("furocoumarin free")
+    );
+  });
+}
+
+function needsSupplierIfraSds({ name, record, material, identity } = {}) {
+  if (hasFcfSignal({ name, material, identity })) return false;
+  const materialType = String(
+    record?.type || identity?.dbMaterialType || ""
+  ).toUpperCase();
+  if (SUPPLIER_IFRA_SDS_MATERIAL_TYPES.has(materialType)) return true;
+  if (record?.isUVCB || identity?.isUVCB || material?.isUVCB) return true;
+  const normalizedName = normalizeText(name);
+  return SUPPLIER_IFRA_SDS_NAME_PATTERNS.some((pattern) =>
+    pattern.test(normalizedName)
+  );
+}
+
 export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
   const counts = {
     exactIfraMatch: 0,
     aliasIfraMatch: 0,
     intentionallyNotMatchedNoStandard: 0,
+    noKnownRestriction: 0,
     missingAlias: 0,
     accordLevelOnly: 0,
     sourceUnavailable: 0,
+    supplierSdsNeeded: 0,
+    fcfSpecialCase: 0,
+    knownRestrictionRows: 0,
   };
 
   const rows = (Array.isArray(items) ? items : []).map((item) => {
@@ -3575,10 +3825,11 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
       const matchKind = getIfraAuditMatchKind(name, material);
       if (matchKind === "exact") counts.exactIfraMatch += 1;
       else counts.aliasIfraMatch += 1;
+      counts.knownRestrictionRows += 1;
       return {
         name,
         category: matchKind === "exact" ? "exactIfraMatch" : "aliasIfraMatch",
-        label: matchKind === "exact" ? "Exact IFRA match" : "Alias matched",
+        label: matchKind === "exact" ? "Exact matched" : "Alias matched",
         matchedMaterial: material.canonicalName,
         resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
         limitSummary: material.limits || {},
@@ -3589,22 +3840,66 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
       state === "functional_solvent" ||
       material?.status === "not_found_in_uploaded_pdf"
     ) {
+      if (needsSupplierIfraSds({ name, record, material, identity })) {
+        counts.supplierSdsNeeded += 1;
+        return {
+          name,
+          category: "supplierSdsNeeded",
+          label: "Supplier IFRA/SDS needed",
+          matchedMaterial: material?.canonicalName || identity?.canonicalAppName || null,
+          resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+        };
+      }
       counts.intentionallyNotMatchedNoStandard += 1;
+      counts.noKnownRestriction += 1;
       return {
         name,
         category: "intentionallyNotMatchedNoStandard",
-        label: "No known restriction in current data",
+        label: "No known restriction in current structured data",
         matchedMaterial: material?.canonicalName || identity?.canonicalAppName || null,
         resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
       };
     }
 
     if (material && material.status === "active" && !hasDefinedIfraLimit(material)) {
+      if (hasFcfSignal({ name, material, identity })) {
+        counts.fcfSpecialCase += 1;
+        return {
+          name,
+          category: "fcfSpecialCase",
+          label: "Special handling: FCF/furocoumarin-free citrus",
+          matchedMaterial: material.canonicalName,
+          resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+          missingLimitReason: material.missingLimitReason || null,
+        };
+      }
+      if (needsSupplierIfraSds({ name, record, material, identity })) {
+        counts.supplierSdsNeeded += 1;
+        return {
+          name,
+          category: "supplierSdsNeeded",
+          label: "Supplier IFRA/SDS needed",
+          matchedMaterial: material.canonicalName,
+          resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+          missingLimitReason: material.missingLimitReason || null,
+        };
+      }
+      if (!material.missingLimitReason) {
+        counts.intentionallyNotMatchedNoStandard += 1;
+        counts.noKnownRestriction += 1;
+        return {
+          name,
+          category: "intentionallyNotMatchedNoStandard",
+          label: "No known restriction in current structured data",
+          matchedMaterial: material.canonicalName,
+          resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
+        };
+      }
       counts.sourceUnavailable += 1;
       return {
         name,
         category: "sourceUnavailable",
-        label: material.missingLimitReason ? "Source data missing" : "No known restriction in current data",
+        label: "Source unavailable in current structured IFRA data",
         matchedMaterial: material.canonicalName,
         resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
         missingLimitReason: material.missingLimitReason || null,
@@ -3612,13 +3907,34 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
     }
 
     if (identity && !material) {
+      if (needsSupplierIfraSds({ name, record, material, identity })) {
+        counts.supplierSdsNeeded += 1;
+        return {
+          name,
+          category: "supplierSdsNeeded",
+          label: "Supplier IFRA/SDS needed",
+          matchedMaterial: null,
+          resolvedIfraMaterial: identity.resolvedIfraMaterial || null,
+        };
+      }
       counts.sourceUnavailable += 1;
       return {
         name,
         category: "sourceUnavailable",
-        label: "Source data missing",
+        label: "Source unavailable in current structured IFRA data",
         matchedMaterial: null,
         resolvedIfraMaterial: identity.resolvedIfraMaterial || null,
+      };
+    }
+
+    if (needsSupplierIfraSds({ name, record, material, identity })) {
+      counts.supplierSdsNeeded += 1;
+      return {
+        name,
+        category: "supplierSdsNeeded",
+        label: "Supplier IFRA/SDS needed",
+        matchedMaterial: null,
+        resolvedIfraMaterial: null,
       };
     }
 
@@ -3626,7 +3942,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
     return {
       name,
       category: "missingAlias",
-      label: "No IFRA record matched",
+      label: "No IFRA record matched in current structured data",
       matchedMaterial: null,
       resolvedIfraMaterial: null,
     };
