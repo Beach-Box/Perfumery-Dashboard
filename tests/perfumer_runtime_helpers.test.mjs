@@ -16,7 +16,11 @@ import {
   buildBenchStockEffectiveActivePercent,
   buildBenchStockRuntimeSummary,
   buildAiCritiqueIssueTriageKey,
+  buildAiCritiqueGroundTruth,
+  buildAiCritiquePrompt,
+  buildAiCritiqueTruthSignature,
   buildCapitalConstrainedLaunchRecommendation,
+  buildFormulaCritiqueReport,
   buildMaterialSubstitutionSuggestions,
   buildVaporPressureDisplay,
   buildFraterworksSupplierAdapterResult,
@@ -88,6 +92,41 @@ test("isCritiqueResultCurrent requires matching formula and critique lens metada
       lens: "cost",
     }),
     true
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: {
+        formulaKey: "seed-hero-damp-shoreline-v2",
+        lens: "cost",
+        truthSignature: "truth-a",
+      },
+      formulaKey: "seed-hero-damp-shoreline-v2",
+      lens: "cost",
+      truthSignature: "truth-a",
+    }),
+    true
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: {
+        formulaKey: "seed-hero-damp-shoreline-v2",
+        lens: "cost",
+        truthSignature: "truth-a",
+      },
+      formulaKey: "seed-hero-damp-shoreline-v2",
+      lens: "cost",
+      truthSignature: "truth-b",
+    }),
+    false
+  );
+  assert.equal(
+    isCritiqueResultCurrent({
+      critique: { formulaKey: "seed-hero-damp-shoreline-v2", lens: "cost" },
+      formulaKey: "seed-hero-damp-shoreline-v2",
+      lens: "cost",
+      truthSignature: "truth-b",
+    }),
+    false
   );
 });
 
@@ -185,6 +224,174 @@ test("AI critique issue triage state is keyed by formula, lens, and issue", () =
     status: "",
   });
   assert.equal(cleared[triageKey], undefined);
+});
+
+test("AI critique prompt includes current structured pricing and accord truth", () => {
+  const formula = {
+    formulaKey: "seed-hero-skin-air-bridge",
+    name: "Skin-Air Bridge",
+    tagline: "Hero test variation",
+    versionLabel: "v1.0",
+    ingredients: [
+      { name: "Botanical Musk Accord", g: 1.491, note: "base" },
+      { name: "Driftwood Accord", g: 0.884, note: "base" },
+      { name: "Bergamot EO FCF", g: 0.723, note: "top" },
+    ],
+  };
+  const basket = {
+    meta: {
+      label: "Cheapest",
+      title: "Cheapest Purchase Basket",
+    },
+    totalCost: 168.655092,
+    missingCount: 0,
+    uncertainCount: 0,
+    inferredCount: 2,
+    confirmedCount: 29,
+    supplierCount: 5,
+    lines: [
+      {
+        ingredientName: "Botanical Musk Accord",
+        supplier: "Bench Accord",
+        status: "inferred",
+        lineCost: 0.527121,
+        linkStatus: "component_derived_accord",
+        costingMode: "component_derived",
+      },
+      {
+        ingredientName: "Driftwood Accord",
+        supplier: "Bench Accord",
+        status: "inferred",
+        lineCost: 0.557971,
+        linkStatus: "component_derived_accord",
+        costingMode: "component_derived",
+      },
+      {
+        ingredientName: "Bergamot EO FCF",
+        supplier: "Fraterworks",
+        status: "confirmed",
+        lineCost: 9.44,
+      },
+    ],
+  };
+  const db = {
+    "Botanical Musk Accord": { scentClass: "Accord" },
+    "Driftwood Accord": { scentClass: "Accord" },
+    "Bergamot EO FCF": { scentClass: "Citrus" },
+  };
+  const critiqueReport = buildFormulaCritiqueReport({
+    formula,
+    chemistry: [],
+    performance: { longevity: 7.1, sillage: 5.6, projection: 5.2 },
+    performanceModel: {
+      headline: "Directional performance model available.",
+      facets: [],
+      axisScores: {},
+      caveats: [],
+    },
+    basket,
+    cheapestBasket: basket,
+    basketModeMeta: { label: "Cheapest" },
+    ifraRows: [],
+    lens: "cost",
+    db,
+    modelConfidenceSummary: {
+      categoryCounts: {
+        black_box_accord: 2,
+        missing_pricing: 0,
+        missing_ifra: 2,
+        directional_only: 1,
+      },
+    },
+  });
+  const prompt = buildAiCritiquePrompt({
+    targetFormula: formula,
+    critiqueReport,
+    performance: { longevity: 7.1, sillage: 5.6, projection: 5.2 },
+    db,
+  });
+
+  assert.match(prompt, /Current dashboard truth data/);
+  assert.match(prompt, /"initialPurchaseBasketEstimate": 168\.66/);
+  assert.match(prompt, /"missingPriceCount": 0/);
+  assert.match(prompt, /"missingPricingFlags": 0/);
+  assert.match(prompt, /"componentCostedAccordCount": 2/);
+  assert.match(prompt, /"unpricedAccordCount": 0/);
+  assert.match(prompt, /"supplierCount": 5/);
+  assert.match(prompt, /"lowConfidenceSupplierMappingCount": 2/);
+  assert.match(prompt, /"shippingTaxMinimumOrdersIncluded": false/);
+  assert.match(prompt, /"costViewType": "initial_purchase_basket_estimate"/);
+  assert.match(prompt, /Do not claim missing supplier prices unless/);
+  assert.match(prompt, /Do not claim known accords are unpriced/);
+  assert.match(prompt, /Do not claim IFRA violations unless/);
+  assert.match(prompt, /mapping-confidence or sourcing-confidence uncertainty/);
+  assert.match(
+    prompt,
+    /cost is recipe-derived while chemistry\/IFRA modeling remains accord-level/
+  );
+  assert.match(
+    critiqueReport.costIssues.join(" "),
+    /No active ingredients are missing price rows/
+  );
+  assert.match(
+    critiqueReport.costIssues.join(" "),
+    /Known accord rows are component-costed/
+  );
+});
+
+test("AI critique truth signatures change when pricing support context changes", () => {
+  const formula = {
+    formulaKey: "seed-hero-skin-air-bridge",
+    name: "Skin-Air Bridge",
+    ingredients: [{ name: "Botanical Musk Accord", g: 1, note: "base" }],
+  };
+  const baseTruth = buildAiCritiqueGroundTruth({
+    formula,
+    basket: {
+      totalCost: 168.655092,
+      missingCount: 0,
+      inferredCount: 1,
+      supplierCount: 5,
+      lines: [
+        {
+          ingredientName: "Botanical Musk Accord",
+          supplier: "Bench Accord",
+          lineCost: 0.5,
+          linkStatus: "component_derived_accord",
+          costingMode: "component_derived",
+        },
+      ],
+    },
+    basketModeMeta: { label: "Cheapest" },
+    ifraRows: [],
+    modelConfidenceSummary: { categoryCounts: { missing_pricing: 0 } },
+  });
+  const changedTruth = buildAiCritiqueGroundTruth({
+    formula,
+    basket: {
+      totalCost: 171.12,
+      missingCount: 0,
+      inferredCount: 1,
+      supplierCount: 5,
+      lines: [
+        {
+          ingredientName: "Botanical Musk Accord",
+          supplier: "Bench Accord",
+          lineCost: 0.5,
+          linkStatus: "component_derived_accord",
+          costingMode: "component_derived",
+        },
+      ],
+    },
+    basketModeMeta: { label: "Cheapest" },
+    ifraRows: [],
+    modelConfidenceSummary: { categoryCounts: { missing_pricing: 0 } },
+  });
+
+  assert.notEqual(
+    buildAiCritiqueTruthSignature(baseTruth),
+    buildAiCritiqueTruthSignature(changedTruth)
+  );
 });
 
 test("ingredient truth completeness surfaces canonical and supplier support from current registries", () => {

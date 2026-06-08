@@ -1541,6 +1541,136 @@ export function buildCostConfidenceCaveatText({
   return caveats.join(" ");
 }
 
+function roundMoney(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(2)) : 0;
+}
+
+function stableJsonStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJsonStringify(item)).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableJsonStringify(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function hashStableString(value) {
+  const text = String(value || "");
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+export function buildAiCritiqueTruthSignature(groundTruth = {}) {
+  return `ai-truth-v1:${hashStableString(stableJsonStringify(groundTruth))}`;
+}
+
+export function buildAiCritiqueGroundTruth({
+  formula = null,
+  basket = null,
+  basketModeMeta = null,
+  ifraRows = [],
+  modelConfidenceSummary = null,
+} = {}) {
+  const costSummary = buildBasketCostSemanticsSummary(basket);
+  const confidenceCounts = modelConfidenceSummary?.categoryCounts || {};
+  const activeIfraRows = Array.isArray(ifraRows) ? ifraRows : [];
+  const failRows = activeIfraRows.filter((row) => row.status === "fail");
+  const warnRows = activeIfraRows.filter((row) => row.status === "warn");
+  const ingredients = Array.isArray(formula?.ingredients)
+    ? formula.ingredients
+    : [];
+  const hasFcfCitrus = ingredients.some((ingredient) =>
+    /(?:bergamot|lemon|citrus).*fcf|fcf.*(?:bergamot|lemon|citrus)/i.test(
+      ingredient?.name || ""
+    )
+  );
+  const missingPriceCount = Math.max(0, Number(basket?.missingCount) || 0);
+  const missingPricingFlags = Math.max(
+    0,
+    Number(confidenceCounts.missing_pricing) || missingPriceCount
+  );
+  const uncertainSupplierMappingCount = Math.max(
+    0,
+    Number(basket?.uncertainCount) || 0
+  );
+  const inferredSupplierMappingCount = Math.max(
+    0,
+    Number(basket?.inferredCount) || 0
+  );
+
+  return {
+    formulaKey: formula?.formulaKey || "",
+    formulaName: formula?.name || "",
+    formulaLabel: getFormulaDisplayLabel(formula, { includeVersion: true }),
+    pricing: {
+      initialPurchaseBasketEstimate: roundMoney(basket?.totalCost),
+      missingPriceCount,
+      missingPricingFlags,
+      unpricedAccordCount: costSummary.unpricedAccordCount,
+      componentCostedAccordCount: costSummary.componentCostedAccordCount,
+      partialAccordCount: costSummary.partialAccordCount,
+      recipeMissingAccordCount: costSummary.recipeMissingAccordCount,
+      supplierCount: Math.max(0, Number(basket?.supplierCount) || 0),
+      lowConfidenceSupplierMappingCount:
+        uncertainSupplierMappingCount + inferredSupplierMappingCount,
+      uncertainSupplierMappingCount,
+      inferredSupplierMappingCount,
+      shippingTaxMinimumOrdersIncluded: false,
+      existingInventoryIncluded: false,
+      stockOutsIncluded: false,
+      costViewType: "initial_purchase_basket_estimate",
+      formulaUsageCostFullyModeled: false,
+      purchaseBasketMode: basketModeMeta?.label || basket?.meta?.label || "Current",
+      volumeMassEstimateCount: costSummary.volumeMassEstimateCount,
+    },
+    ifra: {
+      hasViolations: failRows.length > 0,
+      activeOffenderCount: failRows.length,
+      cautionCount: warnRows.length,
+      fcfCitrusNote: hasFcfCitrus
+        ? "FCF citrus rows are not treated as regular expressed citrus phototoxic limits; verify supplier IFRA/SDS for final compliance."
+        : null,
+    },
+    accords: {
+      knownAccordsAreComponentCosted: costSummary.componentCostedAccordCount > 0,
+      componentCostedAccordCount: costSummary.componentCostedAccordCount,
+      unpricedAccordCount: costSummary.unpricedAccordCount,
+      componentCostedAccords: costSummary.componentCostedAccordLines.map(
+        (line) => line.ingredientName
+      ),
+      unpricedKnownAccords: costSummary.unpricedAccordLines.map(
+        (line) => line.ingredientName
+      ),
+      accordModelingCaveat:
+        costSummary.accordCount > 0
+          ? "Accord rows may be recipe-priced while chemistry/IFRA modeling remains accord-level unless expanded."
+          : null,
+    },
+    modelConfidence: {
+      blackBoxAccordFlags: Math.max(
+        0,
+        Number(confidenceCounts.black_box_accord) || 0
+      ),
+      missingThresholdFlags: Math.max(
+        0,
+        Number(confidenceCounts.missing_threshold) || 0
+      ),
+      missingIfraFlags: Math.max(0, Number(confidenceCounts.missing_ifra) || 0),
+      proxyOrUvcbFlags: Math.max(0, Number(confidenceCounts.proxy_or_uvcb) || 0),
+      directionalOnly: Boolean(confidenceCounts.directional_only),
+    },
+  };
+}
+
 export function buildBatchPlannerReport({
   ingredients = [],
   targetBatchG = 0,
@@ -2200,6 +2330,7 @@ export function buildFormulaCritiqueReport({
   ifraRows = [],
   lens = "perfumer",
   db = {},
+  modelConfidenceSummary = null,
 }) {
   const lensMeta = CRITIQUE_LENS_META[lens] || CRITIQUE_LENS_META.perfumer;
   const formulaLabel = getFormulaDisplayLabel(formula, {
@@ -2309,6 +2440,16 @@ export function buildFormulaCritiqueReport({
   const ifraFails = ifraRows.filter((row) => row.status === "fail");
   const ifraWarns = ifraRows.filter((row) => row.status === "warn");
   const restrictedRows = ifraRows.filter((row) => row.limit != null);
+  const aiGroundTruth = buildAiCritiqueGroundTruth({
+    formula,
+    basket,
+    basketModeMeta,
+    ifraRows,
+    modelConfidenceSummary,
+  });
+  const aiGroundTruthSignature = buildAiCritiqueTruthSignature(aiGroundTruth);
+  const pricingTruth = aiGroundTruth.pricing;
+  const accordTruth = aiGroundTruth.accords;
 
   const strengths = [];
   const weaknesses = [];
@@ -2317,20 +2458,28 @@ export function buildFormulaCritiqueReport({
   const suggestedChanges = [];
   const uncertainty = [...(performanceModel?.caveats || [])];
 
-  if (basket?.missingCount) {
+  if (pricingTruth.missingPriceCount > 0) {
     pushUniqueItem(
       uncertainty,
-      `${basket.missingCount} supplier price line${
-        basket.missingCount === 1 ? "" : "s"
+      `${pricingTruth.missingPriceCount} supplier price line${
+        pricingTruth.missingPriceCount === 1 ? "" : "s"
       } are missing in the current ${basket.meta.title.toLowerCase()}.`
     );
   }
-  if (basket?.uncertainCount) {
+  if (pricingTruth.lowConfidenceSupplierMappingCount > 0) {
     pushUniqueItem(
       uncertainty,
-      `${basket.uncertainCount} supplier mapping${
-        basket.uncertainCount === 1 ? "" : "s"
-      } are still low-confidence in the current basket.`
+      `${pricingTruth.lowConfidenceSupplierMappingCount} supplier mapping${
+        pricingTruth.lowConfidenceSupplierMappingCount === 1 ? "" : "s"
+      } are inferred or low-confidence in the current purchase basket; this is not the same as missing price data.`
+    );
+  }
+  if (pricingTruth.volumeMassEstimateCount > 0) {
+    pushUniqueItem(
+      uncertainty,
+      `${pricingTruth.volumeMassEstimateCount} volume-priced package row${
+        pricingTruth.volumeMassEstimateCount === 1 ? "" : "s"
+      } use a volume-to-mass estimate because density is not stored.`
     );
   }
   if (ifraWarns.length && !ifraFails.length) {
@@ -2360,10 +2509,10 @@ export function buildFormulaCritiqueReport({
       "Current Cat 4 IFRA review shows no modeled violations."
     );
   }
-  if (basket && basket.missingCount === 0 && basket.uncertainCount === 0) {
+  if (basket && pricingTruth.missingPriceCount === 0) {
     pushUniqueItem(
       strengths,
-      `Current ${basket.meta.title.toLowerCase()} is fully mapped with no missing or uncertain supplier lines.`
+      `Current ${basket.meta.title.toLowerCase()} has no missing supplier price lines.`
     );
   }
 
@@ -2453,16 +2602,33 @@ export function buildFormulaCritiqueReport({
       )} versus the cheapest basket before shipping.`
     );
   }
-  if (basket?.missingCount || basket?.uncertainCount) {
+  if (pricingTruth.missingPriceCount > 0) {
     pushUniqueItem(
       costIssues,
-      "Cost confidence is reduced because some supplier lines are missing or still low-confidence."
+      `${pricingTruth.missingPriceCount} supplier price line${
+        pricingTruth.missingPriceCount === 1 ? "" : "s"
+      } are missing, so the initial purchase basket estimate may be understated.`
+    );
+  } else if (pricingTruth.lowConfidenceSupplierMappingCount > 0) {
+    pushUniqueItem(
+      costIssues,
+      `No active ingredients are missing price rows, but ${pricingTruth.lowConfidenceSupplierMappingCount} supplier mapping${
+        pricingTruth.lowConfidenceSupplierMappingCount === 1 ? "" : "s"
+      } remain inferred or low-confidence.`
+    );
+  }
+  if (accordTruth.componentCostedAccordCount > 0) {
+    pushUniqueItem(
+      costIssues,
+      `Known accord rows are component-costed from recipes (${accordTruth.componentCostedAccordCount} row${
+        accordTruth.componentCostedAccordCount === 1 ? "" : "s"
+      }); remaining accord caveats are chemistry/IFRA modeling caveats, not missing-cost caveats.`
     );
   }
   if (basket?.supplierCount > 3) {
     pushUniqueItem(
       costIssues,
-      `The current basket spans ${basket.supplierCount} suppliers, and shipping is not modeled in the total.`
+      `The current purchase basket spans ${basket.supplierCount} suppliers, and shipping, tax, minimum orders, stock-outs, and existing inventory are not modeled in the total.`
     );
   }
 
@@ -2506,10 +2672,15 @@ export function buildFormulaCritiqueReport({
       `Audit ${spendLeader.ingredientName} first if you need to lower spend without changing many lines.`
     );
   }
-  if (basket?.missingCount || basket?.uncertainCount) {
+  if (pricingTruth.missingPriceCount > 0) {
     pushUniqueItem(
       suggestedChanges,
-      "Resolve missing or uncertain supplier lines before treating the cost read as final."
+      "Resolve missing supplier price lines before treating the purchase basket estimate as final."
+    );
+  } else if (pricingTruth.lowConfidenceSupplierMappingCount > 0) {
+    pushUniqueItem(
+      suggestedChanges,
+      "Verify inferred or low-confidence supplier mappings before treating the purchase basket estimate as production-planning-ready."
     );
   }
   if (ifraFails.length || ifraWarns.length) {
@@ -2571,8 +2742,10 @@ export function buildFormulaCritiqueReport({
           : null,
       ],
       costIssues: [
-        basket?.missingCount || basket?.uncertainCount
-          ? "Supplier confidence gaps also reduce reproducibility of the current cost and sourcing read."
+        pricingTruth.missingPriceCount > 0
+          ? "Missing supplier price rows reduce reproducibility of the current cost and sourcing read."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Inferred or low-confidence supplier mappings reduce reproducibility, but they are not missing price rows."
           : null,
         basket?.supplierCount > 3
           ? `The current sourcing path is split across ${basket.supplierCount} suppliers.`
@@ -2595,8 +2768,8 @@ export function buildFormulaCritiqueReport({
     },
     cost: {
       strengths: [
-        basket && basket.missingCount === 0 && basket.uncertainCount === 0
-          ? `Current ${basket.meta.title.toLowerCase()} is fully mapped, which makes this cost read relatively dependable.`
+        basket && pricingTruth.missingPriceCount === 0
+          ? `Current ${basket.meta.title.toLowerCase()} has no missing supplier price rows, which makes the purchase-basket read more dependable.`
           : null,
         basket?.supplierCount <= 2 && basket?.supplierCount > 0
           ? `The current basket stays fairly consolidated across ${basket.supplierCount} supplier${
@@ -2616,8 +2789,10 @@ export function buildFormulaCritiqueReport({
               2
             )} premium over cheapest before shipping.`
           : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Some supplier lines are still missing or low-confidence, so the total should not be treated as final."
+        pricingTruth.missingPriceCount > 0
+          ? "Some supplier price rows are still missing, so the total should not be treated as final."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Some supplier mappings are inferred or low-confidence, so verify sourcing before production planning."
           : null,
       ],
       sensoryIssues: [
@@ -2632,6 +2807,14 @@ export function buildFormulaCritiqueReport({
           : null,
       ],
       costIssues: [
+        pricingTruth.missingPriceCount === 0
+          ? "No active ingredients are missing price rows; remaining cost caveats are sourcing-confidence, package-purchase, logistics, or accord-modeling caveats."
+          : null,
+        accordTruth.componentCostedAccordCount > 0
+          ? `Known accord rows are component-costed from recipes (${accordTruth.componentCostedAccordCount} row${
+              accordTruth.componentCostedAccordCount === 1 ? "" : "s"
+            }); remaining accord caveats are chemistry/IFRA modeling caveats, not missing-cost caveats.`
+          : null,
         spendLeaderShare > 0.32 && spendLeader
           ? `${spendLeader.ingredientName} is about ${Math.round(
               spendLeaderShare * 100
@@ -2640,8 +2823,10 @@ export function buildFormulaCritiqueReport({
         basket?.supplierCount > 3
           ? `The basket spans ${basket.supplierCount} suppliers, and shipping is outside the modeled total.`
           : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Missing or uncertain supplier data is still the biggest blocker to a confident cost read."
+        pricingTruth.missingPriceCount > 0
+          ? "Missing supplier price data is still the biggest blocker to a confident cost read."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Low-confidence supplier mapping is the remaining sourcing-confidence caveat, not missing price data."
           : null,
       ],
       suggestedChanges: [
@@ -2653,8 +2838,10 @@ export function buildFormulaCritiqueReport({
               2
             )} before shipping.`
           : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Resolve missing and uncertain basket lines before making supplier decisions permanent."
+        pricingTruth.missingPriceCount > 0
+          ? "Resolve missing basket price lines before making supplier decisions permanent."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Verify inferred or low-confidence supplier mappings before making supplier decisions permanent."
           : null,
       ],
     },
@@ -2701,8 +2888,10 @@ export function buildFormulaCritiqueReport({
           : null,
       ],
       costIssues: [
-        basket?.missingCount || basket?.uncertainCount
-          ? "Supplier confidence gaps make it harder to estimate reformulation cost cleanly."
+        pricingTruth.missingPriceCount > 0
+          ? "Missing supplier price rows make it harder to estimate reformulation cost cleanly."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Inferred or low-confidence supplier mappings make reformulation cost directionally useful but not production-planning final."
           : null,
         spendLeaderShare > 0.32 && spendLeader
           ? `${spendLeader.ingredientName} is both a major spend line and a likely place to watch if reformulation becomes necessary.`
@@ -2758,8 +2947,10 @@ export function buildFormulaCritiqueReport({
         spendLeaderShare > 0.32 && spendLeader
           ? `${spendLeader.ingredientName} is a signature-level spend driver in the current basket.`
           : null,
-        basket?.missingCount || basket?.uncertainCount
-          ? "Uncertain supplier lines make the commercial story less settled than it looks."
+        pricingTruth.missingPriceCount > 0
+          ? "Missing supplier price rows make the commercial story less settled than it looks."
+          : pricingTruth.lowConfidenceSupplierMappingCount > 0
+          ? "Inferred supplier mappings make the commercial story less settled than a fully confirmed source map."
           : null,
       ],
       suggestedChanges: [
@@ -2858,21 +3049,35 @@ export function buildFormulaCritiqueReport({
       restrictedCount: restrictedRows.length,
       noteWeight,
     },
+    aiGroundTruth,
+    aiGroundTruthSignature,
   };
 }
 
-export function isCritiqueResultCurrent({ critique, formulaKey, lens } = {}) {
+export function isCritiqueResultCurrent({
+  critique,
+  formulaKey,
+  lens,
+  truthSignature = "",
+} = {}) {
   const critiqueFormulaKey = String(critique?.formulaKey || "").trim();
   const currentFormulaKey = String(formulaKey || "").trim();
   const critiqueLens = String(critique?.lens || "").trim();
   const currentLens = String(lens || "").trim();
+  const currentTruthSignature = String(truthSignature || "").trim();
+  const critiqueTruthSignature = String(
+    critique?.truthSignature || critique?.contextSignature || ""
+  ).trim();
+  const truthMatches =
+    !currentTruthSignature || critiqueTruthSignature === currentTruthSignature;
   return Boolean(
     critiqueFormulaKey &&
       currentFormulaKey &&
       critiqueFormulaKey === currentFormulaKey &&
       critiqueLens &&
       currentLens &&
-      critiqueLens === currentLens
+      critiqueLens === currentLens &&
+      truthMatches
   );
 }
 
@@ -3011,6 +3216,7 @@ export function buildAiCritiquePrompt({
     .join("\n");
   const formatSection = (label, items) =>
     `${label}:\n${items.map((item) => `- ${item}`).join("\n")}`;
+  const groundTruth = critiqueReport.aiGroundTruth || {};
 
   return `You are an expert fragrance advisor reviewing a concentrate through the ${
     critiqueReport.lensMeta.label
@@ -3020,6 +3226,19 @@ Stay consistent with the app's current model signals unless you clearly mark unc
 
 Formula: "${formulaLabel}" — ${targetFormula.tagline}
 Total: ${total}g concentrate
+
+Current dashboard truth data (authoritative JSON; use these values instead of older saved critique text or assumptions):
+${JSON.stringify(groundTruth, null, 2)}
+
+Critique grounding rules:
+- Do not claim missing supplier prices unless pricing.missingPriceCount > 0 or pricing.missingPricingFlags > 0.
+- Do not claim known accords are unpriced when pricing.unpricedAccordCount is 0.
+- Do not claim IFRA violations unless ifra.hasViolations is true.
+- Do not use old basket totals; use only pricing.initialPurchaseBasketEstimate and call it an initial purchase basket estimate.
+- If pricing.lowConfidenceSupplierMappingCount > 0, describe it as mapping-confidence or sourcing-confidence uncertainty, not missing prices.
+- If shipping/tax/minimum orders are excluded, describe that as procurement/logistics uncertainty, not ingredient-price incompleteness.
+- For component-costed accords, say cost is recipe-derived while chemistry/IFRA modeling remains accord-level unless expanded.
+- Distinguish initial package-purchase basket cost from formula usage/depletion cost.
 
 Ingredients:
 ${ingList}

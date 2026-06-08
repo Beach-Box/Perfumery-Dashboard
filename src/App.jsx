@@ -62017,6 +62017,7 @@ export default function App() {
   const [critiqueLoading, setCritiqueLoading] = useState(false);
   const [critiqueFormula, setCritiqueFormula] = useState(null);
   const [critiqueLensUsed, setCritiqueLensUsed] = useState("perfumer");
+  const [critiqueTruthSignature, setCritiqueTruthSignature] = useState("");
   const [critiqueGeneratedAt, setCritiqueGeneratedAt] = useState(null);
   const [critiqueError, setCritiqueError] = useState("");
   const [aiCritiqueIssueTriage, setAiCritiqueIssueTriage] = useState(() =>
@@ -62218,14 +62219,6 @@ export default function App() {
     : null;
   const critiqueTargetLabel = getFormulaDisplayLabel(critiqueTarget, {
     includeVersion: true,
-  });
-  const critiqueResultIsCurrent = isCritiqueResultCurrent({
-    critique: {
-      formulaKey: critiqueFormula,
-      lens: critiqueLensUsed,
-    },
-    formulaKey: formula?.formulaKey,
-    lens: critiqueLens,
   });
   const compareLeftFormula =
     formulaByKey.get(formulaCompareState.leftFormulaKey) || formula || null;
@@ -66799,12 +66792,14 @@ export default function App() {
         ifraRows: formulaCritiqueIfraRows,
         lens: critiqueLens,
         db: DB,
+        modelConfidenceSummary: formulaConfidenceSummary,
       }),
     [
       chem,
       critiqueLens,
       formula,
       formulaBasketStrategies,
+      formulaConfidenceSummary,
       formulaCritiqueIfraRows,
       formulaModelingItems,
       formulaPerformanceModel,
@@ -66813,6 +66808,18 @@ export default function App() {
       selectedFormulaBasket,
     ]
   );
+  const currentAiCritiqueTruthSignature =
+    formulaCritiqueReport?.aiGroundTruthSignature || "";
+  const critiqueResultIsCurrent = isCritiqueResultCurrent({
+    critique: {
+      formulaKey: critiqueFormula,
+      lens: critiqueLensUsed,
+      truthSignature: critiqueTruthSignature,
+    },
+    formulaKey: formula?.formulaKey,
+    lens: critiqueLens,
+    truthSignature: currentAiCritiqueTruthSignature,
+  });
   const buildCritiqueReport = useMemo(
     () =>
       buildModelingItems.length
@@ -66831,11 +66838,13 @@ export default function App() {
             ifraRows: buildCritiqueIfraRows,
             lens: critiqueLens,
             db: DB,
+            modelConfidenceSummary: buildConfidenceSummary,
           })
         : null,
     [
       buildBasketStrategies,
       buildChem,
+      buildConfidenceSummary,
       buildCritiqueIfraRows,
       buildModelingItems,
       buildName,
@@ -68640,29 +68649,31 @@ export default function App() {
     setCritiqueError("");
     try {
       const score = perfScore(targetFormula.ingredients);
+      const activeCritiqueReport =
+        critiqueReport ||
+        buildFormulaCritiqueReport({
+          formula: targetFormula,
+          chemistry: computeChemistry(targetFormula.ingredients),
+          performance: score,
+          performanceModel: buildPerformanceModelSummary(
+            targetFormula.ingredients,
+            {
+              db: DB,
+              computeChemistry,
+              perfScore,
+            }
+          ),
+          basket: selectedFormulaBasket,
+          cheapestBasket: formulaBasketStrategies.cheapest || null,
+          basketModeMeta: selectedBasketModeMeta,
+          ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
+          lens: activeLens,
+          db: DB,
+          modelConfidenceSummary: formulaConfidenceSummary,
+        });
       const prompt = buildAiCritiquePrompt({
         targetFormula,
-        critiqueReport:
-          critiqueReport ||
-          buildFormulaCritiqueReport({
-            formula: targetFormula,
-            chemistry: computeChemistry(targetFormula.ingredients),
-            performance: score,
-            performanceModel: buildPerformanceModelSummary(
-              targetFormula.ingredients,
-              {
-                db: DB,
-                computeChemistry,
-                perfScore,
-              }
-            ),
-            basket: selectedFormulaBasket,
-            cheapestBasket: formulaBasketStrategies.cheapest || null,
-            basketModeMeta: selectedBasketModeMeta,
-            ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
-            lens: activeLens,
-            db: DB,
-          }),
+        critiqueReport: activeCritiqueReport,
         performance: score,
         db: DB,
       });
@@ -68689,6 +68700,7 @@ export default function App() {
       setCritiqueText(text || "No response from AI.");
       setCritiqueFormula(targetFormulaKey);
       setCritiqueLensUsed(activeLens);
+      setCritiqueTruthSignature(activeCritiqueReport.aiGroundTruthSignature || "");
       setCritiqueGeneratedAt(new Date().toISOString());
       setCritiqueError("");
     } catch (e) {
@@ -85700,7 +85712,7 @@ export default function App() {
                                   CRITIQUE_LENS_META.perfumer
                                 ).label.toLowerCase()} lens`
                               : ""}
-                            {" — "}click the button above to refresh it for the current formula and lens.
+                            {" — "}click the button above to refresh it for the current formula, lens, and dashboard truth data.
                           </div>
                         )}
                         {critiqueResultIsCurrent && critiqueGeneratedAt && (
