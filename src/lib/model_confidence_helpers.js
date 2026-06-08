@@ -467,7 +467,7 @@ export function buildFormulaConfidenceWarningLabels(summary = {}) {
     warnings.push(
       `${counts.black_box_accord} black-box accord row${
         counts.black_box_accord === 1 ? "" : "s"
-      } use component/cost caveats.`
+      } remain accord-level for chemistry/IFRA modeling.`
     );
   }
   if (counts.missing_pricing > 0) {

@@ -12,7 +12,11 @@ import {
   createHeroSupportRecordPricing,
   getHeroFormulaAccordRecipe,
 } from "../src/lib/hero_formula_material_support.js";
-import { buildSupplierBasket } from "../src/lib/perfumer_runtime_helpers.js";
+import {
+  buildBasketCostSemanticsSummary,
+  buildCostConfidenceCaveatText,
+  buildSupplierBasket,
+} from "../src/lib/perfumer_runtime_helpers.js";
 import {
   MATERIAL_NORMALIZATION,
   computeActiveRestrictedPercent,
@@ -352,6 +356,114 @@ test("hero formula accord rows stay single rows but basket cost is component-der
   assert.equal(basket.missingCount, 0);
 });
 
+test("component-costed accord caveat wording does not imply known accords are unpriced", () => {
+  const pricingRows = buildHeroFormulaPricingSupportRows({
+    "Iso E Super": { TestSupplier: { S: [[10, "g", 10]], inStock: true } },
+    "Ambroxan Crystals": {
+      TestSupplier: { S: [[10, "g", 20]], inStock: true },
+    },
+    "Vetiveryl Acetate": {
+      TestSupplier: { S: [[10, "g", 30]], inStock: true },
+    },
+    Cashmeran: { TestSupplier: { S: [[10, "g", 40]], inStock: true } },
+  });
+  const basket = buildSupplierBasket(
+    [{ name: "Driftwood Accord", g: 1.5, note: "base" }],
+    {},
+    {},
+    "cheapest",
+    { pricing: pricingRows }
+  );
+  const costSummary = buildBasketCostSemanticsSummary(basket);
+  const caveat = buildCostConfidenceCaveatText({
+    basket,
+    modelConfidenceSummary: { categoryCounts: { black_box_accord: 1 } },
+  });
+
+  assert.equal(costSummary.componentCostedAccordCount, 1);
+  assert.equal(costSummary.unpricedAccordCount, 0);
+  assert.match(caveat, /Component-costed accord/);
+  assert.doesNotMatch(caveat, /unresolved or unpriced/);
+});
+
+test("recipe-missing and incomplete accord rows remain explicit unpriced caveats", () => {
+  const missingRecipeCaveat = buildCostConfidenceCaveatText({
+    basket: {
+      lines: [
+        {
+          ingredientName: "Unknown Accord",
+          supplier: "Bench Accord",
+          status: "missing",
+          lineCost: null,
+          componentPricingStatus: "missing_recipe",
+        },
+      ],
+    },
+  });
+  const incompleteRecipeCaveat = buildCostConfidenceCaveatText({
+    basket: {
+      lines: [
+        {
+          ingredientName: "Partial Accord",
+          supplier: "Bench Accord",
+          status: "missing",
+          lineCost: null,
+          componentPricingStatus: "incomplete",
+        },
+      ],
+    },
+  });
+
+  assert.match(missingRecipeCaveat, /Unpriced accord/);
+  assert.match(missingRecipeCaveat, /not treated as confirmed \$0/);
+  assert.match(incompleteRecipeCaveat, /Partially component-costed accord/);
+  assert.match(incompleteRecipeCaveat, /cost remains incomplete/);
+});
+
+test("supplier basket normalizes ml package units and flags unknown density", () => {
+  const pricing = {
+    "Known Density Volume": {
+      Supplier: { S: [[4, "ml", 8]], inStock: true },
+    },
+    "Known Density Volume Caps": {
+      Supplier: { S: [[4, "ML", 8]], inStock: true },
+    },
+    "Unknown Density Volume": {
+      Supplier: { S: [[4, "ml", 8]], inStock: true },
+    },
+  };
+  const knownLower = buildSupplierBasket(
+    [{ name: "Known Density Volume", g: 3.5, note: "mid" }],
+    {},
+    {},
+    "cheapest",
+    { pricing, db: { "Known Density Volume": { densityGmL: 0.8 } } }
+  );
+  const knownCaps = buildSupplierBasket(
+    [{ name: "Known Density Volume Caps", g: 3.5, note: "mid" }],
+    {},
+    {},
+    "cheapest",
+    { pricing, db: { "Known Density Volume Caps": { densityGmL: 0.8 } } }
+  );
+  const unknown = buildSupplierBasket(
+    [{ name: "Unknown Density Volume", g: 3.5, note: "mid" }],
+    {},
+    {},
+    "cheapest",
+    { pricing, db: {} }
+  );
+
+  assert.equal(knownLower.lines[0].line.unit, "mL");
+  assert.equal(knownCaps.lines[0].line.unit, "mL");
+  assert.equal(knownLower.lines[0].lineCost, 16);
+  assert.equal(knownCaps.lines[0].lineCost, 16);
+  assert.equal(knownLower.lines[0].volumeMassEstimate, false);
+  assert.equal(unknown.lines[0].lineCost, 8);
+  assert.equal(unknown.lines[0].volumeMassEstimate, true);
+  assert.match(unknown.lines[0].volumeMassCaveat, /1 mL ≈ 1 g/);
+});
+
 test("hero formula normalization overlay supports diluted identity and aliases", () => {
   assert.equal(
     MATERIAL_NORMALIZATION["Ambroxan 50% TEC"].entryKind,
@@ -602,6 +714,37 @@ test("remaining non-accord hero pricing gaps no longer count as zero-cost lines"
     basket.lines.every((line) => line.supplier === "Perfumers Apprentice"),
     true
   );
+});
+
+test("active hero formulas still resolve supplier basket prices after support overlays", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const formulas = extractAppArrayConstant(source, "const FORMULAS_INIT = [");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const appPricing = extractAppObjectConstant(source, "const PRICING = {");
+  const dbSupportRows = buildHeroFormulaRawDbSupportRows(rawDb);
+  const db = Object.fromEntries(
+    Object.entries({ ...rawDb, ...dbSupportRows }).map(([name, row]) => [
+      name,
+      rawDbRecordFromRow(row),
+    ])
+  );
+  const pricing = {
+    ...appPricing,
+    ...buildHeroFormulaPricingSupportRows(appPricing),
+  };
+
+  for (const formula of formulas) {
+    const basket = buildSupplierBasket(formula.ingredients, {}, {}, "cheapest", {
+      db,
+      pricing,
+    });
+    assert.equal(basket.missingCount, 0, `${formula.name} should have prices`);
+    assert.equal(
+      basket.lines.every((line) => line.lineCost > 0),
+      true,
+      `${formula.name} should not contain zero-cost or missing-cost lines`
+    );
+  }
 });
 
 test("priority hero materials expose reviewed molecular fields", () => {

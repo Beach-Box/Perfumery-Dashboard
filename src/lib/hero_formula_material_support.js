@@ -486,6 +486,7 @@ function createAccordPricing(accord = {}, pricing = {}) {
         S: [],
         inStock: false,
         pricingMode: ACCORD_RECIPE_PRICING_MODE,
+        linkStatus: "accord_recipe_missing",
         componentPricingStatus: "missing_recipe",
         supportNote:
           "No component recipe is available for this formula-level accord. It is intentionally unpriced rather than treated as $0.",
@@ -501,6 +502,7 @@ function createAccordPricing(accord = {}, pricing = {}) {
         S: [],
         inStock: false,
         pricingMode: ACCORD_RECIPE_PRICING_MODE,
+        linkStatus: "accord_component_pricing_incomplete",
         recipeName: recipe.name,
         recipeStatus: recipe.recipeStatus || "known",
         componentPricingStatus: "incomplete",

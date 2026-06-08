@@ -212,6 +212,7 @@ import {
   buildFormulaProcurementRows,
   buildLaunchReadinessSummary,
   buildSkuEconomicsDashboardSummary,
+  buildCostConfidenceCaveatText,
   buildPerformanceModelSummary,
   buildSupplierBasketStrategies,
   AI_CRITIQUE_TRIAGE_SECTION_ORDER,
@@ -31770,7 +31771,8 @@ function cloneDbMetadataValue(value) {
 
 // Fix density — use index 14 (densityGmL first occurrence)
 Object.keys(DB).forEach((k) => {
-  DB[k].densityGmL = RAW_DB[k][14] || 1.0;
+  const density = Number(RAW_DB[k][14]);
+  DB[k].densityGmL = Number.isFinite(density) && density > 0 ? density : null;
 });
 
 Object.entries(DB).forEach(([name, d]) => {
@@ -54255,34 +54257,56 @@ function computeChemistry(ingredients) {
 // INVENTORY ENGINE
 // Convert grams needed → closest supplier size to purchase
 // ─────────────────────────────────────────────────────────────
+function normalizePackageUnit(unit) {
+  const normalized = String(unit || "").trim().toLowerCase();
+  if (
+    normalized === "ml" ||
+    normalized === "milliliter" ||
+    normalized === "milliliters"
+  ) {
+    return "mL";
+  }
+  if (normalized === "g" || normalized === "gram" || normalized === "grams") {
+    return "g";
+  }
+  return String(unit || "").trim();
+}
+
+function getKnownDensityGmL(record) {
+  const density = Number(record?.densityGmL ?? record?.density);
+  return Number.isFinite(density) && density > 0 ? density : null;
+}
+
 function getInventoryPlan(name, gNeeded) {
   const pdata = PRICING[name];
   if (!pdata) return null;
   const d = DB[name];
-  const density = d?.densityGmL || 1.0;
+  const density = getKnownDensityGmL(d);
   let best = null,
     bestSupplier = null,
     bestQty = Infinity,
     bestPrice = Infinity;
   Object.entries(pdata).forEach(([sup, { url, S }]) => {
     S.forEach(([qty, unit, price]) => {
-      const grams = unit === "mL" ? qty * density : qty;
+      const normalizedUnit = normalizePackageUnit(unit);
+      const grams = normalizedUnit === "mL" ? qty * (density || 1) : qty;
       if (grams >= gNeeded && grams < bestQty) {
         bestQty = grams;
         bestPrice = price;
         bestSupplier = sup;
-        best = { qty, unit, price, url, grams, supplier: sup };
+        best = { qty, unit: normalizedUnit, price, url, grams, supplier: sup };
       }
     });
     if (!best) {
       // pick largest available
       S.forEach(([qty, unit, price]) => {
-        const grams = unit === "mL" ? qty * density : qty;
+        const normalizedUnit = normalizePackageUnit(unit);
+        const grams = normalizedUnit === "mL" ? qty * (density || 1) : qty;
         if (grams > bestQty || !best) {
           if (!best || grams > bestQty) {
             bestQty = grams;
             bestPrice = price;
-            best = { qty, unit, price, url, grams, supplier: sup };
+            best = { qty, unit: normalizedUnit, price, url, grams, supplier: sup };
             bestSupplier = sup;
           }
         }
@@ -55847,20 +55871,12 @@ function mergeModelConfidenceSummaries(summaries = []) {
   );
 }
 
-function getCostConfidenceCaveat(summary) {
-  const blackBoxCount = getConfidenceCount(summary, "black_box_accord");
-  const pricingCount = getConfidenceCount(summary, "missing_pricing");
-  if (blackBoxCount > 0) {
-    return `Cost caveat: ${blackBoxCount} black-box accord row${
-      blackBoxCount === 1 ? "" : "s"
-    } may be unresolved or unpriced, so displayed cost may be understated.`;
-  }
-  if (pricingCount > 0) {
-    return `Cost caveat: ${pricingCount} pricing row${
-      pricingCount === 1 ? "" : "s"
-    } are missing or placeholder-supported, so displayed cost may be understated.`;
-  }
-  return "";
+function getCostConfidenceCaveat(summary, basket = null) {
+  const caveat = buildCostConfidenceCaveatText({
+    basket,
+    modelConfidenceSummary: summary,
+  });
+  return caveat ? `Cost caveat: ${caveat}` : "";
 }
 
 function ModelConfidenceSummaryPanel({ summary, compact = false }) {
@@ -62764,9 +62780,20 @@ export default function App() {
         mergeModelConfidenceSummaries([
           compareLeftConfidenceSummary,
           compareRightConfidenceSummary,
-        ])
+        ]),
+        {
+          lines: [
+            ...(compareLeftBasket?.lines || []),
+            ...(compareRightBasket?.lines || []),
+          ],
+        }
       ),
-    [compareLeftConfidenceSummary, compareRightConfidenceSummary]
+    [
+      compareLeftBasket,
+      compareLeftConfidenceSummary,
+      compareRightBasket,
+      compareRightConfidenceSummary,
+    ]
   );
   const activeFounderScenario = useMemo(
     () =>
@@ -70158,7 +70185,7 @@ export default function App() {
                 }}
               >
                 {mode === "cheapest"
-                  ? "Baseline basket"
+                  ? "Baseline purchase basket"
                   : `vs cheapest: ${delta >= 0 ? "+" : ""}$${delta.toFixed(2)}`}
               </div>
               <div
@@ -70248,8 +70275,11 @@ export default function App() {
                 maxWidth: 640,
               }}
             >
-              {basket.meta.description} Missing price data and low-confidence
-              mappings stay flagged instead of being guessed.
+              Initial purchase basket estimate. {basket.meta.description} Excludes
+              shipping, tax, minimum orders, stock-outs, and existing inventory.
+              Component-costed accord lines use recipe-derived usage cost; missing
+              price data and low-confidence mappings stay flagged instead of being
+              guessed.
             </div>
           </div>
           <div style={{ textAlign: "right" }}>
@@ -70293,7 +70323,7 @@ export default function App() {
                   "Supplier",
                   "Buy",
                   "Pack Price",
-                  "Line Cost",
+                  "Purchase / Usage Cost",
                   "Remaining",
                   "Mapping",
                 ].map((headingLabel) => (
@@ -70746,7 +70776,7 @@ export default function App() {
             textTransform: "uppercase",
           }}
         >
-          💰 Supplier Basket Costing — {selectedFormulaLabel}
+          💰 Supplier Purchase Basket Estimate — {selectedFormulaLabel}
         </span>
         <div
           style={{
@@ -70770,7 +70800,7 @@ export default function App() {
             </strong>
           </span>
           <span style={{ fontSize: 11, fontWeight: 700, color: "#34D399" }}>
-            Basket total: ${selectedFormulaBasket.totalCost.toFixed(2)}
+            Initial purchase basket: ${selectedFormulaBasket.totalCost.toFixed(2)}
           </span>
         </div>
       </div>
@@ -70789,7 +70819,10 @@ export default function App() {
         }}
       >
         <div style={{ fontSize: 9, color: "#94A3B8", lineHeight: 1.6 }}>
-          {selectedBasketModeMeta.description}
+          {selectedBasketModeMeta.description} This is an initial package-purchase
+          estimate, not a full formula depletion cost. It excludes shipping, tax,
+          minimum orders, stock-outs, and existing inventory; component-costed accords
+          use recipe-derived unit costs.
         </div>
         <div
           style={{
@@ -81281,7 +81314,10 @@ export default function App() {
               trustSummary,
               confidenceSummary,
             } = item;
-            const candidateCostCaveat = getCostConfidenceCaveat(confidenceSummary);
+            const candidateCostCaveat = getCostConfidenceCaveat(
+              confidenceSummary,
+              selectedBasket
+            );
             const readinessMeta =
               LAUNCH_READINESS_STATUS_META[launchReadiness.status] ||
               LAUNCH_READINESS_STATUS_META.early;
@@ -81453,13 +81489,13 @@ export default function App() {
                     readinessMeta.color
                   )}
                   {renderMetric(
-                    "Cost",
+                    "Initial Purchase Basket",
                     selectedBasket?.totalCost != null
                       ? `$${selectedBasket.totalCost.toFixed(2)}`
                       : "Unavailable",
                     candidateCostCaveat ? (
                       <>
-                        <div>{selectedBasketModeMeta.label} basket</div>
+                        <div>{selectedBasketModeMeta.label} purchase basket</div>
                         <div
                           data-testid={`hero-cost-caveat-${candidateFormula.formulaKey}`}
                           style={{
@@ -83312,7 +83348,7 @@ export default function App() {
                               color: "#7DD3FC",
                             },
                             {
-                              label: `${selectedBasketModeMeta.label} Delta`,
+                              label: `${selectedBasketModeMeta.label} Purchase Delta`,
                               value: `${compareBasketDelta >= 0 ? "+" : ""}$${compareBasketDelta.toFixed(2)}`,
                               meta: compareCostConfidenceCaveat ? (
                                 <>

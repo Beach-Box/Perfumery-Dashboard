@@ -290,9 +290,12 @@ test("brief surfaces selected winner model confidence caveats as advisory warnin
 
   assert.ok(
     brief.warnings.some((warning) =>
-      warning.includes(
-        "Skin-Air Bridge model caveat: cost remains directional"
-      )
+      warning.includes("Skin-Air Bridge model caveat: 1 accord row")
+    )
+  );
+  assert.ok(
+    brief.warnings.some((warning) =>
+      warning.includes("1 pricing caveat row")
     )
   );
   assert.ok(

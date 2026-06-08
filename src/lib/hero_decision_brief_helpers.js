@@ -44,18 +44,21 @@ function buildDecisionModelCaveatWarnings(item) {
   const missingThresholdCount = getConfidenceCount(item, "missing_threshold");
   const proxyCount = getConfidenceCount(item, "proxy_or_uvcb");
 
-  if (blackBoxCount > 0 || pricingCount > 0) {
-    const costParts = [];
-    if (blackBoxCount > 0) {
-      costParts.push(formatCount(blackBoxCount, "black-box accord row"));
-    }
-    if (pricingCount > 0) {
-      costParts.push(formatCount(pricingCount, "pricing caveat row"));
-    }
+  if (blackBoxCount > 0) {
     warnings.push(
-      `${name} model caveat: cost remains directional because ${costParts.join(
-        " and "
-      )} may use placeholder support.`
+      `${name} model caveat: ${formatCount(
+        blackBoxCount,
+        "accord row"
+      )} remain accord-level for chemistry/IFRA modeling; component-costed rows use recipe-derived cost where available.`
+    );
+  }
+
+  if (pricingCount > 0) {
+    warnings.push(
+      `${name} model caveat: ${formatCount(
+        pricingCount,
+        "pricing caveat row"
+      )} are missing or placeholder-supported, so purchase cost remains directional.`
     );
   }
 

@@ -134,9 +134,27 @@ IFRA/activity workflows:
   formula rows. Known accord recipes in
   `src/data/hero_formula_accord_recipes.json` are used for component-derived
   costing only; the active formulas are not expanded into accord components.
+- Component-derived accord costing is a formula usage/depletion estimate for the
+  accord row. It does not make the accord molecule-exact for chemistry, IFRA, or
+  sensory modeling; those rows should still carry accord-level modeling caveats
+  until the product decision is to expand them.
 - If an accord recipe exists but a component lacks usable pricing, the accord is
   marked with an incomplete component-pricing caveat rather than treated as
   free. If no recipe exists, the accord remains unpriced.
+- Supplier basket totals are initial package-purchase estimates: they estimate
+  the cost to buy the selected supplier package sizes. They are not full
+  production-planning costs and exclude shipping, taxes, supplier minimum orders,
+  stock-outs, and existing inventory.
+- Formula usage cost is a separate depletion concept: it estimates ingredient
+  value consumed by a formula batch. The current dashboard only exposes this
+  directly for component-derived accord rows through recipe-derived unit costs;
+  broader formula-level depletion costing should be treated as a later
+  production-planning feature.
+- Supplier package units are normalized for simple volume variants such as `ml`,
+  `mL`, and `ML`. When a volume-priced package has no stored density, the basket
+  can still show a purchase estimate using `1 mL ≈ 1 g`, but it must carry a
+  volume-to-mass caveat rather than presenting the conversion as sourced
+  precision.
 - Safe name variants such as `Florol`/`Florol®` and
   `Orbitone T Neo`/`Orbitone® T Neo` are linked as aliases while preserving the
   formula display name.
@@ -264,8 +282,10 @@ Known hero accords should use component-derived unit-cost rows instead of
 placeholder `$0` support rows. Missing recipe or missing component pricing should
 remain visible as pricing uncertainty, not as a free material. Component-priced
 accords may still carry accord caveats because their components are not expanded
-for IFRA, chemistry, or sensory modeling. Likewise, a finished-product IFRA state
-of "no restricted rows" is a coverage estimate, not a blanket safety clearance.
+for IFRA, chemistry, or sensory modeling. Purchase-basket totals are package-buy
+estimates; component-derived accord rows are usage/depletion estimates inside
+that basket view. Likewise, a finished-product IFRA state of "no restricted
+rows" is a coverage estimate, not a blanket safety clearance.
 
 ## Structured Registries In `src/data/`
 

@@ -23,21 +23,21 @@ import {
 export const SUPPLIER_BASKET_MODE_META = {
   cheapest: {
     label: "Cheapest",
-    title: "Cheapest Basket",
+    title: "Cheapest Purchase Basket",
     color: "#34D399",
     description:
-      "Lowest immediate line spend per ingredient using current live pricing.",
+      "Lowest immediate package-purchase spend per ingredient using current live pricing.",
   },
   best_value: {
     label: "Best Value",
-    title: "Best-Value Basket",
+    title: "Best-Value Purchase Basket",
     color: "#7DD3FC",
     description:
       "Prefers the lowest unit-cost pack among reasonably sized purchase tiers, then falls back to cheapest coverage.",
   },
   best_quality: {
     label: "Best Quality",
-    title: "Best-Quality Basket",
+    title: "Best-Quality Purchase Basket",
     color: "#F59E0B",
     description:
       "Heuristic: favors preferred or registry-backed supplier ownership first, then cheapest coverage within that supplier.",
@@ -1034,7 +1034,7 @@ function buildSupplierPurchaseCandidates(
 ) {
   const needG = Number(ingredient.g) || 0;
   const d = db[ingredient.name];
-  const density = d?.density || d?.densityGmL || 1.0;
+  const density = getKnownPackageDensityGmL(d);
   if (supplierData?.pricingMode === "unit_cost") {
     const unitCostPerG = Number(supplierData.unitCostPerG);
     if (
@@ -1059,6 +1059,9 @@ function buildSupplierPurchaseCandidates(
         remaining: 0,
         pricePerPurchasedGram: unitCostPerG,
         pricingMode: "unit_cost",
+        costingMode: supplierData.costingMode || null,
+        componentPricingStatus: supplierData.componentPricingStatus || null,
+        supportNote: supplierData.supportNote || null,
       },
     ];
   }
@@ -1068,7 +1071,10 @@ function buildSupplierPurchaseCandidates(
 
   return supplierData.S
     .map(([qty, unit, price]) => {
-      const grams = unit === "mL" ? qty * density : qty;
+      const normalizedUnit = normalizeSupplierPackageUnit(unit);
+      const isVolumeUnit = normalizedUnit === "mL";
+      const volumeMassEstimate = isVolumeUnit && !density;
+      const grams = isVolumeUnit ? qty * (density || 1) : qty;
       if (!Number.isFinite(grams) || grams <= 0 || !Number.isFinite(price)) {
         return null;
       }
@@ -1078,7 +1084,7 @@ function buildSupplierPurchaseCandidates(
       return {
         supplier: supplierName,
         qty,
-        unit,
+        unit: normalizedUnit,
         price,
         grams,
         multi,
@@ -1086,6 +1092,15 @@ function buildSupplierPurchaseCandidates(
         lineCost,
         remaining: Math.max(0, totalPurchasedG - needG),
         pricePerPurchasedGram: price / grams,
+        densityGmL: isVolumeUnit ? density : null,
+        volumeMassEstimate,
+        volumeMassCaveat: volumeMassEstimate
+          ? "Volume package converted with 1 mL ≈ 1 g because no density is stored; treat purchase and usage costs as estimates."
+          : null,
+        pricingMode: supplierData.pricingMode || null,
+        costingMode: supplierData.costingMode || null,
+        componentPricingStatus: supplierData.componentPricingStatus || null,
+        supportNote: supplierData.supportNote || null,
       };
     })
     .filter(Boolean);
@@ -1186,6 +1201,27 @@ function getBasketConfidenceRank(mappingConfidence) {
   return 0;
 }
 
+function normalizeSupplierPackageUnit(unit) {
+  const value = String(unit || "").trim();
+  const normalized = value.toLowerCase();
+  if (
+    normalized === "ml" ||
+    normalized === "milliliter" ||
+    normalized === "milliliters"
+  ) {
+    return "mL";
+  }
+  if (normalized === "g" || normalized === "gram" || normalized === "grams") {
+    return "g";
+  }
+  return value;
+}
+
+function getKnownPackageDensityGmL(record = {}) {
+  const density = Number(record?.density ?? record?.densityGmL);
+  return Number.isFinite(density) && density > 0 ? density : null;
+}
+
 function selectIngredientBasketLine(
   ingredient,
   pricesState,
@@ -1226,6 +1262,13 @@ function selectIngredientBasketLine(
       registryConfirmed: missingOption?.assessment?.registryConfirmed || false,
       linkedDuplicateOfCatalogName:
         missingOption?.assessment?.linkedDuplicateOfCatalogName || null,
+      pricingMode: missingOption?.supplierData?.pricingMode || null,
+      costingMode: missingOption?.supplierData?.costingMode || null,
+      componentPricingStatus:
+        missingOption?.supplierData?.componentPricingStatus || null,
+      supportNote: missingOption?.supplierData?.supportNote || null,
+      volumeMassEstimate: false,
+      volumeMassCaveat: null,
       line: null,
     };
   }
@@ -1292,7 +1335,9 @@ function selectIngredientBasketLine(
     buyText: `${line.qty}${line.unit}${line.multi > 1 ? ` ×${line.multi}` : ""}`,
     remaining: line.remaining,
     mappingConfidence: selectedOption.assessment.mappingConfidence,
-    confidenceNote: selectedOption.assessment.confidenceNote,
+    confidenceNote: [selectedOption.assessment.confidenceNote, line.volumeMassCaveat]
+      .filter(Boolean)
+      .join(" "),
     qualityNote: selectedOption.assessment.qualityNote,
     forcedByOverride: selectedOption.forcedByOverride,
     status:
@@ -1304,6 +1349,15 @@ function selectIngredientBasketLine(
     registryConfirmed: selectedOption.assessment.registryConfirmed,
     linkedDuplicateOfCatalogName:
       selectedOption.assessment.linkedDuplicateOfCatalogName,
+    pricingMode: line.pricingMode || selectedOption.supplierData?.pricingMode || null,
+    costingMode: line.costingMode || selectedOption.supplierData?.costingMode || null,
+    componentPricingStatus:
+      line.componentPricingStatus ||
+      selectedOption.supplierData?.componentPricingStatus ||
+      null,
+    supportNote: line.supportNote || selectedOption.supplierData?.supportNote || null,
+    volumeMassEstimate: Boolean(line.volumeMassEstimate),
+    volumeMassCaveat: line.volumeMassCaveat || null,
     line,
   };
 }
@@ -1354,6 +1408,137 @@ export function buildSupplierBasketStrategies(
       buildSupplierBasket(ingredients, pricesState, supplierOverrides, mode, runtime),
     ])
   );
+}
+
+function isAccordBasketLine(line = {}) {
+  return Boolean(
+    line?.supplier === "Bench Accord" ||
+      line?.linkStatus === "component_derived_accord" ||
+      line?.costingMode === "component_derived" ||
+      line?.line?.costingMode === "component_derived" ||
+      line?.componentPricingStatus
+  );
+}
+
+function formatCostSemanticsCount(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+export function buildBasketCostSemanticsSummary(basket = {}) {
+  const lines = Array.isArray(basket?.lines) ? basket.lines : [];
+  const accordLines = lines.filter(isAccordBasketLine);
+  const componentCostedAccordLines = accordLines.filter(
+    (line) =>
+      line.linkStatus === "component_derived_accord" ||
+      line.costingMode === "component_derived" ||
+      line.line?.costingMode === "component_derived"
+  );
+  const partialAccordLines = accordLines.filter(
+    (line) => line.componentPricingStatus === "incomplete"
+  );
+  const recipeMissingAccordLines = accordLines.filter(
+    (line) => line.componentPricingStatus === "missing_recipe"
+  );
+  const unpricedAccordLines = accordLines.filter(
+    (line) =>
+      line.lineCost == null ||
+      Number(line.lineCost) === 0 ||
+      line.status === "missing"
+  );
+  const volumeMassEstimateLines = lines.filter((line) => line.volumeMassEstimate);
+
+  return {
+    accordCount: accordLines.length,
+    componentCostedAccordCount: componentCostedAccordLines.length,
+    partialAccordCount: partialAccordLines.length,
+    recipeMissingAccordCount: recipeMissingAccordLines.length,
+    unpricedAccordCount: unpricedAccordLines.length,
+    volumeMassEstimateCount: volumeMassEstimateLines.length,
+    componentCostedAccordLines,
+    partialAccordLines,
+    recipeMissingAccordLines,
+    unpricedAccordLines,
+    volumeMassEstimateLines,
+  };
+}
+
+export function buildCostConfidenceCaveatText({
+  basket = null,
+  modelConfidenceSummary = null,
+} = {}) {
+  const costSummary = buildBasketCostSemanticsSummary(basket);
+  const counts = modelConfidenceSummary?.categoryCounts || {};
+  const caveats = [];
+
+  if (costSummary.componentCostedAccordCount > 0) {
+    caveats.push(
+      `Component-costed accord: ${formatCostSemanticsCount(
+        costSummary.componentCostedAccordCount,
+        "accord row"
+      )} use known recipe-derived unit costs; chemistry/IFRA modeling remains accord-level unless expanded.`
+    );
+  }
+
+  if (costSummary.partialAccordCount > 0) {
+    caveats.push(
+      `Partially component-costed accord: ${formatCostSemanticsCount(
+        costSummary.partialAccordCount,
+        "accord row"
+      )} have recipe components missing prices, so cost remains incomplete.`
+    );
+  }
+
+  if (costSummary.recipeMissingAccordCount > 0) {
+    caveats.push(
+      `Unpriced accord: ${formatCostSemanticsCount(
+        costSummary.recipeMissingAccordCount,
+        "accord row"
+      )} have no structured recipe or direct price and are not treated as confirmed $0.`
+    );
+  } else if (
+    costSummary.unpricedAccordCount > 0 &&
+    costSummary.partialAccordCount === 0
+  ) {
+    caveats.push(
+      `Unpriced accord: ${formatCostSemanticsCount(
+        costSummary.unpricedAccordCount,
+        "accord row"
+      )} have no usable current cost and are not treated as confirmed $0.`
+    );
+  }
+
+  if (costSummary.volumeMassEstimateCount > 0) {
+    caveats.push(
+      `Volume-to-mass estimate: ${formatCostSemanticsCount(
+        costSummary.volumeMassEstimateCount,
+        "package row"
+      )} use 1 mL ≈ 1 g because no density is stored.`
+    );
+  }
+
+  if (Number(counts.missing_pricing) > 0) {
+    caveats.push(
+      `${formatCostSemanticsCount(
+        Number(counts.missing_pricing),
+        "pricing row"
+      )} are missing or placeholder-supported, so displayed purchase cost may be understated.`
+    );
+  }
+
+  if (
+    caveats.length === 0 &&
+    Number(counts.black_box_accord) > 0 &&
+    !basket
+  ) {
+    caveats.push(
+      `${formatCostSemanticsCount(
+        Number(counts.black_box_accord),
+        "accord row"
+      )} remain accord-level for chemistry/IFRA modeling; priced accords use component-derived costing where available.`
+    );
+  }
+
+  return caveats.join(" ");
 }
 
 export function buildBatchPlannerReport({
@@ -3222,12 +3407,12 @@ export function buildLaunchReadinessSummary({
     );
   }
   const confidenceCounts = modelConfidenceSummary?.categoryCounts || {};
-  if (toFiniteNumber(confidenceCounts.black_box_accord) > 0) {
-    cautions.push(
-      `${confidenceCounts.black_box_accord} black-box accord row${
-        confidenceCounts.black_box_accord === 1 ? "" : "s"
-      } use placeholder component/cost support.`
-    );
+  const costSemanticsCaveat = buildCostConfidenceCaveatText({
+    basket,
+    modelConfidenceSummary,
+  });
+  if (costSemanticsCaveat) {
+    cautions.push(costSemanticsCaveat);
   } else if (toFiniteNumber(confidenceCounts.missing_pricing) > 0) {
     cautions.push(
       `${confidenceCounts.missing_pricing} pricing row${

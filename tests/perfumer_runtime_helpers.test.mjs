@@ -952,7 +952,7 @@ test("buildFounderTrustSummary flags sparse support when missing data drives the
   assert.ok(trustSummary.uncertainSignals.length >= 1);
 });
 
-test("launch readiness surfaces black-box accord pricing caveats without changing basket missing counts", () => {
+test("launch readiness surfaces component-costed accord caveats without changing basket missing counts", () => {
   const summary = buildLaunchReadinessSummary({
     formula: {
       ingredients: [{ name: "Driftwood Accord", note: "base", g: 1 }],
@@ -962,8 +962,11 @@ test("launch readiness surfaces black-box accord pricing caveats without changin
       lines: [
         {
           ingredientName: "Driftwood Accord",
-          status: "confirmed",
-          lineCost: 0,
+          supplier: "Bench Accord",
+          status: "inferred",
+          lineCost: 0.42,
+          linkStatus: "component_derived_accord",
+          costingMode: "component_derived",
         },
       ],
       missingCount: 0,
@@ -989,14 +992,19 @@ test("launch readiness surfaces black-box accord pricing caveats without changin
     modelConfidenceSummary: {
       categoryCounts: {
         black_box_accord: 1,
-        missing_pricing: 1,
+        missing_pricing: 0,
       },
     },
     targetBatchG: 100,
   });
 
   assert.ok(
-    summary.cautions.some((caution) => caution.includes("black-box accord row"))
+    summary.cautions.some((caution) =>
+      caution.includes("Component-costed accord")
+    )
+  );
+  assert.ok(
+    summary.cautions.every((caution) => !caution.includes("unresolved or unpriced"))
   );
   assert.equal(summary.pricing.missingCount, 0);
 });
