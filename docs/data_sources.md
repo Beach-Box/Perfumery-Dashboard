@@ -161,18 +161,34 @@ usable values:
   mmHg at 25 C.
 - `Aldehyde C-8`: PubChem MW/xLogP plus TGSC EPI experimental-database VP in
   mmHg at 25 C.
+- `Veramoss`: IFF compendium MW, logP, and VP in mmHg at 23 C.
+- `Maritima`: TGSC MW plus IFF compendium logP and VP in mmHg at 23 C.
+- `Ethyl Linalyl Acetate`: TGSC CAS-backed MW, xLogP, and estimated VP in
+  mmHg at 25 C.
+- `Florol®`: Firmenich MW, measured logP, and VP at 20 C. The source reports
+  VP in Pa, so the app value is converted to mmHg using
+  `1 Pa = 0.00750062 mmHg`.
+- `Geosmin`: TGSC MW, xLogP, and estimated VP in mmHg at 25 C.
 
 The live `VP` field is treated as mmHg. New VP values should include a
 `vpConfidence` tag that names the source family, temperature, and whether the
 value is estimated or experimental where the current schema can express it.
 Examples include `iff_compendium_23c`, `tgsc_est_25c`, and
-`tgsc_epi_exp_25c`.
+`tgsc_epi_exp_25c`. Use a conversion-bearing tag such as
+`firmenich_spec_pa_to_mmhg_20c` when the source unit is not mmHg and the app
+stores the converted mmHg value.
 
 Do not add odor-threshold fields (`ODT` or `odorThreshold_ngL`) unless the source
 is explicit about the threshold value and units. Do not average conflicting
 thresholds without a documented convention. Density should be added only when a
 source provides a clear single value and temperature; source ranges remain
 review notes until the schema supports ranges.
+
+Existing legacy `ODT` values on target rows are not automatically upgraded to
+reviewed odor-threshold data. For example, the second hero molecular pass left
+the pre-existing `ODT` values on `Veramoss` and `Geosmin` in place but did not
+add `odorThreshold_ngL` because the reviewed sources did not provide an
+app-compatible threshold value with enough source, unit, and medium detail.
 
 Accords, essential oils, absolutes, UVCBs, and trademark specialties remain
 caveated. Do not treat them as molecule-exact unless the source is explicit

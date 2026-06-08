@@ -9344,12 +9344,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   "Ethyl Linalyl Acetate": [
-    null,
-    4.72,
+    210.32,
+    3.7,
     null,
     0,
     0,
-    null,
+    0.026,
     null,
     null,
     "mid",
@@ -9366,7 +9366,7 @@ const RAW_DB = {
     "Aromatic isolate by Ventos",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_est_25c", null, null
   ],
   Aldemone: [
     null,
@@ -9569,12 +9569,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   Maritima: [
-    null,
-    4.72,
+    229.36,
+    6.4,
     null,
     0,
     0,
-    null,
+    0.000086,
     null,
     null,
     "mid",
@@ -9591,7 +9591,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "iff_compendium_23c", null, null
   ],
   "Strawberry Furanone": [
     null,
@@ -24119,12 +24119,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   Veramoss: [
-    null,
-    0.944,
+    196.1,
+    3.6,
     null,
     0,
     0,
-    null,
+    0.000018,
     0.01,
     null,
     "mid",
@@ -24141,15 +24141,15 @@ const RAW_DB = {
     "Green synth by IFF",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "iff_compendium_23c", null, null
   ],
   "Florol®": [
-    null,
-    0.708,
+    173,
+    2.22,
     null,
     0,
     0,
-    null,
+    0.007126,
     null,
     null,
     "mid",
@@ -24166,7 +24166,7 @@ const RAW_DB = {
     "Aromatic synth by Firmenich",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "firmenich_spec_pa_to_mmhg_20c", null, null
   ],
   "Benzyl Isovalerate": [
     null,
@@ -26019,12 +26019,12 @@ const RAW_DB = {
     null, null, null, null, null, null, null
   ],
   Geosmin: [
-    null,
-    4.72,
+    182.31,
+    3.3,
     null,
     0,
     0,
-    null,
+    0.001,
     0.00001,
     null,
     "mid",
@@ -26041,7 +26041,7 @@ const RAW_DB = {
     "Aromatic synth by IFF",
     null,
     null,
-    null, null, null, null, null, null, null
+    null, null, null, null, "tgsc_est_25c", null, null
   ],
   "Clearwood®": [
     null,

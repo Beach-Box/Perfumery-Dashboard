@@ -494,6 +494,95 @@ test("priority hero materials expose reviewed molecular fields", () => {
   }
 });
 
+test("second-tier hero materials expose reviewed molecular fields without new threshold claims", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const expectedRecords = {
+    Veramoss: {
+      MW: 196.1,
+      xLogP: 3.6,
+      VP: 0.000018,
+      densityGmL: 0,
+      vpConfidence: "iff_compendium_23c",
+    },
+    Maritima: {
+      MW: 229.36,
+      xLogP: 6.4,
+      VP: 0.000086,
+      densityGmL: 0,
+      vpConfidence: "iff_compendium_23c",
+    },
+    "Ethyl Linalyl Acetate": {
+      MW: 210.32,
+      xLogP: 3.7,
+      VP: 0.026,
+      densityGmL: 0,
+      vpConfidence: "tgsc_est_25c",
+    },
+    "Florol®": {
+      MW: 173,
+      xLogP: 2.22,
+      VP: 0.007126,
+      densityGmL: 0,
+      vpConfidence: "firmenich_spec_pa_to_mmhg_20c",
+    },
+    Geosmin: {
+      MW: 182.31,
+      xLogP: 3.3,
+      VP: 0.001,
+      densityGmL: 0,
+      vpConfidence: "tgsc_est_25c",
+    },
+  };
+
+  for (const [name, expected] of Object.entries(expectedRecords)) {
+    assert.equal(rawDb[name].length, HERO_FORMULA_RAW_DB_FIELDS.length);
+    const record = rawDbRecordFromRow(rawDb[name]);
+    for (const [field, value] of Object.entries(expected)) {
+      assert.equal(record[field], value, `${name} ${field}`);
+    }
+    assert.equal(
+      record.odorThreshold_ngL,
+      null,
+      `${name} odor threshold should remain unset until explicitly sourced`
+    );
+  }
+
+  assert.equal(rawDbRecordFromRow(rawDb.Veramoss).ODT, 0.01);
+  assert.equal(rawDbRecordFromRow(rawDb.Geosmin).ODT, 0.00001);
+  assert.equal(rawDbRecordFromRow(rawDb.Maritima).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb["Ethyl Linalyl Acetate"]).ODT, null);
+  assert.equal(rawDbRecordFromRow(rawDb["Florol®"]).ODT, null);
+});
+
+test("second-tier diluted stocks inherit reviewed parent molecular fields", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const supportRows = buildHeroFormulaRawDbSupportRows(rawDb);
+
+  const veramossStock = rawDbRecordFromRow(supportRows["Veramoss 20% TEC"]);
+  assert.equal(veramossStock.MW, 196.1);
+  assert.equal(veramossStock.xLogP, 3.6);
+  assert.equal(veramossStock.VP, 0.000018);
+  assert.equal(veramossStock.ODT, 0.01);
+  assert.equal(veramossStock.vpConfidence, "iff_compendium_23c");
+  assert.equal(veramossStock.dilutionFactor, 0.2);
+  assert.equal(veramossStock.supplier, "Hero Formula Support");
+  assert.equal(veramossStock.rep, "Veramoss");
+  assert.equal(veramossStock.scentClass, "Diluted Stock");
+
+  const geosminStock = rawDbRecordFromRow(supportRows["Geosmin 1% TEC"]);
+  assert.equal(geosminStock.MW, 182.31);
+  assert.equal(geosminStock.xLogP, 3.3);
+  assert.equal(geosminStock.VP, 0.001);
+  assert.equal(geosminStock.ODT, 0.00001);
+  assert.equal(geosminStock.vpConfidence, "tgsc_est_25c");
+  assert.equal(geosminStock.dilutionFactor, 0.01);
+  assert.equal(geosminStock.supplier, "Hero Formula Support");
+  assert.equal(geosminStock.rep, "Geosmin");
+  assert.equal(geosminStock.scentClass, "Diluted Stock");
+});
+
 test("hero formula support covers all confirmed hero formula material gaps", () => {
   const reviewNeededNames = new Set(
     HERO_FORMULA_MATERIAL_SUPPORT.reviewNeeded.map((item) => item.name)
