@@ -12,8 +12,13 @@ test("hero formula detail shows carrier grams, accord components, and interpreta
   page,
 }) => {
   const pageErrors = [];
+  const blockedApiCalls = [];
   page.on("pageerror", (error) => {
     pageErrors.push(error.message);
+  });
+  await page.route(/(openai|anthropic|\/api\/ai|\/api\/chat)/i, (route) => {
+    blockedApiCalls.push(route.request().url());
+    return route.abort();
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -39,21 +44,40 @@ test("hero formula detail shows carrier grams, accord components, and interpreta
   await expect(page.getByTestId("chemistry-interpretation")).toContainText(
     "Chemistry Interpretation"
   );
+  await expect(page.getByTestId("chemistry-decision-guidance")).toContainText(
+    "Decision Guidance"
+  );
 
   await clickFormulaSubtab(page, "Odor Analysis");
   await expect(page.getByTestId("odor-analysis-interpretation")).toContainText(
     "Odor value is shown as a directional impact signal"
   );
+  await expect(
+    page.getByTestId("odor-analysis-decision-guidance")
+  ).toContainText("Do not overreact");
 
   await clickFormulaSubtab(page, "Timeline");
   await expect(page.getByTestId("timeline-interpretation")).toContainText(
     "Validate at 5 min"
+  );
+  await expect(page.getByTestId("timeline-interpretation")).toContainText(
+    "not physically stronger"
+  );
+  await expect(page.getByTestId("timeline-decision-guidance")).toContainText(
+    "Decision Guidance"
   );
 
   await clickFormulaSubtab(page, "Odor Map");
   await expect(page.getByTestId("odor-map-interpretation")).toContainText(
     "Dominant families"
   );
+  await expect(page.getByTestId("odor-map-interpretation")).toContainText(
+    "Trace alerts are shown separately"
+  );
+  await expect(page.getByTestId("odor-map-trace-alerts")).toContainText(
+    "High-impact trace material"
+  );
 
   expect(pageErrors).toEqual([]);
+  expect(blockedApiCalls).toEqual([]);
 });

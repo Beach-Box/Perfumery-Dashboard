@@ -1977,6 +1977,587 @@ export function summarizeComputedChemistry(chem = []) {
   };
 }
 
+const DEFAULT_FORMULA_TIMELINE_STEPS = Object.freeze([
+  0, 0.25, 0.5, 1, 2, 3, 4, 6, 8,
+]);
+
+const NOTE_DECAY_FALLBACK_RATE = {
+  top: 0.58,
+  mid: 0.24,
+  base: 0.075,
+  carrier: 0.16,
+};
+
+const NOTE_DIFFUSION_FALLBACK = {
+  top: 1.35,
+  mid: 0.95,
+  base: 0.65,
+  carrier: 0.4,
+};
+
+function getPositiveModelNumber(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
+}
+
+function roundModelNumber(value, decimals = 4) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return 0;
+  return Number(numericValue.toFixed(decimals));
+}
+
+function clampModelNumber(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function getContributionRecord(db = {}, ingredient = {}) {
+  return ingredient?.d || db?.[ingredient?.name] || {};
+}
+
+function getContributionActiveGrams(ingredient = {}) {
+  const activeG = getPositiveModelNumber(ingredient?.activeG);
+  if (activeG != null) return activeG;
+  return getPositiveModelNumber(ingredient?.resolvedGrams) ??
+    getPositiveModelNumber(ingredient?.g) ??
+    0;
+}
+
+function getContributionNote(ingredient = {}, record = {}) {
+  return record?.note || ingredient?.note || "mid";
+}
+
+function getContributionTags(record = {}) {
+  return Array.isArray(record?.descriptorTags) ? record.descriptorTags : [];
+}
+
+function textContainsAny(value = "", patterns = []) {
+  const normalized = String(value || "").toLowerCase();
+  return patterns.some((pattern) => normalized.includes(pattern));
+}
+
+function recordText(record = {}) {
+  return [
+    record?.scentClass,
+    record?.scentSummary,
+    record?.scentDesc,
+    record?.char,
+    record?.rep,
+    ...getContributionTags(record),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getDoseAwareFamily(record = {}, fallbackNote = "mid") {
+  const text = recordText(record);
+  if (textContainsAny(text, ["aldehydic", "aldehyde"])) return "Aldehydic";
+  if (textContainsAny(text, ["marine", "ozonic", "aquatic"])) return "Marine";
+  if (textContainsAny(text, ["musk", "musky"])) return "Musk";
+  if (textContainsAny(text, ["woody", "cedar", "sandal", "vetiver"])) return "Woody";
+  if (textContainsAny(text, ["floral", "jasmine", "rose", "violet"])) return "Floral";
+  if (textContainsAny(text, ["citrus", "bergamot", "lemon", "lime", "orange"])) {
+    return "Citrus";
+  }
+  if (textContainsAny(text, ["amber", "ambrox", "labdanum"])) return "Amber";
+  if (textContainsAny(text, ["green", "leaf", "herbal"])) return "Green";
+  return record?.scentClass || record?.note || fallbackNote || "Other";
+}
+
+function getOdorThresholdSourceLabel(record = {}) {
+  const source = record?.odorThresholdSource;
+  if (source?.unit || source?.sourceUnit) {
+    return String(source.unit || source.sourceUnit).trim();
+  }
+  if (getPositiveModelNumber(record?.ODT)) return "legacy/unsourced ODT";
+  return "ODT missing";
+}
+
+function getOdorThresholdConfidenceMultiplier(record = {}) {
+  if (getPositiveModelNumber(record?.ODT) && record?.odorThresholdSource) return 1;
+  if (getPositiveModelNumber(record?.ODT)) return 0.72;
+  return 0.48;
+}
+
+function getVaporPressureConfidenceMultiplier(record = {}) {
+  const vp = getPositiveModelNumber(record?.VP);
+  if (!vp) return 0.68;
+  const confidence = String(record?.vpConfidence || "").trim();
+  if (confidence && confidence !== "review_needed" && confidence !== "not_applicable") {
+    return 1;
+  }
+  return 0.82;
+}
+
+function getCompressedPotencyFactor(record = {}) {
+  const odt = getPositiveModelNumber(record?.ODT);
+  if (!odt) {
+    return {
+      potencyFactor: 1,
+      potencyLog: 0,
+      hasOdt: false,
+      sourceLabel: getOdorThresholdSourceLabel(record),
+    };
+  }
+  const potencyLog = Math.log10(1 + 1 / odt);
+  return {
+    potencyFactor: 1 + clampModelNumber(potencyLog, 0, 6),
+    potencyLog,
+    hasOdt: true,
+    sourceLabel: getOdorThresholdSourceLabel(record),
+  };
+}
+
+function getDiffusionFactor(record = {}, note = "mid") {
+  const vp = getPositiveModelNumber(record?.VP);
+  if (!vp) return NOTE_DIFFUSION_FALLBACK[note] || NOTE_DIFFUSION_FALLBACK.mid;
+  const vpBoost = clampModelNumber(Math.log10(1 + vp * 1e6) / 4, 0.25, 2.35);
+  if (note === "base") return clampModelNumber(vpBoost * 0.82, 0.35, 1.65);
+  if (note === "top") return clampModelNumber(vpBoost * 1.12, 0.7, 2.5);
+  return clampModelNumber(vpBoost, 0.45, 2.1);
+}
+
+function getDirectionalDecayRate(record = {}, note = "mid", family = "") {
+  const vp = getPositiveModelNumber(record?.VP);
+  let rate = NOTE_DECAY_FALLBACK_RATE[note] || NOTE_DECAY_FALLBACK_RATE.mid;
+
+  if (vp) {
+    const vpIndex = clampModelNumber((Math.log10(vp) + 7) / 7, 0, 1);
+    rate = 0.055 + vpIndex * 0.48;
+    if (note === "top") rate += 0.24;
+    if (note === "mid") rate += 0.08;
+    if (note === "base") rate -= 0.025;
+  }
+
+  const familyText = String(family || "").toLowerCase();
+  if (
+    note === "top" ||
+    textContainsAny(familyText, ["aldehydic", "citrus", "marine", "green"])
+  ) {
+    rate += 0.08;
+  }
+  const xLogP = Number(record?.xLogP);
+  if (Number.isFinite(xLogP) && xLogP >= 4) rate *= 0.72;
+  if (Number.isFinite(xLogP) && xLogP <= 2) rate *= 1.12;
+  if (record?.type === "ACCORD" || record?.isUVCB) rate *= 0.88;
+
+  return clampModelNumber(rate, 0.035, 1.25);
+}
+
+function isHighImpactMaterial(record = {}) {
+  const text = recordText(record).toLowerCase();
+  const odt = getPositiveModelNumber(record?.ODT);
+  return Boolean(
+    text.includes("high impact") ||
+      text.includes("extreme potency") ||
+      text.includes("powerful") ||
+      (odt != null && odt <= 0.2)
+  );
+}
+
+function buildContributionPhaseLeaders(materials = [], t = 0, limit = 4) {
+  const rows = materials
+    .map((material) => ({
+      name: material.name,
+      note: material.note,
+      family: material.family,
+      value: material.initialContribution * Math.exp(-material.decayRate * t),
+    }))
+    .filter((row) => row.value > 0)
+    .sort((a, b) => b.value - a.value);
+  const total = rows.reduce((sum, row) => sum + row.value, 0) || 1;
+  return rows.slice(0, limit).map((row) => ({
+    ...row,
+    share: roundModelNumber(row.value / total, 4),
+    sharePct: roundModelNumber((row.value / total) * 100, 1),
+  }));
+}
+
+function getMaterialDisplayShortName(name = "") {
+  const safeName = String(name || "");
+  return safeName.length > 16 ? `${safeName.slice(0, 15)}...` : safeName;
+}
+
+function formatModelMaterialList(rows = [], limit = 3, fallback = "not enough modeled data") {
+  const names = rows.map((row) => row?.name || row).filter(Boolean).slice(0, limit);
+  return names.length ? formatHumanList(names, limit) : fallback;
+}
+
+function buildOdorImpactChartModel(materials = []) {
+  const modeledRows = materials.filter((material) => material.hasOdt);
+  const missingOdtCount = materials.filter((material) => !material.hasOdt).length;
+  const unitBuckets = Array.from(
+    new Set(modeledRows.map((material) => material.sourceLabel).filter(Boolean))
+  );
+  const sourceBackedCount = modeledRows.filter(
+    (material) => material.sourceLabel !== "legacy/unsourced ODT"
+  ).length;
+  const legacyCount = modeledRows.length - sourceBackedCount;
+  const chartRows = materials.slice(0, 12).map((material) => ({
+    name: getMaterialDisplayShortName(material.name),
+    fullName: material.name,
+    doseAwareImpact: roundModelNumber(material.initialContribution, 4),
+    rawOdt: material.odt,
+    rawOdtLabel: material.odt ? roundModelNumber(material.odt, 6) : "missing",
+    rawOVLabel: material.odt ? `ODT ${roundModelNumber(material.odt, 6)}` : "ODT missing",
+    activePct: material.activePct,
+    note: material.note,
+    sourceUnit: material.sourceLabel,
+    isTraceHighImpact: material.isTraceHighImpact,
+    capApplied: material.capApplied,
+  }));
+
+  return {
+    modeledRows,
+    chartRows,
+    missingOdtCount,
+    unitBuckets,
+    sourceBackedCount,
+    legacyCount,
+    hasMixedUnits: unitBuckets.length > 1,
+    isLimitedSingleBar: chartRows.length === 1,
+    topName: materials[0]?.name || null,
+  };
+}
+
+export function buildFormulaTimelineContributionModel(
+  ingredients = [],
+  { db = {}, timeSteps = DEFAULT_FORMULA_TIMELINE_STEPS, maxMaterials = 12 } = {}
+) {
+  const sourceIngredients = Array.isArray(ingredients) ? ingredients : [];
+  const totalActiveG =
+    sourceIngredients.reduce(
+      (sum, ingredient) => sum + getContributionActiveGrams(ingredient),
+      0
+    ) || 0;
+
+  const preparedRows = sourceIngredients
+    .map((ingredient) => {
+      const record = getContributionRecord(db, ingredient);
+      const activeGrams = getContributionActiveGrams(ingredient);
+      const note = getContributionNote(ingredient, record);
+      const family = getDoseAwareFamily(record, note);
+      const activePct = totalActiveG > 0 ? (activeGrams / totalActiveG) * 100 : 0;
+      const potency = getCompressedPotencyFactor(record);
+      const diffusionFactor = getDiffusionFactor(record, note);
+      const confidenceMultiplier =
+        getOdorThresholdConfidenceMultiplier(record) *
+        getVaporPressureConfidenceMultiplier(record);
+      const uncappedInitialContribution =
+        activeGrams * potency.potencyFactor * diffusionFactor * confidenceMultiplier;
+      const isTraceHighImpact =
+        activePct > 0 && activePct <= 2 && isHighImpactMaterial(record);
+      const traceImpactCap =
+        totalActiveG *
+        clampModelNumber(Math.max(0.012, (activePct / 100) * 8), 0.012, 0.08);
+      const initialContribution = isTraceHighImpact
+        ? Math.min(uncappedInitialContribution, traceImpactCap)
+        : uncappedInitialContribution;
+      const decayRate = getDirectionalDecayRate(record, note, family);
+      const hasRealVp = Boolean(getPositiveModelNumber(record?.VP));
+      const odt = getPositiveModelNumber(record?.ODT);
+
+      return {
+        name: ingredient?.name,
+        note,
+        family,
+        activeGrams: roundModelNumber(activeGrams, 6),
+        activePct: roundModelNumber(activePct, 3),
+        initialContribution: roundModelNumber(initialContribution, 6),
+        uncappedInitialContribution: roundModelNumber(uncappedInitialContribution, 6),
+        potencyFactor: roundModelNumber(potency.potencyFactor, 4),
+        potencyLog: roundModelNumber(potency.potencyLog, 4),
+        diffusionFactor: roundModelNumber(diffusionFactor, 4),
+        confidenceMultiplier: roundModelNumber(confidenceMultiplier, 4),
+        decayRate: roundModelNumber(decayRate, 6),
+        retentionAtEightHours: roundModelNumber(Math.exp(-decayRate * 8), 4),
+        isTraceHighImpact,
+        capApplied: isTraceHighImpact && uncappedInitialContribution > initialContribution,
+        traceImpactCap: roundModelNumber(traceImpactCap, 6),
+        hasRealVp,
+        hasOdt: potency.hasOdt,
+        odt,
+        sourceLabel: potency.sourceLabel,
+        recordType: record?.type || null,
+        isUVCB: Boolean(record?.isUVCB),
+      };
+    })
+    .filter(
+      (row) =>
+        row.name &&
+        row.activeGrams > 0 &&
+        row.note !== "carrier" &&
+        row.initialContribution > 0
+    )
+    .sort((a, b) => b.initialContribution - a.initialContribution);
+
+  const plottedMaterials = preparedRows.slice(0, maxMaterials);
+  const absoluteRows = timeSteps.map((t) => {
+    const row = { t, label: `${t}h` };
+    plottedMaterials.forEach((material) => {
+      row[material.name] = roundModelNumber(
+        material.initialContribution * Math.exp(-material.decayRate * t),
+        5
+      );
+    });
+    return row;
+  });
+  const relativeRows = timeSteps.map((t) => {
+    const values = preparedRows.map((material) => ({
+      material,
+      value: material.initialContribution * Math.exp(-material.decayRate * t),
+    }));
+    const total = values.reduce((sum, row) => sum + row.value, 0) || 1;
+    const row = { t, label: `${t}h` };
+    plottedMaterials.forEach((material) => {
+      const value =
+        values.find((entry) => entry.material.name === material.name)?.value || 0;
+      row[material.name] = roundModelNumber((value / total) * 100, 3);
+    });
+    return row;
+  });
+  const traceAlerts = preparedRows
+    .filter((material) => material.isTraceHighImpact)
+    .map((material) => ({
+      name: material.name,
+      family: material.family,
+      activePct: material.activePct,
+      activeGrams: material.activeGrams,
+      cappedImpact: material.initialContribution,
+      uncappedImpact: material.uncappedInitialContribution,
+      capApplied: material.capApplied,
+      sourceLabel: material.sourceLabel,
+      label: "High-impact trace material",
+    }));
+
+  return {
+    timeSteps: [...timeSteps],
+    totalActiveG: roundModelNumber(totalActiveG, 6),
+    materials: preparedRows,
+    plottedMaterials,
+    absoluteRows,
+    relativeRows,
+    traceAlerts,
+    odorImpactChartModel: buildOdorImpactChartModel(preparedRows),
+    phaseLeaders: {
+      opening: buildContributionPhaseLeaders(preparedRows, 0.25),
+      heart: buildContributionPhaseLeaders(preparedRows, 2),
+      drydown: buildContributionPhaseLeaders(preparedRows, 6),
+    },
+    hasFallbackVp: preparedRows.some((material) => !material.hasRealVp),
+    hasMissingOdt: preparedRows.some((material) => !material.hasOdt),
+  };
+}
+
+export function buildDoseAwareOdorMapModel(
+  ingredients = [],
+  { db = {}, timelineModel = null } = {}
+) {
+  const model =
+    timelineModel || buildFormulaTimelineContributionModel(ingredients, { db });
+  const totalContribution =
+    model.materials.reduce(
+      (sum, material) => sum + (Number(material.initialContribution) || 0),
+      0
+    ) || 1;
+  const points = model.materials
+    .map((material) => {
+      const record = db?.[material.name] || {};
+      const odt = getPositiveModelNumber(record?.ODT);
+      const vp = getPositiveModelNumber(record?.VP);
+      const mw = getPositiveModelNumber(record?.MW);
+      if (!odt || !vp || !mw) return null;
+      const csatNgL = (vp * 133.322 * mw * 1e6) / (8.314 * 298.15);
+      const contributionShare = material.initialContribution / totalContribution;
+      return {
+        name: material.name,
+        x: roundModelNumber(Math.log10(odt), 3),
+        y: roundModelNumber(Math.log10(csatNgL + 1e-9), 3),
+        z: Math.round(30 + Math.min(270, contributionShare * 900)),
+        doseAwareImpact: material.initialContribution,
+        contributionShare: roundModelNumber(contributionShare, 4),
+        activePct: material.activePct,
+        note: material.note,
+        family: material.family,
+        sourceLabel: material.sourceLabel,
+        isTraceHighImpact: material.isTraceHighImpact,
+      };
+    })
+    .filter(Boolean);
+
+  const familyTotals = {};
+  model.materials.forEach((material) => {
+    const family = material.family || "Other";
+    familyTotals[family] =
+      (familyTotals[family] || 0) + (Number(material.initialContribution) || 0);
+  });
+  const sortedFamilies = Object.entries(familyTotals)
+    .map(([family, contribution]) => ({
+      family,
+      contribution: roundModelNumber(contribution, 6),
+      sharePct: roundModelNumber((contribution / totalContribution) * 100, 1),
+    }))
+    .filter((row) => row.contribution > 0)
+    .sort((a, b) => b.contribution - a.contribution);
+  const commonFamilies = [
+    "Citrus",
+    "Marine",
+    "Floral",
+    "Woody",
+    "Musk",
+    "Amber",
+    "Green",
+    "Spicy",
+    "Aldehydic",
+  ];
+  const present = new Set(
+    sortedFamilies.slice(0, 5).map((row) => row.family.toLowerCase())
+  );
+
+  return {
+    points,
+    familyTotals: sortedFamilies,
+    dominantFamilies: sortedFamilies.slice(0, 4),
+    underrepresentedFamilies: commonFamilies.filter(
+      (family) => !present.has(family.toLowerCase())
+    ),
+    traceAlerts: model.traceAlerts,
+    totalContribution: roundModelNumber(totalContribution, 6),
+  };
+}
+
+export function buildFormulaDecisionGuidance(
+  ingredients = [],
+  { db = {}, timelineModel = null, odorMapModel = null, formulaLabel = "this formula" } = {}
+) {
+  const model =
+    timelineModel || buildFormulaTimelineContributionModel(ingredients, { db });
+  const mapModel =
+    odorMapModel || buildDoseAwareOdorMapModel(ingredients, { db, timelineModel: model });
+  const traceNames = formatModelMaterialList(model.traceAlerts, 3, "no high-impact traces flagged");
+  const fastNames = formatModelMaterialList(
+    [...model.materials].sort(
+      (a, b) =>
+        b.decayRate * b.initialContribution - a.decayRate * a.initialContribution
+    ),
+    3
+  );
+  const persistentNames = formatModelMaterialList(
+    [...model.materials].sort(
+      (a, b) =>
+        b.retentionAtEightHours * b.initialContribution -
+        a.retentionAtEightHours * a.initialContribution
+    ),
+    4
+  );
+  const dominantFamilies = mapModel.dominantFamilies
+    .map((row) => row.family)
+    .filter(Boolean);
+  const openingLeaders = formatModelMaterialList(model.phaseLeaders.opening, 3);
+  const drydownLeaders = formatModelMaterialList(model.phaseLeaders.drydown, 3);
+  const missingCount = model.materials.filter(
+    (material) => !material.hasOdt || !material.hasRealVp
+  ).length;
+  const topFamilyText = dominantFamilies.length
+    ? formatHumanList(dominantFamilies, 4)
+    : "not enough dose-aware family data";
+
+  return {
+    chemistry: [
+      {
+        label: "Watch",
+        text: `${fastNames} set the fastest-moving lift; ${persistentNames} are the main persistence checks.`,
+      },
+      {
+        label: "Do not overreact",
+        text: `${traceNames} should be read as potency warnings, not automatic proof that the formula balance is dominated by those rows.`,
+      },
+      {
+        label: "Test next",
+        text: `Run ${formulaLabel} on blotter and skin at 5 min, 30 min, 2 hr, and 6 hr before judging the chemistry charts.`,
+      },
+      {
+        label: "Possible adjustment direction",
+        text: "If testing confirms harsh lift, evaluate softening the fast top-note area; if the opening feels flat, evaluate adding lift rather than changing the base first.",
+      },
+    ],
+    analysis: [
+      {
+        label: "Watch",
+        text: `Dominant odor identity is dose-aware and currently reads through ${topFamilyText}.`,
+      },
+      {
+        label: "Do not overreact",
+        text: "Compressed ODT impact keeps very potent traces visible as alerts without letting raw threshold math decide the whole profile.",
+      },
+      {
+        label: "Test next",
+        text: "Check whether the family impression matches the brief on skin and whether trace materials read as sparkle, cleanliness, or harshness.",
+      },
+      {
+        label: "Possible adjustment direction",
+        text: "If the identity feels off-brief, move within the overrepresented family first; avoid correcting a trace alert unless it is perceptible in wear tests.",
+      },
+    ],
+    timeline: [
+      {
+        label: "Watch",
+        text: `Opening leaders are ${openingLeaders}; remaining drydown share is led by ${drydownLeaders}.`,
+      },
+      {
+        label: "Do not overreact",
+        text: "A material can take more relative share after others fade; that does not mean it is physically stronger later.",
+      },
+      {
+        label: "Test next",
+        text: "Smell the same strip without re-wetting at 5 min, 30 min, 2 hr, 6 hr, and next day to check whether the model's fade order feels plausible.",
+      },
+      {
+        label: "Possible adjustment direction",
+        text: "If the opening collapses too quickly, evaluate a modest bridge material; if the drydown dominates too early, evaluate less persistent support.",
+      },
+    ],
+    longevity: [
+      {
+        label: "Watch",
+        text: `${persistentNames} are the highest-priority longevity anchors to verify across skin and fabric.`,
+      },
+      {
+        label: "Do not overreact",
+        text: "A low longevity bar can mean missing xLogP/VP support or a short-lived role, not necessarily a bad material choice.",
+      },
+      {
+        label: "Test next",
+        text: "Compare skin, blotter, and fabric at 2 hr, 6 hr, and next day before changing fixative structure.",
+      },
+      {
+        label: "Possible adjustment direction",
+        text: "If wear tests confirm thin drydown, evaluate the base support around the existing persistent materials before raising high-impact traces.",
+      },
+    ],
+    odormap: [
+      {
+        label: "Watch",
+        text: `Dominant families are ${topFamilyText}; trace alerts are tracked separately as ${traceNames}.`,
+      },
+      {
+        label: "Do not overreact",
+        text: "Point size and family rank use dose-aware capped contribution, so low-dose high-impact materials should not become dominant families by default.",
+      },
+      {
+        label: "Test next",
+        text: "Check whether the map's dominant families feel cohesive with the concept, then evaluate trace alerts only if they are obvious in smelling.",
+      },
+      {
+        label: "Possible adjustment direction",
+        text: "If the map and skin read disagree, prioritize the sensory read; use the map to choose which family or trace area deserves the next trial.",
+      },
+    ],
+    caveats: [
+      `${missingCount} material${missingCount === 1 ? "" : "s"} have missing or fallback VP/ODT support in the contribution model.`,
+    ],
+  };
+}
+
 export function summarizeFormulaChemistry(
   ingredients = [],
   { computeChemistry } = {}

@@ -24,6 +24,9 @@ import {
   buildCapitalConstrainedLaunchRecommendation,
   buildFormulaCritiqueReport,
   buildMaterialSubstitutionSuggestions,
+  buildDoseAwareOdorMapModel,
+  buildFormulaDecisionGuidance,
+  buildFormulaTimelineContributionModel,
   buildVaporPressureDisplay,
   buildFraterworksSupplierAdapterResult,
   buildFormulaCriticalDataAudit,
@@ -212,6 +215,124 @@ test("formula IFRA coverage audit classifies matches, gaps, and accord rows cons
   assert.equal(
     audit.rows.find((row) => row.name === "No Such Material").label,
     "No IFRA record matched"
+  );
+});
+
+test("formula timeline contribution model decays absolute contribution over time", () => {
+  const db = {
+    "Calone Test": {
+      MW: 178.187,
+      VP: 0.00000285,
+      ODT: 0.00001,
+      note: "top",
+      xLogP: 2.43,
+      scentClass: "Marine",
+      descriptorTags: ["Marine", "High Impact Marine"],
+    },
+    "Bergamot Test": {
+      MW: 150,
+      VP: 0.05,
+      ODT: 5,
+      note: "top",
+      xLogP: 2.1,
+      scentClass: "Citrus",
+      descriptorTags: ["Citrus"],
+    },
+    "Musk Base Test": {
+      MW: 238,
+      VP: 0.000000225,
+      ODT: 0.012,
+      note: "base",
+      xLogP: 5.45,
+      scentClass: "Musk",
+      descriptorTags: ["Musk"],
+      odorThresholdSource: { unit: "ppbv air" },
+    },
+  };
+  const model = buildFormulaTimelineContributionModel(
+    [
+      { name: "Calone Test", g: 0.06, note: "top" },
+      { name: "Bergamot Test", g: 0.8, note: "top" },
+      { name: "Musk Base Test", g: 4.5, note: "base" },
+    ],
+    { db }
+  );
+
+  const caloneSeries = model.absoluteRows.map((row) => row["Calone Test"]);
+  assert.ok(
+    caloneSeries.every(
+      (value, index) => index === 0 || value <= caloneSeries[index - 1] + 1e-9
+    )
+  );
+  const calone = model.materials.find((row) => row.name === "Calone Test");
+  const musk = model.materials.find((row) => row.name === "Musk Base Test");
+  assert.ok(musk.retentionAtEightHours > calone.retentionAtEightHours);
+  assert.match(
+    buildFormulaDecisionGuidance(
+      [{ name: "Calone Test", g: 0.06, note: "top" }],
+      { db, timelineModel: model }
+    ).timeline.find((row) => row.label === "Do not overreact").text,
+    /physically stronger/i
+  );
+});
+
+test("trace high-impact materials are capped and flagged without dominating by default", () => {
+  const db = {
+    "Ald Trace Test": {
+      MW: 128.21,
+      VP: 1.18,
+      ODT: 0.000001,
+      note: "top",
+      xLogP: 2.7,
+      scentClass: "Aldehydic",
+      descriptorTags: ["Aldehydic", "High Impact Aldehydic"],
+      odorThresholdSource: { unit: "ppbv air" },
+    },
+    "Musk Base Test": {
+      MW: 250,
+      VP: 0.0000001,
+      ODT: 5,
+      note: "base",
+      xLogP: 5.4,
+      scentClass: "Musk",
+      descriptorTags: ["Musk"],
+    },
+    "Woody Body Test": {
+      MW: 220,
+      VP: 0.000003,
+      ODT: 2,
+      note: "base",
+      xLogP: 4.6,
+      scentClass: "Woody",
+      descriptorTags: ["Woody"],
+    },
+  };
+  const ingredients = [
+    { name: "Ald Trace Test", g: 0.02, note: "top" },
+    { name: "Musk Base Test", g: 10, note: "base" },
+    { name: "Woody Body Test", g: 4, note: "base" },
+  ];
+  const timelineModel = buildFormulaTimelineContributionModel(ingredients, { db });
+  const trace = timelineModel.traceAlerts.find(
+    (row) => row.name === "Ald Trace Test"
+  );
+  const musk = timelineModel.materials.find(
+    (row) => row.name === "Musk Base Test"
+  );
+
+  assert.ok(trace);
+  assert.equal(trace.capApplied, true);
+  assert.ok(trace.cappedImpact < musk.initialContribution);
+  assert.notEqual(timelineModel.materials[0].name, "Ald Trace Test");
+
+  const odorMap = buildDoseAwareOdorMapModel(ingredients, {
+    db,
+    timelineModel,
+  });
+  assert.equal(odorMap.traceAlerts[0].name, "Ald Trace Test");
+  assert.notEqual(odorMap.dominantFamilies[0].family, "Aldehydic");
+  assert.ok(
+    ["Musk", "Woody"].includes(odorMap.dominantFamilies[0].family)
   );
 });
 
