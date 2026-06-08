@@ -8750,6 +8750,17 @@ function getMaterialDescriptorTags(record = {}) {
   return Array.from(new Set(fallback));
 }
 
+function hasLowVpHighImpactCaveat(record = {}) {
+  const tags = getMaterialDescriptorTags(record)
+    .map((tag) => String(tag).toLowerCase())
+    .join(" ");
+  return (
+    tags.includes("low vp caveat") ||
+    tags.includes("high impact marine") ||
+    tags.includes("high impact ozonic")
+  );
+}
+
 function tokenizeMaterialDescriptorValues(values = []) {
   return Array.from(
     new Set(
@@ -8959,7 +8970,8 @@ export function buildMaterialBehaviorSignals(materialName, { db = {} } = {}) {
   const logVp = getMaterialLogVp(record);
   const diffusionProxy = getMaterialDiffusionProxy(record);
   const persistenceProxy = getMaterialPersistenceProxy(record);
-  const odt = Number(record?.ODT);
+  const odtValue = Number(record?.ODT);
+  const odt = Number.isFinite(odtValue) && odtValue > 0 ? odtValue : null;
 
   const volatilityBand = getBehaviorBand(logVp, {
     high: -2.5,
@@ -8983,7 +8995,7 @@ export function buildMaterialBehaviorSignals(materialName, { db = {} } = {}) {
     lowLabel: "Shorter persistence",
   });
   const impactBand = getBehaviorBand(
-    Number.isFinite(odt) ? Math.log10(1 / Math.max(odt, 1e-9)) : null,
+    odt != null ? Math.log10(1 / odt) : null,
     {
       high: 0.5,
       mid: -1.5,
@@ -9004,6 +9016,11 @@ export function buildMaterialBehaviorSignals(materialName, { db = {} } = {}) {
   }
   if (record.isIsomerMix) {
     notes.push("Isomer-mix behavior is summarized heuristically in the current runtime.");
+  }
+  if (hasLowVpHighImpactCaveat(record)) {
+    notes.push(
+      "Low vapor pressure does not automatically mean low perceived impact; use source-backed odor-threshold or potency data when available."
+    );
   }
 
   return {

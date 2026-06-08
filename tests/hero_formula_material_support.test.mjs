@@ -448,6 +448,7 @@ test("priority hero materials expose reviewed molecular fields", () => {
       VP: 0.000051,
       densityGmL: 0,
       vpConfidence: "iff_compendium_23c",
+      descriptorTags: ["Marine", "Ozonic", "High Impact Marine", "Low VP Caveat"],
     },
     "Phenyl Ethyl Acetate": {
       MW: 164.2,
@@ -483,7 +484,7 @@ test("priority hero materials expose reviewed molecular fields", () => {
     assert.equal(rawDb[name].length, HERO_FORMULA_RAW_DB_FIELDS.length);
     const record = rawDbRecordFromRow(rawDb[name]);
     for (const [field, value] of Object.entries(expected)) {
-      assert.equal(record[field], value, `${name} ${field}`);
+      assert.deepEqual(record[field], value, `${name} ${field}`);
     }
     assert.equal(record.ODT, null, `${name} ODT should remain unsourced`);
     assert.equal(
@@ -492,6 +493,39 @@ test("priority hero materials expose reviewed molecular fields", () => {
       `${name} odor threshold should remain unsourced`
     );
   }
+});
+
+test("Oceanol diluted stock inherits high-impact caveat metadata without changing dilution behavior", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+  const rawDb = extractAppObjectConstant(source, "const RAW_DB = {");
+  const supportRows = buildHeroFormulaRawDbSupportRows(rawDb);
+
+  const oceanol = rawDbRecordFromRow(rawDb.Oceanol);
+  const oceanolStock = rawDbRecordFromRow(supportRows["Oceanol 10%"]);
+
+  assert.equal(oceanol.VP, 0.000051);
+  assert.equal(oceanol.ODT, null);
+  assert.deepEqual(oceanol.descriptorTags, [
+    "Marine",
+    "Ozonic",
+    "High Impact Marine",
+    "Low VP Caveat",
+  ]);
+  assert.equal(oceanolStock.VP, 0.000051);
+  assert.equal(oceanolStock.ODT, null);
+  assert.equal(oceanolStock.dilutionFactor, 0.1);
+  assert.deepEqual(oceanolStock.descriptorTags, oceanol.descriptorTags);
+  assert.equal(oceanolStock.supplier, "Hero Formula Support");
+  assert.equal(oceanolStock.rep, "Oceanol");
+});
+
+test("chemistry engine keeps missing ODT from becoming fake odor-value certainty", () => {
+  const source = fs.readFileSync("src/App.jsx", "utf8");
+
+  assert.match(source, /const odt = getPositiveChemistryNumber\(d\.ODT\);/);
+  assert.match(source, /const OV = odt \? headspace_ppbv \/ odt : 0;/);
+  assert.doesNotMatch(source, /const OV = headspace_ppbv \/ d\.ODT;/);
+  assert.match(source, /odorValueIsModeled: Boolean\(vp && odt\)/);
 });
 
 test("second-tier hero materials expose reviewed molecular fields without new threshold claims", () => {

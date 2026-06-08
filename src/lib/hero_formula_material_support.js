@@ -74,6 +74,7 @@ const PARENT_INHERITED_MOLECULAR_FIELDS = [
   "vpConfidence",
   "isUVCB",
   "isIsomerMix",
+  "descriptorTags",
 ];
 
 function hasParentMolecularValue(field, value) {
@@ -83,6 +84,9 @@ function hasParentMolecularValue(field, value) {
   }
   if (field === "isUVCB" || field === "isIsomerMix") {
     return typeof value === "boolean";
+  }
+  if (field === "descriptorTags") {
+    return Array.isArray(value) && value.length > 0;
   }
   const numericValue = Number(value);
   if (!Number.isFinite(numericValue)) return false;

@@ -8941,7 +8941,7 @@ const RAW_DB = {
     "Marine synth by IFF",
     null,
     null,
-    null, null, null, null, "iff_compendium_23c", null, null
+    null, null, ["Marine", "Ozonic", "High Impact Marine", "Low VP Caveat"], null, "iff_compendium_23c", null, null
   ],
   Petalux: [
     null,
@@ -54145,6 +54145,11 @@ const FORMULAS_INIT = [
 // ─────────────────────────────────────────────────────────────
 // CHEMISTRY ENGINE
 // ─────────────────────────────────────────────────────────────
+function getPositiveChemistryNumber(value) {
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
+}
+
 function computeChemistry(ingredients) {
   const total =
     ingredients.reduce(
@@ -54168,11 +54173,20 @@ function computeChemistry(ingredients) {
     if (d.isUVCB) return { ...ing, xfrac: 0, headspace_ppbv: 0, OV: 0, intensity: 0, isUVCB: true };
     const xfrac = ing.molN / totalMol;
     // a) dilFactor accounts for pre-diluted products
-    const dilFactor = d.dilutionFactor || 1.0;
+    const dilFactor = getPositiveChemistryNumber(d.dilutionFactor) || 1.0;
+    const vp = getPositiveChemistryNumber(d.VP);
+    const odt = getPositiveChemistryNumber(d.ODT);
     // b) use VP * dilFactor for effective partial pressure
-    const headspace_ppbv = ((xfrac * d.VP * dilFactor) / 760) * 1e9;
-    const OV = headspace_ppbv / d.ODT;
-    return { ...ing, xfrac, headspace_ppbv, OV };
+    const headspace_ppbv = vp ? ((xfrac * vp * dilFactor) / 760) * 1e9 : 0;
+    const OV = odt ? headspace_ppbv / odt : 0;
+    return {
+      ...ing,
+      xfrac,
+      headspace_ppbv,
+      OV,
+      odorValueIsModeled: Boolean(vp && odt),
+      odorThresholdMissing: Boolean(vp && !odt),
+    };
   });
   // e) Competitive binding correction: group by scentClass
   const groups = {};
@@ -54194,7 +54208,8 @@ function computeChemistry(ingredients) {
       effectiveOV = effectiveOV / (1 + (groupTotalOV - effectiveOV) * 0.3);
     }
     // c) OV > 1 threshold: below detection → zero intensity
-    const intensity = effectiveOV > 1 ? Math.pow(effectiveOV - 1, ing.d.n) : 0;
+    const exponent = getPositiveChemistryNumber(ing.d.n) || 0.5;
+    const intensity = effectiveOV > 1 ? Math.pow(effectiveOV - 1, exponent) : 0;
     return { ...ing, OV: effectiveOV, intensity };
   });
 }

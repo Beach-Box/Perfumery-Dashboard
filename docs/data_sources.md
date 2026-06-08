@@ -178,6 +178,16 @@ Examples include `iff_compendium_23c`, `tgsc_est_25c`, and
 `firmenich_spec_pa_to_mmhg_20c` when the source unit is not mmHg and the app
 stores the converted mmHg value.
 
+Vapor pressure models physical volatility, not perceived odor impact by itself.
+Low-VP materials can still smell highly radiant when their odor threshold or
+odor potency is very low. Do not adjust VP upward to make the model feel more
+perfumery-correct; add source-backed odor-threshold / potency data when an
+explicit source is available, or add a reviewed caveat tag when only qualitative
+impact guidance is available. For example, Oceanol keeps the IFF-reported
+`0.000051 mmHg @ 23 C` VP while carrying a low-VP/high-impact caveat based on
+IFF's qualitative "Top High / Heart High / Base High" note-impact and
+performance guidance.
+
 Do not add odor-threshold fields (`ODT` or `odorThreshold_ngL`) unless the source
 is explicit about the threshold value and units. Do not average conflicting
 thresholds without a documented convention. Density should be added only when a

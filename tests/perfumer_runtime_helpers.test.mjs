@@ -20,6 +20,7 @@ import {
   buildFormulaMissingMaterialReviewCandidates,
   buildLocalDraftIngredientArtifacts,
   buildMaterialBackfillWorkbench,
+  buildMaterialBehaviorSignals,
   buildSupplierAdapterConflictReviewCandidate,
   buildSupplierAdapterExportPayload,
   buildGeneratedProposalReviewCandidate,
@@ -205,6 +206,48 @@ test("visible descriptor text suppresses stale FCF copy when the current visible
   );
   assert.equal(fcfDescriptor.suppressedStaleSummary, false);
   assert.equal(fcfDescriptor.suppressedStaleDescription, false);
+});
+
+test("material behavior signals distinguish low VP from low perceived impact caveats", () => {
+  const signals = buildMaterialBehaviorSignals("Oceanol", {
+    db: {
+      Oceanol: {
+        MW: 182,
+        VP: 0.000051,
+        xLogP: 2.97,
+        ODT: null,
+        note: "mid",
+        descriptorTags: ["Marine", "High Impact Marine", "Low VP Caveat"],
+      },
+    },
+  });
+
+  assert.equal(
+    signals.facets.find((facet) => facet.key === "impact").rating,
+    "Unknown"
+  );
+  assert.ok(
+    signals.notes.some((note) =>
+      note.includes("Low vapor pressure does not automatically mean low perceived impact")
+    )
+  );
+});
+
+test("material behavior signals do not imply odor-threshold certainty when ODT is missing", () => {
+  const signals = buildMaterialBehaviorSignals("Trace Marine", {
+    db: {
+      "Trace Marine": {
+        MW: 180,
+        VP: 0.0001,
+        xLogP: 3,
+        ODT: null,
+      },
+    },
+  });
+
+  const impactFacet = signals.facets.find((facet) => facet.key === "impact");
+  assert.equal(impactFacet.rating, "Unknown");
+  assert.match(impactFacet.detail, /Odor-threshold data is limited/);
 });
 
 test("ingredient truth completeness keeps explicit manual conflicts cautious", () => {
