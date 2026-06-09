@@ -258,7 +258,16 @@ function buildComparisonItems() {
       name: "Damp Shoreline v2",
       launchScore: 77,
       cautions: ["Finished-product headroom looks tight in the current use context."],
-      compliance: { failCount: 0, warnCount: 1, hasHardBlock: false },
+      compliance: {
+        failCount: 0,
+        warnCount: 0,
+        hasHardBlock: false,
+        statusLabel: "Needs IFRA data review",
+        finishedProductOffenderCount: 0,
+        finishedProductWarningCount: 0,
+        concentrateHelperFlagCount: 1,
+        dataReviewCount: 2,
+      },
       ingredients: [
         { name: "Lemon FCF", g: 0.1, note: "top" },
         { name: "Calone 1951 20%", g: 0.25, note: "mid" },
@@ -393,7 +402,7 @@ test("comparison interpreter includes cost, IFRA, and component-costed accord ca
   assert.equal(originalSummary.componentCostedAccordCount, 1);
   assert.equal(originalSummary.accordModelCaveatCount, 1);
   assert.match(uncertaintySection.reason, /IFRA confidence caveat/);
-  assert.equal(dampV2Summary.ifraLabel, "1 IFRA warning row");
+  assert.equal(dampV2Summary.ifraLabel, "Needs IFRA data review");
 });
 
 test("comparison interpreter is pure and does not alter formula composition", () => {

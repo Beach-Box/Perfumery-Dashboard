@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import {
   buildFinishedProductIfraGuidance,
+  buildFormulaIfraStatus,
   buildIngredientTruthCompletenessReport,
   auditFormulaIfraCoverage,
   compareMaterialCasSupportValues,
@@ -589,6 +590,143 @@ test("AI critique prompt includes current structured pricing and accord truth", 
   assert.match(
     critiqueReport.costIssues.join(" "),
     /Known accord rows are component-costed/
+  );
+});
+
+test("normalized IFRA semantics keep data gaps and helper flags separate from finished-product offenders", () => {
+  const formula = {
+    formulaKey: "ifra-semantics-demo",
+    name: "IFRA Semantics Demo",
+    ingredients: [
+      { name: "Helional", g: 0.5, note: "mid" },
+      { name: "Lemon FCF", g: 0.2, note: "top" },
+      { name: "Driftwood Accord", g: 0.8, note: "base" },
+    ],
+  };
+  const finishedProductGuidance = {
+    overallStatus: "appears_compliant_with_missing",
+    counts: { checked: 1, confirmed: 1, inferred: 0, missing: 2 },
+    offenderRows: [],
+    warningRows: [],
+    missingRows: [
+      { name: "Lemon FCF", dataState: "missing" },
+      { name: "Driftwood Accord", dataState: "missing" },
+    ],
+  };
+  const coverageAudit = {
+    counts: {
+      exactIfraMatch: 1,
+      aliasIfraMatch: 0,
+      missingAlias: 0,
+      sourceUnavailable: 0,
+      supplierSdsNeeded: 1,
+      accordLevelOnly: 1,
+      fcfSpecialCase: 1,
+      noKnownRestriction: 1,
+      knownRestrictionRows: 1,
+    },
+    rows: [],
+  };
+  const ifraRows = [
+    { name: "Helional", status: "fail", limit: 0.5 },
+    { name: "Lemon FCF", status: "warn", limit: null },
+  ];
+  const ifraStatus = buildFormulaIfraStatus({
+    items: formula.ingredients,
+    coverageAudit,
+    finishedProductGuidance,
+    concentrateRows: ifraRows,
+    category: "cat4",
+    fragranceLoadPercent: 17.5,
+  });
+
+  assert.equal(ifraStatus.finishedProductOffenderCount, 0);
+  assert.equal(ifraStatus.concentrateHelperFlagCount, 1);
+  assert.equal(ifraStatus.supplierSdsNeededCount, 1);
+  assert.equal(ifraStatus.accordLevelCount, 1);
+  assert.equal(ifraStatus.fcfSpecialCaseCount, 1);
+  assert.equal(ifraStatus.knownRestrictedRowCount, 1);
+  assert.equal(ifraStatus.hasLaunchClearance, false);
+  assert.equal(ifraStatus.statusLabel, "Needs IFRA data review");
+  assert.match(ifraStatus.caveats.join(" "), /not finished-product violations/i);
+  assert.match(ifraStatus.caveats.join(" "), /not a safe finding/i);
+
+  const readiness = buildLaunchReadinessSummary({
+    formula,
+    basket: {
+      lines: [],
+      missingCount: 0,
+      uncertainCount: 0,
+      supplierCount: 0,
+      totalCost: 0,
+    },
+    batchReport: {
+      canFulfill: true,
+      coveragePercent: 100,
+      shortageCount: 0,
+      shortageTotalG: 0,
+      maxProducibleG: 100,
+    },
+    ifraRows,
+    finishedProductGuidance,
+    ifraStatus,
+    performanceModel: { axisScores: {}, headline: "Model available." },
+    targetBatchG: 100,
+  });
+
+  assert.equal(readiness.compliance.hasHardBlock, false);
+  assert.equal(readiness.compliance.failCount, 0);
+  assert.equal(readiness.compliance.finishedProductOffenderCount, 0);
+  assert.equal(readiness.compliance.concentrateHelperFlagCount, 1);
+  assert.match(readiness.cautions.join(" "), /not finished-product violations/i);
+  assert.doesNotMatch(readiness.blockers.join(" "), /IFRA/i);
+
+  const critiqueReport = buildFormulaCritiqueReport({
+    formula,
+    chemistry: [],
+    performance: { longevity: 6, sillage: 5, projection: 5 },
+    performanceModel: {
+      headline: "Directional performance model available.",
+      facets: [],
+      axisScores: {},
+      caveats: [],
+    },
+    basket: {
+      meta: { title: "Cheapest Purchase Basket" },
+      totalCost: 0,
+      missingCount: 0,
+      uncertainCount: 0,
+      inferredCount: 0,
+      supplierCount: 0,
+      lines: [],
+    },
+    cheapestBasket: null,
+    basketModeMeta: { label: "Cheapest" },
+    ifraRows,
+    lens: "compliance",
+    finishedProductGuidance,
+    ifraCoverageAudit: coverageAudit,
+    ifraStatus,
+  });
+
+  assert.equal(critiqueReport.aiGroundTruth.ifra.hasViolations, false);
+  assert.equal(critiqueReport.aiGroundTruth.ifra.finishedProductOffenderCount, 0);
+  assert.equal(critiqueReport.aiGroundTruth.ifra.concentrateHelperFlagCount, 1);
+  assert.match(
+    critiqueReport.strengths.join(" "),
+    /No modeled finished-product offenders/i
+  );
+  assert.match(
+    critiqueReport.suggestedChanges.join(" "),
+    /without labeling them finished-product violations/i
+  );
+  assert.doesNotMatch(
+    [
+      ...critiqueReport.weaknesses,
+      ...critiqueReport.suggestedChanges,
+      ...critiqueReport.supportNote.split(" · "),
+    ].join(" "),
+    /IFRA hard block|IFRA fail|Cat 4 IFRA review currently fails|above the modeled limit/i
   );
 });
 

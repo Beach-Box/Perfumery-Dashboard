@@ -39,6 +39,7 @@ import {
   auditFormulaIfraCoverage,
   compareMaterialCasSupportValues,
   buildFinishedProductIfraGuidance,
+  buildFormulaIfraStatus,
   formatMaterialCasSupportValue,
   computeActiveRestrictedPercent,
   getCanonicalMaterialSource,
@@ -55376,7 +55377,7 @@ function getFinishedProductStatusLabel(status) {
       warning_with_missing: "Tight Headroom + Gaps",
       appears_compliant: "Appears Within Limit",
       appears_compliant_with_missing: "Within Checked Limits + Gaps",
-      blocked_missing: "Blocked by Missing Data",
+      blocked_missing: "Insufficient IFRA Data",
       no_restricted_rows: "No Restricted Rows Hit",
     }[status] ||
     status ||
@@ -56706,7 +56707,7 @@ function IngredientDetailPanel({
       warning_with_missing: "Tight Headroom + Gaps",
       appears_compliant: "Appears Within Limit",
       appears_compliant_with_missing: "Within Checked Limits + Gaps",
-      blocked_missing: "Blocked by Missing Data",
+      blocked_missing: "Insufficient IFRA Data",
       no_restricted_rows: "No Restricted Rows Hit",
     }[activeContextFinishedGuidance?.overallStatus] ||
     activeContextFinishedGuidance?.overallStatus ||
@@ -62741,6 +62742,18 @@ export default function App() {
           category: ifraCategory,
           fragranceLoadPercent: selectedFragranceType.pct,
         });
+        const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
+          db: DB,
+        });
+        const ifraStatus = buildFormulaIfraStatus({
+          items: entry.ingredients || [],
+          db: DB,
+          coverageAudit: ifraCoverageAudit,
+          finishedProductGuidance,
+          concentrateRows: ifraRows,
+          category: ifraCategory,
+          fragranceLoadPercent: selectedFragranceType.pct,
+        });
         const confidenceSummary = buildFormulaConfidenceSummary(
           entry.ingredients || [],
           {
@@ -62770,6 +62783,10 @@ export default function App() {
           ifraRows,
           lens: critiqueLens,
           db: DB,
+          modelConfidenceSummary: confidenceSummary,
+          finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
         });
         const launchReadiness = buildLaunchReadinessSummary({
           formula: entry,
@@ -62777,6 +62794,7 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraStatus,
           performanceModel,
           critiqueReport,
           modelConfidenceSummary: confidenceSummary,
@@ -62817,6 +62835,8 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
           performance,
           performanceModel,
           trustSummary,
@@ -63213,6 +63233,19 @@ export default function App() {
           fragranceLoadPercent:
             scenarioFounderProductContext.fragranceLoadPercent,
         });
+        const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
+          db: DB,
+        });
+        const ifraStatus = buildFormulaIfraStatus({
+          items: entry.ingredients || [],
+          db: DB,
+          coverageAudit: ifraCoverageAudit,
+          finishedProductGuidance,
+          concentrateRows: ifraRows,
+          category: scenarioIfraCategory,
+          fragranceLoadPercent:
+            scenarioFounderProductContext.fragranceLoadPercent,
+        });
         const confidenceSummary = buildFormulaConfidenceSummary(
           entry.ingredients || [],
           {
@@ -63242,6 +63275,10 @@ export default function App() {
           ifraRows,
           lens: critiqueLens,
           db: DB,
+          modelConfidenceSummary: confidenceSummary,
+          finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
         });
         const launchReadiness = buildLaunchReadinessSummary({
           formula: entry,
@@ -63249,6 +63286,7 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraStatus,
           performanceModel,
           critiqueReport,
           modelConfidenceSummary: confidenceSummary,
@@ -63265,6 +63303,8 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
           performanceModel,
           critiqueReport,
           confidenceSummary,
@@ -67103,19 +67143,37 @@ export default function App() {
       }),
     [formulaUsageRows, ifraCategory, selectedFragranceType]
   );
+  const formulaIfraStatus = useMemo(
+    () =>
+      buildFormulaIfraStatus({
+        items: formulaUsageRows,
+        db: DB,
+        coverageAudit: formulaIfraCoverageAudit,
+        finishedProductGuidance: formulaFinishedProductGuidance,
+        concentrateRows: formulaCritiqueIfraRows,
+        category: ifraCategory,
+        fragranceLoadPercent: selectedFragranceType.pct,
+      }),
+    [
+      formulaCritiqueIfraRows,
+      formulaFinishedProductGuidance,
+      formulaIfraCoverageAudit,
+      formulaUsageRows,
+      ifraCategory,
+      selectedFragranceType,
+    ]
+  );
   const formulaIfraCoverageSummaryRows = useMemo(() => {
-    const counts = formulaIfraCoverageAudit?.counts || {};
-    const exactCount = counts.exactIfraMatch || 0;
-    const aliasCount = counts.aliasIfraMatch || 0;
-    const sourceUnavailableCount = counts.sourceUnavailable || 0;
+    const exactCount = formulaIfraStatus.exactMatchCount || 0;
+    const aliasCount = formulaIfraStatus.aliasMatchCount || 0;
+    const sourceUnavailableCount = formulaIfraStatus.sourceUnavailableCount || 0;
     const noKnownCount =
-      counts.noKnownRestriction ??
-      counts.intentionallyNotMatchedNoStandard ??
-      0;
-    const specialCaseCount = counts.fcfSpecialCase || 0;
+      formulaIfraStatus.noKnownStructuredStandardCount || 0;
+    const specialCaseCount = formulaIfraStatus.fcfSpecialCaseCount || 0;
     const offenderCount =
-      formulaFinishedProductGuidance?.offenderRows?.length || 0;
-    const warningCount = formulaFinishedProductGuidance?.warningRows?.length || 0;
+      formulaIfraStatus.finishedProductOffenderCount || 0;
+    const warningCount = formulaIfraStatus.finishedProductWarningCount || 0;
+    const helperFlagCount = formulaIfraStatus.concentrateHelperFlagCount || 0;
     return [
       {
         label: "Matched standards",
@@ -67125,19 +67183,19 @@ export default function App() {
       },
       {
         label: "Potential alias gaps",
-        value: counts.missingAlias || 0,
+        value: formulaIfraStatus.missingAliasCount || 0,
         detail: "identity/CAS alias review needed",
         color: "#FCD34D",
       },
       {
         label: "Supplier/SDS needed",
-        value: counts.supplierSdsNeeded || 0,
+        value: formulaIfraStatus.supplierSdsNeededCount || 0,
         detail: "naturals, UVCBs, or supplier-specific rows",
         color: "#FBBF24",
       },
       {
         label: "Accord-level limitations",
-        value: counts.accordLevelOnly || 0,
+        value: formulaIfraStatus.accordLevelCount || 0,
         detail: "component IFRA not expanded",
         color: "#7DD3FC",
       },
@@ -67149,12 +67207,12 @@ export default function App() {
       },
       {
         label: "Known restrictions/offenders",
-        value: counts.knownRestrictionRows || 0,
-        detail: `${offenderCount} offender, ${warningCount} warning`,
+        value: formulaIfraStatus.knownRestrictedRowCount || 0,
+        detail: `${offenderCount} finished-product offender, ${warningCount} warning, ${helperFlagCount} helper flag`,
         color: offenderCount ? "#F87171" : warningCount ? "#FCD34D" : "#94A3B8",
       },
     ];
-  }, [formulaFinishedProductGuidance, formulaIfraCoverageAudit]);
+  }, [formulaIfraStatus]);
   const buildFinishedProductGuidance = useMemo(
     () =>
       buildFinishedProductIfraGuidance({
@@ -67199,6 +67257,9 @@ export default function App() {
         lens: critiqueLens,
         db: DB,
         modelConfidenceSummary: formulaConfidenceSummary,
+        finishedProductGuidance: formulaFinishedProductGuidance,
+        ifraCoverageAudit: formulaIfraCoverageAudit,
+        ifraStatus: formulaIfraStatus,
       }),
     [
       chem,
@@ -67207,6 +67268,9 @@ export default function App() {
       formulaBasketStrategies,
       formulaConfidenceSummary,
       formulaCritiqueIfraRows,
+      formulaFinishedProductGuidance,
+      formulaIfraCoverageAudit,
+      formulaIfraStatus,
       formulaModelingItems,
       formulaPerformanceModel,
       formulaScore,
@@ -67245,6 +67309,7 @@ export default function App() {
             lens: critiqueLens,
             db: DB,
             modelConfidenceSummary: buildConfidenceSummary,
+            finishedProductGuidance: buildFinishedProductGuidance,
           })
         : null,
     [
@@ -67785,6 +67850,18 @@ export default function App() {
           category: ifraCategory,
           fragranceLoadPercent: founderFragranceType.pct,
         });
+        const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
+          db: DB,
+        });
+        const ifraStatus = buildFormulaIfraStatus({
+          items: entry.ingredients || [],
+          db: DB,
+          coverageAudit: ifraCoverageAudit,
+          finishedProductGuidance,
+          concentrateRows: ifraRows,
+          category: ifraCategory,
+          fragranceLoadPercent: founderFragranceType.pct,
+        });
         const confidenceSummary = buildFormulaConfidenceSummary(
           entry.ingredients || [],
           {
@@ -67814,6 +67891,10 @@ export default function App() {
           ifraRows,
           lens: critiqueLens,
           db: DB,
+          modelConfidenceSummary: confidenceSummary,
+          finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
         });
         const launchReadiness = buildLaunchReadinessSummary({
           formula: entry,
@@ -67821,6 +67902,7 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraStatus,
           performanceModel,
           critiqueReport,
           modelConfidenceSummary: confidenceSummary,
@@ -67905,6 +67987,8 @@ export default function App() {
           batchReport,
           ifraRows,
           finishedProductGuidance,
+          ifraCoverageAudit,
+          ifraStatus,
           performanceModel,
           critiqueReport,
           confidenceSummary,
@@ -69055,6 +69139,25 @@ export default function App() {
     setCritiqueError("");
     try {
       const score = perfScore(targetFormula.ingredients);
+      const targetIfraRows = getFormulaIfraRows(targetFormula.ingredients, "cat4");
+      const targetFinishedProductGuidance = buildFinishedProductIfraGuidance({
+        items: targetFormula.ingredients,
+        category: ifraCategory,
+        fragranceLoadPercent: selectedFragranceType.pct,
+      });
+      const targetIfraCoverageAudit = auditFormulaIfraCoverage(
+        targetFormula.ingredients,
+        { db: DB }
+      );
+      const targetIfraStatus = buildFormulaIfraStatus({
+        items: targetFormula.ingredients,
+        db: DB,
+        coverageAudit: targetIfraCoverageAudit,
+        finishedProductGuidance: targetFinishedProductGuidance,
+        concentrateRows: targetIfraRows,
+        category: ifraCategory,
+        fragranceLoadPercent: selectedFragranceType.pct,
+      });
       const activeCritiqueReport =
         critiqueReport ||
         buildFormulaCritiqueReport({
@@ -69072,10 +69175,13 @@ export default function App() {
           basket: selectedFormulaBasket,
           cheapestBasket: formulaBasketStrategies.cheapest || null,
           basketModeMeta: selectedBasketModeMeta,
-          ifraRows: getFormulaIfraRows(targetFormula.ingredients, "cat4"),
+          ifraRows: targetIfraRows,
           lens: activeLens,
           db: DB,
           modelConfidenceSummary: formulaConfidenceSummary,
+          finishedProductGuidance: targetFinishedProductGuidance,
+          ifraCoverageAudit: targetIfraCoverageAudit,
+          ifraStatus: targetIfraStatus,
         });
       const prompt = buildAiCritiquePrompt({
         targetFormula,
@@ -69265,7 +69371,7 @@ export default function App() {
       color: "#7DD3FC",
     },
     blocked_missing: {
-      label: "Blocked by Missing Data",
+      label: "Insufficient IFRA Data",
       bg: "#1E1B4B",
       border: "#4338CA",
       color: "#C4B5FD",
@@ -76193,13 +76299,13 @@ export default function App() {
             {
               label: "Near Launch-Ready",
               value: founderDashboardSummary.summary.nearReadyCount,
-              meta: "No hard blockers in the current heuristic",
+              meta: "No finished-product IFRA offenders, missing pricing, or inventory blockers",
               color: "#34D399",
             },
             {
               label: "Blocked",
               value: founderDashboardSummary.summary.blockedCount,
-              meta: "Inventory, pricing, or compliance blockers",
+              meta: "Inventory, pricing, or modeled finished-product offender blockers",
               color: "#F87171",
             },
             {
@@ -77185,7 +77291,7 @@ export default function App() {
                   }}
                 >
                   Sorted by the current heuristic score, then filtered away
-                  from hard blockers first.
+                  from major blockers first.
                 </div>
               </div>
             </div>
@@ -77403,7 +77509,7 @@ export default function App() {
                         >
                           {readiness.blockers.length > 0
                             ? readiness.blockers.join(" ")
-                            : "No hard blocker is active in the current heuristic."}
+                            : "No major blocker is active in the current heuristic."}
                         </div>
                       </div>
                       <div
@@ -79598,10 +79704,10 @@ export default function App() {
         >
           {[
             [
-              "Blocked by Compliance",
+              "IFRA Finished-Product Offenders",
               founderDashboardSummary.blockedByCompliance,
               "#F87171",
-              "Concentrate IFRA fails or finished-product offenders in the current context.",
+              "Only modeled finished-product offenders enter this bucket; helper flags stay as cautions.",
               "compliance",
             ],
             [
@@ -82097,6 +82203,7 @@ export default function App() {
               selectedBasket,
               batchReport,
               finishedProductGuidance,
+              ifraStatus,
               performance,
               sensorySummary,
               trustSummary,
@@ -82121,19 +82228,20 @@ export default function App() {
             const inventoryMeta = batchReport?.maxProducibleG != null
               ? `${batchReport.maxProducibleG.toFixed(1)}g max batch`
               : "Batch planner unavailable";
-            const ifraStatusLabel = getFinishedProductStatusLabel(
-              finishedProductGuidance?.overallStatus
-            );
+            const normalizedIfraStatus = ifraStatus || launchReadiness.compliance;
+            const ifraStatusLabel =
+              normalizedIfraStatus?.statusLabel ||
+              getFinishedProductStatusLabel(finishedProductGuidance?.overallStatus);
             const ifraMeta =
-              launchReadiness.compliance.failCount > 0
-                ? `${launchReadiness.compliance.failCount} fail row${
-                    launchReadiness.compliance.failCount === 1 ? "" : "s"
-                  }`
-                : launchReadiness.compliance.warnCount > 0
-                ? `${launchReadiness.compliance.warnCount} warn row${
-                    launchReadiness.compliance.warnCount === 1 ? "" : "s"
-                  }`
-                : `${IFRA_CATEGORY_LABELS[ifraCategory]} checked`;
+              normalizedIfraStatus?.primaryMessage ||
+              normalizedIfraStatus?.caveats?.[0] ||
+              `${IFRA_CATEGORY_LABELS[ifraCategory]} checked`;
+            const ifraColor =
+              (normalizedIfraStatus?.finishedProductOffenderCount || 0) > 0
+                ? "#FCA5A5"
+                : (normalizedIfraStatus?.dataReviewCount || 0) > 0
+                ? "#FCD34D"
+                : "#34D399";
             const selectedFormulaActive =
               candidateFormula.formulaKey === formula?.formulaKey;
             const isSensoryDraftOpen =
@@ -82310,9 +82418,7 @@ export default function App() {
                     "IFRA",
                     ifraStatusLabel,
                     ifraMeta,
-                    launchReadiness.compliance.hasHardBlock
-                      ? "#FCA5A5"
-                      : "#34D399"
+                    ifraColor
                   )}
                   {renderMetric(
                     "Performance Estimate",
@@ -83541,6 +83647,61 @@ export default function App() {
                             }}
                           >
                             IFRA Matching Audit
+                          </div>
+                          <div
+                            style={{
+                              background: "#060E1E",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              padding: "7px 8px",
+                              marginBottom: 7,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  color:
+                                    formulaIfraStatus.finishedProductOffenderCount > 0
+                                      ? "#FCA5A5"
+                                      : formulaIfraStatus.dataReviewCount > 0
+                                      ? "#FCD34D"
+                                      : "#86EFAC",
+                                  fontSize: 9,
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {formulaIfraStatus.statusLabel}
+                              </span>
+                              <span
+                                style={{
+                                  color: "#94A3B8",
+                                  fontSize: 7.8,
+                                  fontWeight: 800,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                }}
+                              >
+                                {formulaIfraStatus.launchClearanceLabel}
+                              </span>
+                            </div>
+                            <div
+                              style={{
+                                marginTop: 4,
+                                color: "#94A3B8",
+                                fontSize: 8,
+                                lineHeight: 1.45,
+                              }}
+                            >
+                              {formulaIfraStatus.primaryMessage}
+                            </div>
                           </div>
                           <div
                             style={{

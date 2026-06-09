@@ -1,5 +1,6 @@
 import {
   IFRA_CATEGORY_LABELS,
+  buildFormulaIfraStatus,
   buildSupplierProductKey,
   compareMaterialCasSupportValues,
   formatMaterialCasSupportValue,
@@ -1670,15 +1671,26 @@ export function buildAiCritiqueGroundTruth({
   basketModeMeta = null,
   ifraRows = [],
   modelConfidenceSummary = null,
+  finishedProductGuidance = null,
+  ifraCoverageAudit = null,
+  ifraStatus = null,
+  db = {},
 } = {}) {
   const costSummary = buildBasketCostSemanticsSummary(basket);
   const confidenceCounts = modelConfidenceSummary?.categoryCounts || {};
   const activeIfraRows = Array.isArray(ifraRows) ? ifraRows : [];
-  const failRows = activeIfraRows.filter((row) => row.status === "fail");
-  const warnRows = activeIfraRows.filter((row) => row.status === "warn");
   const ingredients = Array.isArray(formula?.ingredients)
     ? formula.ingredients
     : [];
+  const normalizedIfraStatus =
+    ifraStatus ||
+    buildFormulaIfraStatus({
+      items: ingredients,
+      db,
+      coverageAudit: ifraCoverageAudit,
+      finishedProductGuidance,
+      concentrateRows: activeIfraRows,
+    });
   const hasFcfCitrus = ingredients.some((ingredient) =>
     /(?:bergamot|lemon|citrus).*fcf|fcf.*(?:bergamot|lemon|citrus)/i.test(
       ingredient?.name || ""
@@ -1724,10 +1736,43 @@ export function buildAiCritiqueGroundTruth({
       volumeMassEstimateCount: costSummary.volumeMassEstimateCount,
     },
     ifra: {
-      hasViolations: failRows.length > 0,
-      activeOffenderCount: failRows.length,
-      cautionCount: warnRows.length,
-      fcfCitrusNote: hasFcfCitrus
+      hasViolations: normalizedIfraStatus.finishedProductOffenderCount > 0,
+      activeOffenderCount: normalizedIfraStatus.finishedProductOffenderCount,
+      finishedProductOffenderCount:
+        normalizedIfraStatus.finishedProductOffenderCount,
+      finishedProductWarningCount:
+        normalizedIfraStatus.finishedProductWarningCount,
+      cautionCount: normalizedIfraStatus.finishedProductWarningCount,
+      concentrateHelperFlagCount:
+        normalizedIfraStatus.concentrateHelperFlagCount,
+      concentrateHelperWarningCount:
+        normalizedIfraStatus.concentrateHelperWarningCount,
+      knownRestrictedRowCount: normalizedIfraStatus.knownRestrictedRowCount,
+      checkedRowCount: normalizedIfraStatus.checkedRowCount,
+      matchedStandardCount: normalizedIfraStatus.matchedStandardCount,
+      missingAliasCount: normalizedIfraStatus.missingAliasCount,
+      sourceUnavailableCount: normalizedIfraStatus.sourceUnavailableCount,
+      supplierSdsNeededCount: normalizedIfraStatus.supplierSdsNeededCount,
+      accordLevelCount: normalizedIfraStatus.accordLevelCount,
+      fcfSpecialCaseCount: normalizedIfraStatus.fcfSpecialCaseCount,
+      noKnownStructuredStandardCount:
+        normalizedIfraStatus.noKnownStructuredStandardCount,
+      structuredCoverageGapCount:
+        normalizedIfraStatus.structuredCoverageGapCount,
+      dataReviewCount: normalizedIfraStatus.dataReviewCount,
+      statusLabel: normalizedIfraStatus.statusLabel,
+      severity: normalizedIfraStatus.severity,
+      primaryMessage: normalizedIfraStatus.primaryMessage,
+      caveats: normalizedIfraStatus.caveats,
+      hasLaunchClearance: normalizedIfraStatus.hasLaunchClearance,
+      launchClearanceLabel: normalizedIfraStatus.launchClearanceLabel,
+      offenderMaterialNames: normalizedIfraStatus.offenderRows.map(
+        (row) => row.name
+      ),
+      helperFlagMaterialNames: normalizedIfraStatus.concentrateHelperFlagRows.map(
+        (row) => row.name
+      ),
+      fcfCitrusNote: hasFcfCitrus || normalizedIfraStatus.fcfSpecialCaseCount > 0
         ? "FCF citrus rows are not treated as regular expressed citrus phototoxic limits; verify supplier IFRA/SDS for final compliance."
         : null,
     },
@@ -3003,6 +3048,9 @@ export function buildFormulaCritiqueReport({
   lens = "perfumer",
   db = {},
   modelConfidenceSummary = null,
+  finishedProductGuidance = null,
+  ifraCoverageAudit = null,
+  ifraStatus = null,
 }) {
   const lensMeta = CRITIQUE_LENS_META[lens] || CRITIQUE_LENS_META.perfumer;
   const formulaLabel = getFormulaDisplayLabel(formula, {
@@ -3109,8 +3157,10 @@ export function buildFormulaCritiqueReport({
       : 0;
   const basketDeltaVsCheapest =
     basket && cheapestBasket ? basket.totalCost - cheapestBasket.totalCost : 0;
-  const ifraFails = ifraRows.filter((row) => row.status === "fail");
-  const ifraWarns = ifraRows.filter((row) => row.status === "warn");
+  const concentrateHelperFlags = ifraRows.filter((row) => row.status === "fail");
+  const concentrateHelperWarnings = ifraRows.filter(
+    (row) => row.status === "warn"
+  );
   const restrictedRows = ifraRows.filter((row) => row.limit != null);
   const aiGroundTruth = buildAiCritiqueGroundTruth({
     formula,
@@ -3118,10 +3168,33 @@ export function buildFormulaCritiqueReport({
     basketModeMeta,
     ifraRows,
     modelConfidenceSummary,
+    finishedProductGuidance,
+    ifraCoverageAudit,
+    ifraStatus,
+    db,
   });
   const aiGroundTruthSignature = buildAiCritiqueTruthSignature(aiGroundTruth);
   const pricingTruth = aiGroundTruth.pricing;
   const accordTruth = aiGroundTruth.accords;
+  const ifraTruth = aiGroundTruth.ifra;
+  const finishedProductOffenderCount =
+    Number(ifraTruth.finishedProductOffenderCount) || 0;
+  const finishedProductWarningCount =
+    Number(ifraTruth.finishedProductWarningCount) || 0;
+  const concentrateHelperFlagCount =
+    Number(ifraTruth.concentrateHelperFlagCount) || 0;
+  const concentrateHelperWarningCount =
+    Number(ifraTruth.concentrateHelperWarningCount) || 0;
+  const ifraDataReviewCount = Number(ifraTruth.dataReviewCount) || 0;
+  const knownRestrictedRowCount = Number(ifraTruth.knownRestrictedRowCount) || 0;
+  const ifraOffenderNames = ifraTruth.offenderMaterialNames || [];
+  const helperReviewRows = [
+    ...concentrateHelperFlags,
+    ...concentrateHelperWarnings,
+  ];
+  const helperReviewNames = Array.from(
+    new Set(helperReviewRows.map((row) => row.name).filter(Boolean))
+  );
 
   const strengths = [];
   const weaknesses = [];
@@ -3154,12 +3227,33 @@ export function buildFormulaCritiqueReport({
       } use a volume-to-mass estimate because density is not stored.`
     );
   }
-  if (ifraWarns.length && !ifraFails.length) {
+  if (
+    (concentrateHelperFlagCount > 0 || concentrateHelperWarningCount > 0) &&
+    finishedProductOffenderCount === 0
+  ) {
     pushUniqueItem(
       uncertainty,
-      `Cat 4 IFRA review shows ${ifraWarns.length} caution flag${
-        ifraWarns.length === 1 ? "" : "s"
-      }, so compliance still needs review before production decisions.`
+      `${concentrateHelperFlagCount + concentrateHelperWarningCount} concentrate/helper IFRA flag${
+        concentrateHelperFlagCount + concentrateHelperWarningCount === 1
+          ? ""
+          : "s"
+      } need review; these are not finished-product violations.`
+    );
+  }
+  if (ifraDataReviewCount > 0) {
+    pushUniqueItem(
+      uncertainty,
+      `Structured IFRA coverage still needs review for ${ifraDataReviewCount} row${
+        ifraDataReviewCount === 1 ? "" : "s"
+      }; missing data, supplier/SDS needs, FCF special cases, and accord-level rows are not safe findings.`
+    );
+  }
+  if (finishedProductWarningCount > 0 && finishedProductOffenderCount === 0) {
+    pushUniqueItem(
+      uncertainty,
+      `${finishedProductWarningCount} checked finished-product IFRA row${
+        finishedProductWarningCount === 1 ? "" : "s"
+      } have tight modeled headroom.`
     );
   }
 
@@ -3175,10 +3269,10 @@ export function buildFormulaCritiqueReport({
   if (bridgeScore <= 2.5) {
     pushUniqueItem(strengths, modelFacets.bridgeWeakness?.detail);
   }
-  if (!ifraFails.length && !ifraWarns.length) {
+  if (finishedProductOffenderCount === 0) {
     pushUniqueItem(
       strengths,
-      "Current Cat 4 IFRA review shows no modeled violations."
+      "No modeled finished-product offenders appear in the checked IFRA rows."
     );
   }
   if (basket && pricingTruth.missingPriceCount === 0) {
@@ -3216,12 +3310,13 @@ export function buildFormulaCritiqueReport({
       } are being modeled more coarsely than single molecules.`
     );
   }
-  if (ifraFails.length) {
+  if (finishedProductOffenderCount > 0) {
     pushUniqueItem(
       weaknesses,
-      `Cat 4 IFRA review currently flags ${formatHumanList(
-        ifraFails.map((row) => row.name)
-      )} above the modeled limit.`
+      `Modeled finished-product IFRA offenders need review: ${formatHumanList(
+        ifraOffenderNames,
+        ifraOffenderNames.length
+      )}.`
     );
   }
 
@@ -3355,12 +3450,26 @@ export function buildFormulaCritiqueReport({
       "Verify inferred or low-confidence supplier mappings before treating the purchase basket estimate as production-planning-ready."
     );
   }
-  if (ifraFails.length || ifraWarns.length) {
+  if (finishedProductOffenderCount > 0) {
     pushUniqueItem(
       suggestedChanges,
       `Recheck ${formatHumanList(
-        [...ifraFails, ...ifraWarns].map((row) => row.name)
-      )} against Cat 4 limits before locking this version.`
+        ifraOffenderNames,
+        ifraOffenderNames.length
+      )} against finished-product IFRA limits before locking this version.`
+    );
+  } else if (helperReviewNames.length > 0) {
+    pushUniqueItem(
+      suggestedChanges,
+      `Review concentrate/helper IFRA flags for ${formatHumanList(
+        helperReviewNames,
+        helperReviewNames.length
+      )}; treat them as helper-context warnings, not finished-product violations.`
+    );
+  } else if (ifraDataReviewCount > 0) {
+    pushUniqueItem(
+      suggestedChanges,
+      "Resolve IFRA mapping, supplier/SDS, FCF, and accord-level coverage gaps before treating this as clearance."
     );
   }
 
@@ -3519,31 +3628,43 @@ export function buildFormulaCritiqueReport({
     },
     compliance: {
       strengths: [
-        !ifraFails.length && !ifraWarns.length
-          ? "Current Cat 4 IFRA review shows no modeled failures or caution flags."
+        finishedProductOffenderCount === 0
+          ? "No modeled finished-product offenders appear in the checked IFRA rows."
           : null,
-        restrictedRows.length > 0 && !ifraFails.length
-          ? `Restricted materials are present, but the current model does not show them over Cat 4 limits.`
+        knownRestrictedRowCount > 0 && finishedProductOffenderCount === 0
+          ? `${knownRestrictedRowCount} known restricted row${
+              knownRestrictedRowCount === 1 ? "" : "s"
+            } are present, but checked finished-product rows do not show offenders.`
           : null,
         bridgeScore <= 2.5 ? modelFacets.bridgeWeakness?.detail : null,
       ],
       weaknesses: [
-        ifraFails.length
-          ? `Cat 4 IFRA review currently fails ${formatHumanList(
-              ifraFails.map((row) => row.name)
+        finishedProductOffenderCount > 0
+          ? `Modeled finished-product IFRA offenders: ${formatHumanList(
+              ifraOffenderNames,
+              ifraOffenderNames.length
             )}.`
           : null,
-        ifraWarns.length
-          ? `Cat 4 IFRA review is already close on ${formatHumanList(
-              ifraWarns.map((row) => row.name)
-            )}.`
+        concentrateHelperFlagCount > 0 || concentrateHelperWarningCount > 0
+          ? `${concentrateHelperFlagCount + concentrateHelperWarningCount} concentrate/helper IFRA flag${
+              concentrateHelperFlagCount + concentrateHelperWarningCount === 1
+                ? ""
+                : "s"
+            } need review separately from finished-product compliance.`
+          : null,
+        ifraDataReviewCount > 0
+          ? `${ifraDataReviewCount} IFRA coverage row${
+              ifraDataReviewCount === 1 ? "" : "s"
+            } still need mapping, supplier/SDS, FCF, or accord-level review.`
           : null,
         restrictedRows.length >= 4
           ? `There are ${restrictedRows.length} restricted-material rows in play, so reformulation risk is not trivial.`
           : null,
       ],
       sensoryIssues: [
-        ifraFails.length || ifraWarns.length
+        finishedProductOffenderCount > 0 ||
+        concentrateHelperFlagCount > 0 ||
+        concentrateHelperWarningCount > 0
           ? "Any required compliance cuts could change the balance the performance model is currently describing."
           : null,
         openingScore > 7 &&
@@ -3570,10 +3691,18 @@ export function buildFormulaCritiqueReport({
           : null,
       ],
       suggestedChanges: [
-        ifraFails.length || ifraWarns.length
+        finishedProductOffenderCount > 0
           ? `Prioritize ${formatHumanList(
-              [...ifraFails, ...ifraWarns].map((row) => row.name)
-            )} for compliance review before locking the formula.`
+              ifraOffenderNames,
+              ifraOffenderNames.length
+            )} for finished-product IFRA review before locking the formula.`
+          : helperReviewNames.length > 0
+          ? `Review concentrate/helper flags for ${formatHumanList(
+              helperReviewNames,
+              helperReviewNames.length
+            )} without labeling them finished-product violations.`
+          : ifraDataReviewCount > 0
+          ? "Close IFRA data gaps before using this panel as production-planning guidance."
           : null,
         restrictedRows.length > 0
           ? "Keep Cat 4 as the working baseline and verify active-percent assumptions for diluted stocks."
@@ -3666,11 +3795,7 @@ export function buildFormulaCritiqueReport({
           2
         )}`
       : null,
-    ifraFails.length
-      ? `Cat 4 IFRA: ${ifraFails.length} fail`
-      : ifraWarns.length
-      ? `Cat 4 IFRA: ${ifraWarns.length} caution`
-      : "Cat 4 IFRA: no modeled failures",
+    `IFRA: ${ifraTruth.statusLabel || "status unavailable"}`,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -3905,7 +4030,9 @@ ${JSON.stringify(groundTruth, null, 2)}
 Critique grounding rules:
 - Do not claim missing supplier prices unless pricing.missingPriceCount > 0 or pricing.missingPricingFlags > 0.
 - Do not claim known accords are unpriced when pricing.unpricedAccordCount is 0.
-- Do not claim IFRA violations unless ifra.hasViolations is true.
+- Do not claim IFRA violations unless ifra.finishedProductOffenderCount > 0.
+- Do not describe IFRA data gaps, supplier/SDS needs, FCF special cases, accord-level rows, or concentrate/helper flags as finished-product IFRA violations.
+- This is not launch clearance unless ifra.hasLaunchClearance is true.
 - Do not use old basket totals; use only pricing.initialPurchaseBasketEstimate and call it an initial purchase basket estimate.
 - If pricing.lowConfidenceSupplierMappingCount > 0, describe it as mapping-confidence or sourcing-confidence uncertainty, not missing prices.
 - If shipping/tax/minimum orders are excluded, describe that as procurement/logistics uncertainty, not ingredient-price incompleteness.
@@ -4170,6 +4297,7 @@ export function buildLaunchReadinessSummary({
   batchReport,
   ifraRows = [],
   finishedProductGuidance,
+  ifraStatus = null,
   performanceModel,
   critiqueReport,
   modelConfidenceSummary,
@@ -4214,12 +4342,29 @@ export function buildLaunchReadinessSummary({
   );
 
   const axisScores = performanceModel?.axisScores || {};
-  const failRows = ifraRows.filter((row) => row.status === "fail");
-  const warnRows = ifraRows.filter((row) => row.status === "warn");
+  const normalizedIfraStatus =
+    ifraStatus ||
+    buildFormulaIfraStatus({
+      items: ingredients,
+      finishedProductGuidance,
+      concentrateRows: ifraRows,
+    });
+  const finishedProductOffenderCount =
+    normalizedIfraStatus.finishedProductOffenderCount || 0;
+  const finishedProductWarningCount =
+    normalizedIfraStatus.finishedProductWarningCount || 0;
+  const concentrateHelperFlagCount =
+    normalizedIfraStatus.concentrateHelperFlagCount || 0;
+  const concentrateHelperWarningCount =
+    normalizedIfraStatus.concentrateHelperWarningCount || 0;
+  const ifraDataReviewCount = normalizedIfraStatus.dataReviewCount || 0;
   const critiqueComplianceScore = clampLaunchReadinessScore(
     20 -
-      failRows.length * 8 -
-      warnRows.length * 3 -
+      finishedProductOffenderCount * 8 -
+      finishedProductWarningCount * 3 -
+      concentrateHelperFlagCount * 2 -
+      concentrateHelperWarningCount * 1 -
+      Math.min(4, ifraDataReviewCount * 0.8) -
       ((axisScores.clutterImbalance || 0) >= 6
         ? 4
         : (axisScores.clutterImbalance || 0) > 2.5
@@ -4240,17 +4385,12 @@ export function buildLaunchReadinessSummary({
   const blockers = [];
   const cautions = [];
 
-  const hasComplianceBlock =
-    failRows.length > 0 ||
-    finishedProductGuidance?.overallStatus === "offender" ||
-    finishedProductGuidance?.overallStatus === "offender_with_missing";
+  const hasComplianceBlock = finishedProductOffenderCount > 0;
   if (hasComplianceBlock) {
     blockers.push(
-      failRows.length
-        ? `Concentrate IFRA has ${failRows.length} fail row${
-            failRows.length === 1 ? "" : "s"
-          }.`
-        : "Finished-product guidance shows an offender."
+      `${finishedProductOffenderCount} modeled finished-product IFRA offender${
+        finishedProductOffenderCount === 1 ? "" : "s"
+      } need review.`
     );
   }
   if (toFiniteNumber(batchReport?.shortageCount) > 0) {
@@ -4268,18 +4408,23 @@ export function buildLaunchReadinessSummary({
     );
   }
 
-  if (warnRows.length > 0 && !hasComplianceBlock) {
+  if (
+    (concentrateHelperFlagCount > 0 || concentrateHelperWarningCount > 0) &&
+    !hasComplianceBlock
+  ) {
     cautions.push(
-      `${warnRows.length} concentrate IFRA row${
-        warnRows.length === 1 ? "" : "s"
-      } are close to limit.`
+      `${concentrateHelperFlagCount + concentrateHelperWarningCount} concentrate/helper IFRA flag${
+        concentrateHelperFlagCount + concentrateHelperWarningCount === 1
+          ? ""
+          : "s"
+      } need review; not finished-product violations.`
     );
   }
   if (
     finishedProductGuidance?.overallStatus === "warning" ||
     finishedProductGuidance?.overallStatus === "warning_with_missing"
   ) {
-    cautions.push("Finished-product headroom looks tight in the current use context.");
+    cautions.push("Finished-product IFRA headroom looks tight in checked rows.");
   }
   if (
     finishedProductGuidance?.missingRows?.length ||
@@ -4288,7 +4433,14 @@ export function buildLaunchReadinessSummary({
     finishedProductGuidance?.overallStatus === "offender_with_missing" ||
     finishedProductGuidance?.overallStatus === "warning_with_missing"
   ) {
-    cautions.push("Finished-product guidance is partially blocked by missing data.");
+    cautions.push("Finished-product IFRA guidance is limited by missing data.");
+  }
+  if (ifraDataReviewCount > 0) {
+    cautions.push(
+      `${ifraDataReviewCount} IFRA coverage row${
+        ifraDataReviewCount === 1 ? "" : "s"
+      } need mapping, supplier/SDS, FCF, or accord-level review.`
+    );
   }
   if (toFiniteNumber(basket?.uncertainCount) > 0) {
     cautions.push(
@@ -4359,10 +4511,31 @@ export function buildLaunchReadinessSummary({
       finishedProduct: Number(finishedProductScore.toFixed(1)),
     },
     compliance: {
-      failCount: failRows.length,
-      warnCount: warnRows.length,
+      failCount: finishedProductOffenderCount,
+      warnCount: finishedProductWarningCount,
       finishedProductStatus: finishedProductGuidance?.overallStatus || null,
       hasHardBlock: hasComplianceBlock,
+      hardBlockReason: hasComplianceBlock ? "finished_product_offender" : null,
+      statusLabel: normalizedIfraStatus.statusLabel,
+      severity: normalizedIfraStatus.severity,
+      primaryMessage: normalizedIfraStatus.primaryMessage,
+      launchClearanceLabel: normalizedIfraStatus.launchClearanceLabel,
+      finishedProductOffenderCount,
+      finishedProductWarningCount,
+      concentrateHelperFlagCount,
+      concentrateHelperWarningCount,
+      knownRestrictedRowCount: normalizedIfraStatus.knownRestrictedRowCount,
+      checkedRowCount: normalizedIfraStatus.checkedRowCount,
+      structuredCoverageGapCount:
+        normalizedIfraStatus.structuredCoverageGapCount,
+      dataReviewCount: normalizedIfraStatus.dataReviewCount,
+      supplierSdsNeededCount: normalizedIfraStatus.supplierSdsNeededCount,
+      accordLevelCount: normalizedIfraStatus.accordLevelCount,
+      fcfSpecialCaseCount: normalizedIfraStatus.fcfSpecialCaseCount,
+      noKnownStructuredStandardCount:
+        normalizedIfraStatus.noKnownStructuredStandardCount,
+      hasLaunchClearance: normalizedIfraStatus.hasLaunchClearance,
+      caveats: normalizedIfraStatus.caveats,
     },
     pricing: {
       missingCount: toFiniteNumber(basket?.missingCount),
@@ -8472,7 +8645,7 @@ function collectLaunchReadinessTrustSignals(acc, launchReadiness = null) {
   ) {
     addTrustSignal(
       acc.missingSignals,
-      "Finished-product IFRA guidance is partially blocked by missing data."
+      "Finished-product IFRA guidance is limited by missing data."
     );
   }
   if (launchReadiness?.blockers?.length) {
@@ -9063,7 +9236,9 @@ export function buildSkuEconomicsDashboardSummary(
         );
       }
       if (item?.launchReadiness?.compliance?.hasHardBlock) {
-        cautions.push("Compliance still shows a hard blocker in the current context.");
+        cautions.push(
+          "Finished-product IFRA offenders still need review in the current context."
+        );
       }
       if (toFiniteNumber(item?.batchReport?.shortageCount) > 0) {
         cautions.push(

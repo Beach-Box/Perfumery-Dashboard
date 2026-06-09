@@ -205,4 +205,13 @@ test("IFRA coverage estimate does not treat no restricted rows as fully safe", (
     }).score,
     10
   );
+  const helperFlagEstimate = buildIfraCoverageEstimate({
+    ifraRows: [{ name: "A", status: "fail" }],
+    finishedProductGuidance: {
+      overallStatus: "appears_compliant",
+      offenderRows: [],
+    },
+  });
+  assert.match(helperFlagEstimate.tip, /not finished-product violations/i);
+  assert.notEqual(helperFlagEstimate.tip, "One or more checked rows exceed the current limit.");
 });

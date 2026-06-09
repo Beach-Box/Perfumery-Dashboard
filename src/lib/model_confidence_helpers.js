@@ -503,19 +503,30 @@ export function buildIfraCoverageEstimate({
   ifraRows = [],
   finishedProductGuidance = null,
 } = {}) {
-  const failCount = (Array.isArray(ifraRows) ? ifraRows : []).filter(
+  const helperFlagCount = (Array.isArray(ifraRows) ? ifraRows : []).filter(
     (row) => row?.status === "fail"
   ).length;
   const warnCount = (Array.isArray(ifraRows) ? ifraRows : []).filter(
     (row) => row?.status === "warn"
   ).length;
   const status = finishedProductGuidance?.overallStatus || null;
+  const finishedProductOffenderCount =
+    finishedProductGuidance?.offenderRows?.length ||
+    (status === "offender" || status === "offender_with_missing" ? 1 : 0);
 
-  if (failCount > 0 || status === "offender" || status === "offender_with_missing") {
+  if (finishedProductOffenderCount > 0) {
     return {
-      score: Math.max(0, 4 - failCount * 2),
+      score: Math.max(0, 4 - finishedProductOffenderCount * 2),
       label: "IFRA Coverage Estimate",
-      tip: "One or more checked rows exceed the current limit.",
+      tip: "One or more checked finished-product rows exceed the current limit.",
+      confidenceCategory: "missing_ifra",
+    };
+  }
+  if (helperFlagCount > 0) {
+    return {
+      score: Math.max(3, 6 - helperFlagCount),
+      label: "IFRA Coverage Estimate",
+      tip: "Concentrate/helper IFRA threshold flags need review; they are not finished-product violations.",
       confidenceCategory: "missing_ifra",
     };
   }
@@ -523,7 +534,7 @@ export function buildIfraCoverageEstimate({
     return {
       score: 3,
       label: "IFRA Coverage Estimate",
-      tip: "Finished-product guidance is blocked by missing IFRA data.",
+      tip: "Finished-product guidance is limited by missing IFRA data.",
       confidenceCategory: "missing_ifra",
     };
   }

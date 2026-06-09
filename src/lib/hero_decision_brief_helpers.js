@@ -100,18 +100,25 @@ function buildDecisionModelCaveatWarnings(item) {
 
 function buildIfraStatusLabel(item) {
   const compliance = item?.launchReadiness?.compliance || {};
-  if (compliance.hasHardBlock) return "IFRA hard block";
-  if (compliance.failCount > 0) {
-    return `${compliance.failCount} IFRA fail row${
-      compliance.failCount === 1 ? "" : "s"
+  if (compliance.statusLabel) return compliance.statusLabel;
+  if (item?.ifraStatus?.statusLabel) return item.ifraStatus.statusLabel;
+  if (compliance.finishedProductOffenderCount > 0) {
+    return `${compliance.finishedProductOffenderCount} modeled finished-product offender${
+      compliance.finishedProductOffenderCount === 1 ? "" : "s"
     }`;
   }
+  if (compliance.concentrateHelperFlagCount > 0) {
+    return `${compliance.concentrateHelperFlagCount} concentrate/helper flag${
+      compliance.concentrateHelperFlagCount === 1 ? "" : "s"
+    }`;
+  }
+  if (compliance.dataReviewCount > 0) return "Needs IFRA data review";
   if (compliance.warnCount > 0) {
-    return `${compliance.warnCount} IFRA warning row${
+    return `${compliance.warnCount} finished-product warning row${
       compliance.warnCount === 1 ? "" : "s"
     }`;
   }
-  return "IFRA clear in current context";
+  return "No modeled finished-product offenders";
 }
 
 function buildInventoryStatusLabel(item) {
@@ -331,8 +338,15 @@ function getTechnicalRiskScore(item) {
     blockerCount * 7 +
     cautionCount * 2 +
     (compliance.hasHardBlock ? 10 : 0) +
-    (Number(compliance.failCount) || 0) * 7 +
-    (Number(compliance.warnCount) || 0) * 3 +
+    (Number(compliance.finishedProductOffenderCount ?? compliance.failCount) ||
+      0) *
+      7 +
+    (Number(compliance.finishedProductWarningCount ?? compliance.warnCount) ||
+      0) *
+      3 +
+    (Number(compliance.concentrateHelperFlagCount) || 0) * 2 +
+    (Number(compliance.concentrateHelperWarningCount) || 0) * 1 +
+    Math.min(6, (Number(compliance.dataReviewCount) || 0) * 1.2) +
     getConfidenceCount(item, "black_box_accord") * 2.4 +
     getConfidenceCount(item, "missing_ifra") * 2.2 +
     getConfidenceCount(item, "missing_pricing") * 2 +
@@ -431,7 +445,12 @@ function buildValidationQuestions(item) {
   if (getBasketMissingCount(item) > 0 || getLowConfidenceSupplierMappingCount(item) > 0) {
     questions.push("Are the current supplier and cost assumptions strong enough?");
   }
-  if (item?.launchReadiness?.compliance?.warnCount > 0 || getConfidenceCount(item, "missing_ifra") > 0) {
+  if (
+    item?.launchReadiness?.compliance?.finishedProductWarningCount > 0 ||
+    item?.launchReadiness?.compliance?.concentrateHelperFlagCount > 0 ||
+    item?.launchReadiness?.compliance?.dataReviewCount > 0 ||
+    getConfidenceCount(item, "missing_ifra") > 0
+  ) {
     questions.push("Is IFRA headroom confirmed enough for the intended product context?");
   }
   return questions.slice(0, 3);
