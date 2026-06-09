@@ -29,6 +29,8 @@ node scripts/structure_gcms_reports.mjs
 node scripts/report_gcms_reference_summary.mjs
 node scripts/report_gcms_reference_summary.mjs --markdown
 node scripts/report_gcms_reference_summary.mjs --markdown --write docs/gcms/gcms_reference_summary.md
+node scripts/analyze_gcms_construction_patterns.mjs
+node scripts/analyze_gcms_construction_patterns.mjs --markdown --write docs/gcms/gcms_construction_patterns.md
 ```
 
 ## Outputs
@@ -63,6 +65,20 @@ Candidate records include detected material rows only when the text line has con
 docs/gcms/gcms_reference_summary.md
 ```
 
+`scripts/analyze_gcms_construction_patterns.mjs` reads the structured candidates and writes derived construction-pattern analysis to:
+
+```bash
+data/gcms_extracted/gcms_construction_patterns.json
+```
+
+Markdown output can be written to:
+
+```bash
+docs/gcms/gcms_construction_patterns.md
+```
+
+The pattern extractor reports recurring structural materials, high-dose architecture observations, transparent accord-skeleton heuristics, material co-occurrences, dosage-band distributions, Beach Box inventory/accord overlap, and conservative Beach Box translation notes. It does not generate reconstructed formulas, change active formulas, or treat GCMS percentages as target dosage rules.
+
 ## What GCMS Can Help With
 
 - Spot recurring materials across reference fragrances.
@@ -70,6 +86,7 @@ docs/gcms/gcms_reference_summary.md
 - Compare detected material names with the current Beach Box inventory.
 - Identify absent materials that may deserve review.
 - Prioritize manual study of reports with richer detected material rows.
+- Learn recurring construction patterns and translate them into original Beach Box design questions without copying references.
 
 ## What GCMS Cannot Prove
 
@@ -79,6 +96,7 @@ docs/gcms/gcms_reference_summary.md
 - GCMS output does not prove IFRA compliance or launch clearance.
 - GCMS reports do not justify adding IFRA category limits.
 - Extracted material rows require manual review before use.
+- Construction-pattern outputs are corpus observations, not dosing rules or formula instructions.
 
 ## Review Rules
 
