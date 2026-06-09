@@ -354,6 +354,24 @@ IFRA/SDS needs, specialty supplier documents, natural/UVCB supplier documents,
 FCF special cases, already structured rows, and deferred accord component
 expansion.
 
+### Ingredient Reference CSV Enrichment
+
+The Hero IFRA Source Gap Report can optionally read a local ingredient reference
+CSV to enrich source-acquisition details for active hero materials:
+
+```sh
+node scripts/report_hero_ifra_source_gaps.mjs --ingredient-reference "Ingredient data - Ingredient Data.csv"
+node scripts/report_hero_ifra_source_gaps.mjs --markdown --ingredient-reference "Ingredient data - Ingredient Data.csv"
+node scripts/report_hero_ifra_source_gaps.mjs --markdown --write docs/hero_ifra_source_gap_report.md --ingredient-reference "Ingredient data - Ingredient Data.csv"
+```
+
+The CSV may improve CAS/name aliases, SDS links, product pages, supplier pages,
+supplier hints, descriptions, and search terms. It is an identity and source
+acquisition aid only; it is not an IFRA standards dataset, does not prove
+compliance, does not add category limits, and does not mark missing IFRA data as
+safe. IFRA category limits still require structured IFRA standards or supplier
+IFRA certificates, and launch confidence still requires supplier IFRA/SDS review.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.

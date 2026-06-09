@@ -1,0 +1,5 @@
+Neat Ingredients,Ingredient,Name,CAS,URL,SDS Link,Product Page,Supplier Page,Description,Supplier,Supplier Page
+Aldehyde C-8,Aldehyde C-8,Octanal,124-13-0,https://example.invalid/goodscents/aldehyde-c8,https://example.invalid/sds/aldehyde-c8.pdf,https://example.invalid/products/aldehyde-c8,https://example.invalid/suppliers/example,"Identity reference only, not IFRA compliance evidence.",Example Supplier,https://example.invalid/brand/example
+Seaweed Absolute,Seaweed Absolute 10%,Seaweed Absolute,,https://example.invalid/goodscents/seaweed,https://example.invalid/sds/seaweed.pdf,https://example.invalid/products/seaweed,,,Example Naturals,
+Oceanol 10%,Oceanol 10%,Oceanol,,https://example.invalid/goodscents/oceanol-a,https://example.invalid/sds/oceanol-a.pdf,https://example.invalid/products/oceanol-a,,,Example Supplier A,
+Oceanol 10%,Oceanol 10%,Oceanol,,https://example.invalid/goodscents/oceanol-b,https://example.invalid/sds/oceanol-b.pdf,https://example.invalid/products/oceanol-b,,,Example Supplier B,

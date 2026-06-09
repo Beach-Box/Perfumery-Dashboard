@@ -214,6 +214,20 @@ const SOURCE_HINTS = [
   },
 ];
 
+const INGREDIENT_REFERENCE_COLUMNS = {
+  neatIngredients: "Neat Ingredients",
+  ingredient: "Ingredient",
+  name: "Name",
+  cas: "CAS",
+  goodScentsUrl: "URL",
+  sdsLink: "SDS Link",
+  productPage: "Product Page",
+  supplierPage: "Supplier Page",
+  supplierPageAlternate: "Supplier Page.1",
+  description: "Description",
+  supplier: "Supplier",
+};
+
 function getRequiredSourceTypeLabel(key) {
   return REQUIRED_SOURCE_TYPE_LABELS[key] || key;
 }
@@ -241,6 +255,143 @@ function uniqueStrings(values = []) {
     output.push(text);
   }
   return output;
+}
+
+function parseCsvRows(source) {
+  const rows = [];
+  let row = [];
+  let value = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const nextChar = source[index + 1];
+
+    if (inQuotes) {
+      if (char === "\"" && nextChar === "\"") {
+        value += "\"";
+        index += 1;
+      } else if (char === "\"") {
+        inQuotes = false;
+      } else {
+        value += char;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(value);
+      value = "";
+    } else if (char === "\n") {
+      row.push(value);
+      rows.push(row);
+      row = [];
+      value = "";
+    } else if (char !== "\r") {
+      value += char;
+    }
+  }
+
+  if (inQuotes) {
+    throw new Error("Ingredient reference CSV has an unterminated quoted field");
+  }
+  if (value || row.length) {
+    row.push(value);
+    rows.push(row);
+  }
+
+  return rows.filter((csvRow) =>
+    csvRow.some((field) => String(field || "").trim())
+  );
+}
+
+function makeUniqueHeaders(headers) {
+  const counts = new Map();
+  return headers.map((header, index) => {
+    const base = String(header || "").trim() || `Column ${index + 1}`;
+    const count = counts.get(base) || 0;
+    counts.set(base, count + 1);
+    return count === 0 ? base : `${base}.${count}`;
+  });
+}
+
+function valueFromRow(row, columnName) {
+  return String(row?.[columnName] || "").trim();
+}
+
+function extractCasNumbers(value) {
+  return uniqueStrings(String(value || "").match(/\b\d{2,7}-\d{2}-\d\b/g) || []);
+}
+
+function splitReferenceAliases(value) {
+  return uniqueStrings(
+    String(value || "")
+      .split(/[|;/]/)
+      .map((part) => part.trim())
+      .filter(Boolean)
+  );
+}
+
+export function parseIngredientReferenceCsv(source) {
+  const rows = parseCsvRows(source);
+  if (!rows.length) return [];
+  const headers = makeUniqueHeaders(rows[0]);
+  return rows.slice(1).map((csvRow, index) => {
+    const raw = Object.fromEntries(
+      headers.map((header, headerIndex) => [header, csvRow[headerIndex] || ""])
+    );
+    const supplierPages = uniqueStrings([
+      valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.supplierPage),
+      valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.supplierPageAlternate),
+    ]);
+    const neatIngredients = valueFromRow(
+      raw,
+      INGREDIENT_REFERENCE_COLUMNS.neatIngredients
+    );
+    const ingredient = valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.ingredient);
+    const name = valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.name);
+    const cas = valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.cas);
+
+    return {
+      rowNumber: index + 2,
+      raw,
+      neatIngredients,
+      ingredient,
+      name,
+      cas,
+      goodScentsUrl: valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.goodScentsUrl),
+      sdsLink: valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.sdsLink),
+      productPage: valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.productPage),
+      supplierPage: supplierPages.join("; "),
+      description: valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.description),
+      supplier: valueFromRow(raw, INGREDIENT_REFERENCE_COLUMNS.supplier),
+      aliases: uniqueStrings([
+        neatIngredients,
+        ingredient,
+        name,
+        ...splitReferenceAliases(neatIngredients),
+      ]),
+      casNumbers: extractCasNumbers(cas),
+    };
+  });
+}
+
+function loadIngredientReferenceCsv(filePath) {
+  if (!filePath) return null;
+  const resolvedPath = path.resolve(ROOT, filePath);
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Ingredient reference CSV not found: ${filePath}`);
+  }
+  const stat = fs.statSync(resolvedPath);
+  if (!stat.isFile()) {
+    throw new Error(`Ingredient reference path is not a file: ${filePath}`);
+  }
+  return {
+    sourcePath: resolvedPath,
+    rows: parseIngredientReferenceCsv(fs.readFileSync(resolvedPath, "utf8")),
+  };
 }
 
 function extractArrayConstant(source, marker) {
@@ -352,6 +503,161 @@ function getHint(materialName, identity) {
   ];
   const haystack = values.map(normalizeText).join(" ");
   return SOURCE_HINTS.find((hint) => hint.match.test(haystack)) || null;
+}
+
+function stripDilutionSuffix(value) {
+  return String(value || "")
+    .replace(/\s+\d+(?:\.\d+)?\s*%\s*(?:tec|dpg|etoh|ethanol|ipm)?$/i, "")
+    .replace(/\s+\d+(?:\.\d+)?\s*%$/i, "")
+    .trim();
+}
+
+function addAldehydeAbbreviationTerms(term) {
+  const match = String(term || "").match(/\baldehyde\s+c[-\s]?(\d{1,2})\b/i);
+  if (!match) return [];
+  return [`Ald C-${match[1]}`, `Ald C${match[1]}`];
+}
+
+function buildMaterialReferenceTerms({ materialName, identity, material, hint }) {
+  const baseTerms = uniqueStrings([
+    materialName,
+    stripDilutionSuffix(materialName),
+    identity?.canonicalAppName,
+    identity?.normalizedName,
+    ...(identity?.aliases || []),
+    material?.canonicalName,
+    ...(material?.synonyms || []),
+    ...(material?.cas || []),
+    ...(hint?.terms || []),
+  ]);
+  const expandedTerms = [];
+  for (const term of baseTerms) {
+    expandedTerms.push(term, stripDilutionSuffix(term), ...addAldehydeAbbreviationTerms(term));
+  }
+  return uniqueStrings(expandedTerms);
+}
+
+function buildReferenceRowTerms(referenceRow) {
+  return uniqueStrings([
+    referenceRow.neatIngredients,
+    referenceRow.ingredient,
+    referenceRow.name,
+    referenceRow.cas,
+    ...referenceRow.aliases,
+    ...referenceRow.casNumbers,
+  ]);
+}
+
+function findIngredientReferenceMatches({ materialTerms, referenceRows }) {
+  if (!referenceRows?.length) return [];
+  const normalizedMaterialTerms = new Map(
+    materialTerms
+      .map((term) => [normalizeText(term), term])
+      .filter(([normalized]) => normalized)
+  );
+  const repoCasTerms = new Set(
+    materialTerms.flatMap((term) => extractCasNumbers(term))
+  );
+
+  return referenceRows
+    .map((referenceRow) => {
+      const rowTerms = buildReferenceRowTerms(referenceRow);
+      const matchedNameTerms = rowTerms.filter((term) =>
+        normalizedMaterialTerms.has(normalizeText(term))
+      );
+      const matchedCasTerms = referenceRow.casNumbers.filter((cas) =>
+        repoCasTerms.has(cas)
+      );
+      return {
+        row: referenceRow,
+        matchedTerms: uniqueStrings([...matchedNameTerms, ...matchedCasTerms]),
+        basis: matchedCasTerms.length ? "cas_or_name" : "name",
+      };
+    })
+    .filter((match) => match.matchedTerms.length);
+}
+
+function isPlaceholderValue(value) {
+  return /^(?:n\/a|na|none|null|not provided|request|-|--|unknown)$/i.test(
+    String(value || "").trim()
+  );
+}
+
+function nullable(value) {
+  const text = String(value || "").trim();
+  if (!text || isPlaceholderValue(text)) return null;
+  return text || null;
+}
+
+function extractUrlParts(value) {
+  return uniqueStrings(
+    String(value || "")
+      .split(/[;\s]+/)
+      .map((part) => part.trim().replace(/^"|"$/g, ""))
+      .filter((part) => /^https?:\/\//i.test(part))
+  );
+}
+
+function nullableLink(value) {
+  const urls = extractUrlParts(value);
+  return urls.length ? urls.join("; ") : null;
+}
+
+function nullableSupplier(value) {
+  const text = nullable(value);
+  if (!text || /^https?:\/\//i.test(text)) return null;
+  return text;
+}
+
+function nullableCas(referenceRow) {
+  return referenceRow.casNumbers.length ? nullable(referenceRow.cas) : null;
+}
+
+function buildReferenceCandidate(referenceRow) {
+  return {
+    rowNumber: referenceRow.rowNumber,
+    referenceIngredient: nullable(referenceRow.ingredient),
+    referenceName: nullable(referenceRow.name),
+    referenceCas: nullableCas(referenceRow),
+    referenceSupplier: nullableSupplier(referenceRow.supplier),
+    referenceProductPage: nullableLink(referenceRow.productPage),
+    referenceSdsLink: nullableLink(referenceRow.sdsLink),
+    referenceGoodScentsUrl: nullableLink(referenceRow.goodScentsUrl),
+  };
+}
+
+function buildIngredientReferenceFields(matches) {
+  if (!matches) return {};
+  if (matches.length === 0) {
+    return { referenceMatchConfidence: "none" };
+  }
+  if (matches.length > 1) {
+    return {
+      referenceMatchConfidence: "ambiguous",
+      referenceMatchCount: matches.length,
+      referenceMatchCandidates: matches.slice(0, 5).map((match) =>
+        buildReferenceCandidate(match.row)
+      ),
+    };
+  }
+
+  const match = matches[0];
+  const row = match.row;
+  return {
+    referenceMatchConfidence: "confirmed",
+    referenceMatchBasis: match.basis,
+    referenceMatchedTerms: match.matchedTerms,
+    referenceNeatIngredients: nullable(row.neatIngredients),
+    referenceIngredient: nullable(row.ingredient),
+    referenceName: nullable(row.name),
+    referenceCas: nullableCas(row),
+    referenceSupplier: nullableSupplier(row.supplier),
+    referenceSdsLink: nullableLink(row.sdsLink),
+    referenceProductPage: nullableLink(row.productPage),
+    referenceSupplierPage: nullableLink(row.supplierPage),
+    referenceGoodScentsUrl: nullableLink(row.goodScentsUrl),
+    referenceDescription: nullable(row.description),
+  };
 }
 
 function hasDefinedIfraLimit(material) {
@@ -486,7 +792,14 @@ function buildReason({ uniqueRow, auditRow, requiredSourceType, hint }) {
   return pieces.join(" ");
 }
 
-function buildSearchTerms({ materialName, identity, material, hint, requiredSourceType }) {
+function buildSearchTerms({
+  materialName,
+  identity,
+  material,
+  hint,
+  requiredSourceType,
+  referenceFields,
+}) {
   const casTerms = getCasTerms(identity, material).map((cas) => `CAS ${cas}`);
   const aliasTerms = uniqueStrings([
     materialName,
@@ -511,11 +824,38 @@ function buildSearchTerms({ materialName, identity, material, hint, requiredSour
     requiredSourceType.includes("specialty")
       ? [`${materialName} SDS`, `${materialName} IFRA certificate`]
       : [];
+  const referenceTerms =
+    referenceFields?.referenceMatchConfidence === "confirmed"
+      ? uniqueStrings([
+          referenceFields.referenceNeatIngredients,
+          referenceFields.referenceIngredient,
+          referenceFields.referenceName,
+          referenceFields.referenceSupplier,
+          ...extractCasNumbers(referenceFields.referenceCas).map((cas) => `CAS ${cas}`),
+          referenceFields.referenceSdsLink
+            ? `supplier SDS ${referenceFields.referenceIngredient || materialName}`
+            : null,
+          referenceFields.referenceProductPage
+            ? `supplier product ${referenceFields.referenceIngredient || materialName}`
+            : null,
+        ])
+      : [];
 
-  return uniqueStrings([...aliasTerms, ...casTerms, ...ifraTerms, ...supplierTerms]).slice(0, 14);
+  return uniqueStrings([
+    ...aliasTerms,
+    ...casTerms,
+    ...referenceTerms,
+    ...ifraTerms,
+    ...supplierTerms,
+  ]).slice(0, 18);
 }
 
-function buildNotes({ requiredSourceType, material, masterDataHasCandidate }) {
+function buildNotes({
+  requiredSourceType,
+  material,
+  masterDataHasCandidate,
+  referenceFields,
+}) {
   const notes = [];
   if (requiredSourceType === "global_ifra_standard_needed") {
     notes.push("Need a source-backed IFRA standard before adding a structured limit.");
@@ -538,6 +878,31 @@ function buildNotes({ requiredSourceType, material, masterDataHasCandidate }) {
   }
   if (requiredSourceType === "already_structured" && material?.source?.document) {
     notes.push(`Structured source reference: ${material.source.document}.`);
+  }
+  if (referenceFields?.referenceMatchConfidence === "confirmed") {
+    const hasSds = Boolean(referenceFields.referenceSdsLink);
+    const hasProductPage = Boolean(
+      referenceFields.referenceProductPage || referenceFields.referenceSupplierPage
+    );
+    const hasIdentityOnly = Boolean(
+      referenceFields.referenceGoodScentsUrl || referenceFields.referenceDescription
+    );
+    if (hasSds && requiredSourceType !== "already_structured") {
+      notes.push("SDS/product reference available; IFRA category limit still not structured.");
+    }
+    if (hasProductPage) {
+      notes.push(
+        "Supplier product page available; supplier IFRA certificate/SDS may be needed before launch."
+      );
+    }
+    if (hasIdentityOnly && !hasSds && !hasProductPage) {
+      notes.push("Identity reference available; not an IFRA compliance source.");
+    }
+  }
+  if (referenceFields?.referenceMatchConfidence === "ambiguous") {
+    notes.push(
+      "Ingredient reference CSV matched multiple rows; review manually before using any reference link."
+    );
   }
   return notes;
 }
@@ -566,9 +931,13 @@ function countBy(items, key) {
 export function buildHeroIfraSourceGapReport({
   appPath = DEFAULT_APP_PATH,
   generatedAt = new Date().toISOString(),
+  ingredientReferencePath = null,
 } = {}) {
   const ifraMasterData = readJson(IFRA_MASTER_STANDARDS_PATH);
   const ifraCombinedPackage = readJson(IFRA_COMBINED_PACKAGE_PATH);
+  const ingredientReference = ingredientReferencePath
+    ? loadIngredientReferenceCsv(ingredientReferencePath)
+    : null;
   const activeFormulas = loadActiveHeroFormulas(appPath);
   const uniqueRows = collectUniqueFormulaMaterials(activeFormulas);
   const supportDb = buildSupportDb();
@@ -587,6 +956,21 @@ export function buildHeroIfraSourceGapReport({
       const identity = resolveIngredientIdentity(materialName);
       const material = getIfraMaterialRecord(materialName);
       const hint = getHint(materialName, identity);
+      const materialReferenceTerms = buildMaterialReferenceTerms({
+        materialName,
+        identity,
+        material,
+        hint,
+      });
+      const referenceMatches = ingredientReference
+        ? findIngredientReferenceMatches({
+            materialTerms: materialReferenceTerms,
+            referenceRows: ingredientReference.rows,
+          })
+        : null;
+      const referenceFields = ingredientReference
+        ? buildIngredientReferenceFields(referenceMatches)
+        : {};
       const requiredSourceType = classifyRequiredSourceType({
         auditRow,
         materialName,
@@ -600,6 +984,14 @@ export function buildHeroIfraSourceGapReport({
         ...(material?.cas || []),
         ...(material?.synonyms || []),
         ...(hint?.terms || []),
+        ...(referenceFields.referenceMatchConfidence === "confirmed"
+          ? [
+              referenceFields.referenceNeatIngredients,
+              referenceFields.referenceIngredient,
+              referenceFields.referenceName,
+              referenceFields.referenceCas,
+            ]
+          : []),
       ]);
       const masterDataHasCandidate = masterDataContainsCandidate(
         standards,
@@ -624,6 +1016,7 @@ export function buildHeroIfraSourceGapReport({
         notes: [],
         matchedMaterial: auditRow?.matchedMaterial || material?.canonicalName || null,
         totalFormulaGrams: Number(uniqueRow.totalFormulaGrams.toFixed(6)),
+        ...referenceFields,
       };
       baseRow.suggestedDocumentName = getSuggestedDocumentName(baseRow);
       baseRow.candidateSearchTerms = buildSearchTerms({
@@ -632,6 +1025,7 @@ export function buildHeroIfraSourceGapReport({
         material,
         hint,
         requiredSourceType,
+        referenceFields,
       });
       baseRow.priority = getPriority({
         uniqueRow,
@@ -649,6 +1043,7 @@ export function buildHeroIfraSourceGapReport({
         requiredSourceType,
         material,
         masterDataHasCandidate,
+        referenceFields,
       });
       return baseRow;
     })
@@ -666,6 +1061,12 @@ export function buildHeroIfraSourceGapReport({
   const highPriorityGaps = materials.filter(
     (row) => row.priority === "high" && row.requiredSourceType !== "already_structured"
   );
+  const ingredientReferenceMatchedRows = ingredientReference
+    ? materials.filter((row) => row.referenceMatchConfidence === "confirmed")
+    : [];
+  const ingredientReferenceAmbiguousRows = ingredientReference
+    ? materials.filter((row) => row.referenceMatchConfidence === "ambiguous")
+    : [];
   const sourcePath = ifraMasterData.metadata?.source_path || "";
   const resolvedSourcePath = sourcePath ? path.resolve(ROOT, sourcePath) : "";
   const sourcePathRelative = resolvedSourcePath
@@ -698,6 +1099,18 @@ export function buildHeroIfraSourceGapReport({
         sourcePathExistsInRepo,
         presentInRepo: sourcePathExistsInRepo,
       },
+      ...(ingredientReference
+        ? {
+            ingredientReference: {
+              sourcePath: ingredientReference.sourcePath,
+              rowCount: ingredientReference.rows.length,
+              matchedMaterialCount: ingredientReferenceMatchedRows.length,
+              ambiguousMaterialCount: ingredientReferenceAmbiguousRows.length,
+              note:
+                "Ingredient reference CSV enriches identity/source-acquisition fields only; it is not IFRA compliance evidence.",
+            },
+          }
+        : {}),
       note:
         "Read-only source acquisition report. It does not add IFRA limits or prove launch compliance.",
     },
@@ -708,6 +1121,14 @@ export function buildHeroIfraSourceGapReport({
       requiredSourceTypeCounts: countBy(materials, "requiredSourceType"),
       priorityCounts: countBy(materials, "priority"),
       highPriorityGapCount: highPriorityGaps.length,
+      ...(ingredientReference
+        ? {
+            ingredientReferenceMatchedMaterialCount:
+              ingredientReferenceMatchedRows.length,
+            ingredientReferenceAmbiguousMaterialCount:
+              ingredientReferenceAmbiguousRows.length,
+          }
+        : {}),
       structuredStandardCount: standards.length,
       structuredStandardsWithCategoryLimits: Number(
         ifraMasterData.metadata?.records_with_category_limits
@@ -722,9 +1143,42 @@ function escapeMarkdown(value) {
   return String(value ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
+function getReferenceLinkSummary(row) {
+  if (row.referenceMatchConfidence !== "confirmed") return "";
+  return uniqueStrings([
+    row.referenceSdsLink ? `SDS: ${row.referenceSdsLink}` : null,
+    row.referenceProductPage ? `Product: ${row.referenceProductPage}` : null,
+    row.referenceSupplierPage ? `Supplier: ${row.referenceSupplierPage}` : null,
+    row.referenceGoodScentsUrl ? `Good Scents: ${row.referenceGoodScentsUrl}` : null,
+  ]).join("; ");
+}
+
+function getReferenceRows(report) {
+  return report.materials.filter((row) =>
+    ["confirmed", "ambiguous"].includes(row.referenceMatchConfidence)
+  );
+}
+
+function getReferenceNote(row) {
+  if (row.referenceMatchConfidence === "ambiguous") {
+    return `${row.referenceMatchCount} possible reference rows; review manually.`;
+  }
+  if (row.referenceSdsLink && row.requiredSourceType !== "already_structured") {
+    return "SDS/product reference available; IFRA category limit still not structured.";
+  }
+  if (row.referenceProductPage || row.referenceSupplierPage) {
+    return "Supplier product page available; supplier IFRA certificate/SDS may be needed before launch.";
+  }
+  if (row.referenceGoodScentsUrl || row.referenceDescription) {
+    return "Identity reference available; not an IFRA compliance source.";
+  }
+  return "Reference identity fields available; not an IFRA compliance source.";
+}
+
 export function formatMarkdownReport(report) {
   const sourceCounts = report.summary.requiredSourceTypeCounts;
   const priorityCounts = report.summary.priorityCounts;
+  const referenceRows = getReferenceRows(report);
   const rows = [
     "# Hero IFRA Source Gap Report",
     "",
@@ -740,6 +1194,13 @@ export function formatMarkdownReport(report) {
     `- Structured IFRA standards in current dataset: ${report.summary.structuredStandardCount}`,
     `- Structured standards with category limits: ${report.summary.structuredStandardsWithCategoryLimits}`,
     `- Referenced IFRA PDF present in repo: ${report.metadata.referencedIfraPdf.presentInRepo ? "yes" : "no"}`,
+    ...(report.metadata.ingredientReference
+      ? [
+          `- Ingredient reference CSV rows read: ${report.metadata.ingredientReference.rowCount}`,
+          `- Ingredient reference confirmed matches: ${report.summary.ingredientReferenceMatchedMaterialCount}`,
+          `- Ingredient reference ambiguous matches: ${report.summary.ingredientReferenceAmbiguousMaterialCount}`,
+        ]
+      : []),
     "",
     "Required source type counts:",
     ...Object.entries(sourceCounts)
@@ -772,6 +1233,31 @@ export function formatMarkdownReport(report) {
       )
       .map((line) => `| ${line} |`),
     "",
+    ...(referenceRows.length
+      ? [
+          "## Known Reference Links",
+          "",
+          "These links are identity/source-acquisition aids only. They do not prove IFRA compliance or add category limits.",
+          "",
+          "| Material | Match | CAS | Supplier | Links | Note |",
+          "| --- | --- | --- | --- | --- | --- |",
+          ...referenceRows
+            .map((row) =>
+              [
+                row.materialName,
+                row.referenceMatchConfidence,
+                row.referenceCas || "",
+                row.referenceSupplier || "",
+                getReferenceLinkSummary(row),
+                getReferenceNote(row),
+              ]
+                .map(escapeMarkdown)
+                .join(" | ")
+            )
+            .map((line) => `| ${line} |`),
+          "",
+        ]
+      : []),
   ];
   return rows.join("\n");
 }
@@ -788,6 +1274,13 @@ export function formatTextReport(report) {
     `Referenced IFRA PDF present in repo: ${
       report.metadata.referencedIfraPdf.presentInRepo ? "yes" : "no"
     }`,
+    ...(report.metadata.ingredientReference
+      ? [
+          `Ingredient reference CSV rows read: ${report.metadata.ingredientReference.rowCount}`,
+          `Ingredient reference confirmed matches: ${report.summary.ingredientReferenceMatchedMaterialCount}`,
+          `Ingredient reference ambiguous matches: ${report.summary.ingredientReferenceAmbiguousMaterialCount}`,
+        ]
+      : []),
     "",
     "Required source type counts:",
     ...Object.entries(report.summary.requiredSourceTypeCounts)
@@ -811,6 +1304,15 @@ export function formatTextReport(report) {
     lines.push(`  Used in: ${row.formulasUsedIn.join(", ")}`);
     lines.push(`  Suggested document: ${row.suggestedDocumentName}`);
     lines.push(`  Search: ${row.candidateSearchTerms.slice(0, 8).join("; ")}`);
+    if (row.referenceMatchConfidence === "confirmed") {
+      lines.push(
+        `  Reference: ${row.referenceIngredient || row.referenceName || "matched"}${
+          row.referenceSdsLink ? `; SDS ${row.referenceSdsLink}` : ""
+        }`
+      );
+    } else if (row.referenceMatchConfidence === "ambiguous") {
+      lines.push(`  Reference: ambiguous (${row.referenceMatchCount} possible rows)`);
+    }
   }
 
   lines.push("", "All materials:");
@@ -827,6 +1329,7 @@ function parseArgs(argv) {
   const args = {
     format: "text",
     writePath: null,
+    ingredientReferencePath: null,
   };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
@@ -836,6 +1339,11 @@ function parseArgs(argv) {
       const value = argv[index + 1];
       if (!value) throw new Error("--write requires a path");
       args.writePath = path.resolve(ROOT, value);
+      index += 1;
+    } else if (arg === "--ingredient-reference") {
+      const value = argv[index + 1];
+      if (!value) throw new Error("--ingredient-reference requires a CSV path");
+      args.ingredientReferencePath = path.resolve(ROOT, value);
       index += 1;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -852,7 +1360,9 @@ function renderReport(report, format) {
 
 export function runCli(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
-  const report = buildHeroIfraSourceGapReport();
+  const report = buildHeroIfraSourceGapReport({
+    ingredientReferencePath: args.ingredientReferencePath,
+  });
   const output = renderReport(report, args.format);
   if (args.writePath) {
     fs.mkdirSync(path.dirname(args.writePath), { recursive: true });
@@ -867,5 +1377,10 @@ const isDirectRun =
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 
 if (isDirectRun) {
-  runCli();
+  try {
+    runCli();
+  } catch (error) {
+    console.error(error?.message || String(error));
+    process.exitCode = 1;
+  }
 }

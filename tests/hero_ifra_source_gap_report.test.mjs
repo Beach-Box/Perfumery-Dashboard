@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   buildHeroIfraSourceGapReport,
@@ -7,6 +9,14 @@ import {
   formatMarkdownReport,
   formatTextReport,
 } from "../scripts/report_hero_ifra_source_gaps.mjs";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const INGREDIENT_REFERENCE_FIXTURE = path.join(
+  ROOT,
+  "scripts",
+  "fixtures",
+  "ingredient_reference_sample.csv"
+);
 
 function findMaterial(report, materialName) {
   const row = report.materials.find((item) => item.materialName === materialName);
@@ -114,6 +124,7 @@ test("hero IFRA source gap report does not expose or add IFRA limits", () => {
   assert.equal(aldehydeC8.requiredSourceType, "global_ifra_standard_needed");
   assert.equal(aldehydeC8.safeToMapNow, false);
   assert.ok(aldehydeC8.candidateSearchTerms.includes("Octanal"));
+  assert.equal(Object.hasOwn(aldehydeC8, "referenceMatchConfidence"), false);
 });
 
 test("hero IFRA source gap report formats text and markdown output", () => {
@@ -129,4 +140,88 @@ test("hero IFRA source gap report formats text and markdown output", () => {
   assert.match(markdown, /\| Priority \| Material \| Current IFRA \|/);
   assert.match(markdown, /Natural\/UVCB supplier docs needed/);
   assert.match(markdown, /Specialty supplier document needed/);
+});
+
+test("ingredient reference CSV enriches confirmed active hero material matches", () => {
+  const report = buildHeroIfraSourceGapReport({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    ingredientReferencePath: INGREDIENT_REFERENCE_FIXTURE,
+  });
+
+  assert.equal(report.metadata.ingredientReference.rowCount, 4);
+  assert.equal(report.summary.ingredientReferenceMatchedMaterialCount, 2);
+  assert.equal(report.summary.ingredientReferenceAmbiguousMaterialCount, 1);
+
+  const aldehydeC8 = findMaterial(report, "Aldehyde C-8");
+  assert.equal(aldehydeC8.referenceMatchConfidence, "confirmed");
+  assert.equal(aldehydeC8.referenceIngredient, "Aldehyde C-8");
+  assert.equal(aldehydeC8.referenceName, "Octanal");
+  assert.equal(aldehydeC8.referenceCas, "124-13-0");
+  assert.equal(
+    aldehydeC8.referenceSdsLink,
+    "https://example.invalid/sds/aldehyde-c8.pdf"
+  );
+  assert.equal(
+    aldehydeC8.referenceProductPage,
+    "https://example.invalid/products/aldehyde-c8"
+  );
+  assert.equal(aldehydeC8.referenceSupplier, "Example Supplier");
+  assert.ok(aldehydeC8.candidateSearchTerms.includes("CAS 124-13-0"));
+  assert.ok(
+    aldehydeC8.notes.includes(
+      "SDS/product reference available; IFRA category limit still not structured."
+    )
+  );
+});
+
+test("ingredient reference CSV flags ambiguous matches without treating them as confirmed", () => {
+  const report = buildHeroIfraSourceGapReport({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    ingredientReferencePath: INGREDIENT_REFERENCE_FIXTURE,
+  });
+
+  const oceanol = findMaterial(report, "Oceanol 10%");
+  assert.equal(oceanol.referenceMatchConfidence, "ambiguous");
+  assert.equal(oceanol.referenceMatchCount, 2);
+  assert.equal(Object.hasOwn(oceanol, "referenceSdsLink"), false);
+  assert.ok(
+    oceanol.notes.includes(
+      "Ingredient reference CSV matched multiple rows; review manually before using any reference link."
+    )
+  );
+});
+
+test("ingredient reference CSV does not create IFRA limits or compliance status", () => {
+  const report = buildHeroIfraSourceGapReport({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    ingredientReferencePath: INGREDIENT_REFERENCE_FIXTURE,
+  });
+
+  const aldehydeC8 = findMaterial(report, "Aldehyde C-8");
+  assert.equal(aldehydeC8.currentIfraCategory, "sourceUnavailable");
+  assert.equal(aldehydeC8.requiredSourceType, "global_ifra_standard_needed");
+  assert.equal(aldehydeC8.safeToMapNow, false);
+  assert.equal(
+    Object.hasOwn(aldehydeC8, "limits") ||
+      Object.hasOwn(aldehydeC8, "categoryLimits") ||
+      Object.hasOwn(aldehydeC8, "limitSummary"),
+    false
+  );
+
+  const bergamotFcf = findMaterial(report, "Bergamot EO FCF");
+  assert.equal(bergamotFcf.currentIfraCategory, "fcfSpecialCase");
+  assert.equal(bergamotFcf.requiredSourceType, "fcf_special_case");
+  assert.equal(bergamotFcf.safeToMapNow, false);
+});
+
+test("markdown output includes ingredient reference links when CSV is supplied", () => {
+  const report = buildHeroIfraSourceGapReport({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    ingredientReferencePath: INGREDIENT_REFERENCE_FIXTURE,
+  });
+  const markdown = formatMarkdownReport(report);
+
+  assert.match(markdown, /## Known Reference Links/);
+  assert.match(markdown, /https:\/\/example\.invalid\/sds\/aldehyde-c8\.pdf/);
+  assert.match(markdown, /Identity\/source-acquisition aids only|identity\/source-acquisition aids only/i);
 });
