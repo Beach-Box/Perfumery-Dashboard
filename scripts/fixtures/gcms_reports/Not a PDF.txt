@@ -1,0 +1,1 @@
+Synthetic non-PDF fixture. Manifest tests must ignore this file.

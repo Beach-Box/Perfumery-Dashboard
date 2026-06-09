@@ -4,5 +4,7 @@ dist/
 .env
 .vscode/
 downloads/source_documents/
+downloads/gcms_reports/
+data/gcms_extracted/raw_text/
 test-results/
 playwright-report/
