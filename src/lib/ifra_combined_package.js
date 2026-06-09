@@ -2483,7 +2483,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Ambroxan Crystals", "Ambroxan"],
+    aliases: ["Ambroxan Crystals", "Ambroxan", "Ambroxide"],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -2501,7 +2501,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Ethylene Brassylate"],
+    aliases: ["Ethylene Brassylate", "105-95-3"],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -2519,7 +2519,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Habanolide"],
+    aliases: ["Habanolide", "111879-80-2"],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -2537,7 +2537,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Helvetolide"],
+    aliases: ["Helvetolide", "141773-73-1"],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -2555,7 +2555,12 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Iso E Super"],
+    aliases: [
+      "Iso E Super",
+      "OTNE",
+      "Tetramethyl acetyloctahydronaphthalenes",
+      "54464-57-2",
+    ],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -2573,7 +2578,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Calone 1951"],
+    aliases: ["Calone 1951", "Calone", "Calone 1951\u00ae", "28940-11-6"],
     stock: null,
     dbNoteRole: "top",
     dbMaterialType: "SYNTH",
@@ -2662,7 +2667,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Dihydromyrcenol"],
+    aliases: ["Dihydromyrcenol", "18479-58-8"],
     stock: null,
     dbNoteRole: "top",
     dbMaterialType: "SYNTH",
@@ -2770,7 +2775,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Ethyl Vanillin"],
+    aliases: ["Ethyl Vanillin", "Ethylvanillin", "121-32-4"],
     stock: null,
     dbNoteRole: "mid",
     dbMaterialType: "SYNTH",
@@ -3175,7 +3180,7 @@ export const INGREDIENT_IDENTITY_MAP = {
     matchStrategy: "unresolved",
     resolvedIfraMaterial: null,
     materialClass: "not_yet_resolved",
-    aliases: ["Ambrettolide"],
+    aliases: ["Ambrettolide", "7779-50-2"],
     stock: null,
     dbNoteRole: "base",
     dbMaterialType: "SYNTH",
@@ -3638,6 +3643,288 @@ export function compareMaterialCasSupportValues(left, right) {
   return normalizeText(leftSupport.displayValue) === normalizeText(rightSupport.displayValue);
 }
 
+const HERO_IFRA_UNRESOLVED_IDENTITY_TRACKING = {
+  "Aldehyde C-8": {
+    canonicalAppName: "Aldehyde C-8",
+    normalizedName: "Octanal / Aldehyde C-8",
+    aliases: ["Aldehyde C-8", "Ald C-8", "Aldehyde C8", "Octanal", "124-13-0"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as octanal identity only. Current structured IFRA data has no standalone Octanal/Aldehyde C-8 standard; octanal substring hits in other standards are intentionally not used.",
+  },
+  Algenone: {
+    canonicalAppName: "Algenone",
+    normalizedName: "Algenone",
+    aliases: ["Algenone"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Source-backed app support exists, but no structured IFRA standard is wired. Supplier IFRA/SDS is needed before launch clearance.",
+  },
+  "Allyl Amyl Glycolate": {
+    canonicalAppName: "Allyl Amyl Glycolate",
+    normalizedName: "Allyl Amyl Glycolate",
+    aliases: ["Allyl Amyl Glycolate", "Allyl amyl glycolate"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  "Caryophyllene Oxide": {
+    canonicalAppName: "Caryophyllene Oxide",
+    normalizedName: "Caryophyllene Oxide",
+    aliases: ["Caryophyllene Oxide", "Caryophyllene oxide"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  Celestafleur: {
+    canonicalAppName: "Celestafleur",
+    normalizedName: "Celestafleur",
+    aliases: ["Celestafleur", "Celestafleur®"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as separate proprietary/specialty material. Do not map to another floral material without source support.",
+  },
+  Cetalox: {
+    canonicalAppName: "Cetalox",
+    normalizedName: "Cetalox",
+    aliases: ["Cetalox", "Cetalox®"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked separately from Ambroxan/Ambroxide. No structured IFRA standard is wired for Cetalox in current repo data.",
+  },
+  Clearwood: {
+    canonicalAppName: "Clearwood",
+    normalizedName: "Clearwood",
+    aliases: ["Clearwood", "Clearwood®"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as proprietary/specialty material with no structured IFRA standard wired from current repo data.",
+  },
+  Cyclogalbanate: {
+    canonicalAppName: "Cyclogalbanate",
+    normalizedName: "Cyclogalbanate",
+    aliases: ["Cyclogalbanate"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Source-backed app support exists, but no structured IFRA standard is wired. Supplier IFRA/SDS is needed before launch clearance.",
+  },
+  Cypriol: {
+    canonicalAppName: "Cypriol",
+    normalizedName: "Cypriol",
+    aliases: ["Cypriol"],
+    dbNoteRole: "base",
+    dbMaterialType: "OIL",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Source-backed app support exists, but no structured IFRA standard is wired. Supplier IFRA/SDS is needed before launch clearance.",
+  },
+  "Ethyl Linalool": {
+    canonicalAppName: "Ethyl Linalool",
+    normalizedName: "Ethyl Linalool",
+    aliases: ["Ethyl Linalool", "Ethyl linalool"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material. Current master data contains Linalool standards, but this row is not mapped to Linalool.",
+  },
+  "Ethyl Linalyl Acetate": {
+    canonicalAppName: "Ethyl Linalyl Acetate",
+    normalizedName: "Ethyl Linalyl Acetate",
+    aliases: ["Ethyl Linalyl Acetate", "Ethyl linalyl acetate"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  "Ethyl Vanillin": {
+    canonicalAppName: "Ethyl Vanillin",
+    normalizedName: "Ethyl Vanillin",
+    aliases: ["Ethyl Vanillin", "Ethylvanillin", "121-32-4"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Safe name alias only. No structured IFRA standard is wired from current repo data.",
+  },
+  Florol: {
+    canonicalAppName: "Florol",
+    normalizedName: "Florol",
+    aliases: ["Florol", "Florol®"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as commercial/specialty material with no structured IFRA standard wired from current repo data.",
+  },
+  Geosmin: {
+    canonicalAppName: "Geosmin",
+    normalizedName: "Geosmin",
+    aliases: ["Geosmin"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  Hedione: {
+    canonicalAppName: "Hedione",
+    normalizedName: "Methyl dihydrojasmonate / Hedione",
+    aliases: [
+      "Hedione",
+      "Hedione®",
+      "Methyl dihydrojasmonate",
+      "MDJ",
+      "24851-98-7",
+    ],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Safe identity aliases only. No structured IFRA standard is wired from current repo data.",
+  },
+  "Hedione HC": {
+    canonicalAppName: "Hedione HC",
+    normalizedName: "Hedione High Cis",
+    aliases: ["Hedione HC", "Hedione High Cis", "Hedione® High Cis"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked separately from regular Hedione because current repo data does not wire a source-backed IFRA standard for this specific product.",
+  },
+  Maritima: {
+    canonicalAppName: "Maritima",
+    normalizedName: "Maritima",
+    aliases: ["Maritima", "Maritima®"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as separate proprietary/specialty material. Do not map to Oceanol or another marine material without source support.",
+  },
+  "Methyl Ionone Alpha Extra": {
+    canonicalAppName: "Methyl Ionone Alpha Extra",
+    normalizedName: "Methyl Ionone Alpha Extra",
+    aliases: ["Methyl Ionone Alpha Extra", "Methyl ionone alpha extra"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  Oceanol: {
+    canonicalAppName: "Oceanol",
+    normalizedName: "Oceanol",
+    aliases: ["Oceanol", "Oceanol®"],
+    dbNoteRole: "top",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as separate specialty marine material. Do not map to Calone, Maritima, or another marine material without source support.",
+  },
+  "Orbitone T Neo": {
+    canonicalAppName: "Orbitone T Neo",
+    normalizedName: "Orbitone T Neo",
+    aliases: ["Orbitone T Neo", "Orbitone® T Neo"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as separate commercial IES-family product. No structured IFRA standard is wired from current repo data.",
+  },
+  "Phenyl Ethyl Acetate": {
+    canonicalAppName: "Phenyl Ethyl Acetate",
+    normalizedName: "Phenyl Ethyl Acetate",
+    aliases: ["Phenyl Ethyl Acetate", "Phenethyl acetate", "Phenylethyl acetate"],
+    dbNoteRole: "mid",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+  "Pink Peppercorn Oil P&N": {
+    canonicalAppName: "Pink Peppercorn Oil P&N",
+    normalizedName: "Pink Peppercorn Oil P&N",
+    aliases: ["Pink Peppercorn Oil P&N", "Pink Peppercorn Oil", "Pink pepper oil"],
+    dbNoteRole: "top",
+    dbMaterialType: "OIL",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Source-backed app support exists, but no structured IFRA standard is wired. Botanical Schinus aliases are not added without source confirmation.",
+  },
+  Timbersilk: {
+    canonicalAppName: "Timbersilk",
+    normalizedName: "Timbersilk",
+    aliases: ["Timbersilk", "Timbersilk®"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Tracked as separate commercial IES-family product. No structured IFRA standard is wired from current repo data.",
+  },
+  Veramoss: {
+    canonicalAppName: "Veramoss",
+    normalizedName: "Methyl atrarate / Veramoss",
+    aliases: ["Veramoss", "Veramoss®", "Evernyl", "Evernyl®", "Methyl atrarate"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    requiresSupplierIfraSds: true,
+    reviewNote:
+      "Safe identity aliases only. No structured IFRA standard is wired from current repo data.",
+  },
+  "Vetiveryl Acetate": {
+    canonicalAppName: "Vetiveryl Acetate",
+    normalizedName: "Vetiveryl Acetate",
+    aliases: ["Vetiveryl Acetate", "Vetiveryl acetate"],
+    dbNoteRole: "base",
+    dbMaterialType: "SYNTH",
+    reviewNote:
+      "Tracked as unresolved hero material; no structured IFRA standard is wired from current repo data.",
+  },
+};
+
+function buildHeroIfraUnresolvedIdentity(record) {
+  return {
+    canonicalAppName: record.canonicalAppName,
+    normalizedName: record.normalizedName || record.canonicalAppName,
+    matchStrategy: "hero_ifra_unresolved_tracking",
+    resolvedIfraMaterial: null,
+    materialClass: "not_yet_resolved",
+    aliases: record.aliases || [record.canonicalAppName],
+    stock: null,
+    dbNoteRole: record.dbNoteRole || null,
+    dbMaterialType: record.dbMaterialType || "SYNTH",
+    requiresSupplierIfraSds: Boolean(record.requiresSupplierIfraSds),
+    currentAppIfraFlag: false,
+    currentAppIfraText:
+      "Tracked in the hero IFRA gap inventory. No structured IFRA limit is wired from current repo data.",
+    pdfMatchStatus: "not_found",
+    pdfMatchedAlias: null,
+    pdfMatchedPage: null,
+    reviewNote: record.reviewNote,
+  };
+}
+
+function resolveHeroIfraUnresolvedIdentity(name) {
+  const normalized = normalizeText(name);
+  if (!normalized) return null;
+  for (const record of Object.values(HERO_IFRA_UNRESOLVED_IDENTITY_TRACKING)) {
+    const aliases = record.aliases || [record.canonicalAppName];
+    if (aliases.some((alias) => normalizeText(alias) === normalized)) {
+      return buildHeroIfraUnresolvedIdentity(record);
+    }
+  }
+  return null;
+}
+
 function resolveIngredientIdentityDirect(name) {
   const direct = INGREDIENT_IDENTITY_MAP[name];
   if (direct) return direct;
@@ -3652,6 +3939,8 @@ function resolveIngredientIdentityDirect(name) {
     )
       return record;
   }
+  const heroTracked = resolveHeroIfraUnresolvedIdentity(name);
+  if (heroTracked) return heroTracked;
   return null;
 }
 
@@ -3777,6 +4066,8 @@ function hasFcfSignal({ name, material, identity } = {}) {
 
 function needsSupplierIfraSds({ name, record, material, identity } = {}) {
   if (hasFcfSignal({ name, material, identity })) return false;
+  if (identity?.requiresSupplierIfraSds || material?.requiresSupplierIfraSds)
+    return true;
   const materialType = String(
     record?.type || identity?.dbMaterialType || ""
   ).toUpperCase();
@@ -3845,7 +4136,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
         return {
           name,
           category: "supplierSdsNeeded",
-          label: "Supplier IFRA/SDS needed",
+          label: "Supplier IFRA/SDS needed before launch clearance",
           matchedMaterial: material?.canonicalName || identity?.canonicalAppName || null,
           resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
         };
@@ -3878,7 +4169,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
         return {
           name,
           category: "supplierSdsNeeded",
-          label: "Supplier IFRA/SDS needed",
+          label: "Supplier IFRA/SDS needed before launch clearance",
           matchedMaterial: material.canonicalName,
           resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
           missingLimitReason: material.missingLimitReason || null,
@@ -3912,7 +4203,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
         return {
           name,
           category: "supplierSdsNeeded",
-          label: "Supplier IFRA/SDS needed",
+          label: "Supplier IFRA/SDS needed before launch clearance",
           matchedMaterial: null,
           resolvedIfraMaterial: identity.resolvedIfraMaterial || null,
         };
@@ -3932,7 +4223,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
       return {
         name,
         category: "supplierSdsNeeded",
-        label: "Supplier IFRA/SDS needed",
+        label: "Supplier IFRA/SDS needed before launch clearance",
         matchedMaterial: null,
         resolvedIfraMaterial: null,
       };
@@ -5258,7 +5549,7 @@ export function buildFormulaIfraStatus({
       `${formatIfraStatusCount(
         supplierSdsNeededCount,
         "supplier IFRA/SDS row"
-      )} need supplier documents before clearance.`
+      )} need supplier documents before launch clearance.`
     );
   }
   if (fcfSpecialCaseCount > 0) {
@@ -5274,7 +5565,7 @@ export function buildFormulaIfraStatus({
       `${formatIfraStatusCount(
         accordLevelCount,
         "accord-level row"
-      )} remain accord-level for IFRA unless components are expanded.`
+      )} remain accord-level in IFRA view. Component IFRA expansion is deferred to a dedicated task.`
     );
   }
   if (noKnownStructuredStandardCount > 0) {

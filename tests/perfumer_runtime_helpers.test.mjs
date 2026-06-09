@@ -10,6 +10,7 @@ import {
   computeActiveRestrictedPercent,
   formatMaterialCasSupportValue,
   getIfraMaterialRecord,
+  getIfraUiState,
   resolveIngredientIdentity,
 } from "../src/lib/ifra_combined_package.js";
 import {
@@ -247,7 +248,10 @@ test("formula IFRA coverage audit classifies matches, gaps, and accord rows cons
     { db: { "Seaweed Absolute 10%": { type: "ABS" } } }
   );
   assert.equal(supplierAudit.counts.supplierSdsNeeded, 1);
-  assert.equal(supplierAudit.rows[0].label, "Supplier IFRA/SDS needed");
+  assert.equal(
+    supplierAudit.rows[0].label,
+    "Supplier IFRA/SDS needed before launch clearance"
+  );
 
   const missingGuidance = buildFinishedProductIfraGuidance({
     items: [{ name: "No Such Material", g: 1 }],
@@ -315,6 +319,99 @@ test("active hero IFRA aliases map to structured master standards without mutati
   assert.equal(audit.counts.exactIfraMatch, 1);
   assert.equal(audit.counts.aliasIfraMatch, 3);
   assert.equal(audit.counts.knownRestrictionRows, 4);
+});
+
+test("hero unresolved IFRA aliases resolve without inventing structured limits", () => {
+  const aliasCases = [
+    ["Ald C-8", "Aldehyde C-8"],
+    ["Octanal", "Aldehyde C-8"],
+    ["Calone", "Calone 1951"],
+    ["OTNE", "Iso E Super"],
+    ["Ethylvanillin", "Ethyl Vanillin"],
+    ["Methyl dihydrojasmonate", "Hedione"],
+    ["MDJ", "Hedione"],
+    ["Florol®", "Florol"],
+    ["Evernyl", "Veramoss"],
+    ["Ambroxide", "Ambroxan Crystals"],
+    ["Dihydromyrcenol", "Dihydromyrcenol"],
+    ["Ambrettolide", "Ambrettolide"],
+  ];
+
+  for (const [alias, canonicalAppName] of aliasCases) {
+    const identity = resolveIngredientIdentity(alias);
+    assert.equal(identity?.canonicalAppName, canonicalAppName, alias);
+    assert.equal(identity?.resolvedIfraMaterial, null, alias);
+    assert.equal(getIfraMaterialRecord(alias), null, alias);
+    assert.equal(getIfraUiState(alias), "unresolved_identity", alias);
+  }
+});
+
+test("unsafe hero IFRA mappings remain separate and unresolved", () => {
+  const separateIdentityCases = [
+    ["Cetalox", "Cetalox"],
+    ["Ambroxan", "Ambroxan Crystals"],
+    ["Oceanol", "Oceanol"],
+    ["Maritima", "Maritima"],
+    ["Algenone", "Algenone"],
+    ["Celestafleur", "Celestafleur"],
+    ["Seaweed Absolute 10%", "Seaweed Absolute"],
+  ];
+
+  for (const [name, canonicalAppName] of separateIdentityCases) {
+    const identity = resolveIngredientIdentity(name);
+    assert.equal(identity?.canonicalAppName, canonicalAppName, name);
+    assert.equal(identity?.resolvedIfraMaterial, null, name);
+    assert.equal(getIfraMaterialRecord(name), null, name);
+  }
+
+  assert.notEqual(
+    resolveIngredientIdentity("Cetalox")?.canonicalAppName,
+    resolveIngredientIdentity("Ambroxan")?.canonicalAppName
+  );
+  assert.notEqual(
+    resolveIngredientIdentity("Oceanol")?.canonicalAppName,
+    resolveIngredientIdentity("Maritima")?.canonicalAppName
+  );
+  assert.notEqual(
+    resolveIngredientIdentity("Aldehyde C-8")?.resolvedIfraMaterial,
+    "hexyl cinnamic aldehyde"
+  );
+  assert.equal(
+    (resolveIngredientIdentity("Pink Peppercorn Oil P&N")?.aliases || []).some(
+      (alias) => /schinus/i.test(alias)
+    ),
+    false
+  );
+});
+
+test("hero IFRA data gaps stay missing or supplier-needed, never safe", () => {
+  const audit = auditFormulaIfraCoverage([
+    { name: "Ald C-8", g: 0.01 },
+    { name: "Methyl dihydrojasmonate", g: 0.4 },
+    { name: "Ethylvanillin", g: 0.02 },
+    { name: "Cetalox", g: 0.5 },
+    { name: "Oceanol", g: 0.05 },
+    { name: "Cypriol", g: 0.05 },
+    { name: "Seaweed Absolute 10%", g: 0.01 },
+    { name: "Pink Peppercorn Oil P&N", g: 0.05 },
+    { name: "Cedarwood Virginia EO", g: 0.2 },
+  ]);
+
+  assert.equal(audit.counts.knownRestrictionRows, 0);
+  assert.equal(audit.counts.exactIfraMatch, 0);
+  assert.equal(audit.counts.aliasIfraMatch, 0);
+  assert.equal(audit.counts.missingAlias, 0);
+  assert.equal(audit.counts.sourceUnavailable, 3);
+  assert.equal(audit.counts.supplierSdsNeeded, 6);
+  assert.equal(audit.counts.noKnownRestriction, 0);
+  assert.equal(
+    audit.rows.find((row) => row.name === "Cetalox").label,
+    "Supplier IFRA/SDS needed before launch clearance"
+  );
+  assert.equal(
+    audit.rows.find((row) => row.name === "Ald C-8").label,
+    "Source unavailable in current structured IFRA data"
+  );
 });
 
 test("formula timeline contribution model decays absolute contribution over time", () => {

@@ -67188,9 +67188,9 @@ export default function App() {
         color: "#FCD34D",
       },
       {
-        label: "Supplier/SDS needed",
+        label: "Supplier IFRA/SDS needed",
         value: formulaIfraStatus.supplierSdsNeededCount || 0,
-        detail: "naturals, UVCBs, or supplier-specific rows",
+        detail: "before launch clearance",
         color: "#FBBF24",
       },
       {

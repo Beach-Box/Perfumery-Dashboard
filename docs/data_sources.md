@@ -287,6 +287,51 @@ estimates; component-derived accord rows are usage/depletion estimates inside
 that basket view. Likewise, a finished-product IFRA state of "no restricted
 rows" is a coverage estimate, not a blanket safety clearance.
 
+### Structured IFRA Coverage
+
+Structured IFRA coverage means the app can connect a formula row to a reviewed
+runtime IFRA state from `src/lib/ifra_combined_package.js` and the committed
+structured data. It can report exact/alias matches to standards, known
+restricted rows, FCF special cases, accord-level rows, supplier-document-needed
+rows, missing aliases, and source-unavailable rows.
+
+It does not mean launch clearance. A formula can show "No modeled
+finished-product offenders in checked rows" while still requiring data review.
+Missing structured data must not be treated as safe, and known restricted rows
+must not automatically be treated as finished-product offenders unless the
+modeled Cat 4 finished-product calculation supports that conclusion.
+
+The current active hero IFRA pass added safe unresolved identity aliases for
+materials such as Aldehyde C-8/Octanal, Calone 1951/Calone, Iso E Super/OTNE,
+Hedione/MDJ, Ethyl Vanillin/Ethylvanillin, Florol/Florol(R),
+Veramoss/Evernyl, Ambrettolide, Dihydromyrcenol, and related active hero
+specialties. These aliases improve tracking only. They do not add IFRA limits
+or promote a material to a structured standard unless a committed source-backed
+standard is already present.
+
+The current committed master standards data does not wire source-backed IFRA
+standards for several active hero materials, including Iso E Super, Ambroxan,
+Ambrettolide, Dihydromyrcenol, Ethyl Vanillin, Calone 1951, Cetalox, Hedione,
+Oceanol, Maritima, Algenone, Veramoss, Florol, Celestafleur, Aldehyde C-8,
+Seaweed Absolute 10%, Pink Peppercorn Oil P&N, and Cedarwood Virginia EO. These
+rows must remain unresolved, source-unavailable, or supplier-document-needed
+until source-backed standards or supplier documentation are promoted.
+
+Supplier IFRA/SDS needed before launch clearance currently applies at minimum
+to unresolved naturals/UVCBs and supplier-specific specialties such as Seaweed
+Absolute 10%, Pink Peppercorn Oil P&N, Cedarwood Virginia EO, Cypriol, Cetalox,
+Oceanol, Maritima, Algenone, Celestafleur, Clearwood, Cyclogalbanate,
+Orbitone T Neo, Timbersilk, Veramoss, Florol, and Hedione HC.
+
+FCF citrus rows remain separate from regular expressed citrus standards.
+Bergamot EO FCF and Lemon FCF should not inherit the regular phototoxic
+expressed citrus limits unless a source-backed non-FCF mapping is explicitly
+used for a regular expressed citrus material.
+
+Accord rows remain accord-level in IFRA view. Component IFRA expansion is
+deferred to a dedicated task; recipe-derived costing does not make an accord
+component-expanded for IFRA.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.
