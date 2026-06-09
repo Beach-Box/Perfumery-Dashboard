@@ -31,6 +31,8 @@ node scripts/report_gcms_reference_summary.mjs --markdown
 node scripts/report_gcms_reference_summary.mjs --markdown --write docs/gcms/gcms_reference_summary.md
 node scripts/analyze_gcms_construction_patterns.mjs
 node scripts/analyze_gcms_construction_patterns.mjs --markdown --write docs/gcms/gcms_construction_patterns.md
+node scripts/translate_gcms_patterns_to_beach_box.mjs
+node scripts/translate_gcms_patterns_to_beach_box.mjs --markdown --write docs/gcms/beach_box_pattern_translation.md
 ```
 
 ## Outputs
@@ -78,6 +80,20 @@ docs/gcms/gcms_construction_patterns.md
 ```
 
 The pattern extractor reports recurring structural materials, high-dose architecture observations, transparent accord-skeleton heuristics, material co-occurrences, dosage-band distributions, Beach Box inventory/accord overlap, and conservative Beach Box translation notes. It does not generate reconstructed formulas, change active formulas, or treat GCMS percentages as target dosage rules.
+
+`scripts/translate_gcms_patterns_to_beach_box.mjs` reads the construction-pattern analysis and active hero formulas, expands known accord components for relationship checks, and writes original Beach Box formulation guidance to:
+
+```bash
+data/gcms_extracted/beach_box_pattern_translation.json
+```
+
+Markdown output can be written to:
+
+```bash
+docs/gcms/beach_box_pattern_translation.md
+```
+
+The translator converts corpus observations into Beach Box decision prompts such as airy diffusion architecture, skin musk/base structure, woody amber driftwood support, marine/mineral restraint, citrus lift, floral transparency, and dark realism modifiers. It is a pattern-translation tool, not a formula reconstruction tool: it does not output commercial formulas, does not copy GCMS percentages, and does not change active formulas, IFRA logic, pricing, accord recipes, sensory data, candidate statuses, UI, or AI behavior.
 
 GCMS material identity matching is handled with raw-name preservation. The analyzer keeps the raw GCMS material name, then adds normalized identity fields for reporting:
 

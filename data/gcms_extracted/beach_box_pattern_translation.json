@@ -1,0 +1,1503 @@
+{
+  "generatedAt": "2026-06-09T15:59:51.903Z",
+  "sourcePatternPath": "data/gcms_extracted/gcms_construction_patterns.json",
+  "reportCount": 124,
+  "trueComponentRowCount": 15871,
+  "uniqueIdentifiedMaterialCount": 1664,
+  "activeHeroFormulaCount": 4,
+  "guardrails": [
+    "This is pattern translation, not formula reconstruction.",
+    "Use these as architectural lessons, not recipes.",
+    "Do not output or follow recreated commercial formulas.",
+    "Do not copy exact GCMS percentages.",
+    "Do not treat GCMS output as IFRA, pricing, or launch-clearance evidence."
+  ],
+  "translationSections": [
+    {
+      "id": "airy_diffusion_architecture",
+      "patternName": "Airy Diffusion Architecture",
+      "corpusFocus": "Hedione + Iso E Super, Hedione + musks, Iso E Super + Cashmeran, and Iso E Super + Ambroxan relationships.",
+      "corpusEvidence": [
+        "Musky Floral Skeleton appears in 118 of 124 reports.",
+        "Woody Amber Skeleton appears in 70 of 124 reports.",
+        "Hedione + Linalool appears together in 52 of 124 reports.",
+        "Hedione + Iso E Super appears together in 41 of 124 reports.",
+        "Cashmeran + Iso E Super appears together in 22 of 124 reports.",
+        "Ambroxan + Iso E Super appears together in 15 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Ethylene Brassylate",
+          "canonicalName": "Ethylene Brassylate",
+          "inventoryStatus": "accord component match",
+          "observedRole": "musk body/fixation",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 77
+        },
+        {
+          "rawName": "Iso E Super",
+          "canonicalName": "Iso E Super",
+          "inventoryStatus": "accord component match",
+          "observedRole": "woody amber structure",
+          "dominantDosageBand": "backbone",
+          "reportFrequency": 67
+        },
+        {
+          "rawName": "Hedione",
+          "canonicalName": "Hedione®",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 62
+        },
+        {
+          "rawName": "Hedione HC",
+          "canonicalName": "Hedione HC",
+          "inventoryStatus": "alias match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "",
+          "reportFrequency": 35
+        },
+        {
+          "rawName": "Ambrox",
+          "canonicalName": "Ambroxan Crystals",
+          "inventoryStatus": "related family match",
+          "observedRole": "amber/skin diffusion",
+          "dominantDosageBand": "",
+          "reportFrequency": 33
+        }
+      ],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Hedione",
+            "Linalool"
+          ],
+          "reportFrequency": 52,
+          "reportFrequencyLabel": "52 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        },
+        {
+          "materials": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "reportFrequency": 41,
+          "reportFrequencyLabel": "41 of 124 reports",
+          "translation": "Use as an airy driftwood/floral-transparency bridge under coastal skin notes."
+        },
+        {
+          "materials": [
+            "Cashmeran",
+            "Iso E Super"
+          ],
+          "reportFrequency": 22,
+          "reportFrequencyLabel": "22 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        },
+        {
+          "materials": [
+            "Ambroxan",
+            "Iso E Super"
+          ],
+          "reportFrequency": 15,
+          "reportFrequencyLabel": "15 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Observed mainly as structural, backbone materials. High-dose corpus signals include Ethylene Brassylate, Iso E Super, Hedione, Hedione HC, Ambrox. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Build salt-air lift through a transparent Hedione/wood/musk bridge: driftwood transparency, skin-air diffusion, mineral radiance, and sun-warmed musks before adding more marine force.",
+      "materialsAlreadyHave": [
+        {
+          "rawName": "Ethylene Brassylate",
+          "canonicalName": "Ethylene Brassylate",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Iso E Super",
+          "canonicalName": "Iso E Super",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Hedione",
+          "canonicalName": "Hedione®",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Hedione HC",
+          "canonicalName": "Hedione HC",
+          "inventoryStatus": "alias match",
+          "matchType": "alias",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Ambrox",
+          "canonicalName": "Ambroxan Crystals",
+          "inventoryStatus": "related family match",
+          "matchType": "related_family",
+          "matchConfidence": "medium"
+        }
+      ],
+      "materialsMissingButWorthConsidering": [],
+      "whatToTest": "Compare lift and trail from the existing Hedione, Iso E/driftwood, Ambroxan/Cetalox, Cashmeran, and botanical musk structure before increasing aquatic impact.",
+      "whatNotToOverdo": "Do not keep stacking diffusers until the formula turns abstract, dry, or laundry-like; keep enough skin warmth and shoreline materiality.",
+      "riskCaveat": "High diffusion can make the formula feel impressive in air but thin on skin; wear-test against skin closeness and drydown identity.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Hedione",
+            "Driftwood Accord"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Ambrettolide 50% TEC",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Hedione",
+            "Driftwood Accord"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Ambrettolide",
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that diffusion can outrun identity is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Driftwood Accord",
+            "Hedione"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Ambrettolide 50% TEC",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Driftwood Accord",
+            "Hedione",
+            "Hedione HC"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Ambrettolide",
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that diffusion can outrun identity is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Driftwood Accord",
+            "Ambroxan 50%"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Ambrettolide 50% TEC",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Driftwood Accord",
+            "Ambroxan 50%",
+            "Hedione",
+            "Hedione HC"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Ambrettolide",
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that diffusion can outrun identity is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Ambrettolide",
+            "Hedione",
+            "Hedione HC"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Hedione",
+            "Hedione HC"
+          ],
+          "accordComponents": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Ambrettolide"
+          ],
+          "note": "Many matching rows are present; validate that diffusion can outrun identity is not masking the Beach Box identity."
+        }
+      ]
+    },
+    {
+      "id": "skin_musk_soft_base_architecture",
+      "patternName": "Skin Musk / Soft Base Architecture",
+      "corpusFocus": "Ethylene Brassylate, Galaxolide, Ambrettolide, Habanolide, Helvetolide, and soft musk-body patterns.",
+      "corpusEvidence": [
+        "Musky Floral Skeleton appears in 118 of 124 reports.",
+        "Ethylene Brassylate + Galaxolide appears together in 18 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Ethylene Brassylate",
+          "canonicalName": "Ethylene Brassylate",
+          "inventoryStatus": "accord component match",
+          "observedRole": "musk body/fixation",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 77
+        },
+        {
+          "rawName": "Galaxolide",
+          "canonicalName": "Galaxolide",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "musk body/fixation",
+          "dominantDosageBand": "",
+          "reportFrequency": 48
+        },
+        {
+          "rawName": "Habanolide",
+          "canonicalName": "Habanolide",
+          "inventoryStatus": "accord component match",
+          "observedRole": "musk body/fixation",
+          "dominantDosageBand": "",
+          "reportFrequency": 26
+        },
+        {
+          "rawName": "Helvetolide",
+          "canonicalName": "Helvetolide",
+          "inventoryStatus": "accord component match",
+          "observedRole": "musk body/fixation",
+          "dominantDosageBand": "",
+          "reportFrequency": 14
+        }
+      ],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Ethylene Brassylate",
+            "Galaxolide"
+          ],
+          "reportFrequency": 18,
+          "reportFrequencyLabel": "18 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Observed mainly as structural materials. High-dose corpus signals include Ethylene Brassylate, Galaxolide, Habanolide, Helvetolide. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Translate the common musk base into a salted skin veil: clean skin warmth, soft towel air, and intimate diffusion under the marine/wood topography.",
+      "materialsAlreadyHave": [
+        {
+          "rawName": "Ethylene Brassylate",
+          "canonicalName": "Ethylene Brassylate",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Galaxolide",
+          "canonicalName": "Galaxolide",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Habanolide",
+          "canonicalName": "Habanolide",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Helvetolide",
+          "canonicalName": "Helvetolide",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        }
+      ],
+      "materialsMissingButWorthConsidering": [],
+      "whatToTest": "Test whether the Botanical Musk Accord gives enough cushion and persistence before adding or buying more standalone musks.",
+      "whatNotToOverdo": "Avoid making the base too clean, sweet, or fabric-soft; Beach Box should feel like skin by the shore, not a detergent musk study.",
+      "riskCaveat": "Musk-heavy structures can hide the mineral/marine story and may need side-by-side skin wear to judge real persistence.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ],
+          "directRows": [
+            "Ambrettolide 50% TEC",
+            "Botanical Musk Accord"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ],
+          "note": "Many matching rows are present; validate that musk can flatten contrast is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ],
+          "directRows": [
+            "Ambrettolide 50% TEC",
+            "Botanical Musk Accord"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ],
+          "note": "Many matching rows are present; validate that musk can flatten contrast is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambrettolide 50% TEC",
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ],
+          "directRows": [
+            "Ambrettolide 50% TEC",
+            "Botanical Musk Accord"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ],
+          "note": "Many matching rows are present; validate that musk can flatten contrast is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ],
+          "directRows": [
+            "Botanical Musk Accord"
+          ],
+          "accordComponents": [
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ],
+          "note": "Many matching rows are present; validate that musk can flatten contrast is not masking the Beach Box identity."
+        }
+      ]
+    },
+    {
+      "id": "woody_amber_driftwood_architecture",
+      "patternName": "Woody Amber / Driftwood Architecture",
+      "corpusFocus": "Iso E Super, Cashmeran, Ambroxan/Ambroxide, cedar materials, vetiver, patchouli, and amberwood support.",
+      "corpusEvidence": [
+        "Woody Amber Skeleton appears in 70 of 124 reports.",
+        "Hedione + Iso E Super appears together in 41 of 124 reports.",
+        "Cashmeran + Iso E Super appears together in 22 of 124 reports.",
+        "Ambroxan + Iso E Super appears together in 15 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Patchoulol",
+          "canonicalName": "Patchoulol",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "corpus-observed supporting material",
+          "dominantDosageBand": "modifier",
+          "reportFrequency": 81
+        },
+        {
+          "rawName": "Iso E Super",
+          "canonicalName": "Iso E Super",
+          "inventoryStatus": "accord component match",
+          "observedRole": "woody amber structure",
+          "dominantDosageBand": "backbone",
+          "reportFrequency": 67
+        },
+        {
+          "rawName": "Ambrox",
+          "canonicalName": "Ambroxan Crystals",
+          "inventoryStatus": "related family match",
+          "observedRole": "amber/skin diffusion",
+          "dominantDosageBand": "",
+          "reportFrequency": 33
+        }
+      ],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "reportFrequency": 41,
+          "reportFrequencyLabel": "41 of 124 reports",
+          "translation": "Use as an airy driftwood/floral-transparency bridge under coastal skin notes."
+        },
+        {
+          "materials": [
+            "Cashmeran",
+            "Iso E Super"
+          ],
+          "reportFrequency": 22,
+          "reportFrequencyLabel": "22 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        },
+        {
+          "materials": [
+            "Ambroxan",
+            "Iso E Super"
+          ],
+          "reportFrequency": 15,
+          "reportFrequencyLabel": "15 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Observed mainly as modifier, backbone materials. High-dose corpus signals include Patchoulol, Iso E Super, Ambrox. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Use woody amber architecture as dry driftwood and sun-bleached boards: warm mineral amber underneath, airy wood in the middle, and rougher wood shadows only where the shoreline needs realism.",
+      "materialsAlreadyHave": [
+        {
+          "rawName": "Iso E Super",
+          "canonicalName": "Iso E Super",
+          "inventoryStatus": "accord component match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Ambrox",
+          "canonicalName": "Ambroxan Crystals",
+          "inventoryStatus": "related family match",
+          "matchType": "related_family",
+          "matchConfidence": "medium"
+        }
+      ],
+      "materialsMissingButWorthConsidering": [],
+      "whatToTest": "Test Driftwood Accord versions against direct Iso E/Cashmeran/Ambroxan/Cetalox structure to decide whether the formula needs more weathered wood or more air.",
+      "whatNotToOverdo": "Avoid a generic amberwood blast; Beach Box should read as weathered coastal material, not only modern woody diffusion.",
+      "riskCaveat": "Woody amber materials can dominate identity quickly and may make marine notes feel pasted on rather than integrated.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Cashmeran",
+            "Driftwood Accord",
+            "Vetiveryl Acetate"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Cashmeran",
+            "Driftwood Accord"
+          ],
+          "accordComponents": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Vetiveryl Acetate",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that amberwood can dominate the brief is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Cashmeran",
+            "Driftwood Accord",
+            "Vetiveryl Acetate"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Cashmeran",
+            "Driftwood Accord"
+          ],
+          "accordComponents": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Vetiveryl Acetate",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that amberwood can dominate the brief is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Cashmeran",
+            "Driftwood Accord",
+            "Vetiveryl Acetate",
+            "Ambroxan 50%"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Cashmeran",
+            "Driftwood Accord",
+            "Vetiveryl Acetate",
+            "Ambroxan 50%"
+          ],
+          "accordComponents": [
+            "Iso E Super",
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Vetiveryl Acetate",
+            "Cashmeran"
+          ],
+          "note": "Many matching rows are present; validate that amberwood can dominate the brief is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Iso E Super",
+            "Orbitone T Neo",
+            "Timbersilk",
+            "Clearwood",
+            "Cedarwood Virginia EO",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Vetiveryl Acetate",
+            "Amber Xtreme",
+            "Cypriol"
+          ],
+          "directRows": [
+            "Iso E Super",
+            "Orbitone T Neo",
+            "Timbersilk",
+            "Clearwood",
+            "Cedarwood Virginia EO",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Cypriol"
+          ],
+          "accordComponents": [
+            "Iso E Super",
+            "Vetiveryl Acetate",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Amber Xtreme"
+          ],
+          "note": "Many matching rows are present; validate that amberwood can dominate the brief is not masking the Beach Box identity."
+        }
+      ]
+    },
+    {
+      "id": "marine_mineral_architecture",
+      "patternName": "Marine / Mineral Architecture",
+      "corpusFocus": "Calone, marine ozonics, algae/seaweed markers, mineral musks, Ambroxan/Cetalox, Helional, and shoreline support.",
+      "corpusEvidence": [
+        "Marine/Mineral Skeleton appears in 33 of 124 reports.",
+        "Ambroxan + Iso E Super appears together in 15 of 124 reports."
+      ],
+      "commonMaterials": [],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Ambroxan",
+            "Iso E Super"
+          ],
+          "reportFrequency": 15,
+          "reportFrequencyLabel": "15 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Use as a qualitative pattern; dosage behavior is not strong enough for a firm read. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Treat marine materials as a salt-air and mineral facet woven into musks and woods, not as the whole identity. The corpus supports marine/mineral structure, but the source data is thinner than the floral/musk and woody-amber patterns.",
+      "materialsAlreadyHave": [],
+      "materialsMissingButWorthConsidering": [],
+      "whatToTest": "Test whether current Calone/Oceanol/Seaweed/Algenone/Maritima levels read like mineral shore air or like obvious aquatic power.",
+      "whatNotToOverdo": "Do not solve every gap by adding more Calone-style power; the better move may be more wood/musk integration or less top-note pressure.",
+      "riskCaveat": "Marine materials can become loud, metallic, or generic before they become more realistic.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Seaweed Absolute 10%",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Helional 25%",
+            "Helional",
+            "Oceanol 10%",
+            "Oceanol"
+          ],
+          "directRows": [
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Seaweed Absolute 10%",
+            "Maritima",
+            "Algenone",
+            "Helional 25%",
+            "Oceanol 10%",
+            "Calone 1951 20%",
+            "Cyclogalbanate",
+            "Allyl Amyl Glycolate"
+          ],
+          "accordComponents": [
+            "Ambroxan 50% TEC",
+            "Ambroxan"
+          ],
+          "note": "Many matching rows are present; validate that marine power needs restraint is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Helional®",
+            "Seaweed Absolute 10%",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Oceanol 10%",
+            "Oceanol",
+            "Calone 1951 20%"
+          ],
+          "directRows": [
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Helional®",
+            "Seaweed Absolute 10%",
+            "Maritima",
+            "Algenone",
+            "Oceanol 10%",
+            "Calone 1951 20%",
+            "Cyclogalbanate",
+            "Allyl Amyl Glycolate"
+          ],
+          "accordComponents": [
+            "Ambroxan 50% TEC",
+            "Ambroxan"
+          ],
+          "note": "Many matching rows are present; validate that marine power needs restraint is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Ambroxan 50% TEC",
+            "Ambroxan",
+            "Cetalox 50% TEC",
+            "Cetalox",
+            "Ambroxan 50%",
+            "Helional®",
+            "Seaweed Absolute 10%",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Oceanol 10%",
+            "Oceanol"
+          ],
+          "directRows": [
+            "Ambroxan 50% TEC",
+            "Cetalox 50% TEC",
+            "Ambroxan 50%",
+            "Helional®",
+            "Seaweed Absolute 10%",
+            "Maritima",
+            "Algenone",
+            "Oceanol 10%",
+            "Calone 1951 20%",
+            "Cyclogalbanate"
+          ],
+          "accordComponents": [
+            "Ambroxan 50% TEC",
+            "Ambroxan"
+          ],
+          "note": "Many matching rows are present; validate that marine power needs restraint is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Cetalox",
+            "Helional®",
+            "Algenone",
+            "Maritima",
+            "Oceanol 10%",
+            "Oceanol",
+            "Calone 1951 20%",
+            "Calone 1951",
+            "Seaweed Absolute 10%",
+            "Seaweed Absolute",
+            "Allyl Amyl Glycolate",
+            "Cyclogalbanate"
+          ],
+          "directRows": [
+            "Cetalox",
+            "Helional®",
+            "Algenone",
+            "Maritima",
+            "Oceanol 10%",
+            "Calone 1951 20%",
+            "Seaweed Absolute 10%",
+            "Allyl Amyl Glycolate",
+            "Cyclogalbanate"
+          ],
+          "accordComponents": [],
+          "note": "Many matching rows are present; validate that marine power needs restraint is not masking the Beach Box identity."
+        }
+      ]
+    },
+    {
+      "id": "citrus_terpene_lift",
+      "patternName": "Citrus / Terpene Lift",
+      "corpusFocus": "Limonene, Linalool, Linalyl Acetate, citrus markers, bergamot/lemon materials, and terpene-rich opening energy.",
+      "corpusEvidence": [
+        "Limonene + Linalool appears together in 98 of 124 reports.",
+        "Linalool + Linalyl Acetate appears together in 91 of 124 reports.",
+        "Limonene + Linalyl Acetate appears together in 86 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Linalool",
+          "canonicalName": "Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 124
+        },
+        {
+          "rawName": "Limonene",
+          "canonicalName": "Limonene",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "citrus/terpene lift",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 122
+        },
+        {
+          "rawName": "Alpha.-Pinene",
+          "canonicalName": "Alpha Pinene",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "citrus/terpene lift",
+          "dominantDosageBand": "support",
+          "reportFrequency": 121
+        },
+        {
+          "rawName": "Beta.-Pinene",
+          "canonicalName": "Beta Pinene",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "citrus/terpene lift",
+          "dominantDosageBand": "modifier",
+          "reportFrequency": 118
+        },
+        {
+          "rawName": "Linalyl Acetate",
+          "canonicalName": "Linalyl Acetate",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "citrus/terpene lift",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 105
+        },
+        {
+          "rawName": "Gamma.-Terpinene",
+          "canonicalName": "Gamma.-Terpinene",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "citrus/terpene lift",
+          "dominantDosageBand": "trace",
+          "reportFrequency": 104
+        },
+        {
+          "rawName": "Dihydromyrcenol",
+          "canonicalName": "Dihydromyrcenol",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "corpus-observed supporting material",
+          "dominantDosageBand": "",
+          "reportFrequency": 44
+        },
+        {
+          "rawName": "Ethyl Linalool",
+          "canonicalName": "Ethyl Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "",
+          "reportFrequency": 35
+        }
+      ],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Limonene",
+            "Linalool"
+          ],
+          "reportFrequency": 98,
+          "reportFrequencyLabel": "98 of 124 reports",
+          "translation": "Use as fresh salt-air lift around the formula opening, not a conventional citrus floral top."
+        },
+        {
+          "materials": [
+            "Linalool",
+            "Linalyl Acetate"
+          ],
+          "reportFrequency": 91,
+          "reportFrequencyLabel": "91 of 124 reports",
+          "translation": "Use as fresh salt-air lift around the formula opening, not a conventional citrus floral top."
+        },
+        {
+          "materials": [
+            "Limonene",
+            "Linalyl Acetate"
+          ],
+          "reportFrequency": 86,
+          "reportFrequencyLabel": "86 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Observed mainly as structural, support, modifier, trace materials. High-dose corpus signals include Linalool, Limonene, Linalyl Acetate, Dihydromyrcenol, Ethyl Linalool. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Use citrus/terpene patterns as salt-air sparkle and controlled opening energy, not as a cologne top. Beach Box needs freshness that flashes off the shoreline and then yields to skin, wood, and musk.",
+      "materialsAlreadyHave": [
+        {
+          "rawName": "Linalool",
+          "canonicalName": "Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Alpha.-Pinene",
+          "canonicalName": "Alpha Pinene",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Beta.-Pinene",
+          "canonicalName": "Beta Pinene",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Linalyl Acetate",
+          "canonicalName": "Linalyl Acetate",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Dihydromyrcenol",
+          "canonicalName": "Dihydromyrcenol",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Ethyl Linalool",
+          "canonicalName": "Ethyl Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        }
+      ],
+      "materialsMissingButWorthConsidering": [
+        {
+          "rawName": "Limonene",
+          "priority": "worth considering",
+          "reason": "Frequent or high-dose corpus material with Beach Box-relevant family signal."
+        }
+      ],
+      "whatToTest": "Test whether bergamot/lemon/dihydromyrcenol and ethyl linalool/linalyl acetate give enough lift before chasing every common GCMS terpene.",
+      "whatNotToOverdo": "Do not buy or add every frequent terpene marker; many are natural-oil signatures in the corpus, not necessary architecture purchases.",
+      "riskCaveat": "Too much citrus/terpene lift can make the formula read like fresh cologne instead of coastal skin.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "already represented",
+          "representedBy": [
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "directRows": [
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "already represented",
+          "representedBy": [
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "directRows": [
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "already represented",
+          "representedBy": [
+            "Ethyl Linalyl Acetate",
+            "Ethyl Linalool",
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "directRows": [
+            "Ethyl Linalyl Acetate",
+            "Ethyl Linalool",
+            "Dihydromyrcenol",
+            "Bergamot EO FCF"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "already represented",
+          "representedBy": [
+            "Ethyl Linalyl Acetate",
+            "Ethyl Linalool",
+            "Dihydromyrcenol",
+            "Bergamot EO FCF",
+            "Lemon FCF"
+          ],
+          "directRows": [
+            "Ethyl Linalyl Acetate",
+            "Ethyl Linalool",
+            "Dihydromyrcenol",
+            "Bergamot EO FCF",
+            "Lemon FCF"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        }
+      ]
+    },
+    {
+      "id": "floral_transparency_heart_bridge",
+      "patternName": "Floral Transparency / Heart Bridge",
+      "corpusFocus": "Hedione, Phenylethyl Alcohol, Benzyl Acetate, Hydroxycitronellal, Linalool, ylang/jasmine/rose markers, and translucent floral bridges.",
+      "corpusEvidence": [
+        "Musky Floral Skeleton appears in 118 of 124 reports.",
+        "Floral Chypre Skeleton appears in 36 of 124 reports.",
+        "Hedione + Linalool appears together in 52 of 124 reports.",
+        "Hedione + Phenylethyl Alcohol appears together in 31 of 124 reports.",
+        "Benzyl Salicylate + Hedione appears together in 24 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Linalool",
+          "canonicalName": "Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 124
+        },
+        {
+          "rawName": "Phenylethyl Alcohol",
+          "canonicalName": "Phenylethyl Alcohol",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 93
+        },
+        {
+          "rawName": "Benzyl Acetate",
+          "canonicalName": "Benzyl Acetate",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "corpus-observed supporting material",
+          "dominantDosageBand": "modifier",
+          "reportFrequency": 85
+        },
+        {
+          "rawName": "Hydroxycitronellal",
+          "canonicalName": "Hydroxycitronellal",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 68
+        },
+        {
+          "rawName": "Hedione",
+          "canonicalName": "Hedione®",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "structural",
+          "reportFrequency": 62
+        },
+        {
+          "rawName": "Hedione HC",
+          "canonicalName": "Hedione HC",
+          "inventoryStatus": "alias match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "",
+          "reportFrequency": 35
+        },
+        {
+          "rawName": "Florol",
+          "canonicalName": "Florol",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "observedRole": "floral transparency",
+          "dominantDosageBand": "",
+          "reportFrequency": 26
+        }
+      ],
+      "coOccurrenceEvidence": [
+        {
+          "materials": [
+            "Hedione",
+            "Linalool"
+          ],
+          "reportFrequency": 52,
+          "reportFrequencyLabel": "52 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        },
+        {
+          "materials": [
+            "Hedione",
+            "Phenylethyl Alcohol"
+          ],
+          "reportFrequency": 31,
+          "reportFrequencyLabel": "31 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        },
+        {
+          "materials": [
+            "Benzyl Salicylate",
+            "Hedione"
+          ],
+          "reportFrequency": 24,
+          "reportFrequencyLabel": "24 of 124 reports",
+          "translation": "Use the relationship as balance evidence, then translate through the Beach Box brief instead of copying the reference context."
+        }
+      ],
+      "typicalDosageBehavior": "Observed mainly as structural, modifier materials. High-dose corpus signals include Linalool, Phenylethyl Alcohol, Benzyl Acetate, Hydroxycitronellal, Hedione. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Use floral transparency as sunlit humidity and skin-warmed bloom between marine top and musk base. The goal is bridge and air, not a conventional floral heart.",
+      "materialsAlreadyHave": [
+        {
+          "rawName": "Linalool",
+          "canonicalName": "Linalool",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Benzyl Acetate",
+          "canonicalName": "Benzyl Acetate",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Hydroxycitronellal",
+          "canonicalName": "Hydroxycitronellal",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Hedione",
+          "canonicalName": "Hedione®",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Hedione HC",
+          "canonicalName": "Hedione HC",
+          "inventoryStatus": "alias match",
+          "matchType": "alias",
+          "matchConfidence": "high"
+        },
+        {
+          "rawName": "Florol",
+          "canonicalName": "Florol",
+          "inventoryStatus": "exact Beach Box inventory/support match",
+          "matchType": "exact",
+          "matchConfidence": "high"
+        }
+      ],
+      "materialsMissingButWorthConsidering": [
+        {
+          "rawName": "Phenylethyl Alcohol",
+          "priority": "worth considering",
+          "reason": "Frequent or high-dose corpus material with Beach Box-relevant family signal."
+        }
+      ],
+      "whatToTest": "Test whether Hedione/Hedione HC plus Florol/Celestafleur/Ylang and phenethyl materials makes the marine top feel more natural and less isolated.",
+      "whatNotToOverdo": "Avoid letting floral materials take over the concept; they should humidify and connect the structure.",
+      "riskCaveat": "A too-floral heart may blur the beach/marine identity or make the scent feel cosmetic.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "already represented",
+          "representedBy": [
+            "Hedione",
+            "Phenyl Ethyl Acetate",
+            "Ylang Ylang 10%",
+            "Ylang Ylang"
+          ],
+          "directRows": [
+            "Hedione",
+            "Phenyl Ethyl Acetate",
+            "Ylang Ylang 10%"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Hedione",
+            "Hedione HC",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete 10%",
+            "Ylang Ylang Complete",
+            "Phenyl Ethyl Acetate"
+          ],
+          "directRows": [
+            "Hedione",
+            "Hedione HC",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete 10%",
+            "Phenyl Ethyl Acetate"
+          ],
+          "accordComponents": [],
+          "note": "Many matching rows are present; validate that floral lift should stay transparent is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Hedione",
+            "Hedione HC",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete 10%",
+            "Ylang Ylang Complete",
+            "Phenyl Ethyl Acetate"
+          ],
+          "directRows": [
+            "Hedione",
+            "Hedione HC",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete 10%",
+            "Phenyl Ethyl Acetate"
+          ],
+          "accordComponents": [],
+          "note": "Many matching rows are present; validate that floral lift should stay transparent is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "already represented",
+          "representedBy": [
+            "Hedione",
+            "Hedione HC",
+            "Florol"
+          ],
+          "directRows": [
+            "Hedione",
+            "Hedione HC",
+            "Florol"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        }
+      ]
+    },
+    {
+      "id": "dark_dirty_realism_modifiers",
+      "patternName": "Dark / Dirty / Realism Modifiers",
+      "corpusFocus": "Patchouli markers, oakmoss/Veramoss, geosmin, cypriol, cumin/carrot/indole-like traces, leather/IBQ, resins, spices, and shadow materials.",
+      "corpusEvidence": [
+        "Gourmand Leather Skeleton appears in 89 of 124 reports.",
+        "Floral Chypre Skeleton appears in 36 of 124 reports."
+      ],
+      "commonMaterials": [
+        {
+          "rawName": "Vanillin",
+          "canonicalName": "Vanillin",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "amber/skin diffusion",
+          "dominantDosageBand": "support",
+          "reportFrequency": 92
+        },
+        {
+          "rawName": "Patchoulol",
+          "canonicalName": "Patchoulol",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "corpus-observed supporting material",
+          "dominantDosageBand": "modifier",
+          "reportFrequency": 81
+        },
+        {
+          "rawName": "Caryophyllene Oxide",
+          "canonicalName": "Caryophyllene Oxide",
+          "inventoryStatus": "missing from inventory",
+          "observedRole": "",
+          "dominantDosageBand": "trace",
+          "reportFrequency": 77
+        }
+      ],
+      "coOccurrenceEvidence": [],
+      "typicalDosageBehavior": "Observed mainly as support, modifier, trace materials. High-dose corpus signals include Vanillin, Patchoulol. Do not copy GCMS percentages; translate only the role and balance.",
+      "beachBoxTranslation": "Use dark modifiers for low-tide realism, sun-warmed skin dirt, driftwood shadow, or a beach-fire trace. They should add believable friction, not announce themselves.",
+      "materialsAlreadyHave": [],
+      "materialsMissingButWorthConsidering": [
+        {
+          "rawName": "Vanillin",
+          "priority": "worth considering",
+          "reason": "Frequent or high-dose corpus material with Beach Box-relevant family signal."
+        }
+      ],
+      "whatToTest": "Test trace dirty/earthy/shadow materials in isolation and on skin before putting them into the hero path.",
+      "whatNotToOverdo": "Do not push mud, soil, smoke, spice, or moss until the formula loses wearability.",
+      "riskCaveat": "Realism modifiers are high-risk: a tiny success reads alive, but too much reads dirty or off.",
+      "heroFormulaRelationships": [
+        {
+          "formulaName": "Random Concoction - Original",
+          "status": "already represented",
+          "representedBy": [
+            "Pink Peppercorn Oil P&N",
+            "Ethyl Vanillin 10%",
+            "Ethyl Vanillin"
+          ],
+          "directRows": [
+            "Pink Peppercorn Oil P&N",
+            "Ethyl Vanillin 10%"
+          ],
+          "accordComponents": [],
+          "note": "Pattern is clearly present; tune by wear-test evidence rather than adding more materials by default."
+        },
+        {
+          "formulaName": "Skin-Air Bridge",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Veramoss 20% TEC",
+            "Veramoss",
+            "Ethyl Vanillin 10%",
+            "Ethyl Vanillin",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "directRows": [
+            "Veramoss 20% TEC",
+            "Ethyl Vanillin 10%",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "accordComponents": [],
+          "note": "Many matching rows are present; validate that realism modifiers are high-risk is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v1",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Veramoss 20% TEC",
+            "Veramoss",
+            "Oakmoss Absolute 10%",
+            "Oakmoss Absolute",
+            "Caryophyllene Oxide 10%",
+            "Caryophyllene Oxide",
+            "Ethyl Vanillin 10%",
+            "Ethyl Vanillin",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "directRows": [
+            "Veramoss 20% TEC",
+            "Oakmoss Absolute 10%",
+            "Caryophyllene Oxide 10%",
+            "Ethyl Vanillin 10%",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "accordComponents": [],
+          "note": "Many matching rows are present; validate that realism modifiers are high-risk is not masking the Beach Box identity."
+        },
+        {
+          "formulaName": "Damp Shoreline v2",
+          "status": "potentially overrepresented",
+          "representedBy": [
+            "Caryophyllene Oxide",
+            "Cypriol",
+            "Veramoss 20% TEC",
+            "Veramoss",
+            "Oakmoss Absolute 10%",
+            "Oakmoss Absolute",
+            "Geosmin 1% TEC",
+            "Geosmin",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "directRows": [
+            "Caryophyllene Oxide",
+            "Cypriol",
+            "Veramoss 20% TEC",
+            "Oakmoss Absolute 10%",
+            "Geosmin 1% TEC",
+            "Pink Peppercorn Oil P&N"
+          ],
+          "accordComponents": [
+            "Caryophyllene Oxide"
+          ],
+          "note": "Many matching rows are present; validate that realism modifiers are high-risk is not masking the Beach Box identity."
+        }
+      ]
+    }
+  ],
+  "beachBoxMoves": {
+    "highConfidenceMoves": [
+      "Use Hedione plus driftwood materials plus Botanical Musk Accord to create lift before adding more marine power.",
+      "Let Iso E Super, Ambroxan/Cetalox, Cashmeran, and musks carry the skin-air bridge while marine materials provide texture.",
+      "Treat Botanical Musk Accord as the soft base first; only add standalone musks when wear tests show a persistence gap."
+    ],
+    "promisingButTestFirst": [
+      "Use trace dirty, mossy, earthy, or resinous materials for low-tide realism, but test them below obvious mud or soil territory.",
+      "Explore citrus/terpene lift as salt-air sparkle, while checking that it does not turn the opening into a conventional cologne.",
+      "Use floral transparency to humidify the heart, but confirm on skin that it supports the shore rather than becoming the subject."
+    ],
+    "avoidForNow": [
+      "Do not chase every common GCMS terpene; many are natural-oil markers, not necessary purchases.",
+      "Do not copy exact GCMS percentages or reconstruct commercial formulas.",
+      "Do not add more Calone-style force until the existing marine/mineral structure has been wear-tested."
+    ],
+    "inventoryGapsWorthConsidering": [
+      "Limonene",
+      "Phenylethyl Alcohol",
+      "Vanillin"
+    ]
+  }
+}
