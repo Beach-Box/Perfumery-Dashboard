@@ -1,12 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
   buildGcmsManifest,
   buildGcmsReferenceSummary,
+  extractGcmsPdfText,
   formatGcmsSummaryMarkdown,
+  normalizeGcmsManifestReports,
   parseMaterialCandidateLine,
   slugFromFilename,
   structureGcmsReportsFromExtraction,
@@ -35,6 +39,71 @@ test("GCMS manifest creation scans only PDF fixture names", () => {
   assert.equal(manifest.reports[0].status, "pending_extraction");
   assert.equal(manifest.reports[0].brandGuess, "Sample Brand");
   assert.equal(manifest.reports[0].titleGuess, "Coastal Study");
+});
+
+test("GCMS extraction accepts manifest.reports including pending records", () => {
+  const fixtureRelativePath = "scripts/fixtures/gcms_reports/Sample Brand - Coastal Study GCMS.pdf";
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gcms-extraction-test-"));
+  const status = extractGcmsPdfText({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    manifestPath: path.join(tempDir, "unused_manifest.json"),
+    manifest: {
+      reportCount: 1,
+      reports: [
+        {
+          id: "sample-brand-coastal-study-gcms",
+          filename: "Sample Brand - Coastal Study GCMS.pdf",
+          relativePath: fixtureRelativePath,
+          status: "pending_extraction",
+        },
+      ],
+    },
+    rawTextDir: path.join(tempDir, "raw_text"),
+    outputPath: path.join(tempDir, "gcms_extraction_status.json"),
+    runPdfExtractor: () => ({
+      pageCount: 1,
+      pages: [{ pageNumber: 1, text: "Linalool 78-70-6 Area % 12.4" }],
+    }),
+  });
+
+  assert.equal(normalizeGcmsManifestReports({ reports: status.reports }).length, 1);
+  assert.equal(status.reportCount, 1);
+  assert.equal(status.reports[0].extractionStatus, "ok");
+  assert.equal(status.reports[0].textPath.endsWith("/raw_text/sample-brand-coastal-study-gcms.json"), true);
+  assert.equal(fs.existsSync(path.join(tempDir, "raw_text", "sample-brand-coastal-study-gcms.json")), true);
+});
+
+test("GCMS extraction records individual missing PDF failures without dropping reports", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "gcms-extraction-failure-test-"));
+  const status = extractGcmsPdfText({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+    manifest: {
+      reportCount: 2,
+      reports: [
+        {
+          id: "missing-report",
+          filename: "Missing Report.pdf",
+          relativePath: "downloads/gcms_reports/Missing Report.pdf",
+          status: "pending_extraction",
+        },
+        {
+          id: "missing-relative-path",
+          filename: "Missing Relative Path.pdf",
+          status: "pending_extraction",
+        },
+      ],
+    },
+    rawTextDir: path.join(tempDir, "raw_text"),
+    outputPath: path.join(tempDir, "gcms_extraction_status.json"),
+    runPdfExtractor: () => {
+      throw new Error("Should not be called for invalid manifest paths");
+    },
+  });
+
+  assert.equal(status.reportCount, 2);
+  assert.equal(status.reports.every((report) => report.extractionStatus === "failed"), true);
+  assert.match(status.reports[0].error, /PDF file not found/);
+  assert.match(status.reports[1].error, /missing relativePath/i);
 });
 
 test("GCMS material row parsing is conservative and does not invent percentages", () => {

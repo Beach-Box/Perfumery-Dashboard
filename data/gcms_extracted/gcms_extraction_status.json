@@ -1,7 +1,1000 @@
 {
-  "generatedAt": "2026-06-09T14:49:37.899Z",
+  "generatedAt": "2026-06-09T15:12:45.696Z",
   "manifestPath": "data/gcms_extracted/gcms_manifest.json",
   "rawTextDirectory": "data/gcms_extracted/raw_text",
-  "reportCount": 0,
-  "reports": []
+  "reportCount": 124,
+  "reports": [
+    {
+      "id": "amouage-homage-attar-2008-gcms",
+      "filename": "Amouage_Homage_Attar_2008_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-homage-attar-2008-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-incense-rori-2021-gcms",
+      "filename": "Amouage_Incense_Rori_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-incense-rori-2021-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-interlude-black-iris-2020-gcms",
+      "filename": "Amouage_Interlude_Black_Iris_2020_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-interlude-black-iris-2020-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-memoir-woman-2010-gcms",
+      "filename": "Amouage_Memoir_Woman_2010_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-memoir-woman-2010-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-orris-wakan-2021-gcms",
+      "filename": "Amouage_Orris_Wakan_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-orris-wakan-2021-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-oud-ulya-2021-gcms",
+      "filename": "Amouage_Oud_Ulya_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-oud-ulya-2021-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-portrayal-man-2019-gcms",
+      "filename": "Amouage_Portrayal_Man_2019_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-portrayal-man-2019-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-rose-aqor-2022-gcms",
+      "filename": "Amouage_Rose_Aqor_2022_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-rose-aqor-2022-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-saffron-hamra-2021-gcms",
+      "filename": "Amouage_Saffron_Hamra_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-saffron-hamra-2021-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-tribute-attar-2009-gcms",
+      "filename": "Amouage_Tribute_Attar_2009_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-tribute-attar-2009-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "amouage-vanilla-barka-2021-gcms",
+      "filename": "Amouage_Vanilla_Barka_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/amouage-vanilla-barka-2021-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "aramis-aramis-1966-gcms",
+      "filename": "Aramis_Aramis_1966_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/aramis-aramis-1966-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "atelier-cologne-orange-sanguine-2011-gcms",
+      "filename": "Atelier_Cologne_Orange_Sanguine_2011_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/atelier-cologne-orange-sanguine-2011-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+      "filename": "Atelier_des_Ors_Crépuscule_des_Âmes_2018_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/atelier-des-ors-crepuscule-des-ames-2018-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "balenciaga-balenciaga-pour-homme-1990-gcms",
+      "filename": "Balenciaga_Balenciaga_Pour_Homme_1990_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/balenciaga-balenciaga-pour-homme-1990-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "bijan-bijan-for-men-1986-gcms",
+      "filename": "Bijan_Bijan_for_Men_1986_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/bijan-bijan-for-men-1986-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "boadicea-the-victorious-valiant-2013-gcms",
+      "filename": "Boadicea_the_Victorious_Valiant_2013_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/boadicea-the-victorious-valiant-2013-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "carolina-herrera-212-vip-2010-gcms",
+      "filename": "Carolina_Herrera_212_VIP_2010_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/carolina-herrera-212-vip-2010-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "caron-le-3e-homme-de-caron-1985-gcms",
+      "filename": "Caron_Le_3e_Homme_de_Caron_1985_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/caron-le-3e-homme-de-caron-1985-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "caron-nuit-de-noel-1922-gcms",
+      "filename": "Caron_Nuit_de_Noël_1922_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/caron-nuit-de-noel-1922-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-bel-respiro-2007-gcms",
+      "filename": "Chanel_Bel_Respiro_2007_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-bel-respiro-2007-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-bois-noir-1987-gcms",
+      "filename": "Chanel_Bois_Noir_1987_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-bois-noir-1987-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-egoiste-1990-gcms",
+      "filename": "Chanel_Égoïste_1990_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-egoiste-1990-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-egoiste-cologne-concentree-1992-gcms",
+      "filename": "Chanel_Égoïste_Cologne_Concentrée_1992_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-egoiste-cologne-concentree-1992-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-no-5-1921-gcms",
+      "filename": "Chanel_No_5_1921_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-no-5-1921-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "chanel-pour-monsieur-1955-gcms",
+      "filename": "Chanel_Pour_Monsieur_1955_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/chanel-pour-monsieur-1955-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "cire-trudon-ernesto-reed-diffuser-2015-gcms",
+      "filename": "Cire_Trudon_Ernesto_Reed_Diffuser_2015_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/cire-trudon-ernesto-reed-diffuser-2015-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "cire-trudon-ernesto-room-spray-2015-gcms",
+      "filename": "Cire_Trudon_Ernesto_Room_Spray_2015_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/cire-trudon-ernesto-room-spray-2015-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "clive-christian-1872-2001-gcms",
+      "filename": "Clive_Christian_1872_2001_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/clive-christian-1872-2001-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "clive-christian-blonde-amber-2022-gcms",
+      "filename": "Clive_Christian_Blonde_Amber_2022_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/clive-christian-blonde-amber-2022-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "clive-christian-clive-christian-x-2001-gcms",
+      "filename": "Clive_Christian_Clive_Christian_X_2001_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/clive-christian-clive-christian-x-2001-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "clive-christian-no-1-2001-gcms",
+      "filename": "Clive_Christian_No_1_2001_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/clive-christian-no-1-2001-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "coty-chypre-c-1980s-gcms",
+      "filename": "Coty_Chypre_c. 1980s_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/coty-chypre-c-1980s-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "coty-lorigan-1905-gcms",
+      "filename": "Coty_LOrigan_1905_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/coty-lorigan-1905-gcms.json",
+      "pageCount": 18,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "creed-millesime-imperial-1995-gcms",
+      "filename": "Creed_Millesime_Imperial_1995_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/creed-millesime-imperial-1995-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "creed-original-santal-2005-gcms",
+      "filename": "Creed_Original_Santal_2005_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/creed-original-santal-2005-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "creed-royal-oud-2011-gcms",
+      "filename": "Creed_Royal_Oud_2011_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/creed-royal-oud-2011-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dana-tabu-1932-gcms",
+      "filename": "Dana_Tabu_1932_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dana-tabu-1932-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "davidoff-cool-water-1988-gcms",
+      "filename": "Davidoff_Cool_Water_1988_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/davidoff-cool-water-1988-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-balade-sauvage-2018-gcms",
+      "filename": "Dior_Balade_Sauvage_2018_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-balade-sauvage-2018-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-bois-dargent-2006-gcms",
+      "filename": "Dior_Bois_dArgent_2006_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-bois-dargent-2006-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-cuir-cannage-2014-gcms",
+      "filename": "Dior_Cuir_Cannage_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-cuir-cannage-2014-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-dior-dior-1976-gcms",
+      "filename": "Dior_Dior_Dior_1976_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-dior-dior-1976-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-diorella-1972-gcms",
+      "filename": "Dior_Diorella_1972_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-diorella-1972-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-grand-bal-2012-gcms",
+      "filename": "Dior_Grand_Bal_2012_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-grand-bal-2012-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-gris-dior-2017-gcms",
+      "filename": "Dior_Gris_Dior_2017_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-gris-dior-2017-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-higher-2001-gcms",
+      "filename": "Dior_Higher_2001_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-higher-2001-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-jules-1980-gcms",
+      "filename": "Dior_Jules_1980_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-jules-1980-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-miss-dior-1947-gcms",
+      "filename": "Dior_Miss_Dior_1947_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-miss-dior-1947-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-miss-dior-blooming-bouquet-roller-pearl-2014-gcms",
+      "filename": "Dior_Miss_Dior_Blooming_Bouquet_Roller_Pearl_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-miss-dior-blooming-bouquet-roller-pearl-2014-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-oud-rosewood-2012-gcms",
+      "filename": "Dior_Oud_Rosewood_2012_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-oud-rosewood-2012-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-rouge-trafalgar-2020-gcms",
+      "filename": "Dior_Rouge_Trafalgar_2020_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-rouge-trafalgar-2020-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dior-vanilla-diorama-2021-gcms",
+      "filename": "Dior_Vanilla_Diorama_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dior-vanilla-diorama-2021-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "dolce-gabbana-the-one-for-men-eau-de-parfum-2015-gcms",
+      "filename": "Dolce_Gabbana_The_One_for_Men_Eau_de_Parfum_2015_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/dolce-gabbana-the-one-for-men-eau-de-parfum-2015-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "donna-karan-dk-1992-gcms",
+      "filename": "Donna_Karan_DK_1992_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/donna-karan-dk-1992-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "durance-bois-precieux-2014-gcms",
+      "filename": "Durance_Bois_Précieux_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/durance-bois-precieux-2014-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "etat-libre-dorange-eau-de-protection-2007-gcms",
+      "filename": "Etat_Libre_dOrange_Eau_de_Protection_2007_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/etat-libre-dorange-eau-de-protection-2007-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "etat-libre-dorange-rien-intense-incense-2014-gcms",
+      "filename": "Etat_Libre_dOrange_Rien_Intense_Incense_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/etat-libre-dorange-rien-intense-incense-2014-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "faberge-brut-1968-gcms",
+      "filename": "Fabergé_Brut_1968_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/faberge-brut-1968-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "gucci-envy-1997-gcms",
+      "filename": "Gucci_Envy_1997_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/gucci-envy-1997-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "gucci-gucci-pour-homme-1976-gcms",
+      "filename": "Gucci_Gucci_Pour_Homme_1976_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/gucci-gucci-pour-homme-1976-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-apres-londee-1906-gcms",
+      "filename": "Guerlain_Après_lOndée_1906_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-apres-londee-1906-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-derby-1985-gcms",
+      "filename": "Guerlain_Derby_1985_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-derby-1985-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-heritage-1992-gcms",
+      "filename": "Guerlain_Héritage_1992_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-heritage-1992-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-lheure-bleue-1912-gcms",
+      "filename": "Guerlain_LHeure_Bleue_1912_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-lheure-bleue-1912-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-mitsouko-1919-gcms",
+      "filename": "Guerlain_Mitsouko_1919_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-mitsouko-1919-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-mouchoir-de-monsieur-1904-gcms",
+      "filename": "Guerlain_Mouchoir_de_Monsieur_1904_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-mouchoir-de-monsieur-1904-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-samsara-1989-gcms",
+      "filename": "Guerlain_Samsara_1989_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-samsara-1989-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-shalimar-1925-gcms",
+      "filename": "Guerlain_Shalimar_1925_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-shalimar-1925-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "guerlain-tonka-imperiale-2010-gcms",
+      "filename": "Guerlain_Tonka_Impériale_2010_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/guerlain-tonka-imperiale-2010-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "helena-rubinstein-mens-club-1966-gcms",
+      "filename": "Helena_Rubinstein_Mens_Club_1966_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/helena-rubinstein-mens-club-1966-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "helmut-lang-eau-de-cologne-2000-gcms",
+      "filename": "Helmut_Lang_Eau_de_Cologne_2000_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/helmut-lang-eau-de-cologne-2000-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "hermes-un-jardin-sur-le-nil-2005-gcms",
+      "filename": "Hermes_Un_Jardin_sur_le_Nil_2005_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/hermes-un-jardin-sur-le-nil-2005-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "histoires-de-parfums-1740-marquis-de-sade-2000-gcms",
+      "filename": "Histoires_de_Parfums_1740_Marquis_de_Sade_2000_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/histoires-de-parfums-1740-marquis-de-sade-2000-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "histoires-de-parfums-7753-unexpected-mona-2019-gcms",
+      "filename": "Histoires_de_Parfums_7753_Unexpected_Mona_2019_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/histoires-de-parfums-7753-unexpected-mona-2019-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "jean-patou-1000-1972-gcms",
+      "filename": "Jean_Patou_1000_1972_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/jean-patou-1000-1972-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "jean-patou-paname-2001-gcms",
+      "filename": "Jean_Patou_PanAmé_2001_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/jean-patou-paname-2001-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "jean-patou-patou-pour-homme-1980-gcms",
+      "filename": "Jean_Patou_Patou_pour_Homme_1980_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/jean-patou-patou-pour-homme-1980-gcms.json",
+      "pageCount": 15,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "jean-patou-patou-pour-homme-prive-1994-gcms",
+      "filename": "Jean_Patou_Patou_Pour_Homme_Privé_1994_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/jean-patou-patou-pour-homme-prive-1994-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "jean-paul-gaultier-fleur-du-male-2007-gcms",
+      "filename": "Jean_Paul_Gaultier_Fleur_du_Mâle_2007_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/jean-paul-gaultier-fleur-du-male-2007-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "juliette-has-a-gun-lady-vengeance-2006-gcms",
+      "filename": "Juliette_Has_A_Gun_Lady_Vengeance_2006_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/juliette-has-a-gun-lady-vengeance-2006-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "juliette-has-a-gun-moon-dance-2014-gcms",
+      "filename": "Juliette_Has_A_Gun_Moon_Dance_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/juliette-has-a-gun-moon-dance-2014-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "kemi-blending-magic-jabir-2014-gcms",
+      "filename": "Kemi_Blending_Magic_Jabir_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/kemi-blending-magic-jabir-2014-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "kemi-blending-magic-tempest-2014-gcms",
+      "filename": "Kemi_Blending_Magic_Tempest_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/kemi-blending-magic-tempest-2014-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "knize-knize-ten-1924-gcms",
+      "filename": "Knize_Knize_Ten_1924_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/knize-knize-ten-1924-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "lanvin-arpege-1927-gcms",
+      "filename": "Lanvin_Arpège_1927_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/lanvin-arpege-1927-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "lartisan-parfumeur-dzing-1999-gcms",
+      "filename": "LArtisan_Parfumeur_Dzing_1999_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/lartisan-parfumeur-dzing-1999-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "lartisan-parfumeur-timbuktu-2004-gcms",
+      "filename": "LArtisan_Parfumeur_Timbuktu_2004_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/lartisan-parfumeur-timbuktu-2004-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "lt-piver-reve-dor-pomade-1889-gcms",
+      "filename": "LT_Piver_Rêve_dOr_Pomade_1889_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/lt-piver-reve-dor-pomade-1889-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "maison-martin-margiela-at-the-barbers-2014-gcms",
+      "filename": "Maison_Martin_Margiela_At_the_Barbers_2014_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/maison-martin-margiela-at-the-barbers-2014-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marc-antoine-barrois-ganymede-2019-gcms",
+      "filename": "Marc_Antoine_Barrois_Ganymede_2019_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marc-antoine-barrois-ganymede-2019-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marc-antoine-barrois-tilia-2024-gcms",
+      "filename": "Marc_Antoine_Barrois_Tilia_2024_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marc-antoine-barrois-tilia-2024-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marilyn-miglin-112-unknown-gcms",
+      "filename": "Marilyn_Miglin_112_Unknown_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marilyn-miglin-112-unknown-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marilyn-miglin-lace-2013-gcms",
+      "filename": "Marilyn_Miglin_Lace_2013_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marilyn-miglin-lace-2013-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marilyn-miglin-passionate-unknown-gcms",
+      "filename": "Marilyn_Miglin_Passionate_Unknown_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marilyn-miglin-passionate-unknown-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "marilyn-miglin-pheromone-1978-gcms",
+      "filename": "Marilyn_Miglin_Pheromone_1978_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/marilyn-miglin-pheromone-1978-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "maurer-wirtz-tabac-original-1959-gcms",
+      "filename": "Mäurer_Wirtz_Tabac_Original_1959_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/maurer-wirtz-tabac-original-1959-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "nishane-mana-2022-gcms",
+      "filename": "Nishane_Mana_2022_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/nishane-mana-2022-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "nishane-nefs-2019-gcms",
+      "filename": "Nishane_Nefs_2019_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/nishane-nefs-2019-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "nishane-shem-2021-gcms",
+      "filename": "Nishane_Shem_2021_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/nishane-shem-2021-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "nomenclature-adr-ett-2015-gcms",
+      "filename": "Nomenclature_Adr_ett_2015_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/nomenclature-adr-ett-2015-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "oscar-de-la-renta-pour-lui-1980-gcms",
+      "filename": "Oscar_de_la_Renta_Pour_Lui_1980_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/oscar-de-la-renta-pour-lui-1980-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "parfums-de-marly-delina-2017-gcms",
+      "filename": "Parfums_de_Marly_Delina_2017_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/parfums-de-marly-delina-2017-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "parfums-dorsay-voulez-vous-1935-gcms",
+      "filename": "Parfums_dOrsay_Voulez_Vous_1935_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/parfums-dorsay-voulez-vous-1935-gcms.json",
+      "pageCount": 14,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "penhaligons-sartorial-2010-gcms",
+      "filename": "Penhaligons_Sartorial_2010_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/penhaligons-sartorial-2010-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "raphael-replique-1944-gcms",
+      "filename": "Raphael_Réplique_1944_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/raphael-replique-1944-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "revillon-carnet-de-bal-1937-gcms",
+      "filename": "Revillon_Carnet_de_Bal_1937_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/revillon-carnet-de-bal-1937-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "revillon-detchema-1953-gcms",
+      "filename": "Revillon_Detchema_1953_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/revillon-detchema-1953-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "robert-piguet-visa-2007-gcms",
+      "filename": "Robert_Piguet_Visa_2007_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/robert-piguet-visa-2007-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "salvador-dali-salvador-dali-pour-homme-1987-gcms",
+      "filename": "Salvador_Dali_Salvador_Dali_pour_Homme_1987_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/salvador-dali-salvador-dali-pour-homme-1987-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "santa-maria-novella-caprifoglio-honeysuckle-1997-gcms",
+      "filename": "Santa_Maria_Novella_Caprifoglio_Honeysuckle_1997_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/santa-maria-novella-caprifoglio-honeysuckle-1997-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "schiaparelli-shocking-1937-gcms",
+      "filename": "Schiaparelli_Shocking_1937_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/schiaparelli-shocking-1937-gcms.json",
+      "pageCount": 16,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "serge-lutens-ambre-sultan-1993-gcms",
+      "filename": "Serge_Lutens_Ambre_Sultan_1993_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/serge-lutens-ambre-sultan-1993-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "serge-lutens-muscs-koublai-khan-1998-gcms",
+      "filename": "Serge_Lutens_Muscs_Koublaï_Khän_1998_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/serge-lutens-muscs-koublai-khan-1998-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "serge-lutens-tubereuse-criminelle-1999-gcms",
+      "filename": "Serge_Lutens_Tubéreuse_Criminelle_1999_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/serge-lutens-tubereuse-criminelle-1999-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "shiseido-zen-1964-gcms",
+      "filename": "Shiseido_Zen_1964_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/shiseido-zen-1964-gcms.json",
+      "pageCount": 10,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "shulton-company-old-spice-1938-gcms",
+      "filename": "Shulton_Company_Old_Spice_1938_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/shulton-company-old-spice-1938-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "sora-dora-jany-2023-gcms",
+      "filename": "Sora_Dora_Jany_2023_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/sora-dora-jany-2023-gcms.json",
+      "pageCount": 8,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "sora-dora-mallow-2023-gcms",
+      "filename": "Sora_Dora_Mallow_2023_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/sora-dora-mallow-2023-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "taylor-of-old-bond-street-sandalwood-cologne-unknown-gcms",
+      "filename": "Taylor_of_Old_Bond_Street_Sandalwood_Cologne_Unknown_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/taylor-of-old-bond-street-sandalwood-cologne-unknown-gcms.json",
+      "pageCount": 11,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "tom-ford-f-fabulous-2017-gcms",
+      "filename": "Tom_Ford_F_Fabulous_2017_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/tom-ford-f-fabulous-2017-gcms.json",
+      "pageCount": 12,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "tom-ford-lost-cherry-2018-gcms",
+      "filename": "Tom_Ford_Lost_Cherry_2018_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/tom-ford-lost-cherry-2018-gcms.json",
+      "pageCount": 9,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "van-cleef-arpels-van-cleef-arpels-pour-homme-1978-gcms",
+      "filename": "Van_Cleef_Arpels_Van_Cleef_Arpels_pour_Homme_1978_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/van-cleef-arpels-van-cleef-arpels-pour-homme-1978-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    },
+    {
+      "id": "yves-saint-laurent-opium-pour-homme-1995-gcms",
+      "filename": "Yves_Saint_Laurent_Opium_pour_Homme_1995_gcms.pdf",
+      "textPath": "data/gcms_extracted/raw_text/yves-saint-laurent-opium-pour-homme-1995-gcms.json",
+      "pageCount": 13,
+      "extractionStatus": "ok",
+      "error": null
+    }
+  ]
 }

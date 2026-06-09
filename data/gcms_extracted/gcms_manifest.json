@@ -1,6 +1,1247 @@
 {
-  "generatedAt": "2026-06-09T14:49:32.802Z",
+  "generatedAt": "2026-06-09T15:12:40.452Z",
   "sourceDirectory": "downloads/gcms_reports",
-  "reportCount": 0,
-  "reports": []
+  "reportCount": 124,
+  "reports": [
+    {
+      "id": "amouage-homage-attar-2008-gcms",
+      "filename": "Amouage_Homage_Attar_2008_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Homage_Attar_2008_gcms.pdf",
+      "sizeBytes": 318076,
+      "modifiedAt": "2026-06-09T14:14:11.956Z",
+      "titleGuess": "Amouage Homage Attar 2008 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-incense-rori-2021-gcms",
+      "filename": "Amouage_Incense_Rori_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Incense_Rori_2021_gcms.pdf",
+      "sizeBytes": 290052,
+      "modifiedAt": "2026-06-09T14:14:24.667Z",
+      "titleGuess": "Amouage Incense Rori 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-interlude-black-iris-2020-gcms",
+      "filename": "Amouage_Interlude_Black_Iris_2020_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Interlude_Black_Iris_2020_gcms.pdf",
+      "sizeBytes": 324649,
+      "modifiedAt": "2026-06-09T14:14:31.416Z",
+      "titleGuess": "Amouage Interlude Black Iris 2020 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-memoir-woman-2010-gcms",
+      "filename": "Amouage_Memoir_Woman_2010_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Memoir_Woman_2010_gcms.pdf",
+      "sizeBytes": 307939,
+      "modifiedAt": "2026-06-09T14:14:36.052Z",
+      "titleGuess": "Amouage Memoir Woman 2010 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-orris-wakan-2021-gcms",
+      "filename": "Amouage_Orris_Wakan_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Orris_Wakan_2021_gcms.pdf",
+      "sizeBytes": 305217,
+      "modifiedAt": "2026-06-09T14:14:44.557Z",
+      "titleGuess": "Amouage Orris Wakan 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-oud-ulya-2021-gcms",
+      "filename": "Amouage_Oud_Ulya_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Oud_Ulya_2021_gcms.pdf",
+      "sizeBytes": 294123,
+      "modifiedAt": "2026-06-09T14:14:50.435Z",
+      "titleGuess": "Amouage Oud Ulya 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-portrayal-man-2019-gcms",
+      "filename": "Amouage_Portrayal_Man_2019_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Portrayal_Man_2019_gcms.pdf",
+      "sizeBytes": 314636,
+      "modifiedAt": "2026-06-09T14:14:57.625Z",
+      "titleGuess": "Amouage Portrayal Man 2019 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-rose-aqor-2022-gcms",
+      "filename": "Amouage_Rose_Aqor_2022_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Rose_Aqor_2022_gcms.pdf",
+      "sizeBytes": 287570,
+      "modifiedAt": "2026-06-09T14:15:03.196Z",
+      "titleGuess": "Amouage Rose Aqor 2022 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-saffron-hamra-2021-gcms",
+      "filename": "Amouage_Saffron_Hamra_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Saffron_Hamra_2021_gcms.pdf",
+      "sizeBytes": 301841,
+      "modifiedAt": "2026-06-09T14:15:12.454Z",
+      "titleGuess": "Amouage Saffron Hamra 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-tribute-attar-2009-gcms",
+      "filename": "Amouage_Tribute_Attar_2009_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Tribute_Attar_2009_gcms.pdf",
+      "sizeBytes": 317755,
+      "modifiedAt": "2026-06-09T14:15:19.450Z",
+      "titleGuess": "Amouage Tribute Attar 2009 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "amouage-vanilla-barka-2021-gcms",
+      "filename": "Amouage_Vanilla_Barka_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Amouage_Vanilla_Barka_2021_gcms.pdf",
+      "sizeBytes": 289509,
+      "modifiedAt": "2026-06-09T14:17:48.967Z",
+      "titleGuess": "Amouage Vanilla Barka 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "aramis-aramis-1966-gcms",
+      "filename": "Aramis_Aramis_1966_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Aramis_Aramis_1966_gcms.pdf",
+      "sizeBytes": 316726,
+      "modifiedAt": "2026-06-09T14:21:08.835Z",
+      "titleGuess": "Aramis Aramis 1966 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "atelier-cologne-orange-sanguine-2011-gcms",
+      "filename": "Atelier_Cologne_Orange_Sanguine_2011_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Atelier_Cologne_Orange_Sanguine_2011_gcms.pdf",
+      "sizeBytes": 315796,
+      "modifiedAt": "2026-06-09T14:21:18.731Z",
+      "titleGuess": "Atelier Cologne Orange Sanguine 2011 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+      "filename": "Atelier_des_Ors_Crépuscule_des_Âmes_2018_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Atelier_des_Ors_Crépuscule_des_Âmes_2018_gcms.pdf",
+      "sizeBytes": 333499,
+      "modifiedAt": "2026-06-09T14:21:35.798Z",
+      "titleGuess": "Atelier des Ors Crépuscule des Âmes 2018 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "balenciaga-balenciaga-pour-homme-1990-gcms",
+      "filename": "Balenciaga_Balenciaga_Pour_Homme_1990_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Balenciaga_Balenciaga_Pour_Homme_1990_gcms.pdf",
+      "sizeBytes": 309350,
+      "modifiedAt": "2026-06-09T14:21:48.977Z",
+      "titleGuess": "Balenciaga Balenciaga Pour Homme 1990 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "bijan-bijan-for-men-1986-gcms",
+      "filename": "Bijan_Bijan_for_Men_1986_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Bijan_Bijan_for_Men_1986_gcms.pdf",
+      "sizeBytes": 315077,
+      "modifiedAt": "2026-06-09T14:21:58.478Z",
+      "titleGuess": "Bijan Bijan for Men 1986 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "boadicea-the-victorious-valiant-2013-gcms",
+      "filename": "Boadicea_the_Victorious_Valiant_2013_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Boadicea_the_Victorious_Valiant_2013_gcms.pdf",
+      "sizeBytes": 295936,
+      "modifiedAt": "2026-06-09T14:22:07.823Z",
+      "titleGuess": "Boadicea the Victorious Valiant 2013 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "carolina-herrera-212-vip-2010-gcms",
+      "filename": "Carolina_Herrera_212_VIP_2010_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Carolina_Herrera_212_VIP_2010_gcms.pdf",
+      "sizeBytes": 303729,
+      "modifiedAt": "2026-06-09T14:24:52.983Z",
+      "titleGuess": "Carolina Herrera 212 VIP 2010 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "caron-le-3e-homme-de-caron-1985-gcms",
+      "filename": "Caron_Le_3e_Homme_de_Caron_1985_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Caron_Le_3e_Homme_de_Caron_1985_gcms.pdf",
+      "sizeBytes": 400158,
+      "modifiedAt": "2026-06-09T14:25:00.831Z",
+      "titleGuess": "Caron Le 3e Homme de Caron 1985 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "caron-nuit-de-noel-1922-gcms",
+      "filename": "Caron_Nuit_de_Noël_1922_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Caron_Nuit_de_Noël_1922_gcms.pdf",
+      "sizeBytes": 312610,
+      "modifiedAt": "2026-06-09T14:25:11.016Z",
+      "titleGuess": "Caron Nuit de Noël 1922 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-bel-respiro-2007-gcms",
+      "filename": "Chanel_Bel_Respiro_2007_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_Bel_Respiro_2007_gcms.pdf",
+      "sizeBytes": 316841,
+      "modifiedAt": "2026-06-09T14:25:18.699Z",
+      "titleGuess": "Chanel Bel Respiro 2007 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-bois-noir-1987-gcms",
+      "filename": "Chanel_Bois_Noir_1987_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_Bois_Noir_1987_gcms.pdf",
+      "sizeBytes": 314383,
+      "modifiedAt": "2026-06-09T14:25:29.201Z",
+      "titleGuess": "Chanel Bois Noir 1987 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-egoiste-1990-gcms",
+      "filename": "Chanel_Égoïste_1990_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_Égoïste_1990_gcms.pdf",
+      "sizeBytes": 302272,
+      "modifiedAt": "2026-06-09T14:25:37.592Z",
+      "titleGuess": "Chanel Égoïste 1990 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-egoiste-cologne-concentree-1992-gcms",
+      "filename": "Chanel_Égoïste_Cologne_Concentrée_1992_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_Égoïste_Cologne_Concentrée_1992_gcms.pdf",
+      "sizeBytes": 318001,
+      "modifiedAt": "2026-06-09T14:25:44.370Z",
+      "titleGuess": "Chanel Égoïste Cologne Concentrée 1992 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-no-5-1921-gcms",
+      "filename": "Chanel_No_5_1921_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_No_5_1921_gcms.pdf",
+      "sizeBytes": 320404,
+      "modifiedAt": "2026-06-09T14:25:55.094Z",
+      "titleGuess": "Chanel No 5 1921 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "chanel-pour-monsieur-1955-gcms",
+      "filename": "Chanel_Pour_Monsieur_1955_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Chanel_Pour_Monsieur_1955_gcms.pdf",
+      "sizeBytes": 310963,
+      "modifiedAt": "2026-06-09T14:26:14.282Z",
+      "titleGuess": "Chanel Pour Monsieur 1955 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "cire-trudon-ernesto-reed-diffuser-2015-gcms",
+      "filename": "Cire_Trudon_Ernesto_Reed_Diffuser_2015_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Cire_Trudon_Ernesto_Reed_Diffuser_2015_gcms.pdf",
+      "sizeBytes": 309452,
+      "modifiedAt": "2026-06-09T14:26:16.579Z",
+      "titleGuess": "Cire Trudon Ernesto Reed Diffuser 2015 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "cire-trudon-ernesto-room-spray-2015-gcms",
+      "filename": "Cire_Trudon_Ernesto_Room_Spray_2015_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Cire_Trudon_Ernesto_Room_Spray_2015_gcms.pdf",
+      "sizeBytes": 300081,
+      "modifiedAt": "2026-06-09T14:26:20.474Z",
+      "titleGuess": "Cire Trudon Ernesto Room Spray 2015 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "clive-christian-1872-2001-gcms",
+      "filename": "Clive_Christian_1872_2001_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Clive_Christian_1872_2001_gcms.pdf",
+      "sizeBytes": 308687,
+      "modifiedAt": "2026-06-09T14:26:22.369Z",
+      "titleGuess": "Clive Christian 1872 2001 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "clive-christian-blonde-amber-2022-gcms",
+      "filename": "Clive_Christian_Blonde_Amber_2022_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Clive_Christian_Blonde_Amber_2022_gcms.pdf",
+      "sizeBytes": 314347,
+      "modifiedAt": "2026-06-09T14:26:25.492Z",
+      "titleGuess": "Clive Christian Blonde Amber 2022 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "clive-christian-clive-christian-x-2001-gcms",
+      "filename": "Clive_Christian_Clive_Christian_X_2001_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Clive_Christian_Clive_Christian_X_2001_gcms.pdf",
+      "sizeBytes": 309340,
+      "modifiedAt": "2026-06-09T14:26:28.642Z",
+      "titleGuess": "Clive Christian Clive Christian X 2001 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "clive-christian-no-1-2001-gcms",
+      "filename": "Clive_Christian_No_1_2001_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Clive_Christian_No_1_2001_gcms.pdf",
+      "sizeBytes": 315826,
+      "modifiedAt": "2026-06-09T14:26:31.023Z",
+      "titleGuess": "Clive Christian No 1 2001 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "coty-chypre-c-1980s-gcms",
+      "filename": "Coty_Chypre_c. 1980s_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Coty_Chypre_c. 1980s_gcms.pdf",
+      "sizeBytes": 310536,
+      "modifiedAt": "2026-06-09T14:28:30.264Z",
+      "titleGuess": "Coty Chypre c. 1980s gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "coty-lorigan-1905-gcms",
+      "filename": "Coty_LOrigan_1905_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Coty_LOrigan_1905_gcms.pdf",
+      "sizeBytes": 343991,
+      "modifiedAt": "2026-06-09T14:28:36.785Z",
+      "titleGuess": "Coty LOrigan 1905 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "creed-millesime-imperial-1995-gcms",
+      "filename": "Creed_Millesime_Imperial_1995_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Creed_Millesime_Imperial_1995_gcms.pdf",
+      "sizeBytes": 300639,
+      "modifiedAt": "2026-06-09T14:28:40.613Z",
+      "titleGuess": "Creed Millesime Imperial 1995 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "creed-original-santal-2005-gcms",
+      "filename": "Creed_Original_Santal_2005_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Creed_Original_Santal_2005_gcms.pdf",
+      "sizeBytes": 304621,
+      "modifiedAt": "2026-06-09T14:28:44.878Z",
+      "titleGuess": "Creed Original Santal 2005 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "creed-royal-oud-2011-gcms",
+      "filename": "Creed_Royal_Oud_2011_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Creed_Royal_Oud_2011_gcms.pdf",
+      "sizeBytes": 302720,
+      "modifiedAt": "2026-06-09T14:28:48.157Z",
+      "titleGuess": "Creed Royal Oud 2011 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dana-tabu-1932-gcms",
+      "filename": "Dana_Tabu_1932_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dana_Tabu_1932_gcms.pdf",
+      "sizeBytes": 297109,
+      "modifiedAt": "2026-06-09T14:28:52.038Z",
+      "titleGuess": "Dana Tabu 1932 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "davidoff-cool-water-1988-gcms",
+      "filename": "Davidoff_Cool_Water_1988_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Davidoff_Cool_Water_1988_gcms.pdf",
+      "sizeBytes": 301400,
+      "modifiedAt": "2026-06-09T14:28:56.708Z",
+      "titleGuess": "Davidoff Cool Water 1988 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-balade-sauvage-2018-gcms",
+      "filename": "Dior_Balade_Sauvage_2018_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Balade_Sauvage_2018_gcms.pdf",
+      "sizeBytes": 307810,
+      "modifiedAt": "2026-06-09T14:29:27.188Z",
+      "titleGuess": "Dior Balade Sauvage 2018 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-bois-dargent-2006-gcms",
+      "filename": "Dior_Bois_dArgent_2006_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Bois_dArgent_2006_gcms.pdf",
+      "sizeBytes": 289734,
+      "modifiedAt": "2026-06-09T14:29:30.454Z",
+      "titleGuess": "Dior Bois dArgent 2006 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-cuir-cannage-2014-gcms",
+      "filename": "Dior_Cuir_Cannage_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Cuir_Cannage_2014_gcms.pdf",
+      "sizeBytes": 311115,
+      "modifiedAt": "2026-06-09T14:29:33.700Z",
+      "titleGuess": "Dior Cuir Cannage 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-dior-dior-1976-gcms",
+      "filename": "Dior_Dior_Dior_1976_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Dior_Dior_1976_gcms.pdf",
+      "sizeBytes": 313888,
+      "modifiedAt": "2026-06-09T14:29:36.779Z",
+      "titleGuess": "Dior Dior Dior 1976 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-diorella-1972-gcms",
+      "filename": "Dior_Diorella_1972_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Diorella_1972_gcms.pdf",
+      "sizeBytes": 318755,
+      "modifiedAt": "2026-06-09T14:29:40.223Z",
+      "titleGuess": "Dior Diorella 1972 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-grand-bal-2012-gcms",
+      "filename": "Dior_Grand_Bal_2012_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Grand_Bal_2012_gcms.pdf",
+      "sizeBytes": 364529,
+      "modifiedAt": "2026-06-09T14:29:19.360Z",
+      "titleGuess": "Dior Grand Bal 2012 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-gris-dior-2017-gcms",
+      "filename": "Dior_Gris_Dior_2017_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Gris_Dior_2017_gcms.pdf",
+      "sizeBytes": 307594,
+      "modifiedAt": "2026-06-09T14:30:02.304Z",
+      "titleGuess": "Dior Gris Dior 2017 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-higher-2001-gcms",
+      "filename": "Dior_Higher_2001_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Higher_2001_gcms.pdf",
+      "sizeBytes": 314906,
+      "modifiedAt": "2026-06-09T14:30:05.715Z",
+      "titleGuess": "Dior Higher 2001 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-jules-1980-gcms",
+      "filename": "Dior_Jules_1980_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Jules_1980_gcms.pdf",
+      "sizeBytes": 324476,
+      "modifiedAt": "2026-06-09T14:30:07.716Z",
+      "titleGuess": "Dior Jules 1980 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-miss-dior-1947-gcms",
+      "filename": "Dior_Miss_Dior_1947_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Miss_Dior_1947_gcms.pdf",
+      "sizeBytes": 326036,
+      "modifiedAt": "2026-06-09T14:30:10.391Z",
+      "titleGuess": "Dior Miss Dior 1947 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-miss-dior-blooming-bouquet-roller-pearl-2014-gcms",
+      "filename": "Dior_Miss_Dior_Blooming_Bouquet_Roller_Pearl_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Miss_Dior_Blooming_Bouquet_Roller_Pearl_2014_gcms.pdf",
+      "sizeBytes": 293447,
+      "modifiedAt": "2026-06-09T14:30:13.565Z",
+      "titleGuess": "Dior Miss Dior Blooming Bouquet Roller Pearl 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-oud-rosewood-2012-gcms",
+      "filename": "Dior_Oud_Rosewood_2012_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Oud_Rosewood_2012_gcms.pdf",
+      "sizeBytes": 382025,
+      "modifiedAt": "2026-06-09T14:29:23.538Z",
+      "titleGuess": "Dior Oud Rosewood 2012 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-rouge-trafalgar-2020-gcms",
+      "filename": "Dior_Rouge_Trafalgar_2020_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Rouge_Trafalgar_2020_gcms.pdf",
+      "sizeBytes": 295240,
+      "modifiedAt": "2026-06-09T14:30:16.398Z",
+      "titleGuess": "Dior Rouge Trafalgar 2020 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dior-vanilla-diorama-2021-gcms",
+      "filename": "Dior_Vanilla_Diorama_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dior_Vanilla_Diorama_2021_gcms.pdf",
+      "sizeBytes": 316359,
+      "modifiedAt": "2026-06-09T14:30:19.609Z",
+      "titleGuess": "Dior Vanilla Diorama 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "dolce-gabbana-the-one-for-men-eau-de-parfum-2015-gcms",
+      "filename": "Dolce_Gabbana_The_One_for_Men_Eau_de_Parfum_2015_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Dolce_Gabbana_The_One_for_Men_Eau_de_Parfum_2015_gcms.pdf",
+      "sizeBytes": 307322,
+      "modifiedAt": "2026-06-09T14:31:37.492Z",
+      "titleGuess": "Dolce Gabbana The One for Men Eau de Parfum 2015 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "donna-karan-dk-1992-gcms",
+      "filename": "Donna_Karan_DK_1992_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Donna_Karan_DK_1992_gcms.pdf",
+      "sizeBytes": 303421,
+      "modifiedAt": "2026-06-09T14:31:40.434Z",
+      "titleGuess": "Donna Karan DK 1992 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "durance-bois-precieux-2014-gcms",
+      "filename": "Durance_Bois_Précieux_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Durance_Bois_Précieux_2014_gcms.pdf",
+      "sizeBytes": 295190,
+      "modifiedAt": "2026-06-09T14:31:42.636Z",
+      "titleGuess": "Durance Bois Précieux 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "etat-libre-dorange-eau-de-protection-2007-gcms",
+      "filename": "Etat_Libre_dOrange_Eau_de_Protection_2007_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Etat_Libre_dOrange_Eau_de_Protection_2007_gcms.pdf",
+      "sizeBytes": 304335,
+      "modifiedAt": "2026-06-09T14:31:45.705Z",
+      "titleGuess": "Etat Libre dOrange Eau de Protection 2007 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "etat-libre-dorange-rien-intense-incense-2014-gcms",
+      "filename": "Etat_Libre_dOrange_Rien_Intense_Incense_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Etat_Libre_dOrange_Rien_Intense_Incense_2014_gcms.pdf",
+      "sizeBytes": 311571,
+      "modifiedAt": "2026-06-09T14:31:48.352Z",
+      "titleGuess": "Etat Libre dOrange Rien Intense Incense 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "faberge-brut-1968-gcms",
+      "filename": "Fabergé_Brut_1968_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Fabergé_Brut_1968_gcms.pdf",
+      "sizeBytes": 297367,
+      "modifiedAt": "2026-06-09T14:31:51.604Z",
+      "titleGuess": "Fabergé Brut 1968 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "gucci-envy-1997-gcms",
+      "filename": "Gucci_Envy_1997_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Gucci_Envy_1997_gcms.pdf",
+      "sizeBytes": 302657,
+      "modifiedAt": "2026-06-09T14:31:56.009Z",
+      "titleGuess": "Gucci Envy 1997 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "gucci-gucci-pour-homme-1976-gcms",
+      "filename": "Gucci_Gucci_Pour_Homme_1976_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Gucci_Gucci_Pour_Homme_1976_gcms.pdf",
+      "sizeBytes": 330433,
+      "modifiedAt": "2026-06-09T14:32:16.014Z",
+      "titleGuess": "Gucci Gucci Pour Homme 1976 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-apres-londee-1906-gcms",
+      "filename": "Guerlain_Après_lOndée_1906_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Après_lOndée_1906_gcms.pdf",
+      "sizeBytes": 308396,
+      "modifiedAt": "2026-06-09T14:32:18.780Z",
+      "titleGuess": "Guerlain Après lOndée 1906 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-derby-1985-gcms",
+      "filename": "Guerlain_Derby_1985_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Derby_1985_gcms.pdf",
+      "sizeBytes": 319483,
+      "modifiedAt": "2026-06-09T14:32:22.499Z",
+      "titleGuess": "Guerlain Derby 1985 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-heritage-1992-gcms",
+      "filename": "Guerlain_Héritage_1992_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Héritage_1992_gcms.pdf",
+      "sizeBytes": 297230,
+      "modifiedAt": "2026-06-09T14:32:25.551Z",
+      "titleGuess": "Guerlain Héritage 1992 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-lheure-bleue-1912-gcms",
+      "filename": "Guerlain_LHeure_Bleue_1912_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_LHeure_Bleue_1912_gcms.pdf",
+      "sizeBytes": 302447,
+      "modifiedAt": "2026-06-09T14:32:27.992Z",
+      "titleGuess": "Guerlain LHeure Bleue 1912 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-mitsouko-1919-gcms",
+      "filename": "Guerlain_Mitsouko_1919_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Mitsouko_1919_gcms.pdf",
+      "sizeBytes": 307476,
+      "modifiedAt": "2026-06-09T14:32:30.614Z",
+      "titleGuess": "Guerlain Mitsouko 1919 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-mouchoir-de-monsieur-1904-gcms",
+      "filename": "Guerlain_Mouchoir_de_Monsieur_1904_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Mouchoir_de_Monsieur_1904_gcms.pdf",
+      "sizeBytes": 312828,
+      "modifiedAt": "2026-06-09T14:32:34.984Z",
+      "titleGuess": "Guerlain Mouchoir de Monsieur 1904 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-samsara-1989-gcms",
+      "filename": "Guerlain_Samsara_1989_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Samsara_1989_gcms.pdf",
+      "sizeBytes": 316210,
+      "modifiedAt": "2026-06-09T14:32:52.962Z",
+      "titleGuess": "Guerlain Samsara 1989 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-shalimar-1925-gcms",
+      "filename": "Guerlain_Shalimar_1925_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Shalimar_1925_gcms.pdf",
+      "sizeBytes": 314421,
+      "modifiedAt": "2026-06-09T14:33:06.382Z",
+      "titleGuess": "Guerlain Shalimar 1925 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "guerlain-tonka-imperiale-2010-gcms",
+      "filename": "Guerlain_Tonka_Impériale_2010_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Guerlain_Tonka_Impériale_2010_gcms.pdf",
+      "sizeBytes": 306017,
+      "modifiedAt": "2026-06-09T14:33:10.444Z",
+      "titleGuess": "Guerlain Tonka Impériale 2010 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "helena-rubinstein-mens-club-1966-gcms",
+      "filename": "Helena_Rubinstein_Mens_Club_1966_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Helena_Rubinstein_Mens_Club_1966_gcms.pdf",
+      "sizeBytes": 390691,
+      "modifiedAt": "2026-06-09T14:33:13.358Z",
+      "titleGuess": "Helena Rubinstein Mens Club 1966 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "helmut-lang-eau-de-cologne-2000-gcms",
+      "filename": "Helmut_Lang_Eau_de_Cologne_2000_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Helmut_Lang_Eau_de_Cologne_2000_gcms.pdf",
+      "sizeBytes": 298390,
+      "modifiedAt": "2026-06-09T14:33:16.303Z",
+      "titleGuess": "Helmut Lang Eau de Cologne 2000 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "hermes-un-jardin-sur-le-nil-2005-gcms",
+      "filename": "Hermes_Un_Jardin_sur_le_Nil_2005_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Hermes_Un_Jardin_sur_le_Nil_2005_gcms.pdf",
+      "sizeBytes": 299663,
+      "modifiedAt": "2026-06-09T14:33:18.920Z",
+      "titleGuess": "Hermes Un Jardin sur le Nil 2005 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "histoires-de-parfums-1740-marquis-de-sade-2000-gcms",
+      "filename": "Histoires_de_Parfums_1740_Marquis_de_Sade_2000_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Histoires_de_Parfums_1740_Marquis_de_Sade_2000_gcms.pdf",
+      "sizeBytes": 301971,
+      "modifiedAt": "2026-06-09T14:33:21.025Z",
+      "titleGuess": "Histoires de Parfums 1740 Marquis de Sade 2000 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "histoires-de-parfums-7753-unexpected-mona-2019-gcms",
+      "filename": "Histoires_de_Parfums_7753_Unexpected_Mona_2019_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Histoires_de_Parfums_7753_Unexpected_Mona_2019_gcms.pdf",
+      "sizeBytes": 322554,
+      "modifiedAt": "2026-06-09T14:34:40.273Z",
+      "titleGuess": "Histoires de Parfums 7753 Unexpected Mona 2019 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "jean-patou-1000-1972-gcms",
+      "filename": "Jean_Patou_1000_1972_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Jean_Patou_1000_1972_gcms.pdf",
+      "sizeBytes": 313296,
+      "modifiedAt": "2026-06-09T14:34:47.706Z",
+      "titleGuess": "Jean Patou 1000 1972 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "jean-patou-paname-2001-gcms",
+      "filename": "Jean_Patou_PanAmé_2001_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Jean_Patou_PanAmé_2001_gcms.pdf",
+      "sizeBytes": 364437,
+      "modifiedAt": "2026-06-09T14:34:42.269Z",
+      "titleGuess": "Jean Patou PanAmé 2001 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "jean-patou-patou-pour-homme-1980-gcms",
+      "filename": "Jean_Patou_Patou_pour_Homme_1980_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Jean_Patou_Patou_pour_Homme_1980_gcms.pdf",
+      "sizeBytes": 333245,
+      "modifiedAt": "2026-06-09T14:34:50.384Z",
+      "titleGuess": "Jean Patou Patou pour Homme 1980 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "jean-patou-patou-pour-homme-prive-1994-gcms",
+      "filename": "Jean_Patou_Patou_Pour_Homme_Privé_1994_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Jean_Patou_Patou_Pour_Homme_Privé_1994_gcms.pdf",
+      "sizeBytes": 304515,
+      "modifiedAt": "2026-06-09T14:34:54.442Z",
+      "titleGuess": "Jean Patou Patou Pour Homme Privé 1994 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "jean-paul-gaultier-fleur-du-male-2007-gcms",
+      "filename": "Jean_Paul_Gaultier_Fleur_du_Mâle_2007_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Jean_Paul_Gaultier_Fleur_du_Mâle_2007_gcms.pdf",
+      "sizeBytes": 291687,
+      "modifiedAt": "2026-06-09T14:34:56.574Z",
+      "titleGuess": "Jean Paul Gaultier Fleur du Mâle 2007 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "juliette-has-a-gun-lady-vengeance-2006-gcms",
+      "filename": "Juliette_Has_A_Gun_Lady_Vengeance_2006_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Juliette_Has_A_Gun_Lady_Vengeance_2006_gcms.pdf",
+      "sizeBytes": 301912,
+      "modifiedAt": "2026-06-09T14:35:00.083Z",
+      "titleGuess": "Juliette Has A Gun Lady Vengeance 2006 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "juliette-has-a-gun-moon-dance-2014-gcms",
+      "filename": "Juliette_Has_A_Gun_Moon_Dance_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Juliette_Has_A_Gun_Moon_Dance_2014_gcms.pdf",
+      "sizeBytes": 310623,
+      "modifiedAt": "2026-06-09T14:35:27.820Z",
+      "titleGuess": "Juliette Has A Gun Moon Dance 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "kemi-blending-magic-jabir-2014-gcms",
+      "filename": "Kemi_Blending_Magic_Jabir_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Kemi_Blending_Magic_Jabir_2014_gcms.pdf",
+      "sizeBytes": 311408,
+      "modifiedAt": "2026-06-09T14:35:30.962Z",
+      "titleGuess": "Kemi Blending Magic Jabir 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "kemi-blending-magic-tempest-2014-gcms",
+      "filename": "Kemi_Blending_Magic_Tempest_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Kemi_Blending_Magic_Tempest_2014_gcms.pdf",
+      "sizeBytes": 309270,
+      "modifiedAt": "2026-06-09T14:35:33.584Z",
+      "titleGuess": "Kemi Blending Magic Tempest 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "knize-knize-ten-1924-gcms",
+      "filename": "Knize_Knize_Ten_1924_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Knize_Knize_Ten_1924_gcms.pdf",
+      "sizeBytes": 320800,
+      "modifiedAt": "2026-06-09T14:35:35.829Z",
+      "titleGuess": "Knize Knize Ten 1924 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "lanvin-arpege-1927-gcms",
+      "filename": "Lanvin_Arpège_1927_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Lanvin_Arpège_1927_gcms.pdf",
+      "sizeBytes": 318228,
+      "modifiedAt": "2026-06-09T14:35:38.893Z",
+      "titleGuess": "Lanvin Arpège 1927 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "lartisan-parfumeur-dzing-1999-gcms",
+      "filename": "LArtisan_Parfumeur_Dzing_1999_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/LArtisan_Parfumeur_Dzing_1999_gcms.pdf",
+      "sizeBytes": 293705,
+      "modifiedAt": "2026-06-09T14:35:41.099Z",
+      "titleGuess": "LArtisan Parfumeur Dzing 1999 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "lartisan-parfumeur-timbuktu-2004-gcms",
+      "filename": "LArtisan_Parfumeur_Timbuktu_2004_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/LArtisan_Parfumeur_Timbuktu_2004_gcms.pdf",
+      "sizeBytes": 299753,
+      "modifiedAt": "2026-06-09T14:35:44.193Z",
+      "titleGuess": "LArtisan Parfumeur Timbuktu 2004 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "lt-piver-reve-dor-pomade-1889-gcms",
+      "filename": "LT_Piver_Rêve_dOr_Pomade_1889_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/LT_Piver_Rêve_dOr_Pomade_1889_gcms.pdf",
+      "sizeBytes": 301077,
+      "modifiedAt": "2026-06-09T14:36:08.775Z",
+      "titleGuess": "LT Piver Rêve dOr Pomade 1889 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "maison-martin-margiela-at-the-barbers-2014-gcms",
+      "filename": "Maison_Martin_Margiela_At_the_Barbers_2014_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Maison_Martin_Margiela_At_the_Barbers_2014_gcms.pdf",
+      "sizeBytes": 306537,
+      "modifiedAt": "2026-06-09T14:36:11.486Z",
+      "titleGuess": "Maison Martin Margiela At the Barbers 2014 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marc-antoine-barrois-ganymede-2019-gcms",
+      "filename": "Marc_Antoine_Barrois_Ganymede_2019_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marc_Antoine_Barrois_Ganymede_2019_gcms.pdf",
+      "sizeBytes": 291203,
+      "modifiedAt": "2026-06-09T14:36:14.122Z",
+      "titleGuess": "Marc Antoine Barrois Ganymede 2019 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marc-antoine-barrois-tilia-2024-gcms",
+      "filename": "Marc_Antoine_Barrois_Tilia_2024_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marc_Antoine_Barrois_Tilia_2024_gcms.pdf",
+      "sizeBytes": 276532,
+      "modifiedAt": "2026-06-09T14:36:16.909Z",
+      "titleGuess": "Marc Antoine Barrois Tilia 2024 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marilyn-miglin-112-unknown-gcms",
+      "filename": "Marilyn_Miglin_112_Unknown_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marilyn_Miglin_112_Unknown_gcms.pdf",
+      "sizeBytes": 304600,
+      "modifiedAt": "2026-06-09T14:36:20.381Z",
+      "titleGuess": "Marilyn Miglin 112 Unknown gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marilyn-miglin-lace-2013-gcms",
+      "filename": "Marilyn_Miglin_Lace_2013_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marilyn_Miglin_Lace_2013_gcms.pdf",
+      "sizeBytes": 283974,
+      "modifiedAt": "2026-06-09T14:36:25.259Z",
+      "titleGuess": "Marilyn Miglin Lace 2013 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marilyn-miglin-passionate-unknown-gcms",
+      "filename": "Marilyn_Miglin_Passionate_Unknown_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marilyn_Miglin_Passionate_Unknown_gcms.pdf",
+      "sizeBytes": 300497,
+      "modifiedAt": "2026-06-09T14:36:27.419Z",
+      "titleGuess": "Marilyn Miglin Passionate Unknown gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "marilyn-miglin-pheromone-1978-gcms",
+      "filename": "Marilyn_Miglin_Pheromone_1978_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Marilyn_Miglin_Pheromone_1978_gcms.pdf",
+      "sizeBytes": 375848,
+      "modifiedAt": "2026-06-09T14:36:33.995Z",
+      "titleGuess": "Marilyn Miglin Pheromone 1978 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "maurer-wirtz-tabac-original-1959-gcms",
+      "filename": "Mäurer_Wirtz_Tabac_Original_1959_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Mäurer_Wirtz_Tabac_Original_1959_gcms.pdf",
+      "sizeBytes": 294473,
+      "modifiedAt": "2026-06-09T14:36:37.092Z",
+      "titleGuess": "Mäurer Wirtz Tabac Original 1959 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "nishane-mana-2022-gcms",
+      "filename": "Nishane_Mana_2022_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Nishane_Mana_2022_gcms.pdf",
+      "sizeBytes": 320365,
+      "modifiedAt": "2026-06-09T14:36:40.323Z",
+      "titleGuess": "Nishane Mana 2022 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "nishane-nefs-2019-gcms",
+      "filename": "Nishane_Nefs_2019_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Nishane_Nefs_2019_gcms.pdf",
+      "sizeBytes": 318371,
+      "modifiedAt": "2026-06-09T14:36:43.149Z",
+      "titleGuess": "Nishane Nefs 2019 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "nishane-shem-2021-gcms",
+      "filename": "Nishane_Shem_2021_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Nishane_Shem_2021_gcms.pdf",
+      "sizeBytes": 310848,
+      "modifiedAt": "2026-06-09T14:36:46.789Z",
+      "titleGuess": "Nishane Shem 2021 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "nomenclature-adr-ett-2015-gcms",
+      "filename": "Nomenclature_Adr_ett_2015_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Nomenclature_Adr_ett_2015_gcms.pdf",
+      "sizeBytes": 285904,
+      "modifiedAt": "2026-06-09T14:37:11.677Z",
+      "titleGuess": "Nomenclature Adr ett 2015 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "oscar-de-la-renta-pour-lui-1980-gcms",
+      "filename": "Oscar_de_la_Renta_Pour_Lui_1980_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Oscar_de_la_Renta_Pour_Lui_1980_gcms.pdf",
+      "sizeBytes": 308602,
+      "modifiedAt": "2026-06-09T14:37:14.955Z",
+      "titleGuess": "Oscar de la Renta Pour Lui 1980 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "parfums-de-marly-delina-2017-gcms",
+      "filename": "Parfums_de_Marly_Delina_2017_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Parfums_de_Marly_Delina_2017_gcms.pdf",
+      "sizeBytes": 303829,
+      "modifiedAt": "2026-06-09T14:37:17.482Z",
+      "titleGuess": "Parfums de Marly Delina 2017 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "parfums-dorsay-voulez-vous-1935-gcms",
+      "filename": "Parfums_dOrsay_Voulez_Vous_1935_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Parfums_dOrsay_Voulez_Vous_1935_gcms.pdf",
+      "sizeBytes": 333927,
+      "modifiedAt": "2026-06-09T14:37:20.242Z",
+      "titleGuess": "Parfums dOrsay Voulez Vous 1935 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "penhaligons-sartorial-2010-gcms",
+      "filename": "Penhaligons_Sartorial_2010_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Penhaligons_Sartorial_2010_gcms.pdf",
+      "sizeBytes": 303071,
+      "modifiedAt": "2026-06-09T14:37:22.180Z",
+      "titleGuess": "Penhaligons Sartorial 2010 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "raphael-replique-1944-gcms",
+      "filename": "Raphael_Réplique_1944_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Raphael_Réplique_1944_gcms.pdf",
+      "sizeBytes": 318463,
+      "modifiedAt": "2026-06-09T14:37:26.060Z",
+      "titleGuess": "Raphael Réplique 1944 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "revillon-carnet-de-bal-1937-gcms",
+      "filename": "Revillon_Carnet_de_Bal_1937_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Revillon_Carnet_de_Bal_1937_gcms.pdf",
+      "sizeBytes": 318179,
+      "modifiedAt": "2026-06-09T14:37:28.455Z",
+      "titleGuess": "Revillon Carnet de Bal 1937 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "revillon-detchema-1953-gcms",
+      "filename": "Revillon_Detchema_1953_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Revillon_Detchema_1953_gcms.pdf",
+      "sizeBytes": 319990,
+      "modifiedAt": "2026-06-09T14:37:45.381Z",
+      "titleGuess": "Revillon Detchema 1953 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "robert-piguet-visa-2007-gcms",
+      "filename": "Robert_Piguet_Visa_2007_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Robert_Piguet_Visa_2007_gcms.pdf",
+      "sizeBytes": 315245,
+      "modifiedAt": "2026-06-09T14:37:47.454Z",
+      "titleGuess": "Robert Piguet Visa 2007 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "salvador-dali-salvador-dali-pour-homme-1987-gcms",
+      "filename": "Salvador_Dali_Salvador_Dali_pour_Homme_1987_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Salvador_Dali_Salvador_Dali_pour_Homme_1987_gcms.pdf",
+      "sizeBytes": 382897,
+      "modifiedAt": "2026-06-09T14:37:49.939Z",
+      "titleGuess": "Salvador Dali Salvador Dali pour Homme 1987 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "santa-maria-novella-caprifoglio-honeysuckle-1997-gcms",
+      "filename": "Santa_Maria_Novella_Caprifoglio_Honeysuckle_1997_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Santa_Maria_Novella_Caprifoglio_Honeysuckle_1997_gcms.pdf",
+      "sizeBytes": 288250,
+      "modifiedAt": "2026-06-09T14:37:52.329Z",
+      "titleGuess": "Santa Maria Novella Caprifoglio Honeysuckle 1997 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "schiaparelli-shocking-1937-gcms",
+      "filename": "Schiaparelli_Shocking_1937_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Schiaparelli_Shocking_1937_gcms.pdf",
+      "sizeBytes": 329297,
+      "modifiedAt": "2026-06-09T14:37:55.897Z",
+      "titleGuess": "Schiaparelli Shocking 1937 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "serge-lutens-ambre-sultan-1993-gcms",
+      "filename": "Serge_Lutens_Ambre_Sultan_1993_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Serge_Lutens_Ambre_Sultan_1993_gcms.pdf",
+      "sizeBytes": 308373,
+      "modifiedAt": "2026-06-09T14:37:59.165Z",
+      "titleGuess": "Serge Lutens Ambre Sultan 1993 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "serge-lutens-muscs-koublai-khan-1998-gcms",
+      "filename": "Serge_Lutens_Muscs_Koublaï_Khän_1998_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Serge_Lutens_Muscs_Koublaï_Khän_1998_gcms.pdf",
+      "sizeBytes": 300948,
+      "modifiedAt": "2026-06-09T14:38:01.479Z",
+      "titleGuess": "Serge Lutens Muscs Koublaï Khän 1998 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "serge-lutens-tubereuse-criminelle-1999-gcms",
+      "filename": "Serge_Lutens_Tubéreuse_Criminelle_1999_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Serge_Lutens_Tubéreuse_Criminelle_1999_gcms.pdf",
+      "sizeBytes": 303156,
+      "modifiedAt": "2026-06-09T14:38:20.667Z",
+      "titleGuess": "Serge Lutens Tubéreuse Criminelle 1999 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "shiseido-zen-1964-gcms",
+      "filename": "Shiseido_Zen_1964_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Shiseido_Zen_1964_gcms.pdf",
+      "sizeBytes": 308481,
+      "modifiedAt": "2026-06-09T14:38:25.255Z",
+      "titleGuess": "Shiseido Zen 1964 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "shulton-company-old-spice-1938-gcms",
+      "filename": "Shulton_Company_Old_Spice_1938_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Shulton_Company_Old_Spice_1938_gcms.pdf",
+      "sizeBytes": 313286,
+      "modifiedAt": "2026-06-09T14:38:27.939Z",
+      "titleGuess": "Shulton Company Old Spice 1938 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "sora-dora-jany-2023-gcms",
+      "filename": "Sora_Dora_Jany_2023_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Sora_Dora_Jany_2023_gcms.pdf",
+      "sizeBytes": 290460,
+      "modifiedAt": "2026-06-09T14:38:30.969Z",
+      "titleGuess": "Sora Dora Jany 2023 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "sora-dora-mallow-2023-gcms",
+      "filename": "Sora_Dora_Mallow_2023_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Sora_Dora_Mallow_2023_gcms.pdf",
+      "sizeBytes": 285008,
+      "modifiedAt": "2026-06-09T14:38:34.980Z",
+      "titleGuess": "Sora Dora Mallow 2023 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "taylor-of-old-bond-street-sandalwood-cologne-unknown-gcms",
+      "filename": "Taylor_of_Old_Bond_Street_Sandalwood_Cologne_Unknown_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Taylor_of_Old_Bond_Street_Sandalwood_Cologne_Unknown_gcms.pdf",
+      "sizeBytes": 314029,
+      "modifiedAt": "2026-06-09T14:38:37.430Z",
+      "titleGuess": "Taylor of Old Bond Street Sandalwood Cologne Unknown gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "tom-ford-f-fabulous-2017-gcms",
+      "filename": "Tom_Ford_F_Fabulous_2017_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Tom_Ford_F_Fabulous_2017_gcms.pdf",
+      "sizeBytes": 305696,
+      "modifiedAt": "2026-06-09T14:38:55.956Z",
+      "titleGuess": "Tom Ford F Fabulous 2017 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "tom-ford-lost-cherry-2018-gcms",
+      "filename": "Tom_Ford_Lost_Cherry_2018_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Tom_Ford_Lost_Cherry_2018_gcms.pdf",
+      "sizeBytes": 292253,
+      "modifiedAt": "2026-06-09T14:38:57.010Z",
+      "titleGuess": "Tom Ford Lost Cherry 2018 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "van-cleef-arpels-van-cleef-arpels-pour-homme-1978-gcms",
+      "filename": "Van_Cleef_Arpels_Van_Cleef_Arpels_pour_Homme_1978_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Van_Cleef_Arpels_Van_Cleef_Arpels_pour_Homme_1978_gcms.pdf",
+      "sizeBytes": 398038,
+      "modifiedAt": "2026-06-09T14:38:59.676Z",
+      "titleGuess": "Van Cleef Arpels Van Cleef Arpels pour Homme 1978 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    },
+    {
+      "id": "yves-saint-laurent-opium-pour-homme-1995-gcms",
+      "filename": "Yves_Saint_Laurent_Opium_pour_Homme_1995_gcms.pdf",
+      "relativePath": "downloads/gcms_reports/Yves_Saint_Laurent_Opium_pour_Homme_1995_gcms.pdf",
+      "sizeBytes": 309046,
+      "modifiedAt": "2026-06-09T14:39:03.341Z",
+      "titleGuess": "Yves Saint Laurent Opium pour Homme 1995 gcms",
+      "brandGuess": "",
+      "status": "pending_extraction"
+    }
+  ]
 }

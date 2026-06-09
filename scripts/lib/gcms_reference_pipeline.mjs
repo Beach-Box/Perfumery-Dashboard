@@ -270,19 +270,27 @@ function readManifestForExtraction(manifestPath = DEFAULT_GCMS_MANIFEST_PATH) {
   return buildGcmsManifest();
 }
 
+export function normalizeGcmsManifestReports(manifest) {
+  if (Array.isArray(manifest)) return manifest;
+  if (Array.isArray(manifest?.reports)) return manifest.reports;
+  return [];
+}
+
 export function extractGcmsPdfText({
   manifestPath = DEFAULT_GCMS_MANIFEST_PATH,
+  manifest = null,
   rawTextDir = DEFAULT_GCMS_RAW_TEXT_DIR,
   outputPath = DEFAULT_GCMS_EXTRACTION_STATUS_PATH,
   generatedAt = new Date().toISOString(),
+  runPdfExtractor = null,
 } = {}) {
-  const manifest = readManifestForExtraction(manifestPath);
-  const reports = Array.isArray(manifest?.reports) ? manifest.reports : [];
+  const loadedManifest = manifest || readManifestForExtraction(manifestPath);
+  const reports = normalizeGcmsManifestReports(loadedManifest);
   ensureDirectory(rawTextDir);
 
   let compiledExtractor = null;
   let compileError = null;
-  if (reports.length) {
+  if (reports.length && !runPdfExtractor) {
     try {
       compiledExtractor = compileSwiftPdfExtractor();
     } catch (error) {
@@ -307,14 +315,25 @@ export function extractGcmsPdfText({
     }
 
     try {
-      const runResult = childProcess.spawnSync(compiledExtractor.binPath, [sourcePath], {
-        encoding: "utf8",
-        maxBuffer: 1024 * 1024 * 80,
-      });
-      if (runResult.status !== 0) {
-        throw new Error(runResult.stderr || runResult.stdout || "PDF extraction failed");
+      if (!report.relativePath) {
+        throw new Error("Manifest record is missing relativePath.");
       }
-      const extracted = JSON.parse(runResult.stdout || "{}");
+      if (!fs.existsSync(sourcePath)) {
+        throw new Error(`PDF file not found: ${report.relativePath}`);
+      }
+      let extracted = null;
+      if (runPdfExtractor) {
+        extracted = runPdfExtractor(sourcePath, report);
+      } else {
+        const runResult = childProcess.spawnSync(compiledExtractor.binPath, [sourcePath], {
+          encoding: "utf8",
+          maxBuffer: 1024 * 1024 * 80,
+        });
+        if (runResult.status !== 0) {
+          throw new Error(runResult.stderr || runResult.stdout || "PDF extraction failed");
+        }
+        extracted = JSON.parse(runResult.stdout || "{}");
+      }
       const text = flattenExtractedPages(extracted.pages);
       const rawRecord = {
         id: report.id,
