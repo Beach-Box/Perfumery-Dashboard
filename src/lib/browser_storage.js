@@ -17,6 +17,7 @@ export const APP_STORAGE_KEYS = {
   formulaCompare: "bb_formula_compare_state",
   heroCandidateStatus: "bb_hero_candidate_status_v1",
   heroSensoryEvaluations: "bb_hero_sensory_evaluations_v1",
+  heroLabDecisionMode: "bb_hero_lab_decision_mode_v1",
   critiqueLens: "bb_critique_lens",
   aiCritiqueIssueTriage: "bb_ai_critique_issue_triage_v1",
   founderLaunchScenarios: "bb_founder_launch_scenarios_v1",

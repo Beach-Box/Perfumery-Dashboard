@@ -29,6 +29,62 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(board).toBeVisible();
   await expect(board.getByText("Hero Scent Development")).toBeVisible();
   await expect(board.getByText("Original + 3 Test Variations")).toBeVisible();
+  const modeSelector = page.getByTestId("hero-lab-decision-mode-selector");
+  await expect(modeSelector).toBeVisible();
+  await expect(
+    modeSelector.getByRole("button", { name: /Decision Focus/i })
+  ).toBeVisible();
+  await expect(
+    modeSelector.getByRole("button", { name: /Full Analysis/i })
+  ).toBeVisible();
+
+  const wearTestPlan = page.getByTestId("next-controlled-wear-test-plan");
+  await expect(wearTestPlan).toBeVisible();
+  await expect(wearTestPlan.getByText("Next Controlled Wear Test Plan")).toBeVisible();
+  await expect(wearTestPlan).toContainText("Current model-guided test priority");
+  await expect(wearTestPlan).toContainText("Skin-Air Bridge");
+  await expect(wearTestPlan).toContainText(
+    "No real wear-test evidence recorded yet"
+  );
+  await expect(wearTestPlan).toContainText("Do not change yet");
+  await expect(wearTestPlan).toContainText("5 min");
+  await expect(
+    wearTestPlan.getByRole("button", { name: /Record wear test/i })
+  ).toBeVisible();
+
+  const criticalGaps = page.getByTestId("critical-launch-readiness-gaps");
+  await expect(criticalGaps).toBeVisible();
+  await expect(criticalGaps).toContainText("Critical Launch-Readiness Gaps");
+  await expect(criticalGaps).toContainText("Wear-test evidence missing");
+  await expect(criticalGaps).toContainText(
+    "Structured IFRA source coverage incomplete"
+  );
+  await expect(criticalGaps).toContainText("Supplier IFRA/SDS still needed");
+  await expect(criticalGaps).toContainText("Accord-level IFRA expansion deferred");
+  await expect(criticalGaps).toContainText("Production costing deferred");
+
+  let comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");
+  await expect(comparisonInterpreter).toBeVisible();
+  await expect(comparisonInterpreter.getByText("Hero Comparison Interpreter")).toBeVisible();
+  await expect(comparisonInterpreter).toContainText("First test priority");
+  await expect(comparisonInterpreter).toContainText("Do not change yet");
+  await expect(comparisonInterpreter).toContainText(
+    "Clearest next validation questions"
+  );
+
+  let gcmsInsights = page.getByTestId("gcms-pattern-insights");
+  await expect(gcmsInsights).toBeVisible();
+  await expect(gcmsInsights.getByText("GCMS Pattern Insights")).toBeVisible();
+  await expect(gcmsInsights).toContainText("High-confidence Beach Box moves");
+  await expect(gcmsInsights).toContainText("Priority formula watch");
+  await expect(gcmsInsights).toContainText("Summary caveat");
+  await expect(gcmsInsights).toContainText("not formulas to copy");
+
+  for (const formulaName of HERO_FORMULA_NAMES) {
+    await expect(board.getByText(formulaName).first()).toBeVisible();
+  }
+
+  await modeSelector.getByRole("button", { name: /Full Analysis/i }).click();
   await expect(
     page.getByTestId("hero-model-confidence-cue")
   ).toContainText("Model outputs are directional estimates");
@@ -42,7 +98,7 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
     board.getByText(/Cost caveat: .*black-box accord/i).first()
   ).toBeVisible();
 
-  const comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");
+  comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");
   await expect(comparisonInterpreter).toBeVisible();
   await expect(comparisonInterpreter.getByText("Hero Comparison Interpreter")).toBeVisible();
   await expect(comparisonInterpreter).toContainText("Best current launch candidate");
@@ -53,7 +109,7 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
     "No real wear-test evidence recorded yet"
   );
 
-  const gcmsInsights = page.getByTestId("gcms-pattern-insights");
+  gcmsInsights = page.getByTestId("gcms-pattern-insights");
   await expect(gcmsInsights).toBeVisible();
   await expect(gcmsInsights.getByText("GCMS Pattern Insights")).toBeVisible();
   await expect(gcmsInsights).toContainText("High-confidence Beach Box moves");
@@ -68,7 +124,6 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(gcmsInsights).toContainText("Vanillin");
   await expect(gcmsInsights).toContainText("not formulas to copy");
 
-  const wearTestPlan = page.getByTestId("next-controlled-wear-test-plan");
   await expect(wearTestPlan).toBeVisible();
   await expect(wearTestPlan.getByText("Next Controlled Wear Test Plan")).toBeVisible();
   await expect(wearTestPlan).toContainText("Current model-guided test priority");
@@ -91,10 +146,6 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(
     page.getByTestId("hero-decision-brief-headline")
   ).toHaveText("No launch candidate marked yet");
-
-  for (const formulaName of HERO_FORMULA_NAMES) {
-    await expect(board.getByText(formulaName).first()).toBeVisible();
-  }
 
   await board.getByRole("button", { name: "Original vs Skin-Air Bridge" }).click();
   await expect(page.getByText("Model Confidence").first()).toBeVisible();

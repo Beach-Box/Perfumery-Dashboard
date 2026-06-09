@@ -126,7 +126,10 @@ import {
   buildHeroComparisonInterpreter,
   buildHeroDecisionBrief,
 } from "./lib/hero_decision_brief_helpers";
-import { buildNextControlledWearTestPlan } from "./lib/hero_controlled_wear_test_plan_helpers";
+import {
+  buildCriticalHeroLaunchReadinessGaps,
+  buildNextControlledWearTestPlan,
+} from "./lib/hero_controlled_wear_test_plan_helpers";
 import {
   buildGcmsPatternInsightsPanel,
   getGcmsPatternStatusLabel,
@@ -62189,6 +62192,12 @@ export default function App() {
   const [heroSensoryEditFormulaKey, setHeroSensoryEditFormulaKey] =
     useState("");
   const [heroSensoryDraft, setHeroSensoryDraft] = useState(null);
+  const [heroLabDecisionMode, setHeroLabDecisionModeState] = useState(() =>
+    readTextStorage(APP_STORAGE_KEYS.heroLabDecisionMode, "decision_focus") ===
+    "full_analysis"
+      ? "full_analysis"
+      : "decision_focus"
+  );
   const [basketMode, setBasketMode] = useState("cheapest");
   const [buildName, setBuildName] = useState("");
   const [paScraperLog, setPaScraperLog] = useState([]);
@@ -62884,6 +62893,12 @@ export default function App() {
     },
     [heroCandidateFormulas]
   );
+  const setHeroLabDecisionMode = useCallback((mode) => {
+    const nextMode =
+      mode === "full_analysis" ? "full_analysis" : "decision_focus";
+    setHeroLabDecisionModeState(nextMode);
+    writeTextStorage(APP_STORAGE_KEYS.heroLabDecisionMode, nextMode);
+  }, []);
   const openHeroCandidateFormula = useCallback(
     (formulaKey) => {
       const nextIndex = formulaIndexByKey.get(formulaKey);
@@ -81466,6 +81481,12 @@ export default function App() {
       comparisonInterpreter: heroComparisonInterpreter,
       gcmsPatternInsights,
     });
+    const criticalLaunchReadinessGaps = buildCriticalHeroLaunchReadinessGaps({
+      candidateItems: heroCandidateItems,
+      comparisonInterpreter: heroComparisonInterpreter,
+      nextControlledWearTestPlan,
+    });
+    const isDecisionFocusMode = heroLabDecisionMode !== "full_analysis";
     const heroBoardConfidenceSummary = mergeModelConfidenceSummaries(
       heroCandidateItems.map((item) => item.confidenceSummary)
     );
@@ -81818,6 +81839,297 @@ export default function App() {
         {content}
       </div>
     );
+    const renderDecisionModeButton = (mode, label) => {
+      const isActive =
+        mode === "decision_focus"
+          ? isDecisionFocusMode
+          : !isDecisionFocusMode;
+      return (
+        <button
+          key={mode}
+          type="button"
+          aria-label={`Switch Hero Lab to ${label}`}
+          onClick={() => setHeroLabDecisionMode(mode)}
+          style={{
+            background: isActive ? "#0E4D6E" : "#060E1E",
+            border: `1px solid ${isActive ? "#22D3EE80" : "#1E3A52"}`,
+            borderRadius: 8,
+            color: isActive ? "#7DD3FC" : "#94A3B8",
+            padding: "6px 9px",
+            fontSize: 8.5,
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          {label}
+        </button>
+      );
+    };
+    const renderCriticalGap = (gap) => {
+      const accent =
+        gap.severity === "critical"
+          ? "#FCA5A5"
+          : gap.severity === "clear"
+          ? "#86EFAC"
+          : "#FDE68A";
+      return (
+        <div
+          key={gap.key}
+          style={{
+            background: "#071826",
+            border: "1px solid #1E3A52",
+            borderRadius: 9,
+            padding: "9px 10px",
+            display: "grid",
+            gap: 5,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 8,
+              alignItems: "flex-start",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 9,
+                color: "#E2E8F0",
+                fontWeight: 800,
+                lineHeight: 1.35,
+              }}
+            >
+              {gap.title}
+            </div>
+            <span
+              style={{
+                color: accent,
+                border: `1px solid ${accent}66`,
+                borderRadius: 999,
+                padding: "1px 6px",
+                fontSize: 7,
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {gap.severity}
+            </span>
+          </div>
+          <div style={{ fontSize: 8.2, color: accent, lineHeight: 1.45 }}>
+            {gap.statusLabel}
+          </div>
+          <div style={{ fontSize: 8.2, color: "#94A3B8", lineHeight: 1.45 }}>
+            <span style={{ color: "#CBD5E1", fontWeight: 800 }}>
+              Why it matters:{" "}
+            </span>
+            {gap.whyItMatters}
+          </div>
+          <div style={{ fontSize: 8.2, color: "#A7F3D0", lineHeight: 1.45 }}>
+            <span style={{ fontWeight: 800 }}>Next action: </span>
+            {gap.nextAction}
+          </div>
+        </div>
+      );
+    };
+    const firstTestSection = heroComparisonInterpreter.sections.find(
+      (section) => section.key === "first_test_priority"
+    );
+    const doNotChangeSection = heroComparisonInterpreter.sections.find(
+      (section) => section.key === "do_not_change_yet"
+    );
+    const validationSection = heroComparisonInterpreter.sections.find(
+      (section) => section.key === "clearest_validation_questions"
+    );
+    const priorityGcmsRelevance = gcmsPatternInsights.heroFormulaRelevance.find(
+      (row) => row.formulaName === nextControlledWearTestPlan.formulaName
+    );
+    const renderFocusComparisonSummary = () => (
+      <div
+        data-testid="hero-comparison-interpreter"
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 12,
+          display: "grid",
+          gap: 9,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#7DD3FC",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 800,
+                marginBottom: 4,
+              }}
+            >
+              Hero Comparison Interpreter
+            </div>
+            <div
+              style={{
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+                maxWidth: 760,
+              }}
+            >
+              Focus summary. Model-guided only means no winner declaration; open
+              Full Analysis for all ranked sections and comparison inputs.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHeroLabDecisionMode("full_analysis")}
+            style={{
+              background: "#0A1628",
+              border: "1px solid #1E3A52",
+              borderRadius: 8,
+              color: "#7DD3FC",
+              padding: "6px 9px",
+              fontSize: 8.4,
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            View full analysis
+          </button>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+            gap: 8,
+          }}
+        >
+          {[firstTestSection, doNotChangeSection, validationSection]
+            .filter(Boolean)
+            .map(renderComparisonSection)}
+        </div>
+      </div>
+    );
+    const renderFocusGcmsSummary = () => (
+      <div
+        data-testid="gcms-pattern-insights"
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 12,
+          display: "grid",
+          gap: 9,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#A7F3D0",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 800,
+                marginBottom: 4,
+              }}
+            >
+              GCMS Pattern Insights
+            </div>
+            <div
+              style={{
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+                maxWidth: 760,
+              }}
+            >
+              Focus summary for the current test plan. These are construction
+              patterns, not formulas to copy.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setHeroLabDecisionMode("full_analysis")}
+            style={{
+              background: "#0A1628",
+              border: "1px solid #1E3A52",
+              borderRadius: 8,
+              color: "#7DD3FC",
+              padding: "6px 9px",
+              fontSize: 8.4,
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            View full analysis
+          </button>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+            gap: 8,
+          }}
+        >
+          {renderGcmsInsightBlock(
+            "High-confidence Beach Box moves",
+            renderGcmsInsightList(
+              gcmsPatternInsights.highConfidenceMoves.slice(0, 2),
+              "#CFFAFE"
+            ),
+            "#67E8F9"
+          )}
+          {renderGcmsInsightBlock(
+            "Priority formula watch",
+            <div style={{ display: "grid", gap: 5 }}>
+              <div style={{ fontSize: 8.6, color: "#E2E8F0", lineHeight: 1.5 }}>
+                {priorityGcmsRelevance?.watch ||
+                  "Use wear-test evidence before adding another GCMS-inspired move."}
+              </div>
+              <div style={{ fontSize: 8.6, color: "#A7F3D0", lineHeight: 1.5 }}>
+                {priorityGcmsRelevance?.nextValidation ||
+                  "Validate whether the represented pattern actually helps the Beach Box brief."}
+              </div>
+            </div>,
+            "#FDE68A"
+          )}
+          {renderGcmsInsightBlock(
+            "Summary caveat",
+            renderGcmsInsightList(
+              [
+                "GCMS insights are pattern translations, not formulas to copy.",
+                "Do not add more Calone-style marine force before wear testing.",
+              ],
+              "#FCA5A5"
+            ),
+            "#FCA5A5"
+          )}
+        </div>
+      </div>
+    );
 
     return (
       <section
@@ -81884,6 +82196,19 @@ export default function App() {
               maxWidth: 560,
             }}
           >
+            <div
+              data-testid="hero-lab-decision-mode-selector"
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              {renderDecisionModeButton("decision_focus", "Decision Focus")}
+              {renderDecisionModeButton("full_analysis", "Full Analysis")}
+            </div>
             {variationItems.map((item) => (
               <button
                 key={`hero-quick-compare-${item.formula.formulaKey}`}
@@ -81905,34 +82230,38 @@ export default function App() {
             ))}
           </div>
         </div>
-        <div
-          style={{
-            background: "#071826",
-            border: "1px solid #1E3A52",
-            borderRadius: 10,
-            padding: "9px 10px",
-            marginBottom: 12,
-            display: "grid",
-            gap: 8,
-          }}
-        >
+        {!isDecisionFocusMode && (
           <div
-            data-testid="hero-model-confidence-cue"
             style={{
-              fontSize: 8.8,
-              color: "#94A3B8",
-              lineHeight: 1.55,
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 10,
+              padding: "9px 10px",
+              marginBottom: 12,
+              display: "grid",
+              gap: 8,
             }}
           >
-            Model outputs are directional estimates. Caveats below identify where
-            data is inherited, proxy-based, legacy, missing, or black-box.
+            <div
+              data-testid="hero-model-confidence-cue"
+              style={{
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+              }}
+            >
+              Model outputs are directional estimates. Caveats below identify
+              where data is inherited, proxy-based, legacy, missing, or
+              black-box.
+            </div>
+            <ModelConfidenceSummaryPanel
+              summary={heroBoardConfidenceSummary}
+              compact
+            />
           </div>
-          <ModelConfidenceSummaryPanel
-            summary={heroBoardConfidenceSummary}
-            compact
-          />
-        </div>
-        <div
+        )}
+        {!isDecisionFocusMode && (
+          <div
           data-testid="hero-decision-brief"
           style={{
             background: "#060E1E",
@@ -82136,6 +82465,225 @@ export default function App() {
             </div>
           </div>
         </div>
+        )}
+        {isDecisionFocusMode && (
+          <>
+            <div
+              data-testid="next-controlled-wear-test-plan"
+              style={{
+                background: "linear-gradient(135deg,#061826,#071826)",
+                border: "1px solid #22D3EE40",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+                display: "grid",
+                gap: 10,
+                boxShadow: "0 0 16px #22D3EE12",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ minWidth: 0, flex: "1 1 360px" }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      color: "#7DD3FC",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Next Controlled Wear Test Plan
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.2,
+                      color: "#A7F3D0",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.07em",
+                      fontWeight: 800,
+                      marginBottom: 5,
+                    }}
+                  >
+                    {nextControlledWearTestPlan.priorityLabel}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: "#E2E8F0",
+                      fontWeight: 800,
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {nextControlledWearTestPlan.formulaName}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 5,
+                      fontSize: 8.8,
+                      color: "#94A3B8",
+                      lineHeight: 1.55,
+                      maxWidth: 780,
+                    }}
+                  >
+                    {nextControlledWearTestPlan.whyThisOne[0] ||
+                      "Use the current comparison read to choose the next controlled test."}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 10,
+                    padding: "8px 10px",
+                    minWidth: 220,
+                    maxWidth: 360,
+                    display: "grid",
+                    gap: 7,
+                  }}
+                >
+                  <div
+                    data-testid="next-controlled-wear-test-evidence"
+                    style={{
+                      fontSize: 8.8,
+                      color:
+                        nextControlledWearTestPlan.evidenceStatus.statusKey ===
+                        "model_guided_only"
+                          ? "#FDE68A"
+                          : "#86EFAC",
+                      lineHeight: 1.5,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {nextControlledWearTestPlan.evidenceStatus.label}
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={`Record wear test for ${nextControlledWearTestPlan.formulaName}`}
+                    onClick={() => {
+                      setHeroLabDecisionMode("full_analysis");
+                      openHeroSensoryDraft(nextControlledWearTestPlan.formulaKey, {
+                        createNew: true,
+                      });
+                    }}
+                    disabled={!nextControlledWearTestPlan.formulaKey}
+                    style={{
+                      justifySelf: "start",
+                      background: nextControlledWearTestPlan.formulaKey
+                        ? "#0E4D6E"
+                        : "#0A1628",
+                      border: "1px solid #22D3EE40",
+                      borderRadius: 8,
+                      color: nextControlledWearTestPlan.formulaKey
+                        ? "#7DD3FC"
+                        : "#64748B",
+                      padding: "6px 10px",
+                      fontSize: 8.4,
+                      fontWeight: 800,
+                      cursor: nextControlledWearTestPlan.formulaKey
+                        ? "pointer"
+                        : "not-allowed",
+                    }}
+                  >
+                    {nextControlledWearTestPlan.sensoryCtaLabel}
+                  </button>
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {renderWearPlanBlock(
+                  "What to watch",
+                  renderWearPlanList(nextControlledWearTestPlan.watchItems, "#FDE68A"),
+                  "#FDE68A"
+                )}
+                {renderWearPlanBlock(
+                  "Do not change yet",
+                  renderWearPlanList(
+                    nextControlledWearTestPlan.doNotChangeYet.slice(0, 4),
+                    "#FCA5A5"
+                  ),
+                  "#FCA5A5"
+                )}
+                {renderWearPlanBlock(
+                  "Protocol",
+                  <div style={{ display: "grid", gap: 5 }}>
+                    <div style={{ fontSize: 8.6, color: "#CBD5E1", lineHeight: 1.5 }}>
+                      {nextControlledWearTestPlan.testProtocol.surfaces.join(" ")}
+                    </div>
+                    <div style={{ fontSize: 8.6, color: "#A7F3D0", lineHeight: 1.5 }}>
+                      {nextControlledWearTestPlan.testProtocol.checkpoints.join(
+                        " · "
+                      )}
+                    </div>
+                  </div>,
+                  "#A7F3D0"
+                )}
+              </div>
+            </div>
+            <div
+              data-testid="critical-launch-readiness-gaps"
+              style={{
+                background: "#060E1E",
+                border: "1px solid #1E3A52",
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 12,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: "#FDE68A",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 800,
+                    marginBottom: 4,
+                  }}
+                >
+                  Critical Launch-Readiness Gaps
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.8,
+                    color: "#94A3B8",
+                    lineHeight: 1.55,
+                    maxWidth: 820,
+                  }}
+                >
+                  Before launch confidence: record evidence, close IFRA/source
+                  gaps, keep accord caveats explicit, and treat current costs as
+                  R&D basket estimates only.
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {criticalLaunchReadinessGaps.map(renderCriticalGap)}
+              </div>
+            </div>
+          </>
+        )}
+        {isDecisionFocusMode ? renderFocusComparisonSummary() : (
         <div
           data-testid="hero-comparison-interpreter"
           style={{
@@ -82329,6 +82877,8 @@ export default function App() {
             </table>
           </div>
         </div>
+        )}
+        {isDecisionFocusMode ? renderFocusGcmsSummary() : (
         <div
           data-testid="gcms-pattern-insights"
           style={{
@@ -82729,6 +83279,8 @@ export default function App() {
             {gcmsPatternInsights.guardrail}
           </div>
         </div>
+        )}
+        {!isDecisionFocusMode && (
         <div
           data-testid="next-controlled-wear-test-plan"
           style={{
@@ -82953,6 +83505,7 @@ export default function App() {
             )}
           </div>
         </div>
+        )}
         <div
           style={{
             display: "grid",
@@ -83012,6 +83565,186 @@ export default function App() {
             const isSensoryDraftOpen =
               heroSensoryEditFormulaKey === candidateFormula.formulaKey &&
               Boolean(heroSensoryDraft);
+            const isPriorityCandidate =
+              candidateFormula.formulaKey === nextControlledWearTestPlan.formulaKey;
+            const compactReason = isPriorityCandidate
+              ? nextControlledWearTestPlan.whyThisOne[0] ||
+                "Current model-guided first test priority."
+              : blockerText;
+
+            if (isDecisionFocusMode) {
+              return (
+                <article
+                  key={candidateFormula.formulaKey}
+                  data-testid="hero-candidate-card"
+                  style={{
+                    background: selectedFormulaActive
+                      ? "linear-gradient(135deg,#082F49,#071826)"
+                      : "#060E1E",
+                    border: `1px solid ${
+                      isPriorityCandidate
+                        ? "#22D3EE"
+                        : selectedFormulaActive
+                        ? "#38BDF8"
+                        : "#1E3A52"
+                    }`,
+                    borderRadius: 10,
+                    padding: 10,
+                    display: "grid",
+                    gap: 8,
+                    boxShadow: isPriorityCandidate ? "0 0 14px #22D3EE20" : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: "#071826",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 999,
+                        color: "#94A3B8",
+                        padding: "2px 7px",
+                        fontSize: 7.4,
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                      }}
+                    >
+                      {item.roleLabel}
+                    </span>
+                    <span
+                      data-testid={`hero-candidate-status-${candidateFormula.formulaKey}`}
+                      style={{
+                        background: statusMeta.bg,
+                        border: `1px solid ${statusMeta.border}`,
+                        borderRadius: 999,
+                        color: statusMeta.color,
+                        padding: "2px 7px",
+                        fontSize: 7.4,
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.07em",
+                      }}
+                    >
+                      {statusMeta.label}
+                    </span>
+                    {isPriorityCandidate && (
+                      <span
+                        style={{
+                          background: "#0E4D6E",
+                          border: "1px solid #22D3EE80",
+                          borderRadius: 999,
+                          color: "#7DD3FC",
+                          padding: "2px 7px",
+                          fontSize: 7.4,
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.07em",
+                        }}
+                      >
+                        Test Priority
+                      </span>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "#E2E8F0",
+                      fontWeight: 800,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {candidateFormula.name}
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+                      gap: 6,
+                    }}
+                  >
+                    {renderMetric(
+                      "Readiness",
+                      `${launchReadiness.totalScore.toFixed(0)}/100`,
+                      launchReadiness.statusMeta?.label || launchReadiness.status,
+                      readinessMeta.color
+                    )}
+                    {renderMetric(
+                      "Evidence",
+                      sensorySummary.statusLabel,
+                      `${sensorySummary.evaluationCount} wear test${
+                        sensorySummary.evaluationCount === 1 ? "" : "s"
+                      }`,
+                      sensorySummary.statusKey === "empty" ? "#FDE68A" : "#86EFAC"
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.4,
+                      color: "#CBD5E1",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {compactReason}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 8.2,
+                      color: ifraColor,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraStatusLabel} · {inventoryText}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => openHeroCandidateFormula(candidateFormula.formulaKey)}
+                      style={{
+                        background: "#0A1628",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 7,
+                        color: "#CBD5E1",
+                        padding: "5px 8px",
+                        fontSize: 8,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Open Formula
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Record wear test for ${candidateFormula.name}`}
+                      onClick={() => {
+                        setHeroLabDecisionMode("full_analysis");
+                        openHeroSensoryDraft(candidateFormula.formulaKey, {
+                          createNew: true,
+                        });
+                      }}
+                      style={{
+                        background: isPriorityCandidate ? "#0E4D6E" : "#0A1628",
+                        border: "1px solid #22D3EE40",
+                        borderRadius: 7,
+                        color: isPriorityCandidate ? "#7DD3FC" : "#94A3B8",
+                        padding: "5px 8px",
+                        fontSize: 8,
+                        fontWeight: 800,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Record Wear Test
+                    </button>
+                  </div>
+                </article>
+              );
+            }
 
             return (
               <article
@@ -83697,6 +84430,7 @@ export default function App() {
     closeHeroSensoryDraft,
     formula,
     heroCandidateItems,
+    heroLabDecisionMode,
     heroOriginalFormula,
     heroSensoryDraft,
     heroSensoryEditFormulaKey,
@@ -83707,6 +84441,7 @@ export default function App() {
     saveHeroSensoryDraft,
     selectedBasketModeMeta,
     setHeroCandidateFormulaStatus,
+    setHeroLabDecisionMode,
     updateHeroSensoryDraftDoseField,
     updateHeroSensoryDraftField,
     updateHeroSensoryDraftNestedField,

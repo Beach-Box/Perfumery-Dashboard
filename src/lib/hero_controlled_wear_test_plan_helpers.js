@@ -298,3 +298,161 @@ export function buildNextControlledWearTestPlan({
     sensoryCtaLabel: "Record wear test",
   };
 }
+
+function getConfidenceCount(item, category) {
+  return Number(item?.confidenceSummary?.categoryCounts?.[category]) || 0;
+}
+
+function getComparisonSummaries(comparisonInterpreter) {
+  return Array.isArray(comparisonInterpreter?.candidateSummaries)
+    ? comparisonInterpreter.candidateSummaries
+    : [];
+}
+
+function countFormulasMatching(items, predicate) {
+  return items.filter((item) => {
+    try {
+      return Boolean(predicate(item));
+    } catch {
+      return false;
+    }
+  }).length;
+}
+
+function makeLaunchGap({
+  key,
+  title,
+  statusLabel,
+  whyItMatters,
+  nextAction,
+  severity = "watch",
+}) {
+  return {
+    key,
+    title,
+    statusLabel,
+    whyItMatters,
+    nextAction,
+    severity,
+  };
+}
+
+export function buildCriticalHeroLaunchReadinessGaps({
+  candidateItems = [],
+  comparisonInterpreter = {},
+  nextControlledWearTestPlan = {},
+} = {}) {
+  const items = Array.isArray(candidateItems)
+    ? candidateItems.filter((item) => getCandidateKey(item))
+    : [];
+  const summaries = getComparisonSummaries(comparisonInterpreter);
+  const sensoryEvidence = comparisonInterpreter?.sensoryEvidence || {};
+  const candidateCount = items.length || Number(sensoryEvidence.totalCandidateCount) || 0;
+  const evaluatedCount =
+    Number(sensoryEvidence.evaluatedCandidateCount) ||
+    countFormulasMatching(items, (item) => Number(item?.sensorySummary?.evaluationCount) > 0);
+  const totalEvaluationCount =
+    Number(sensoryEvidence.totalEvaluationCount) ||
+    items.reduce(
+      (sum, item) => sum + (Number(item?.sensorySummary?.evaluationCount) || 0),
+      0
+    );
+  const priorityName =
+    nextControlledWearTestPlan?.formulaName &&
+    nextControlledWearTestPlan.formulaName !== "No active hero formula"
+      ? nextControlledWearTestPlan.formulaName
+      : "the current test priority";
+
+  const dataReviewFormulaCount = countFormulasMatching(
+    items,
+    (item) =>
+      Number(item?.launchReadiness?.compliance?.dataReviewCount) > 0 ||
+      getConfidenceCount(item, "missing_ifra") > 0
+  );
+  const supplierDocFormulaCount = countFormulasMatching(
+    items,
+    (item) =>
+      getConfidenceCount(item, "proxy_or_uvcb") > 0 ||
+      getConfidenceCount(item, "missing_ifra") > 0
+  );
+  const accordLevelRowCount = items.reduce(
+    (sum, item) => sum + getConfidenceCount(item, "black_box_accord"),
+    0
+  );
+  const missingPriceCount = summaries.reduce(
+    (sum, summary) => sum + (Number(summary?.missingPriceCount) || 0),
+    0
+  );
+  const lowConfidenceSupplierCount = summaries.reduce(
+    (sum, summary) =>
+      sum + (Number(summary?.lowConfidenceSupplierMappingCount) || 0),
+    0
+  );
+
+  return [
+    makeLaunchGap({
+      key: "wear_test_evidence",
+      title: "Wear-test evidence missing",
+      statusLabel:
+        totalEvaluationCount > 0
+          ? `${evaluatedCount}/${candidateCount} candidates evaluated · ${totalEvaluationCount} wear test${totalEvaluationCount === 1 ? "" : "s"} logged`
+          : "No real wear-test evidence recorded yet",
+      whyItMatters:
+        "Model guidance cannot validate skin evolution, projection, off-notes, or drydown appeal.",
+      nextAction: `Complete the controlled wear test for ${priorityName}.`,
+      severity: totalEvaluationCount > 0 ? "watch" : "critical",
+    }),
+    makeLaunchGap({
+      key: "structured_ifra_source_coverage",
+      title: "Structured IFRA source coverage incomplete",
+      statusLabel:
+        dataReviewFormulaCount > 0
+          ? `${dataReviewFormulaCount}/${candidateCount} formulas still show IFRA/source review needs`
+          : "No modeled finished-product offenders in checked rows",
+      whyItMatters:
+        "Known checked rows and unresolved rows must stay separate before launch confidence.",
+      nextAction:
+        "Review formula IFRA rows and the hero IFRA source gap report before any launch-clearance read.",
+      severity: dataReviewFormulaCount > 0 ? "critical" : "watch",
+    }),
+    makeLaunchGap({
+      key: "supplier_ifra_sds",
+      title: "Supplier IFRA/SDS still needed",
+      statusLabel:
+        supplierDocFormulaCount > 0
+          ? `${supplierDocFormulaCount}/${candidateCount} formulas include proxy, UVCB, or unresolved IFRA support`
+          : "Supplier-document need not cleared for launch",
+      whyItMatters:
+        "Naturals, UVCB materials, and specialty materials need supplier documentation before launch confidence.",
+      nextAction:
+        "Acquire supplier IFRA certificates/SDS for unresolved naturals and specialty materials.",
+      severity: supplierDocFormulaCount > 0 ? "critical" : "watch",
+    }),
+    makeLaunchGap({
+      key: "accord_ifra_expansion",
+      title: "Accord-level IFRA expansion deferred",
+      statusLabel:
+        accordLevelRowCount > 0
+          ? `${accordLevelRowCount} accord-level row${accordLevelRowCount === 1 ? "" : "s"} remain model-caveated`
+          : "No accord-level caveat surfaced in the current comparison",
+      whyItMatters:
+        "Component-costed accords can help basket estimates while still remaining caveated for chemistry/IFRA interpretation.",
+      nextAction:
+        "Keep accord rows caveated; defer component IFRA expansion to a dedicated task.",
+      severity: accordLevelRowCount > 0 ? "watch" : "clear",
+    }),
+    makeLaunchGap({
+      key: "production_costing",
+      title: "Production costing deferred",
+      statusLabel:
+        missingPriceCount + lowConfidenceSupplierCount > 0
+          ? `${missingPriceCount} missing price row${missingPriceCount === 1 ? "" : "s"} · ${lowConfidenceSupplierCount} low-confidence supplier mapping${lowConfidenceSupplierCount === 1 ? "" : "s"}`
+          : "Current cost view is R&D basket confidence, not production depletion cost",
+      whyItMatters:
+        "R&D purchase baskets do not include production-scale depletion, shipping, tax, or minimum-order planning.",
+      nextAction:
+        "Use current costs for R&D comparison only; defer production costing until wear evidence supports a finalist.",
+      severity: "watch",
+    }),
+  ];
+}

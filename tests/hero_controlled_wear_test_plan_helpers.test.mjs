@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildHeroComparisonInterpreter } from "../src/lib/hero_decision_brief_helpers.js";
-import { buildNextControlledWearTestPlan } from "../src/lib/hero_controlled_wear_test_plan_helpers.js";
+import {
+  buildCriticalHeroLaunchReadinessGaps,
+  buildNextControlledWearTestPlan,
+} from "../src/lib/hero_controlled_wear_test_plan_helpers.js";
 
 function makeCandidate({
   formulaKey,
@@ -262,6 +265,82 @@ test("controlled wear test plan does not mutate formulas or statuses", () => {
     candidateItems: candidates,
     comparisonInterpreter: buildHeroComparisonInterpreter(candidates),
     gcmsPatternInsights: GCMS_INSIGHTS,
+  });
+
+  const after = JSON.stringify(
+    candidates.map((candidate) => ({
+      status: candidate.status,
+      ingredients: candidate.formula.ingredients,
+    }))
+  );
+  assert.equal(after, before);
+});
+
+test("critical launch-readiness gaps summarize current blockers without a new score", () => {
+  const candidates = buildCandidates();
+  const comparison = buildHeroComparisonInterpreter(candidates);
+  const plan = buildNextControlledWearTestPlan({
+    candidateItems: candidates,
+    comparisonInterpreter: comparison,
+    gcmsPatternInsights: GCMS_INSIGHTS,
+  });
+  const gaps = buildCriticalHeroLaunchReadinessGaps({
+    candidateItems: candidates,
+    comparisonInterpreter: comparison,
+    nextControlledWearTestPlan: plan,
+  });
+
+  assert.equal(gaps.length, 5);
+  assert.deepEqual(
+    gaps.map((gap) => gap.key),
+    [
+      "wear_test_evidence",
+      "structured_ifra_source_coverage",
+      "supplier_ifra_sds",
+      "accord_ifra_expansion",
+      "production_costing",
+    ]
+  );
+  assert.equal(
+    gaps.some((gap) => Object.hasOwn(gap, "score")),
+    false
+  );
+  assert.match(
+    gaps.find((gap) => gap.key === "wear_test_evidence").nextAction,
+    /Skin-Air Bridge/i
+  );
+  assert.match(
+    gaps.find((gap) => gap.key === "structured_ifra_source_coverage")
+      .whyItMatters,
+    /unresolved rows/i
+  );
+  assert.match(
+    gaps.find((gap) => gap.key === "supplier_ifra_sds").nextAction,
+    /supplier IFRA certificates\/SDS/i
+  );
+  assert.match(
+    gaps.find((gap) => gap.key === "accord_ifra_expansion").nextAction,
+    /defer component IFRA expansion/i
+  );
+  assert.match(
+    gaps.find((gap) => gap.key === "production_costing").whyItMatters,
+    /shipping, tax, or minimum-order/i
+  );
+});
+
+test("critical launch-readiness gaps do not mutate formulas or statuses", () => {
+  const candidates = buildCandidates();
+  const before = JSON.stringify(
+    candidates.map((candidate) => ({
+      status: candidate.status,
+      ingredients: candidate.formula.ingredients,
+    }))
+  );
+
+  buildCriticalHeroLaunchReadinessGaps({
+    candidateItems: candidates,
+    comparisonInterpreter: buildHeroComparisonInterpreter(candidates),
+    nextControlledWearTestPlan: { formulaName: "Skin-Air Bridge" },
   });
 
   const after = JSON.stringify(
