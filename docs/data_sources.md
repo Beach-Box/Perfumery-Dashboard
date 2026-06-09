@@ -332,6 +332,28 @@ Accord rows remain accord-level in IFRA view. Component IFRA expansion is
 deferred to a dedicated task; recipe-derived costing does not make an accord
 component-expanded for IFRA.
 
+### Hero IFRA Source Gap Report
+
+`scripts/report_hero_ifra_source_gaps.mjs` is a read-only source acquisition
+report for the 4 active hero formulas. It extracts the active formula seed data
+from `src/App.jsx` as text, uses the existing IFRA helper semantics, and reports
+which source documents would be needed to improve structured IFRA coverage.
+
+Useful commands:
+
+```sh
+node scripts/report_hero_ifra_source_gaps.mjs
+node scripts/report_hero_ifra_source_gaps.mjs --json
+node scripts/report_hero_ifra_source_gaps.mjs --markdown
+node scripts/report_hero_ifra_source_gaps.mjs --markdown --write docs/hero_ifra_source_gap_report.md
+```
+
+The report is not a compliance proof, does not add IFRA limits, and does not
+claim launch clearance. It separates global IFRA standards from supplier
+IFRA/SDS needs, specialty supplier documents, natural/UVCB supplier documents,
+FCF special cases, already structured rows, and deferred accord component
+expansion.
+
 ## Structured Registries In `src/data/`
 
 The `src/data/` JSON files are the most explicit structured data layer. They should be preferred over ad hoc edits when changing IFRA, evidence, normalization, or supplier registry support.
