@@ -4,10 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { buildHeroFormulaRawDbSupportRows } from "../src/lib/hero_formula_material_support.js";
 import {
+  DEFAULT_APP_PATH,
   DEFAULT_GCMS_STRUCTURED_CANDIDATES_PATH,
   ROOT,
+  loadInventoryNames,
+  uniqueStrings,
 } from "./lib/gcms_reference_pipeline.mjs";
 import {
   DEFAULT_GCMS_CONSTRUCTION_PATTERNS_PATH,
@@ -69,7 +71,7 @@ export function main(argv = process.argv.slice(2)) {
   });
   const report = buildGcmsConstructionPatterns({
     ...inputs,
-    inventoryNames: Object.keys(buildHeroFormulaRawDbSupportRows({})),
+    inventoryNames: uniqueStrings(loadInventoryNames(DEFAULT_APP_PATH)),
   });
 
   writeGcmsConstructionPatterns(args.outputPath, report);

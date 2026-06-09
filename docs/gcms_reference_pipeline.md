@@ -79,6 +79,23 @@ docs/gcms/gcms_construction_patterns.md
 
 The pattern extractor reports recurring structural materials, high-dose architecture observations, transparent accord-skeleton heuristics, material co-occurrences, dosage-band distributions, Beach Box inventory/accord overlap, and conservative Beach Box translation notes. It does not generate reconstructed formulas, change active formulas, or treat GCMS percentages as target dosage rules.
 
+GCMS material identity matching is handled with raw-name preservation. The analyzer keeps the raw GCMS material name, then adds normalized identity fields for reporting:
+
+- exact Beach Box inventory/support matches,
+- reviewed alias matches,
+- accord component matches,
+- related-family matches,
+- missing inventory rows,
+- ambiguous rows that need review.
+
+The reviewed alias map lives at:
+
+```bash
+scripts/data/gcms_material_aliases.json
+```
+
+This alias/group data is for construction-pattern intelligence only. Related-family matches are not exact substitutions, and distinct materials such as Linalool, Ethyl Linalool, Linalyl Acetate, Ambroxan, Cetalox, and Hedione High Cis remain distinct unless a reviewed source supports an exact identity.
+
 ## What GCMS Can Help With
 
 - Spot recurring materials across reference fragrances.
@@ -97,6 +114,7 @@ The pattern extractor reports recurring structural materials, high-dose architec
 - GCMS reports do not justify adding IFRA category limits.
 - Extracted material rows require manual review before use.
 - Construction-pattern outputs are corpus observations, not dosing rules or formula instructions.
+- Inventory overlap is directional; alias and related-family matches do not prove that one material can replace another.
 
 ## Review Rules
 

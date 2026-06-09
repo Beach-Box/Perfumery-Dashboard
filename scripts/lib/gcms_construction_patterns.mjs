@@ -27,6 +27,12 @@ export const DEFAULT_HERO_ACCORD_RECIPES_PATH = path.join(
   "data",
   "hero_formula_accord_recipes.json"
 );
+export const DEFAULT_GCMS_MATERIAL_ALIASES_PATH = path.join(
+  ROOT,
+  "scripts",
+  "data",
+  "gcms_material_aliases.json"
+);
 
 export const HIGH_DOSE_THRESHOLDS = [1, 2.5, 5, 10, 20];
 export const DOSAGE_BANDS = [
@@ -242,6 +248,22 @@ function normalizeInventoryName(value) {
   return normalizeMaterialName(value);
 }
 
+function normalizeCas(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+const MATCH_TYPE_PRIORITY = {
+  exact: 5,
+  cas: 4,
+  alias: 3,
+  related_family: 2,
+  none: 1,
+};
+
+function compareMatchPriority(nextType, existingType) {
+  return (MATCH_TYPE_PRIORITY[nextType] || 0) - (MATCH_TYPE_PRIORITY[existingType] || 0);
+}
+
 function addInventoryName(map, name, payload) {
   const normalized = normalizeInventoryName(name);
   if (!normalized) return;
@@ -250,28 +272,72 @@ function addInventoryName(map, name, payload) {
       matchedName: name,
       sources: [],
       accordNames: [],
+      matchType: payload.matchType || "exact",
+      matchConfidence: payload.matchConfidence || "high",
     });
   }
   const existing = map.get(normalized);
   if (payload.source) existing.sources.push(payload.source);
   if (payload.accordName) existing.accordNames.push(payload.accordName);
-  if (payload.matchedName && payload.matchedName.length > existing.matchedName.length) {
+  const nextType = payload.matchType || "exact";
+  if (
+    compareMatchPriority(nextType, existing.matchType) > 0 ||
+    (compareMatchPriority(nextType, existing.matchType) === 0 &&
+      payload.matchedName &&
+      payload.matchedName.length > existing.matchedName.length)
+  ) {
     existing.matchedName = payload.matchedName;
+    existing.matchType = nextType;
+    existing.matchConfidence = payload.matchConfidence || existing.matchConfidence || "high";
   }
+}
+
+function addCasName(map, cas, payload) {
+  const normalized = normalizeCas(cas);
+  if (!normalized || /^(?:n\/a|not available|mixture)$/i.test(normalized)) return;
+  if (!map.has(normalized)) map.set(normalized, []);
+  map.get(normalized).push(payload);
+}
+
+function buildReviewedAliasIndex(aliasData = {}) {
+  const index = new Map();
+  const addAlias = (record, alias) => {
+    const normalized = normalizeInventoryName(alias?.name);
+    if (!normalized) return;
+    if (!index.has(normalized)) index.set(normalized, []);
+    index.get(normalized).push({
+      rawAliasName: alias.name,
+      canonicalName: record.canonicalName || alias.name,
+      targetName: alias.targetName || record.targetName || record.canonicalName || alias.name,
+      identityGroup: record.identityGroup || normalizeInventoryName(record.canonicalName),
+      matchType: alias.matchType || "alias",
+      matchConfidence: alias.matchConfidence || "high",
+      notes: uniqueStrings([alias.notes, record.notes]),
+    });
+  };
+
+  for (const record of aliasData.records || []) {
+    for (const alias of record.aliases || []) addAlias(record, alias);
+  }
+
+  return index;
 }
 
 export function buildBeachBoxInventoryIndex({
   supportData = {},
   accordRecipes = {},
   inventoryNames = [],
+  aliasData = {},
 } = {}) {
   const supportMap = new Map();
   const accordComponentMap = new Map();
+  const supportCasMap = new Map();
 
   for (const name of inventoryNames || []) {
     addInventoryName(supportMap, name, {
       source: "runtime support row",
       matchedName: name,
+      matchType: "exact",
     });
   }
 
@@ -279,10 +345,16 @@ export function buildBeachBoxInventoryIndex({
     addInventoryName(supportMap, row.name, {
       source: "diluted stock",
       matchedName: row.name,
+      matchType: "exact",
     });
     addInventoryName(supportMap, row.parentName, {
       source: "diluted stock parent",
       matchedName: row.parentName,
+      matchType: "exact",
+    });
+    addCasName(supportCasMap, row.cas, {
+      matchedName: row.parentName || row.name,
+      source: "diluted stock CAS",
     });
   }
 
@@ -290,10 +362,16 @@ export function buildBeachBoxInventoryIndex({
     addInventoryName(supportMap, row.name, {
       source: "support record",
       matchedName: row.name,
+      matchType: "exact",
     });
     addInventoryName(supportMap, row.sourceProductTitle, {
       source: "support record product title",
       matchedName: row.name,
+      matchType: "alias",
+    });
+    addCasName(supportCasMap, row.cas, {
+      matchedName: row.name,
+      source: "support record CAS",
     });
   }
 
@@ -301,10 +379,12 @@ export function buildBeachBoxInventoryIndex({
     addInventoryName(supportMap, alias.name, {
       source: "support alias",
       matchedName: alias.targetName || alias.name,
+      matchType: "alias",
     });
     addInventoryName(supportMap, alias.targetName, {
       source: "support alias target",
       matchedName: alias.targetName,
+      matchType: "exact",
     });
   }
 
@@ -318,11 +398,13 @@ export function buildBeachBoxInventoryIndex({
     addInventoryName(supportMap, recipe.name, {
       source: "accord row",
       matchedName: recipe.name,
+      matchType: "exact",
     });
     for (const alias of recipe.aliases || []) {
       addInventoryName(supportMap, alias, {
         source: "accord alias",
         matchedName: recipe.name,
+        matchType: "alias",
       });
     }
     for (const component of recipe.components || []) {
@@ -331,6 +413,7 @@ export function buildBeachBoxInventoryIndex({
         source: "accord component",
         accordName: recipe.name,
         matchedName: componentName,
+        matchType: "exact",
       });
       const pricingAlias = pricingAliasByName.get(normalizeInventoryName(componentName));
       if (pricingAlias) {
@@ -338,6 +421,7 @@ export function buildBeachBoxInventoryIndex({
           source: "accord component pricing alias",
           accordName: recipe.name,
           matchedName: pricingAlias,
+          matchType: "alias",
         });
       }
       if (component.dilution && !/\d+(?:\.\d+)?\s*%/.test(componentName)) {
@@ -345,53 +429,196 @@ export function buildBeachBoxInventoryIndex({
           source: "accord diluted component",
           accordName: recipe.name,
           matchedName: componentName,
+          matchType: "alias",
         });
       }
     }
   }
 
-  return { supportMap, accordComponentMap };
+  return {
+    supportMap,
+    accordComponentMap,
+    supportCasMap,
+    reviewedAliasIndex: buildReviewedAliasIndex(aliasData),
+  };
 }
 
-export function classifyBeachBoxInventoryOverlap(name, inventoryIndex = {}) {
+function buildIdentityResult({
+  rawName,
+  canonicalName,
+  identityGroup,
+  matchType,
+  matchConfidence,
+  status,
+  matchedName = "",
+  sources = [],
+  accordNames = [],
+  notes = "",
+}) {
+  const normalizedName = normalizeInventoryName(rawName);
+  return {
+    rawName: rawName || "",
+    normalizedName,
+    canonicalName: canonicalName || matchedName || rawName || "",
+    identityGroup: identityGroup || normalizeInventoryName(canonicalName || matchedName || rawName),
+    matchType,
+    matchConfidence,
+    status,
+    matchedName,
+    sources: uniqueStrings(sources),
+    accordNames: uniqueStrings(accordNames),
+    notes,
+  };
+}
+
+function buildAmbiguousIdentity(rawName, matches, notes) {
+  return buildIdentityResult({
+    rawName,
+    canonicalName: rawName,
+    identityGroup: normalizeInventoryName(rawName),
+    matchType: "none",
+    matchConfidence: "low",
+    status: "ambiguous / needs review",
+    matchedName: "",
+    sources: matches.map((match) => match.targetName || match.matchedName || match.canonicalName),
+    notes,
+  });
+}
+
+function resolveReviewedAlias(name, inventoryIndex = {}) {
+  const normalizedName = normalizeInventoryName(name);
+  const matches = inventoryIndex.reviewedAliasIndex?.get(normalizedName) || [];
+  if (matches.length > 1) {
+    const targetNames = uniqueStrings(matches.map((match) => match.targetName));
+    if (targetNames.length > 1) {
+      return buildAmbiguousIdentity(
+        name,
+        matches,
+        `Reviewed alias matched multiple targets: ${targetNames.join(", ")}.`
+      );
+    }
+  }
+  const match = matches[0];
+  if (!match) return null;
+
+  const targetNormalized = normalizeInventoryName(match.targetName);
+  const supportTarget = inventoryIndex.supportMap?.get(targetNormalized);
+  const accordTarget = inventoryIndex.accordComponentMap?.get(targetNormalized);
+  const target = supportTarget || accordTarget || null;
+  const isRelated = match.matchType === "related_family";
+  return buildIdentityResult({
+    rawName: name,
+    canonicalName: match.canonicalName,
+    identityGroup: match.identityGroup,
+    matchType: match.matchType,
+    matchConfidence: match.matchConfidence,
+    status: isRelated ? "related family match" : "alias match",
+    matchedName: target?.matchedName || match.targetName,
+    sources: [
+      "reviewed GCMS alias map",
+      ...(target?.sources || []),
+      ...(accordTarget ? ["Beach Box accord component target"] : []),
+    ],
+    accordNames: target?.accordNames || [],
+    notes: match.notes.join(" "),
+  });
+}
+
+function resolveCasMatch(name, casNumbers = [], inventoryIndex = {}) {
+  const normalizedCasNumbers = uniqueStrings(casNumbers.map(normalizeCas)).filter(Boolean);
+  const matches = normalizedCasNumbers.flatMap((cas) => inventoryIndex.supportCasMap?.get(cas) || []);
+  if (!matches.length) return null;
+  const targetNames = uniqueStrings(matches.map((match) => match.matchedName));
+  if (targetNames.length > 1) {
+    return buildAmbiguousIdentity(
+      name,
+      matches,
+      `CAS matched multiple Beach Box support targets: ${targetNames.join(", ")}.`
+    );
+  }
+  const [match] = matches;
+  return buildIdentityResult({
+    rawName: name,
+    canonicalName: match.matchedName,
+    identityGroup: normalizeInventoryName(match.matchedName),
+    matchType: "cas",
+    matchConfidence: "high",
+    status: "exact Beach Box inventory/support match",
+    matchedName: match.matchedName,
+    sources: [match.source],
+    notes: "Matched to Beach Box support data by existing CAS metadata.",
+  });
+}
+
+export function classifyBeachBoxInventoryOverlap(name, inventoryIndex = {}, options = {}) {
   const normalizedName = normalizeInventoryName(name);
   if (!normalizedName) {
-    return {
-      status: "unknown",
-      matchedName: "",
+    return buildIdentityResult({
+      rawName: name,
+      canonicalName: "",
+      identityGroup: "",
+      matchType: "none",
+      matchConfidence: "low",
+      status: "ambiguous / needs review",
       notes: "Material name is empty or unavailable.",
-    };
-  }
-
-  const supportMatch = inventoryIndex.supportMap?.get(normalizedName);
-  if (supportMatch) {
-    return {
-      status: "in Beach Box inventory/support",
-      matchedName: supportMatch.matchedName,
-      sources: uniqueStrings(supportMatch.sources),
-      accordNames: uniqueStrings(supportMatch.accordNames),
-      notes: "Matched to existing Beach Box support, inventory, alias, stock, or accord-row data.",
-    };
+    });
   }
 
   const accordMatch = inventoryIndex.accordComponentMap?.get(normalizedName);
   if (accordMatch) {
-    return {
-      status: "in accord component",
+    const isAlias = accordMatch.matchType === "alias";
+    return buildIdentityResult({
+      rawName: name,
+      canonicalName: accordMatch.matchedName,
+      identityGroup: normalizeInventoryName(accordMatch.matchedName),
+      matchType: accordMatch.matchType || "exact",
+      matchConfidence: accordMatch.matchConfidence || "high",
+      status: isAlias ? "alias match" : "accord component match",
       matchedName: accordMatch.matchedName,
-      sources: uniqueStrings(accordMatch.sources),
-      accordNames: uniqueStrings(accordMatch.accordNames),
-      notes: "Material appears as a known component inside a Beach Box accord recipe.",
-    };
+      sources: accordMatch.sources,
+      accordNames: accordMatch.accordNames,
+      notes: isAlias
+        ? "Matched by an existing Beach Box accord component alias."
+        : "Material appears as a known component inside a Beach Box accord recipe.",
+    });
   }
 
-  return {
+  const supportMatch = inventoryIndex.supportMap?.get(normalizedName);
+  if (supportMatch) {
+    const isAlias = supportMatch.matchType === "alias";
+    return buildIdentityResult({
+      rawName: name,
+      canonicalName: supportMatch.matchedName,
+      identityGroup: normalizeInventoryName(supportMatch.matchedName),
+      matchType: supportMatch.matchType || "exact",
+      matchConfidence: supportMatch.matchConfidence || "high",
+      status: isAlias ? "alias match" : "exact Beach Box inventory/support match",
+      matchedName: supportMatch.matchedName,
+      sources: supportMatch.sources,
+      accordNames: supportMatch.accordNames,
+      notes: isAlias
+        ? "Matched by existing Beach Box support/catalog alias."
+        : "Matched exactly to existing Beach Box support, inventory, stock, or accord-row data.",
+    });
+  }
+
+  const casMatch = resolveCasMatch(name, options.casNumbers || [], inventoryIndex);
+  if (casMatch) return casMatch;
+
+  const reviewedAliasMatch = resolveReviewedAlias(name, inventoryIndex);
+  if (reviewedAliasMatch) return reviewedAliasMatch;
+
+  return buildIdentityResult({
+    rawName: name,
+    canonicalName: name,
+    identityGroup: normalizedName,
+    matchType: "none",
+    matchConfidence: "low",
     status: "missing from inventory",
-    matchedName: "",
     sources: [],
     accordNames: [],
-    notes: "No conservative Beach Box support or accord-component match found.",
-  };
+    notes: "No conservative Beach Box support, catalog, reviewed alias, or accord-component match found.",
+  });
 }
 
 function collectMaterialStats(reports = []) {
@@ -469,10 +696,18 @@ function buildMaterialSummary(record, reportCount, inventoryIndex) {
   const casNumbers = sortedCounterRows(record.casNumbers, 5)
     .filter((row) => row.name && !/^(?:n\/a|not available)$/i.test(row.name))
     .map((row) => row.name);
+  const inventoryOverlap = classifyBeachBoxInventoryOverlap(name, inventoryIndex, {
+    casNumbers,
+  });
 
   return {
+    rawName: name,
     name,
     normalizedName: record.normalizedName,
+    canonicalName: inventoryOverlap.canonicalName,
+    identityGroup: inventoryOverlap.identityGroup,
+    matchType: inventoryOverlap.matchType,
+    matchConfidence: inventoryOverlap.matchConfidence,
     reportFrequency: record.reportIds.size,
     reportFrequencyPercent: reportCount
       ? roundNumber((record.reportIds.size / reportCount) * 100, 1)
@@ -490,7 +725,7 @@ function buildMaterialSummary(record, reportCount, inventoryIndex) {
     commonRoleGuess: guessCommonRole(name),
     families: guessMaterialFamilies(name),
     casNumbers,
-    inventoryOverlap: classifyBeachBoxInventoryOverlap(name, inventoryIndex),
+    inventoryOverlap,
     beachBoxTwist: beachBoxMaterialTwist(name, guessCommonRole(name)),
     note: "Corpus observation only; this is not a recommended dosage or reconstruction instruction.",
   };
@@ -779,23 +1014,139 @@ function buildInventoryOverlapSummary(materialSummaries) {
   for (const material of materialSummaries) {
     incrementCounter(counter, material.inventoryOverlap.status);
   }
+  const byStatus = (status) =>
+    materialSummaries
+      .filter((material) => material.inventoryOverlap.status === status)
+      .sort(
+        (a, b) =>
+          b.reportFrequency - a.reportFrequency ||
+          (b.medianPercent || 0) - (a.medianPercent || 0) ||
+          a.name.localeCompare(b.name)
+      )
+      .slice(0, 25)
+      .map((material) => ({
+        rawName: material.rawName,
+        canonicalName: material.canonicalName,
+        matchedName: material.inventoryOverlap.matchedName,
+        matchType: material.matchType,
+        matchConfidence: material.matchConfidence,
+        reportFrequency: material.reportFrequency,
+        medianPercent: material.medianPercent,
+        notes: material.inventoryOverlap.notes,
+      }));
+
   return {
     counts: Object.fromEntries(counter),
     examples: {
-      inBeachBoxInventorySupport: materialSummaries
-        .filter((material) => material.inventoryOverlap.status === "in Beach Box inventory/support")
-        .slice(0, 20)
-        .map((material) => material.name),
-      inAccordComponent: materialSummaries
-        .filter((material) => material.inventoryOverlap.status === "in accord component")
-        .slice(0, 20)
-        .map((material) => material.name),
-      missingFromInventory: materialSummaries
-        .filter((material) => material.inventoryOverlap.status === "missing from inventory")
-        .slice(0, 20)
-        .map((material) => material.name),
+      exactBeachBoxInventorySupport: byStatus("exact Beach Box inventory/support match"),
+      aliasMatch: byStatus("alias match"),
+      accordComponentMatch: byStatus("accord component match"),
+      relatedFamilyMatch: byStatus("related family match"),
+      ambiguousNeedsReview: byStatus("ambiguous / needs review"),
+      missingFromInventory: byStatus("missing from inventory"),
     },
   };
+}
+
+function materialBeachBoxRelevanceScore(material) {
+  const families = new Set(material.families || []);
+  let score = 0;
+  if (families.has("marine")) score += 10;
+  if (families.has("woody")) score += 8;
+  if (families.has("amber")) score += 8;
+  if (families.has("musk")) score += 8;
+  if (families.has("floral")) score += 5;
+  if (families.has("aldehydic")) score += 5;
+  if (families.has("green")) score += 3;
+  if (families.has("citrus")) score += 2;
+  if (/solvent|technical base/i.test(material.commonRoleGuess)) score -= 8;
+  if (families.has("gourmand")) score -= 2;
+  return score;
+}
+
+function classifyMissingMaterialPriority(material) {
+  if (material.inventoryOverlap.status === "related family match") {
+    return "already covered by related material";
+  }
+  if (material.inventoryOverlap.status === "ambiguous / needs review") {
+    return "needs identity review";
+  }
+  if (/solvent|technical base/i.test(material.commonRoleGuess)) return "not urgent";
+  const families = new Set(material.families || []);
+  const relevanceScore = materialBeachBoxRelevanceScore(material);
+  const highDoseAbove5 = material.highDoseCounts[">5%"] || 0;
+  const highDoseSignal =
+    highDoseAbove5 >= 5 ||
+    (material.medianPercent || 0) >= 2 ||
+    (material.reportFrequency || 0) >= 50;
+  if (relevanceScore >= 6 && highDoseSignal) return "worth considering";
+  if (
+    families.has("citrus") &&
+    ((material.medianPercent || 0) >= 1 || highDoseAbove5 >= 10)
+  ) {
+    return "worth considering";
+  }
+  if (families.has("floral") && highDoseSignal && (material.reportFrequency || 0) >= 40) {
+    return "worth considering";
+  }
+  if (relevanceScore < 0) return "outside Beach Box direction";
+  return "not urgent";
+}
+
+function buildMostValuableMissingMaterials(materialSummaries) {
+  return materialSummaries
+    .filter((material) =>
+      [
+        "missing from inventory",
+        "related family match",
+        "ambiguous / needs review",
+      ].includes(material.inventoryOverlap.status)
+    )
+    .map((material) => {
+      const highDoseAbove5 = material.highDoseCounts[">5%"] || 0;
+      const relevanceScore = materialBeachBoxRelevanceScore(material);
+      const priorityScore =
+        material.reportFrequency * 2 +
+        (material.medianPercent || 0) * 5 +
+        (material.meanPercent || 0) * 2 +
+        highDoseAbove5 * 8 +
+        relevanceScore * 6;
+      const priority = classifyMissingMaterialPriority(material);
+      return {
+        rawName: material.rawName,
+        canonicalName: material.canonicalName,
+        identityGroup: material.identityGroup,
+        inventoryStatus: material.inventoryOverlap.status,
+        matchType: material.matchType,
+        matchConfidence: material.matchConfidence,
+        reportFrequency: material.reportFrequency,
+        medianPercent: material.medianPercent,
+        meanPercent: material.meanPercent,
+        highDoseAbove5Count: highDoseAbove5,
+        commonRoleGuess: material.commonRoleGuess,
+        families: material.families,
+        beachBoxRelevanceScore: relevanceScore,
+        priorityScore: roundNumber(priorityScore, 1),
+        priority,
+        reason:
+          priority === "worth considering"
+            ? "Frequent or high-dose corpus material with Beach Box-relevant family signal."
+            : priority === "already covered by related material"
+              ? "Directional pattern is covered by a related Beach Box material; not an exact substitution."
+              : priority === "needs identity review"
+                ? "Identity mapping is ambiguous and should be reviewed before use."
+                : priority === "outside Beach Box direction"
+                  ? "Observed often, but current family/role signal is not central to the Beach Box direction."
+                  : "Observed in corpus, but current role/frequency does not justify urgent sourcing.",
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.priorityScore - a.priorityScore ||
+        b.reportFrequency - a.reportFrequency ||
+        a.rawName.localeCompare(b.rawName)
+    )
+    .slice(0, 40);
 }
 
 function buildCautions() {
@@ -812,6 +1163,7 @@ export function buildGcmsConstructionPatterns({
   structuredPayload = {},
   supportData = {},
   accordRecipes = {},
+  aliasData = {},
   inventoryNames = [],
   generatedAt = new Date().toISOString(),
 } = {}) {
@@ -820,6 +1172,7 @@ export function buildGcmsConstructionPatterns({
   const inventoryIndex = buildBeachBoxInventoryIndex({
     supportData,
     accordRecipes,
+    aliasData,
     inventoryNames,
   });
   const { materialMap, trueComponentRowCount, identifiedComponentRowCount } =
@@ -852,6 +1205,7 @@ export function buildGcmsConstructionPatterns({
     featuredCoOccurrencePatterns: buildFeaturedCoOccurrencePatterns(coOccurrenceRows),
     dosageBandGuidance: buildDosageBandGuidance(materialSummaries),
     inventoryOverlapSummary: buildInventoryOverlapSummary(materialSummaries),
+    mostValuableMissingMaterials: buildMostValuableMissingMaterials(materialSummaries),
     cautions: buildCautions(),
   };
 
@@ -886,7 +1240,7 @@ export function formatGcmsConstructionPatternsText(report) {
     .slice(0, 12)
     .map(
       (material) =>
-        `- ${material.name}: ${material.reportFrequency}/${report.reportCount} reports, median ${formatPercent(material.medianPercent)}, role ${material.commonRoleGuess}, ${material.inventoryOverlap.status}`
+        `- ${material.rawName}: ${material.reportFrequency}/${report.reportCount} reports, median ${formatPercent(material.medianPercent)}, role ${material.commonRoleGuess}, ${material.inventoryOverlap.status}`
     )
     .join("\n");
   const topHighDose =
@@ -909,6 +1263,13 @@ export function formatGcmsConstructionPatternsText(report) {
     .map(
       (pair) =>
         `- ${pair.materials.join(" + ")}: ${pair.reportFrequency}/${report.reportCount} reports`
+    )
+    .join("\n");
+  const missingMaterials = (report.mostValuableMissingMaterials || [])
+    .slice(0, 12)
+    .map(
+      (material) =>
+        `- ${material.rawName}: ${material.priority}, ${material.reportFrequency}/${report.reportCount} reports, median ${formatPercent(material.medianPercent)}, ${material.inventoryStatus}`
     )
     .join("\n");
 
@@ -937,6 +1298,9 @@ export function formatGcmsConstructionPatternsText(report) {
       ([status, count]) => `- ${status}: ${count}`
     ),
     "",
+    "Most valuable missing / related materials:",
+    missingMaterials || "- No missing-material priorities detected.",
+    "",
     "Cautions:",
     ...report.cautions.map((caution) => `- ${caution}`),
   ].join("\n");
@@ -944,13 +1308,14 @@ export function formatGcmsConstructionPatternsText(report) {
 
 export function formatGcmsConstructionPatternsMarkdown(report) {
   const materialColumns = [
-    { label: "Material", value: (row) => row.name },
+    { label: "Raw Material", value: (row) => row.rawName || row.name },
+    { label: "Canonical/Group", value: (row) => row.canonicalName || row.identityGroup || "" },
     { label: "Reports", value: (row) => `${row.reportFrequency}/${report.reportCount}` },
     { label: "Median %", value: (row) => formatPercent(row.medianPercent) },
     { label: "p25-p75 %", value: (row) => `${formatPercent(row.p25Percent)}-${formatPercent(row.p75Percent)}` },
     { label: "Max %", value: (row) => formatPercent(row.maxPercent) },
     { label: "Role Guess", value: (row) => row.commonRoleGuess },
-    { label: "Beach Box Overlap", value: (row) => row.inventoryOverlap.status },
+    { label: "Beach Box Overlap", value: (row) => `${row.inventoryOverlap.status} (${row.matchType}/${row.matchConfidence})` },
   ];
   const pairColumns = [
     { label: "Materials", value: (row) => row.materials.join(" + ") },
@@ -964,7 +1329,7 @@ export function formatGcmsConstructionPatternsMarkdown(report) {
     { label: "Beach Box Twist", value: (row) => row.beachBoxTwist },
   ];
   const bandColumns = [
-    { label: "Material", value: (row) => row.name },
+    { label: "Material", value: (row) => row.rawName || row.name },
     { label: "Dominant Band", value: (row) => row.dominantDosageBand },
     { label: "Median %", value: (row) => formatPercent(row.medianPercent) },
     { label: "Observed Range", value: (row) => `${formatPercent(row.observedRange.minPercent)}-${formatPercent(row.observedRange.maxPercent)}` },
@@ -973,6 +1338,24 @@ export function formatGcmsConstructionPatternsMarkdown(report) {
       value: (row) =>
         DOSAGE_BANDS.map((band) => `${band.key}:${row.dosageBandCounts[band.key] || 0}`).join(", "),
     },
+  ];
+  const overlapColumns = [
+    { label: "Raw Material", value: (row) => row.rawName },
+    { label: "Canonical/Matched", value: (row) => row.matchedName || row.canonicalName },
+    { label: "Match", value: (row) => `${row.matchType}/${row.matchConfidence}` },
+    { label: "Reports", value: (row) => row.reportFrequency },
+    { label: "Median %", value: (row) => formatPercent(row.medianPercent) },
+    { label: "Notes", value: (row) => row.notes },
+  ];
+  const missingColumns = [
+    { label: "Raw Material", value: (row) => row.rawName },
+    { label: "Priority", value: (row) => row.priority },
+    { label: "Inventory Status", value: (row) => row.inventoryStatus },
+    { label: "Reports", value: (row) => `${row.reportFrequency}/${report.reportCount}` },
+    { label: "Median %", value: (row) => formatPercent(row.medianPercent) },
+    { label: ">5% Reports", value: (row) => row.highDoseAbove5Count },
+    { label: "Role", value: (row) => row.commonRoleGuess },
+    { label: "Reason", value: (row) => row.reason },
   ];
 
   return [
@@ -1050,8 +1433,60 @@ export function formatGcmsConstructionPatternsMarkdown(report) {
     "",
     "## Beach Box Inventory Overlap",
     "",
+    "Raw GCMS names are preserved. Alias and related-family matching is directional pattern intelligence only; related-family matches are not exact substitutions.",
+    "",
     ...Object.entries(report.inventoryOverlapSummary.counts).map(
       ([status, count]) => `- ${status}: ${count}`
+    ),
+    "",
+    "### Exact Beach Box Inventory/Support Matches",
+    "",
+    markdownTable(
+      report.inventoryOverlapSummary.examples.exactBeachBoxInventorySupport || [],
+      overlapColumns,
+      "No exact Beach Box inventory/support matches."
+    ),
+    "",
+    "### Alias Matches",
+    "",
+    markdownTable(
+      report.inventoryOverlapSummary.examples.aliasMatch || [],
+      overlapColumns,
+      "No reviewed alias matches."
+    ),
+    "",
+    "### Accord Component Matches",
+    "",
+    markdownTable(
+      report.inventoryOverlapSummary.examples.accordComponentMatch || [],
+      overlapColumns,
+      "No accord component matches."
+    ),
+    "",
+    "### Related Family Matches",
+    "",
+    markdownTable(
+      report.inventoryOverlapSummary.examples.relatedFamilyMatch || [],
+      overlapColumns,
+      "No related-family matches."
+    ),
+    "",
+    "### Ambiguous / Needs Review",
+    "",
+    markdownTable(
+      report.inventoryOverlapSummary.examples.ambiguousNeedsReview || [],
+      overlapColumns,
+      "No ambiguous matches."
+    ),
+    "",
+    "## Most Valuable Missing Materials",
+    "",
+    "This ranks still-missing, ambiguous, and related-family materials by corpus frequency, observed dose, high-dose frequency, and Beach Box relevance. It is not a buy list.",
+    "",
+    markdownTable(
+      report.mostValuableMissingMaterials || [],
+      missingColumns,
+      "No missing-material priorities detected."
     ),
     "",
     "## Cautions",
@@ -1065,11 +1500,13 @@ export function loadGcmsConstructionPatternInputs({
   structuredPath = DEFAULT_GCMS_STRUCTURED_CANDIDATES_PATH,
   supportPath = DEFAULT_HERO_MATERIAL_SUPPORT_PATH,
   accordPath = DEFAULT_HERO_ACCORD_RECIPES_PATH,
+  aliasPath = DEFAULT_GCMS_MATERIAL_ALIASES_PATH,
 } = {}) {
   return {
     structuredPayload: readJson(structuredPath, { reports: [] }),
     supportData: readJson(supportPath, {}),
     accordRecipes: readJson(accordPath, {}),
+    aliasData: readJson(aliasPath, { records: [] }),
   };
 }
 

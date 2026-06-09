@@ -1,0 +1,341 @@
+{
+  "metadata": {
+    "version": 1,
+    "updatedAt": "2026-06-09",
+    "description": "Reviewed GCMS-to-Beach-Box identity hints for construction-pattern reporting only. Raw GCMS material names remain preserved; related-family rows are not exact substitutions.",
+    "guardrails": [
+      "Do not use this file to change formulas, IFRA logic, pricing, accord recipes, sensory data, UI, or AI/API behavior.",
+      "Do not collapse distinct formulation materials when only a related family relationship is known.",
+      "Do not add IFRA limits, GCMS values, or CAS numbers from this alias file."
+    ]
+  },
+  "records": [
+    {
+      "canonicalName": "Hedione",
+      "identityGroup": "hedione_jasmine_diffusion",
+      "targetName": "Hedione",
+      "aliases": [
+        {
+          "name": "Hedione®",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant of Hedione in the Beach Box catalog."
+        },
+        {
+          "name": "Methyl dihydrojasmonate",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common chemical-name alias for Hedione-style jasmine diffusion reporting."
+        },
+        {
+          "name": "MDJ",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common abbreviation for methyl dihydrojasmonate."
+        },
+        {
+          "name": "Hedione HC",
+          "targetName": "Hedione® High Cis",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "High-cis variant is related but materially distinct; keep raw GCMS name."
+        }
+      ],
+      "notes": "Jasmine-diffusion identity group for overlap reporting; exact variant names remain visible."
+    },
+    {
+      "canonicalName": "Iso E Super",
+      "identityGroup": "iso_e_super_otne",
+      "targetName": "Iso E Super",
+      "aliases": [
+        {
+          "name": "OTNE",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common IFRA/chemistry shorthand for the Iso E Super material family."
+        },
+        {
+          "name": "Iso E",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common shortened GCMS/reference display name."
+        },
+        {
+          "name": "Tetramethyl acetyloctahydronaphthalenes",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Descriptive OTNE chemical-name family used for identity reporting."
+        }
+      ],
+      "notes": "Woody-amber OTNE identity group for construction-pattern reporting."
+    },
+    {
+      "canonicalName": "Ambroxan Crystals",
+      "identityGroup": "ambergris_ambroxide_family",
+      "targetName": "Ambroxan Crystals",
+      "aliases": [
+        {
+          "name": "Ambroxan",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Beach Box support uses Ambroxan Crystals for the Ambroxan parent material."
+        },
+        {
+          "name": "Ambroxan® Crystals",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant in the Beach Box catalog."
+        },
+        {
+          "name": "Ambroxide",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related ambergris/ambroxide identity; keep exact variant visible."
+        },
+        {
+          "name": "Ambrox",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related ambergris material family; not treated as automatically identical."
+        },
+        {
+          "name": "Ambrox® DL",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related Ambrox branded variant in the catalog; not treated as identical."
+        },
+        {
+          "name": "Ambrox® Super",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related Ambrox branded variant in the catalog; not treated as identical."
+        },
+        {
+          "name": "Ambrofix",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related ambergris-family captive/trade material; not treated as identical."
+        },
+        {
+          "name": "Ambrofix™ (Ambroxan)",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Catalog related-family variant; not treated as identical."
+        }
+      ],
+      "notes": "Ambergris/ambroxide family for directional overlap only."
+    },
+    {
+      "canonicalName": "Cetalox",
+      "identityGroup": "ambergris_ambroxide_family",
+      "targetName": "Cetalox",
+      "aliases": [
+        {
+          "name": "Cetalox®",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant in the Beach Box catalog."
+        }
+      ],
+      "notes": "Cetalox remains distinct from Ambroxan for formulation decisions."
+    },
+    {
+      "canonicalName": "Ethylene Brassylate",
+      "identityGroup": "macrocyclic_musk_body",
+      "targetName": "Ethylene Brassylate",
+      "aliases": [
+        {
+          "name": "EB",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common shorthand for ethylene brassylate in musk construction notes."
+        }
+      ],
+      "notes": "Macrocyclic musk body/fixation material; present as a Beach Box accord component."
+    },
+    {
+      "canonicalName": "Cashmeran",
+      "identityGroup": "cashmeran_dpmi",
+      "targetName": "Cashmeran",
+      "aliases": [
+        {
+          "name": "DPMI",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common shorthand/identity term for Cashmeran-style material reporting."
+        }
+      ],
+      "notes": "Woody-musky amber material; present as a Beach Box accord component."
+    },
+    {
+      "canonicalName": "Veramoss",
+      "identityGroup": "evernyl_methyl_atrarate",
+      "targetName": "Veramoss",
+      "aliases": [
+        {
+          "name": "Evernyl",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common trade-name relationship for moss/chypre pattern reporting."
+        },
+        {
+          "name": "Methyl atrarate",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common identity term for Evernyl/Veramoss-style moss material reporting."
+        },
+        {
+          "name": "Evernyl Methyl Ether",
+          "matchType": "related_family",
+          "matchConfidence": "medium",
+          "notes": "Related moss/chypre naming; not treated as exact without source confirmation."
+        }
+      ],
+      "notes": "Moss/chypre family; exact raw names remain preserved."
+    },
+    {
+      "canonicalName": "Aldehyde C-8",
+      "identityGroup": "aldehyde_c8_octanal",
+      "targetName": "Aldehyde C-8",
+      "aliases": [
+        {
+          "name": "Octanal",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common chemical-name alias for Aldehyde C-8."
+        },
+        {
+          "name": "C-8",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Existing Beach Box shorthand alias."
+        }
+      ],
+      "notes": "Aldehydic trace-impact identity group for reporting."
+    },
+    {
+      "canonicalName": "Gamma Nonalactone",
+      "identityGroup": "gamma_nonalactone_c18",
+      "targetName": "Gamma Nonalactone",
+      "aliases": [
+        {
+          "name": "Gamma-Nonalactone",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Punctuation variant of Gamma Nonalactone."
+        },
+        {
+          "name": "Aldehyde C-18",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Traditional perfumery naming for gamma nonalactone."
+        }
+      ],
+      "notes": "Coconut/lactonic material identity group for reporting."
+    },
+    {
+      "canonicalName": "Calone 1951",
+      "identityGroup": "calone_1951",
+      "targetName": "Calone 1951",
+      "aliases": [
+        {
+          "name": "Calone",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Common shortened name for Calone 1951 in marine construction notes."
+        },
+        {
+          "name": "Calone® 1951",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant in the Beach Box catalog."
+        }
+      ],
+      "notes": "Marine/mineral impact material identity group."
+    },
+    {
+      "canonicalName": "Florol",
+      "identityGroup": "florol_floral_muguet",
+      "targetName": "Florol®",
+      "aliases": [
+        {
+          "name": "Florol",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Unregistered display variant of Florol®."
+        }
+      ],
+      "notes": "Muguet/floral support material."
+    },
+    {
+      "canonicalName": "Habanolide",
+      "identityGroup": "macrocyclic_musk_body",
+      "targetName": "Habanolide",
+      "aliases": [
+        {
+          "name": "Habanolide®",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant."
+        }
+      ],
+      "notes": "Macrocyclic musk component in Beach Box accord recipes."
+    },
+    {
+      "canonicalName": "Helvetolide",
+      "identityGroup": "musk_body_diffusion",
+      "targetName": "Helvetolide",
+      "aliases": [
+        {
+          "name": "Helvetolide®",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Registered-style display variant."
+        }
+      ],
+      "notes": "Diffusive musk component in Beach Box accord recipes."
+    },
+    {
+      "canonicalName": "Exaltolide",
+      "identityGroup": "macrocyclic_musk_body",
+      "targetName": "Exaltolide®",
+      "aliases": [
+        {
+          "name": "Exaltolide",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Unregistered display variant handled by existing accord component pricing aliases."
+        }
+      ],
+      "notes": "Macrocyclic musk component in Beach Box accord recipes."
+    },
+    {
+      "canonicalName": "Muscenone",
+      "identityGroup": "musk_trace_impact",
+      "targetName": "Muscenone®",
+      "aliases": [
+        {
+          "name": "Muscenone",
+          "matchType": "alias",
+          "matchConfidence": "high",
+          "notes": "Unregistered display variant handled by existing accord component pricing aliases."
+        }
+      ],
+      "notes": "Trace-impact musk component in Beach Box accord recipes."
+    }
+  ],
+  "doNotCollapse": [
+    {
+      "names": ["Linalool", "Ethyl Linalool", "Linalyl Acetate", "Ethyl Linalyl Acetate"],
+      "notes": "Related fresh/floral-terpene construction materials but formulation-distinct; keep separate unless a source confirms a specific identity."
+    },
+    {
+      "names": ["Ambroxan", "Cetalox", "Ambrofix", "Ambrox", "Ambroxide"],
+      "notes": "Related ambergris-family materials; only exact/alias rows should be treated as the same material."
+    },
+    {
+      "names": ["Hedione", "Hedione HC", "Hedione® High Cis"],
+      "notes": "Related jasmine-diffusion variants; Hedione HC/High Cis remains materially distinct from standard Hedione."
+    }
+  ]
+}

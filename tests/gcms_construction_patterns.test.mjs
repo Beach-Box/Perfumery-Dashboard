@@ -57,9 +57,15 @@ function buildSyntheticStructuredPayload() {
 
 function buildSyntheticSupportData() {
   return {
-    dilutedStocks: [{ name: "Calone 1951 20%", parentName: "Calone 1951" }],
+    dilutedStocks: [
+      { name: "Calone 1951 20%", parentName: "Calone 1951" },
+      { name: "Ambroxan 50% TEC", parentName: "Ambroxan Crystals" },
+    ],
     aliases: [{ name: "Calone", targetName: "Calone 1951" }],
-    supportRecords: [{ name: "Hedione", sourceProductTitle: "Hedione" }],
+    supportRecords: [
+      { name: "Hedione", sourceProductTitle: "Hedione" },
+      { name: "Linalool", sourceProductTitle: "Linalool" },
+    ],
   };
 }
 
@@ -70,6 +76,39 @@ function buildSyntheticAccordRecipes() {
       {
         name: "Driftwood Accord",
         components: [{ name: "Iso E Super" }, { name: "Cashmeran" }],
+      },
+    ],
+  };
+}
+
+function buildSyntheticAliasData() {
+  return {
+    records: [
+      {
+        canonicalName: "Cashmeran",
+        identityGroup: "cashmeran_dpmi",
+        targetName: "Cashmeran",
+        aliases: [
+          {
+            name: "DPMI",
+            matchType: "alias",
+            matchConfidence: "high",
+            notes: "Synthetic alias fixture.",
+          },
+        ],
+      },
+      {
+        canonicalName: "Ambroxan Crystals",
+        identityGroup: "ambergris_ambroxide_family",
+        targetName: "Ambroxan Crystals",
+        aliases: [
+          {
+            name: "Ambrox",
+            matchType: "related_family",
+            matchConfidence: "medium",
+            notes: "Related-family fixture, not exact.",
+          },
+        ],
       },
     ],
   };
@@ -102,20 +141,46 @@ test("GCMS construction inventory overlap separates support, accord, and missing
 
   assert.equal(
     classifyBeachBoxInventoryOverlap("Hedione", index).status,
-    "in Beach Box inventory/support"
+    "exact Beach Box inventory/support match"
   );
   assert.equal(
     classifyBeachBoxInventoryOverlap("Iso E Super", index).status,
-    "in accord component"
+    "accord component match"
   );
   assert.equal(
     classifyBeachBoxInventoryOverlap("Linalool", index).status,
-    "missing from inventory"
+    "exact Beach Box inventory/support match"
   );
   assert.equal(
     classifyBeachBoxInventoryOverlap("Calone", index).status,
-    "in Beach Box inventory/support"
+    "alias match"
   );
+});
+
+test("GCMS construction inventory overlap resolves safe aliases and related families", () => {
+  const index = buildBeachBoxInventoryIndex({
+    supportData: buildSyntheticSupportData(),
+    accordRecipes: buildSyntheticAccordRecipes(),
+    aliasData: buildSyntheticAliasData(),
+  });
+
+  const dpmi = classifyBeachBoxInventoryOverlap("DPMI", index);
+  assert.equal(dpmi.rawName, "DPMI");
+  assert.equal(dpmi.canonicalName, "Cashmeran");
+  assert.equal(dpmi.status, "alias match");
+  assert.equal(dpmi.matchType, "alias");
+  assert.equal(dpmi.matchConfidence, "high");
+
+  const ambrox = classifyBeachBoxInventoryOverlap("Ambrox", index);
+  assert.equal(ambrox.rawName, "Ambrox");
+  assert.equal(ambrox.canonicalName, "Ambroxan Crystals");
+  assert.equal(ambrox.status, "related family match");
+  assert.equal(ambrox.matchType, "related_family");
+  assert.equal(ambrox.matchConfidence, "medium");
+
+  const ethylLinalool = classifyBeachBoxInventoryOverlap("Ethyl Linalool", index);
+  assert.equal(ethylLinalool.status, "missing from inventory");
+  assert.equal(ethylLinalool.canonicalName, "Ethyl Linalool");
 });
 
 test("GCMS construction patterns count frequency, high-dose rows, co-occurrences, and avoid mutation", () => {
@@ -140,7 +205,9 @@ test("GCMS construction patterns count frequency, high-dose rows, co-occurrences
   assert.equal(iso.medianPercent, 9);
   assert.equal(iso.highDoseCounts[">5%"], 2);
   assert.equal(iso.highDoseCounts[">10%"], 1);
-  assert.equal(iso.inventoryOverlap.status, "in accord component");
+  assert.equal(iso.rawName, "Iso E Super");
+  assert.equal(iso.canonicalName, "Iso E Super");
+  assert.equal(iso.inventoryOverlap.status, "accord component match");
 
   const aboveFive = report.highDoseArchitectureMaterials.thresholds[">5%"].map(
     (material) => material.name
@@ -161,6 +228,14 @@ test("GCMS construction patterns count frequency, high-dose rows, co-occurrences
   assert.ok(
     report.accordSkeletons.some(
       (skeleton) => skeleton.id === "marine_mineral" && skeleton.matchedReportCount >= 1
+    )
+  );
+  assert.equal(report.inventoryOverlapSummary.counts["accord component match"], 2);
+  assert.equal(report.inventoryOverlapSummary.counts["alias match"], 1);
+  assert.equal(report.inventoryOverlapSummary.counts["exact Beach Box inventory/support match"], 2);
+  assert.ok(
+    report.mostValuableMissingMaterials.some(
+      (material) => material.rawName === "Linalyl Acetate"
     )
   );
 });
