@@ -68,6 +68,23 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(gcmsInsights).toContainText("Vanillin");
   await expect(gcmsInsights).toContainText("not formulas to copy");
 
+  const wearTestPlan = page.getByTestId("next-controlled-wear-test-plan");
+  await expect(wearTestPlan).toBeVisible();
+  await expect(wearTestPlan.getByText("Next Controlled Wear Test Plan")).toBeVisible();
+  await expect(wearTestPlan).toContainText("Current model-guided test priority");
+  await expect(wearTestPlan).toContainText("Skin-Air Bridge");
+  await expect(wearTestPlan).toContainText(
+    "No real wear-test evidence recorded yet"
+  );
+  await expect(wearTestPlan).toContainText("Test surfaces");
+  await expect(wearTestPlan).toContainText("5 min");
+  await expect(wearTestPlan).toContainText("Watch");
+  await expect(wearTestPlan).toContainText("Do not change yet");
+  await expect(wearTestPlan).toContainText("If confirmed, then consider");
+  await expect(
+    wearTestPlan.getByRole("button", { name: /Record wear test/i })
+  ).toBeVisible();
+
   const decisionBrief = page.getByTestId("hero-decision-brief");
   await expect(decisionBrief).toBeVisible();
   await expect(decisionBrief.getByText("Hero Decision Brief")).toBeVisible();
@@ -127,9 +144,7 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   );
   await expect(skinAirSensory.getByText("No wear test yet")).toBeVisible();
 
-  await page
-    .getByRole("button", { name: "Add/Edit Wear Test for Skin-Air Bridge" })
-    .click();
+  await wearTestPlan.getByRole("button", { name: /Record wear test/i }).click();
 
   const sensoryForm = page.getByTestId(
     "hero-sensory-form-seed-hero-skin-air-bridge"

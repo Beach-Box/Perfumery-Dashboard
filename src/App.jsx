@@ -126,6 +126,7 @@ import {
   buildHeroComparisonInterpreter,
   buildHeroDecisionBrief,
 } from "./lib/hero_decision_brief_helpers";
+import { buildNextControlledWearTestPlan } from "./lib/hero_controlled_wear_test_plan_helpers";
 import {
   buildGcmsPatternInsightsPanel,
   getGcmsPatternStatusLabel,
@@ -81460,6 +81461,11 @@ export default function App() {
     const gcmsPatternInsights = buildGcmsPatternInsightsPanel(
       beachBoxPatternTranslationData
     );
+    const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
+      candidateItems: heroCandidateItems,
+      comparisonInterpreter: heroComparisonInterpreter,
+      gcmsPatternInsights,
+    });
     const heroBoardConfidenceSummary = mergeModelConfidenceSummaries(
       heroCandidateItems.map((item) => item.confidenceSummary)
     );
@@ -81764,6 +81770,54 @@ export default function App() {
           <span style={{ color: "#CBD5E1" }}>{values.join(", ")}</span>
         </div>
       ) : null;
+    const renderWearPlanList = (items, color = "#CBD5E1") => (
+      <div style={{ display: "grid", gap: 5 }}>
+        {items.length ? (
+          items.map((item) => (
+            <div
+              key={item}
+              style={{
+                fontSize: 8.6,
+                color,
+                lineHeight: 1.5,
+              }}
+            >
+              {item}
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: 8.6, color: "#64748B", lineHeight: 1.5 }}>
+            No generated guidance available yet.
+          </div>
+        )}
+      </div>
+    );
+    const renderWearPlanBlock = (title, content, accent = "#7DD3FC") => (
+      <div
+        key={title}
+        style={{
+          background: "#071826",
+          border: "1px solid #1E3A52",
+          borderRadius: 9,
+          padding: "9px 10px",
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 7.8,
+            color: accent,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 800,
+          }}
+        >
+          {title}
+        </div>
+        {content}
+      </div>
+    );
 
     return (
       <section
@@ -82676,6 +82730,230 @@ export default function App() {
           </div>
         </div>
         <div
+          data-testid="next-controlled-wear-test-plan"
+          style={{
+            background: "linear-gradient(135deg,#061826,#071826)",
+            border: "1px solid #22D3EE40",
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            display: "grid",
+            gap: 10,
+            boxShadow: "0 0 16px #22D3EE12",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 380px" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#7DD3FC",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 4,
+                }}
+              >
+                Next Controlled Wear Test Plan
+              </div>
+              <div
+                style={{
+                  fontSize: 8.2,
+                  color: "#A7F3D0",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.07em",
+                  fontWeight: 800,
+                  marginBottom: 5,
+                }}
+              >
+                {nextControlledWearTestPlan.priorityLabel}
+              </div>
+              <div
+                style={{
+                  fontSize: 14,
+                  color: "#E2E8F0",
+                  fontWeight: 800,
+                  lineHeight: 1.35,
+                }}
+              >
+                {nextControlledWearTestPlan.formulaName}
+              </div>
+              <div
+                style={{
+                  marginTop: 5,
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                  maxWidth: 820,
+                }}
+              >
+                {nextControlledWearTestPlan.confidenceLabel}. This is a test
+                priority, not a winner declaration.
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                minWidth: 230,
+                maxWidth: 380,
+                display: "grid",
+                gap: 7,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                }}
+              >
+                Evidence Status
+              </div>
+              <div
+                data-testid="next-controlled-wear-test-evidence"
+                style={{
+                  fontSize: 8.8,
+                  color:
+                    nextControlledWearTestPlan.evidenceStatus.statusKey ===
+                    "model_guided_only"
+                      ? "#FDE68A"
+                      : "#86EFAC",
+                  lineHeight: 1.5,
+                  fontWeight: 700,
+                }}
+              >
+                {nextControlledWearTestPlan.evidenceStatus.label}
+              </div>
+              {nextControlledWearTestPlan.evidenceStatus.statusKey !==
+                "model_guided_only" && (
+                <div
+                  style={{
+                    fontSize: 8.2,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                  }}
+                >
+                  Latest:{" "}
+                  {nextControlledWearTestPlan.evidenceStatus.latestTestDateLabel}{" "}
+                  · {nextControlledWearTestPlan.evidenceStatus.latestSurfaceLabel} ·
+                  confidence{" "}
+                  {nextControlledWearTestPlan.evidenceStatus.confidenceLabel}
+                  <br />
+                  Outcome: {nextControlledWearTestPlan.evidenceStatus.keyOutcome}
+                </div>
+              )}
+              <button
+                type="button"
+                aria-label={`Record wear test for ${nextControlledWearTestPlan.formulaName}`}
+                onClick={() =>
+                  openHeroSensoryDraft(nextControlledWearTestPlan.formulaKey, {
+                    createNew: true,
+                  })
+                }
+                disabled={!nextControlledWearTestPlan.formulaKey}
+                style={{
+                  justifySelf: "start",
+                  background: nextControlledWearTestPlan.formulaKey
+                    ? "#0E4D6E"
+                    : "#0A1628",
+                  border: "1px solid #22D3EE40",
+                  borderRadius: 8,
+                  color: nextControlledWearTestPlan.formulaKey
+                    ? "#7DD3FC"
+                    : "#64748B",
+                  padding: "6px 10px",
+                  fontSize: 8.4,
+                  fontWeight: 800,
+                  cursor: nextControlledWearTestPlan.formulaKey
+                    ? "pointer"
+                    : "not-allowed",
+                }}
+              >
+                {nextControlledWearTestPlan.sensoryCtaLabel}
+              </button>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+              gap: 8,
+            }}
+          >
+            {renderWearPlanBlock(
+              "Why this one",
+              renderWearPlanList(nextControlledWearTestPlan.whyThisOne, "#CFFAFE"),
+              "#67E8F9"
+            )}
+            {renderWearPlanBlock(
+              "Test protocol",
+              <div style={{ display: "grid", gap: 7 }}>
+                <div
+                  style={{
+                    fontSize: 8.6,
+                    color: "#CBD5E1",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <span style={{ color: "#7DD3FC", fontWeight: 800 }}>
+                    Test surfaces:{" "}
+                  </span>
+                  {nextControlledWearTestPlan.testProtocol.surfaces.join(" ")}
+                </div>
+                <div
+                  style={{
+                    fontSize: 8.6,
+                    color: "#CBD5E1",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <span style={{ color: "#7DD3FC", fontWeight: 800 }}>
+                    Checkpoints:{" "}
+                  </span>
+                  {nextControlledWearTestPlan.testProtocol.checkpoints.join(
+                    " · "
+                  )}
+                </div>
+              </div>,
+              "#A7F3D0"
+            )}
+            {renderWearPlanBlock(
+              "Watch",
+              renderWearPlanList(nextControlledWearTestPlan.watchItems, "#FDE68A"),
+              "#FDE68A"
+            )}
+            {renderWearPlanBlock(
+              "Do not change yet",
+              renderWearPlanList(
+                nextControlledWearTestPlan.doNotChangeYet,
+                "#FCA5A5"
+              ),
+              "#FCA5A5"
+            )}
+            {renderWearPlanBlock(
+              "If confirmed, then consider",
+              renderWearPlanList(
+                nextControlledWearTestPlan.ifConfirmedThenConsider,
+                "#86EFAC"
+              ),
+              "#86EFAC"
+            )}
+          </div>
+        </div>
+        <div
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
@@ -83415,6 +83693,7 @@ export default function App() {
     );
   }, [
     batchPlannerTargetG,
+    beachBoxPatternTranslationData,
     closeHeroSensoryDraft,
     formula,
     heroCandidateItems,
