@@ -127,6 +127,10 @@ import {
   buildHeroDecisionBrief,
 } from "./lib/hero_decision_brief_helpers";
 import {
+  buildGcmsPatternInsightsPanel,
+  getGcmsPatternStatusLabel,
+} from "./lib/gcms_pattern_insights_helpers";
+import {
   HERO_SENSORY_TEST_SURFACES,
   buildHeroSensorySummary,
   cleanHeroSensoryEvaluationState,
@@ -267,6 +271,13 @@ import {
 } from "./lib/supplier_workbook_import_helpers";
 import { validateApprovedSupplierDraftExport } from "./lib/supplier_import_preflight.mjs";
 import supplierPriceDraftSeedsFile from "./data/supplier_price_draft_seeds.json";
+
+const beachBoxPatternTranslationModules = import.meta.glob(
+  "../data/gcms_extracted/beach_box_pattern_translation.json",
+  { eager: true }
+);
+const beachBoxPatternTranslationData =
+  Object.values(beachBoxPatternTranslationModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81446,6 +81457,9 @@ export default function App() {
     const heroDecisionBrief = buildHeroDecisionBrief(heroCandidateItems);
     const heroComparisonInterpreter =
       buildHeroComparisonInterpreter(heroCandidateItems);
+    const gcmsPatternInsights = buildGcmsPatternInsightsPanel(
+      beachBoxPatternTranslationData
+    );
     const heroBoardConfidenceSummary = mergeModelConfidenceSummaries(
       heroCandidateItems.map((item) => item.confidenceSummary)
     );
@@ -81677,6 +81691,79 @@ export default function App() {
         </div>
       </div>
     );
+    const renderGcmsInsightList = (items, color = "#CBD5E1") => (
+      <div style={{ display: "grid", gap: 5 }}>
+        {items.length ? (
+          items.map((item) => (
+            <div
+              key={item}
+              style={{
+                fontSize: 8.6,
+                color,
+                lineHeight: 1.5,
+              }}
+            >
+              {item}
+            </div>
+          ))
+        ) : (
+          <div style={{ fontSize: 8.6, color: "#64748B", lineHeight: 1.5 }}>
+            No generated guidance available for this section.
+          </div>
+        )}
+      </div>
+    );
+    const renderGcmsInsightBlock = (title, content, accent = "#7DD3FC") => (
+      <div
+        key={title}
+        style={{
+          background: "#071826",
+          border: "1px solid #1E3A52",
+          borderRadius: 9,
+          padding: "9px 10px",
+          display: "grid",
+          gap: 6,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 7.8,
+            color: accent,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            fontWeight: 800,
+          }}
+        >
+          {title}
+        </div>
+        {content}
+      </div>
+    );
+    const renderGcmsFormulaStatusGroup = (label, values, color) =>
+      values.length ? (
+        <div
+          key={label}
+          style={{
+            display: "grid",
+            gap: 2,
+            fontSize: 8.2,
+            lineHeight: 1.4,
+          }}
+        >
+          <span
+            style={{
+              color,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              fontSize: 7.4,
+            }}
+          >
+            {label}
+          </span>
+          <span style={{ color: "#CBD5E1" }}>{values.join(", ")}</span>
+        </div>
+      ) : null;
 
     return (
       <section
@@ -82186,6 +82273,406 @@ export default function App() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+        <div
+          data-testid="gcms-pattern-insights"
+          style={{
+            background: "#060E1E",
+            border: "1px solid #1E3A52",
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "flex-start",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ minWidth: 0, flex: "1 1 380px" }}>
+              <div
+                style={{
+                  fontSize: 9,
+                  color: "#A7F3D0",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 4,
+                }}
+              >
+                GCMS Pattern Insights
+              </div>
+              <div
+                style={{
+                  fontSize: 8.8,
+                  color: "#94A3B8",
+                  lineHeight: 1.55,
+                  maxWidth: 820,
+                }}
+              >
+                GCMS-derived construction lessons translated into Beach Box
+                decisions for the active hero formulas. This panel uses the
+                generated Beach Box pattern translation report and does not
+                change candidate status or formula composition.
+              </div>
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 10,
+                padding: "8px 10px",
+                minWidth: 230,
+                maxWidth: 380,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#64748B",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                  marginBottom: 5,
+                }}
+              >
+                Regenerate
+              </div>
+              <div
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 7.8,
+                  color: "#CBD5E1",
+                  lineHeight: 1.45,
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {gcmsPatternInsights.regenerateCommand}
+              </div>
+            </div>
+          </div>
+          {!gcmsPatternInsights.isAvailable ? (
+            <div
+              data-testid="gcms-pattern-insights-empty"
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "10px 11px",
+                color: "#FCD34D",
+                fontSize: 9,
+                lineHeight: 1.5,
+              }}
+            >
+              {gcmsPatternInsights.missingMessage}
+            </div>
+          ) : (
+            <>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))",
+                  gap: 7,
+                }}
+              >
+                {[
+                  ["Reports", gcmsPatternInsights.counts.reports],
+                  ["Rows", gcmsPatternInsights.counts.trueComponentRows],
+                  ["Materials", gcmsPatternInsights.counts.uniqueMaterials],
+                  ["Patterns", gcmsPatternInsights.counts.translatedCategories],
+                  ["Hero formulas", gcmsPatternInsights.counts.activeHeroFormulas],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    style={{
+                      background: "#071826",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "7px 8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#E2E8F0",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {Number(value).toLocaleString()}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 2,
+                        fontSize: 7.6,
+                        color: "#64748B",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                  gap: 8,
+                }}
+              >
+                {renderGcmsInsightBlock(
+                  "High-confidence Beach Box moves",
+                  renderGcmsInsightList(
+                    gcmsPatternInsights.highConfidenceMoves,
+                    "#CFFAFE"
+                  ),
+                  "#67E8F9"
+                )}
+                {renderGcmsInsightBlock(
+                  "Promising but test first",
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {gcmsPatternInsights.promisingButTestFirst.map((item) => (
+                      <div key={item.text} style={{ display: "grid", gap: 2 }}>
+                        <div
+                          style={{
+                            fontSize: 8.6,
+                            color: "#E2E8F0",
+                            lineHeight: 1.45,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {item.text}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#FDE68A",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          Test condition: {item.testCondition}
+                        </div>
+                      </div>
+                    ))}
+                  </div>,
+                  "#FDE68A"
+                )}
+                {renderGcmsInsightBlock(
+                  "Avoid for now",
+                  renderGcmsInsightList(gcmsPatternInsights.avoidForNow, "#FCA5A5"),
+                  "#FCA5A5"
+                )}
+                {renderGcmsInsightBlock(
+                  "Inventory gaps worth considering",
+                  <div style={{ display: "grid", gap: 6 }}>
+                    {gcmsPatternInsights.inventoryGaps.length ? (
+                      gcmsPatternInsights.inventoryGaps.map((gap) => (
+                        <div key={gap.name} style={{ display: "grid", gap: 2 }}>
+                          <div
+                            style={{
+                              fontSize: 8.8,
+                              color: "#E2E8F0",
+                              fontWeight: 800,
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            {gap.name}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.1,
+                              color: "#A7F3D0",
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            {gap.posture}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 8.1,
+                              color: "#94A3B8",
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            {gap.why}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ fontSize: 8.6, color: "#64748B" }}>
+                        No inventory gaps are currently prioritized by the
+                        generated report.
+                      </div>
+                    )}
+                  </div>,
+                  "#A7F3D0"
+                )}
+              </div>
+              <div
+                style={{
+                  background: "#071826",
+                  border: "1px solid #1E3A52",
+                  borderRadius: 9,
+                  padding: "9px 10px",
+                  display: "grid",
+                  gap: 8,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 7.8,
+                    color: "#C4B5FD",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    fontWeight: 800,
+                  }}
+                >
+                  Hero Formula Relevance
+                </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+                    gap: 8,
+                  }}
+                >
+                  {gcmsPatternInsights.heroFormulaRelevance.map((row) => (
+                    <div
+                      key={row.formulaName}
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 9px",
+                        display: "grid",
+                        gap: 7,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: 9.2,
+                            color: "#E2E8F0",
+                            fontWeight: 800,
+                            lineHeight: 1.35,
+                          }}
+                        >
+                          {row.formulaName}
+                        </div>
+                        <span
+                          style={{
+                            background:
+                              row.primaryStatus === "Watch"
+                                ? "#3B1D0A"
+                                : "#0A2540",
+                            border: `1px solid ${
+                              row.primaryStatus === "Watch"
+                                ? "#F59E0B"
+                                : "#1D4ED8"
+                            }`,
+                            borderRadius: 999,
+                            color:
+                              row.primaryStatus === "Watch"
+                                ? "#FDE68A"
+                                : "#7DD3FC",
+                            padding: "1px 6px",
+                            fontSize: 7.2,
+                            fontWeight: 800,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.06em",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {row.primaryStatus}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 5,
+                        }}
+                      >
+                        {renderGcmsFormulaStatusGroup(
+                          getGcmsPatternStatusLabel("already_represented"),
+                          row.statusGroups.already_represented,
+                          "#86EFAC"
+                        )}
+                        {renderGcmsFormulaStatusGroup(
+                          getGcmsPatternStatusLabel(
+                            "potentially_overrepresented"
+                          ),
+                          row.statusGroups.potentially_overrepresented,
+                          "#FDE68A"
+                        )}
+                        {renderGcmsFormulaStatusGroup(
+                          getGcmsPatternStatusLabel("underrepresented"),
+                          row.statusGroups.underrepresented,
+                          "#FCA5A5"
+                        )}
+                        {renderGcmsFormulaStatusGroup(
+                          getGcmsPatternStatusLabel(
+                            "needs_wear_test_validation"
+                          ),
+                          row.statusGroups.needs_wear_test_validation,
+                          "#7DD3FC"
+                        )}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.2,
+                          color: "#FCD34D",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <span style={{ fontWeight: 800 }}>Watch: </span>
+                        {row.watch}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.2,
+                          color: "#A7F3D0",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <span style={{ fontWeight: 800 }}>
+                          Next validation:{" "}
+                        </span>
+                        {row.nextValidation}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 9,
+              padding: "8px 10px",
+              color: "#FDE68A",
+              fontSize: 8.6,
+              lineHeight: 1.5,
+            }}
+          >
+            {gcmsPatternInsights.guardrail}
           </div>
         </div>
         <div

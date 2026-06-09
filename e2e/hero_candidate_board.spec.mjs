@@ -53,6 +53,21 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
     "No real wear-test evidence recorded yet"
   );
 
+  const gcmsInsights = page.getByTestId("gcms-pattern-insights");
+  await expect(gcmsInsights).toBeVisible();
+  await expect(gcmsInsights.getByText("GCMS Pattern Insights")).toBeVisible();
+  await expect(gcmsInsights).toContainText("High-confidence Beach Box moves");
+  await expect(gcmsInsights).toContainText("Promising but test first");
+  await expect(gcmsInsights).toContainText("Avoid for now");
+  await expect(gcmsInsights).toContainText("Inventory gaps worth considering");
+  await expect(gcmsInsights).toContainText("Hero Formula Relevance");
+  await expect(gcmsInsights).toContainText("Hedione plus driftwood materials");
+  await expect(gcmsInsights).toContainText("Do not copy exact GCMS percentages");
+  await expect(gcmsInsights).toContainText("Limonene");
+  await expect(gcmsInsights).toContainText("Phenylethyl Alcohol");
+  await expect(gcmsInsights).toContainText("Vanillin");
+  await expect(gcmsInsights).toContainText("not formulas to copy");
+
   const decisionBrief = page.getByTestId("hero-decision-brief");
   await expect(decisionBrief).toBeVisible();
   await expect(decisionBrief.getByText("Hero Decision Brief")).toBeVisible();
