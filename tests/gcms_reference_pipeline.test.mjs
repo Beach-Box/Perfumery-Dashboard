@@ -11,6 +11,9 @@ import {
   extractGcmsPdfText,
   formatGcmsSummaryMarkdown,
   normalizeGcmsManifestReports,
+  parseInscentifyComponentRow,
+  parseInscentifyFormulaTable,
+  parseInscentifyTotalRow,
   parseMaterialCandidateLine,
   slugFromFilename,
   structureGcmsReportsFromExtraction,
@@ -18,6 +21,32 @@ import {
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const GCMS_REPORT_FIXTURE_DIR = path.join(ROOT, "scripts", "fixtures", "gcms_reports");
+
+function buildSyntheticInscentifyText() {
+  return [
+    "A GCMS ANALYSIS OF",
+    "Coastal Study",
+    "Fixture Brand (2026)",
+    "Perfumer: Example Nose",
+    "",
+    "Complete Formula Breakdown",
+    "This fragrance contains 4 identified components, listed below in descending order of concentra-",
+    "tion. Highlighted materials make up 80% of the total formula by weight.",
+    "# Component CAS PPT %",
+    "1 Iso E Super 54464-57-2 230.587 23.059",
+    "2 Ethyl Linalool 10339-55-6 154.774 15.477",
+    "Page 4 of 8 © 2026 Inscentify Ltd.",
+    "# Component CAS PPT %",
+    "3 Seaweed Absolute Not available 10.000 1.000",
+    "4 Ambromusc 0.607 0.061",
+    "5 Unidentified compounds N/A 604.032 60.403",
+    "TOTAL 1000.000 100.000",
+    "Page 5 of 8 © 2026 Inscentify Ltd.",
+    "",
+    "How to Read a GCMS Analysis",
+    "Look for the biggest percentages first. A reading of 42.3% might represent rounded dosage.",
+  ].join("\n");
+}
 
 test("GCMS filename slugging creates stable readable ids", () => {
   assert.equal(
@@ -106,26 +135,51 @@ test("GCMS extraction records individual missing PDF failures without dropping r
   assert.match(status.reports[1].error, /missing relativePath/i);
 });
 
-test("GCMS material row parsing is conservative and does not invent percentages", () => {
-  const parsed = parseMaterialCandidateLine(
-    "Linalool 78-70-6 Area % 12.40 Match Quality 91"
-  );
-  assert.equal(parsed.name, "Linalool");
-  assert.equal(parsed.cas, "78-70-6");
-  assert.equal(parsed.areaPercent, 12.4);
-  assert.equal(parsed.matchQuality, 91);
+test("GCMS Inscentify component row parsing is strict and does not invent values", () => {
+  const parsed = parseInscentifyComponentRow(
+    "1 Iso E Super 54464-57-2 230.587 23.059"
+  )?.component;
+  assert.equal(parsed.rank, 1);
+  assert.equal(parsed.name, "Iso E Super");
+  assert.equal(parsed.cas, "54464-57-2");
+  assert.equal(parsed.ppt, 230.587);
+  assert.equal(parsed.percent, 23.059);
+  assert.equal(parsed.relativePercent, 23.059);
+  assert.equal(parsed.areaPercent, null);
 
-  const noPercent = parseMaterialCandidateLine("Hedione CAS 24851-98-7");
-  assert.equal(noPercent.name, "Hedione");
-  assert.equal(noPercent.cas, "24851-98-7");
-  assert.equal(noPercent.areaPercent, null);
-  assert.equal(noPercent.relativePercent, null);
+  const unavailable = parseInscentifyComponentRow(
+    "15 Bulnesol Acetate Not available 17.231 1.723"
+  )?.component;
+  assert.equal(unavailable.name, "Bulnesol Acetate");
+  assert.equal(unavailable.cas, "Not available");
 
-  const qualityOnly = parseMaterialCandidateLine("Iso E Super 54464-57-2 Match Quality 91%");
-  assert.equal(qualityOnly.areaPercent, null);
-  assert.equal(qualityOnly.matchQuality, 91);
+  const noCas = parseInscentifyComponentRow("32 Ambromusc 0.607 0.061")?.component;
+  assert.equal(noCas.name, "Ambromusc");
+  assert.equal(noCas.cas, "");
+  assert.equal(noCas.percent, 0.061);
 
-  assert.equal(parseMaterialCandidateLine("Compound Name CAS Area %"), null);
+  const unidentified = parseInscentifyComponentRow(
+    "141 Unidentified compounds N/A 32.110 3.211"
+  )?.component;
+  assert.equal(unidentified.name, "Unidentified compounds");
+  assert.equal(unidentified.cas, "N/A");
+  assert.equal(unidentified.percent, 3.211);
+
+  assert.equal(parseInscentifyTotalRow("TOTAL 1000.000 100.000").percent, 100);
+  assert.equal(parseInscentifyComponentRow("Look for a reading of 42.3%"), null);
+  assert.equal(parseMaterialCandidateLine("Linalool 78-70-6 Area % 12.40"), null);
+});
+
+test("GCMS formula table parser ignores headers and page markers across pages", () => {
+  const parsed = parseInscentifyFormulaTable(buildSyntheticInscentifyText());
+
+  assert.equal(parsed.tableFound, true);
+  assert.equal(parsed.detectedMaterials.length, 5);
+  assert.equal(parsed.detectedMaterials[0].name, "Iso E Super");
+  assert.equal(parsed.detectedMaterials[2].cas, "Not available");
+  assert.equal(parsed.detectedMaterials[4].name, "Unidentified compounds");
+  assert.equal(parsed.totalPercent, 100);
+  assert.equal(parsed.parseWarnings.length, 0);
 });
 
 test("GCMS structuring keeps failed and empty extractions review-first", () => {
@@ -175,7 +229,7 @@ test("GCMS structuring keeps failed and empty extractions review-first", () => {
   assert.equal(structured.reports[1].extractionConfidence, "low");
   assert.ok(
     structured.reports[1].notes.includes(
-      "No conservative material candidate rows were detected from extracted text."
+      "No strict Complete Formula Breakdown component rows were detected from extracted text."
     )
   );
 });
@@ -205,29 +259,45 @@ test("GCMS summary counts material frequency, CAS, inventory overlap, and absent
     },
     rawTextById: {
       coastal: {
-        text: [
-          "Linalool 78-70-6 Area % 12.40 Match Quality 91",
-          "Calone 28940-11-6 0.50%",
-        ].join("\n"),
+        text: buildSyntheticInscentifyText(),
       },
     },
-    inventoryNames: ["Linalool"],
+    inventoryNames: ["Iso E Super"],
   });
 
   const report = structured.reports[0];
-  assert.equal(report.detectedMaterials.length, 2);
-  assert.equal(report.inventoryMatches[0].catalogName, "Linalool");
-  assert.equal(report.unknownMaterials[0].name, "Calone");
+  assert.equal(report.fragranceName, "Coastal Study");
+  assert.equal(report.brand, "Fixture Brand");
+  assert.equal(report.releaseYear, 2026);
+  assert.equal(report.perfumer, "Example Nose");
+  assert.equal(report.componentCountClaimed, 4);
+  assert.equal(report.componentCountParsed, 4);
+  assert.equal(report.componentCountDelta, 0);
+  assert.equal(report.detectedMaterials.length, 5);
+  assert.equal(report.totalPercent, 100);
+  assert.equal(report.unidentifiedPercent, 60.403);
+  assert.equal(report.parseWarningCount, 0);
+  assert.equal(report.extractionConfidence, "high");
+  assert.equal(report.inventoryMatches[0].catalogName, "Iso E Super");
+  assert.equal(report.unknownMaterials.some((row) => row.name === "Ethyl Linalool"), true);
   assert.ok(report.possibleFamilies.includes("marine"));
 
   const summary = buildGcmsReferenceSummary(structured);
   assert.equal(summary.reportsProcessed, 1);
-  assert.equal(summary.mostCommonDetectedMaterials[0].name, "Calone");
-  assert.equal(summary.mostCommonCasNumbers.some((row) => row.name === "78-70-6"), true);
-  assert.equal(summary.materialsOverlappingInventory[0].name, "Linalool");
-  assert.equal(summary.materialsAbsentFromInventory[0].name, "Calone");
+  assert.equal(summary.reportsParsed, 1);
+  assert.equal(summary.trueComponentRowCount, 5);
+  assert.equal(summary.identifiedComponentRowCount, 4);
+  assert.equal(summary.confidenceCounts.high, 1);
+  assert.equal(summary.mostCommonDetectedMaterials.some((row) => row.name === "Iso E Super"), true);
+  assert.equal(summary.mostCommonCasNumbers.some((row) => row.name === "54464-57-2"), true);
+  assert.equal(summary.topStructuralMaterialsAbove5Percent.some((row) => row.name === "Ethyl Linalool"), true);
+  assert.equal(summary.materialsOverlappingInventory[0].name, "Iso E Super");
+  assert.equal(summary.materialsAbsentFromInventory.some((row) => row.name === "Ethyl Linalool"), true);
+  assert.equal(summary.reportsWithHighUnidentifiedPercent.length, 1);
 
   const markdown = formatGcmsSummaryMarkdown(summary);
   assert.match(markdown, /GCMS Reference Summary/);
   assert.match(markdown, /Beach Box Inventory Overlap/);
+  assert.match(markdown, /Top Structural Materials Above 5%/);
+  assert.match(markdown, /Reports With High Unidentified Percent/);
 });

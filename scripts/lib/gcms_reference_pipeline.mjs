@@ -27,6 +27,10 @@ export const DEFAULT_GCMS_RAW_TEXT_DIR = path.join(DEFAULT_GCMS_OUTPUT_DIR, "raw
 export const DEFAULT_APP_PATH = path.join(ROOT, "src", "App.jsx");
 
 const CAS_RE = /\b\d{2,7}-\d{2}-\d\b/g;
+const CAS_LIKE_RE = /\b\d{1,7}-\d{1,3}-\d\b/;
+const PAGE_MARKER_RE = /^Page\s+\d+(?:\s+of\s+\d+)?\b/i;
+const TABLE_HEADER_RE = /^#\s*Component\s+CAS\s+PPT\s+%$/i;
+const TOTAL_ROW_RE = /^TOTAL\s+([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)$/i;
 
 const FAMILY_PATTERNS = [
   ["aldehydic", /\baldehyd|octanal|nonanal|decanal\b/i],
@@ -433,41 +437,237 @@ function cleanMaterialNameFromLine(line, cas, areaPercent, relativePercent) {
 
 export function parseMaterialCandidateLine(line) {
   const rawLine = String(line || "").trim();
-  if (!rawLine || rawLine.length > 500) return null;
-  if (/^\s*(?:page|copyright|disclaimer|fragrance analysis|gcms report)\b/i.test(rawLine)) {
-    return null;
+  return parseInscentifyComponentRow(rawLine)?.component || null;
+}
+
+function parseNumber(value) {
+  const number = Number.parseFloat(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function normalizeTableLine(value) {
+  return String(value || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanComponentName(value) {
+  return normalizeTableLine(value)
+    .replace(/\s+\(\s*$/, "")
+    .replace(/^[,;:\-|\s]+|[,;:\-|\s]+$/g, "")
+    .trim();
+}
+
+function splitComponentNameAndCas(componentWithCas) {
+  const text = normalizeTableLine(componentWithCas);
+  const unavailableMatch = text.match(/\s+(N\/A|Not available)$/i);
+  if (unavailableMatch) {
+    return {
+      name: cleanComponentName(text.slice(0, unavailableMatch.index)),
+      cas: unavailableMatch[1],
+    };
   }
 
-  const casValues = rawLine.match(CAS_RE) || [];
-  const cas = casValues[0] || "";
-  const relativePercent = extractDelimitedNumber(
-    rawLine,
-    /\b(?:relative|rel)\s*(?:percent|pct|%)?\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)/i
-  );
-  const areaPercent =
-    extractDelimitedNumber(
-      rawLine,
-      /\barea\s*(?:percent|pct|%)?\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)/i
-    ) ?? (relativePercent === null ? extractGenericPercent(rawLine) : null);
-  const matchQuality = extractDelimitedNumber(
-    rawLine,
-    /\b(?:match quality|quality|similarity|score)\b\s*[:=]?\s*([0-9]+(?:\.[0-9]+)?)/i
-  );
-
-  const hasCandidateEvidence = Boolean(cas) || areaPercent !== null || relativePercent !== null;
-  if (!hasCandidateEvidence) return null;
-
-  const name = cleanMaterialNameFromLine(rawLine, cas, areaPercent, relativePercent);
-  if (!/[A-Za-z]{3,}/.test(name)) return null;
+  const casMatch = text.match(new RegExp(`\\s+(${CAS_LIKE_RE.source})$`, "i"));
+  if (casMatch) {
+    return {
+      name: cleanComponentName(text.slice(0, casMatch.index)),
+      cas: casMatch[1],
+    };
+  }
 
   return {
+    name: cleanComponentName(text),
+    cas: "",
+  };
+}
+
+export function parseInscentifyTotalRow(line) {
+  const match = normalizeTableLine(line).match(TOTAL_ROW_RE);
+  if (!match) return null;
+  return {
+    ppt: parseNumber(match[1]),
+    percent: parseNumber(match[2]),
+    rawLine: String(line || "").trim(),
+  };
+}
+
+export function parseInscentifyComponentRow(line) {
+  const rawLine = String(line || "").trim();
+  const normalized = normalizeTableLine(rawLine);
+  if (!normalized || normalized.length > 500) return null;
+  const match = normalized.match(
+    /^(\d+)\s+(.+?)\s+([0-9]+(?:\.[0-9]+)?)\s+([0-9]+(?:\.[0-9]+)?)$/
+  );
+  if (!match) return null;
+
+  const rank = Number.parseInt(match[1], 10);
+  const ppt = parseNumber(match[3]);
+  const percent = parseNumber(match[4]);
+  if (!Number.isFinite(rank) || ppt === null || percent === null) return null;
+
+  const { name, cas } = splitComponentNameAndCas(match[2]);
+  if (!/[A-Za-z]{2,}/.test(name)) return null;
+
+  const component = {
+    rank,
     name,
     cas,
-    relativePercent,
-    areaPercent,
-    matchQuality,
+    ppt,
+    percent,
+    relativePercent: percent,
+    areaPercent: null,
+    matchQuality: null,
     rawLine,
   };
+
+  return { component };
+}
+
+function shouldWarnForFailedTableLine(line) {
+  const normalized = normalizeTableLine(line);
+  if (!normalized) return false;
+  if (TABLE_HEADER_RE.test(normalized)) return false;
+  if (PAGE_MARKER_RE.test(normalized)) return false;
+  if (/^Complete Formula Breakdown$/i.test(normalized)) return false;
+  if (/^How to Read a GCMS Analysis$/i.test(normalized)) return false;
+  if (/^This fragrance contains\b/i.test(normalized)) return false;
+  if (/^tion\./i.test(normalized)) return false;
+  if (/^Highlighted materials\b/i.test(normalized)) return false;
+  if (/^TOTAL\b/i.test(normalized)) return true;
+  return /^\d+\s+/.test(normalized);
+}
+
+function extractGcmsReportMetadata(text, fallback = {}) {
+  const lines = splitTextLines(text);
+  const warnings = [];
+  let fragranceName = fallback.fragranceName || "";
+  let brand = fallback.brand || "";
+  let releaseYear = null;
+  let perfumer = null;
+
+  const titleIndex = lines.findIndex((line) => /^A GCMS ANALYSIS OF$/i.test(line));
+  if (titleIndex !== -1) {
+    fragranceName = lines[titleIndex + 1] || fragranceName;
+    const brandLine = lines[titleIndex + 2] || "";
+    const brandMatch = brandLine.match(/^(.*?)\s+\((\d{4}|Unknown)\)$/i);
+    if (brandMatch) {
+      brand = brandMatch[1].trim();
+      releaseYear = /^\d{4}$/.test(brandMatch[2])
+        ? Number.parseInt(brandMatch[2], 10)
+        : null;
+    } else if (brandLine) {
+      brand = brandLine.trim();
+      warnings.push(`Could not parse brand/year line: ${brandLine}`);
+    }
+  } else {
+    warnings.push("Report title marker was not found.");
+  }
+
+  const perfumerLine = lines.find((line) => /^Perfumer:/i.test(line));
+  if (perfumerLine) {
+    perfumer = perfumerLine.replace(/^Perfumer:\s*/i, "").trim() || null;
+  } else {
+    warnings.push("Perfumer line was not found.");
+  }
+
+  const claimMatch = text.match(/This fragrance contains\s+(\d+)\s+identified components/i);
+  const componentCountClaimed = claimMatch ? Number.parseInt(claimMatch[1], 10) : null;
+  if (componentCountClaimed === null) {
+    warnings.push("Component count claim was not found.");
+  }
+
+  return {
+    fragranceName,
+    brand,
+    releaseYear,
+    perfumer,
+    componentCountClaimed,
+    metadataWarnings: warnings,
+  };
+}
+
+function isUnidentifiedMaterial(material) {
+  return /\bunidentified compounds?\b/i.test(material?.name || "");
+}
+
+export function parseInscentifyFormulaTable(text) {
+  const lines = splitTextLines(text);
+  const detectedMaterials = [];
+  const parseWarnings = [];
+  let inTable = false;
+  let tableFound = false;
+  let totalPpt = null;
+  let totalPercent = null;
+  let totalRow = null;
+
+  for (const line of lines) {
+    const normalized = normalizeTableLine(line);
+    if (!inTable) {
+      if (/^Complete Formula Breakdown$/i.test(normalized)) {
+        inTable = true;
+        tableFound = true;
+      }
+      continue;
+    }
+
+    if (/^How to Read a GCMS Analysis$/i.test(normalized)) break;
+    if (TABLE_HEADER_RE.test(normalized) || PAGE_MARKER_RE.test(normalized)) continue;
+
+    const total = parseInscentifyTotalRow(normalized);
+    if (total) {
+      totalPpt = total.ppt;
+      totalPercent = total.percent;
+      totalRow = total.rawLine;
+      break;
+    }
+
+    const parsed = parseInscentifyComponentRow(normalized);
+    if (parsed) {
+      detectedMaterials.push(parsed.component);
+      continue;
+    }
+
+    if (shouldWarnForFailedTableLine(line)) {
+      parseWarnings.push(`Could not parse formula table line: ${line}`);
+    }
+  }
+
+  if (!tableFound) {
+    parseWarnings.push("Complete Formula Breakdown section was not found.");
+  } else if (totalPercent === null) {
+    parseWarnings.push("TOTAL row was not found before the formula table ended.");
+  }
+
+  return {
+    detectedMaterials,
+    tableFound,
+    totalPpt,
+    totalPercent,
+    totalRow,
+    parseWarnings,
+  };
+}
+
+function assignGcmsExtractionConfidence({
+  tableFound,
+  totalPercent,
+  componentCountClaimed,
+  componentCountDelta,
+  parseWarningCount,
+}) {
+  if (!tableFound) return "low";
+  const totalIsNear100 =
+    typeof totalPercent === "number" && Math.abs(totalPercent - 100) <= 0.25;
+  const countIsClose =
+    componentCountClaimed === null ||
+    componentCountDelta === null ||
+    Math.abs(componentCountDelta) <= 2;
+  if (totalIsNear100 && countIsClose && parseWarningCount <= 2) return "high";
+  if (totalIsNear100 && parseWarningCount <= 10) return "medium";
+  return "low";
 }
 
 function splitTextLines(text) {
@@ -554,12 +754,22 @@ function buildStructuredRecord({
       sourceFilename,
       fragranceName: manifestRecord?.titleGuess || "",
       brand: manifestRecord?.brandGuess || "",
+      releaseYear: null,
+      perfumer: null,
       extractionStatus: "failed",
       detectedMaterials: [],
       topMaterials: [],
       possibleFamilies: [],
       inventoryMatches: [],
       unknownMaterials: [],
+      componentCountClaimed: null,
+      componentCountParsed: 0,
+      componentCountDelta: null,
+      totalPercent: null,
+      unidentifiedPercent: null,
+      parseWarningCount: 0,
+      metadataWarnings: [],
+      parseWarnings: [],
       extractionConfidence: "low",
       reviewNeeded: true,
       notes: baseNotes,
@@ -567,10 +777,23 @@ function buildStructuredRecord({
   }
 
   const text = rawTextRecord?.text || flattenExtractedPages(rawTextRecord?.pages);
-  const lines = splitTextLines(text);
-  const detectedMaterials = uniqueMaterialCandidates(
-    lines.map(parseMaterialCandidateLine).filter(Boolean)
-  );
+  const metadata = extractGcmsReportMetadata(text, {
+    fragranceName: manifestRecord?.titleGuess || "",
+    brand: manifestRecord?.brandGuess || "",
+  });
+  const table = parseInscentifyFormulaTable(text);
+  const detectedMaterials = table.detectedMaterials;
+  const componentCountParsed = detectedMaterials.filter(
+    (material) => !isUnidentifiedMaterial(material)
+  ).length;
+  const componentCountDelta =
+    metadata.componentCountClaimed === null
+      ? null
+      : componentCountParsed - metadata.componentCountClaimed;
+  const unidentifiedPercent = detectedMaterials
+    .filter(isUnidentifiedMaterial)
+    .reduce((sum, material) => sum + (material.percent ?? material.relativePercent ?? 0), 0);
+
   const inventoryMatches = [];
   const unknownMaterials = [];
   for (const material of detectedMaterials) {
@@ -582,6 +805,8 @@ function buildStructuredRecord({
         cas: material.cas,
         areaPercent: material.areaPercent,
         relativePercent: material.relativePercent,
+        ppt: material.ppt,
+        percent: material.percent,
       });
     } else {
       unknownMaterials.push({
@@ -589,50 +814,78 @@ function buildStructuredRecord({
         cas: material.cas,
         areaPercent: material.areaPercent,
         relativePercent: material.relativePercent,
+        ppt: material.ppt,
+        percent: material.percent,
       });
     }
   }
 
   const sortableMaterials = [...detectedMaterials].sort(
     (a, b) =>
-      (b.areaPercent ?? b.relativePercent ?? -1) -
-        (a.areaPercent ?? a.relativePercent ?? -1) ||
+      (b.percent ?? b.areaPercent ?? b.relativePercent ?? -1) -
+        (a.percent ?? a.areaPercent ?? a.relativePercent ?? -1) ||
       a.name.localeCompare(b.name)
   );
 
   const notes = [...baseNotes];
   if (!detectedMaterials.length) {
-    notes.push("No conservative material candidate rows were detected from extracted text.");
+    notes.push("No strict Complete Formula Breakdown component rows were detected from extracted text.");
   }
   if (statusRecord?.extractionStatus === "partial") {
     notes.push("PDF text extraction produced little or no readable text.");
   }
-
-  const percentBackedCount = detectedMaterials.filter(
-    (material) => material.areaPercent !== null || material.relativePercent !== null
-  ).length;
-  const casBackedCount = detectedMaterials.filter((material) => material.cas).length;
-  let extractionConfidence = "low";
-  if (detectedMaterials.length >= 10 && (percentBackedCount >= 5 || casBackedCount >= 5)) {
-    extractionConfidence = "high";
-  } else if (detectedMaterials.length > 0) {
-    extractionConfidence = "medium";
+  if (componentCountDelta !== null && componentCountDelta !== 0) {
+    notes.push(
+      `Parsed identified component count differs from claimed count by ${componentCountDelta}.`
+    );
   }
+  if (table.totalPercent !== null && Math.abs(table.totalPercent - 100) > 0.25) {
+    notes.push(`Formula TOTAL percent is ${table.totalPercent}, not near 100.`);
+  }
+
+  const metadataWarnings = [...metadata.metadataWarnings];
+  if (componentCountDelta !== null && componentCountDelta !== 0) {
+    metadataWarnings.push(
+      `Claimed identified components ${metadata.componentCountClaimed}; parsed ${componentCountParsed}.`
+    );
+  }
+  if (!table.tableFound) metadataWarnings.push("Complete Formula Breakdown table was not found.");
+  if (table.totalPercent === null) metadataWarnings.push("Formula TOTAL percent was not parsed.");
+
+  const parseWarningCount = table.parseWarnings.length;
+  const extractionConfidence = assignGcmsExtractionConfidence({
+    tableFound: table.tableFound,
+    totalPercent: table.totalPercent,
+    componentCountClaimed: metadata.componentCountClaimed,
+    componentCountDelta,
+    parseWarningCount,
+  });
 
   return {
     id: statusRecord.id,
     sourceFilename,
-    fragranceName: manifestRecord?.titleGuess || "",
-    brand: manifestRecord?.brandGuess || "",
+    fragranceName: metadata.fragranceName,
+    brand: metadata.brand,
+    releaseYear: metadata.releaseYear,
+    perfumer: metadata.perfumer,
     extractionStatus: statusRecord?.extractionStatus || "ok",
     detectedMaterials,
     topMaterials: sortableMaterials.slice(0, 10).map((material) => material.name),
     possibleFamilies: detectFamilies(text, detectedMaterials),
     inventoryMatches,
     unknownMaterials,
+    componentCountClaimed: metadata.componentCountClaimed,
+    componentCountParsed,
+    componentCountDelta,
+    totalPercent: table.totalPercent,
+    totalPpt: table.totalPpt,
+    unidentifiedPercent: unidentifiedPercent || null,
+    parseWarningCount,
+    metadataWarnings,
+    parseWarnings: table.parseWarnings,
     extractionConfidence,
     reviewNeeded: true,
-    notes,
+    notes: [...notes, ...table.parseWarnings.slice(0, 5)],
   };
 }
 
@@ -718,11 +971,19 @@ export function buildGcmsReferenceSummary(structuredPayload = {}) {
   const inventoryCounter = new Map();
   const absentCounter = new Map();
   const familyCounter = new Map();
+  const structuralMaterialCounter = new Map();
+  const confidenceCounts = { high: 0, medium: 0, low: 0 };
 
   for (const report of reports) {
+    if (confidenceCounts[report.extractionConfidence] !== undefined) {
+      confidenceCounts[report.extractionConfidence] += 1;
+    }
     for (const material of report.detectedMaterials || []) {
       incrementCounter(materialCounter, material.name);
       incrementCounter(casCounter, material.cas);
+      if ((material.percent ?? material.relativePercent ?? 0) >= 5) {
+        incrementCounter(structuralMaterialCounter, material.name);
+      }
     }
     for (const match of report.inventoryMatches || []) {
       incrementCounter(inventoryCounter, match.catalogName || match.name);
@@ -737,17 +998,54 @@ export function buildGcmsReferenceSummary(structuredPayload = {}) {
 
   const failedReports = reports.filter((report) => report.extractionStatus === "failed");
   const reviewReports = reports.filter((report) => report.reviewNeeded);
+  const reportsWithCountMismatches = reports.filter(
+    (report) => report.componentCountDelta !== null && report.componentCountDelta !== 0
+  );
+  const reportsWithMetadataWarnings = reports.filter(
+    (report) => Array.isArray(report.metadataWarnings) && report.metadataWarnings.length
+  );
+  const reportsWithHighUnidentifiedPercent = reports.filter(
+    (report) => (report.unidentifiedPercent || 0) >= 5
+  );
   return {
     generatedAt: new Date().toISOString(),
     reportsProcessed: reports.length,
+    reportsParsed: reports.filter((report) => (report.detectedMaterials?.length || 0) > 0).length,
     reportsFailed: failedReports.length,
+    trueComponentRowCount: reports.reduce(
+      (sum, report) => sum + (report.detectedMaterials?.length || 0),
+      0
+    ),
+    identifiedComponentRowCount: reports.reduce(
+      (sum, report) => sum + (report.componentCountParsed || 0),
+      0
+    ),
+    confidenceCounts,
     failedReports: failedReports.map((report) => ({
       id: report.id,
       sourceFilename: report.sourceFilename,
       notes: report.notes || [],
     })),
+    reportsWithCountMismatches: reportsWithCountMismatches.map((report) => ({
+      id: report.id,
+      sourceFilename: report.sourceFilename,
+      componentCountClaimed: report.componentCountClaimed,
+      componentCountParsed: report.componentCountParsed,
+      componentCountDelta: report.componentCountDelta,
+    })),
+    reportsWithMetadataWarnings: reportsWithMetadataWarnings.map((report) => ({
+      id: report.id,
+      sourceFilename: report.sourceFilename,
+      metadataWarnings: report.metadataWarnings || [],
+    })),
+    reportsWithHighUnidentifiedPercent: reportsWithHighUnidentifiedPercent.map((report) => ({
+      id: report.id,
+      sourceFilename: report.sourceFilename,
+      unidentifiedPercent: report.unidentifiedPercent,
+    })),
     mostCommonDetectedMaterials: sortedCounterRows(materialCounter),
     mostCommonCasNumbers: sortedCounterRows(casCounter),
+    topStructuralMaterialsAbove5Percent: sortedCounterRows(structuralMaterialCounter),
     materialsOverlappingInventory: sortedCounterRows(inventoryCounter),
     materialsAbsentFromInventory: sortedCounterRows(absentCounter),
     recurringAccordFamilies: sortedCounterRows(familyCounter),
@@ -756,6 +1054,11 @@ export function buildGcmsReferenceSummary(structuredPayload = {}) {
       sourceFilename: report.sourceFilename,
       extractionConfidence: report.extractionConfidence,
       detectedMaterialCount: report.detectedMaterials?.length || 0,
+      componentCountClaimed: report.componentCountClaimed,
+      componentCountParsed: report.componentCountParsed,
+      totalPercent: report.totalPercent,
+      unidentifiedPercent: report.unidentifiedPercent,
+      parseWarningCount: report.parseWarningCount,
       notes: report.notes || [],
     })),
   };
@@ -771,11 +1074,24 @@ export function formatGcmsSummaryText(summary) {
     "GCMS Reference Summary",
     "",
     `Reports processed: ${summary.reportsProcessed}`,
+    `Reports parsed: ${summary.reportsParsed}`,
     `Reports failed: ${summary.reportsFailed}`,
+    `True component rows: ${summary.trueComponentRowCount}`,
+    `Identified component rows: ${summary.identifiedComponentRowCount}`,
     `Reports needing manual review: ${summary.reportsNeedingManualReview.length}`,
+    `Extraction confidence: high ${summary.confidenceCounts.high}, medium ${summary.confidenceCounts.medium}, low ${summary.confidenceCounts.low}`,
+    `Reports with count mismatches: ${summary.reportsWithCountMismatches.length}`,
+    `Reports with metadata warnings: ${summary.reportsWithMetadataWarnings.length}`,
+    `Reports with high unidentified percent: ${summary.reportsWithHighUnidentifiedPercent.length}`,
     "",
     "Most common detected materials:",
     formatCountRows(summary.mostCommonDetectedMaterials.slice(0, 15), "No materials detected yet."),
+    "",
+    "Top structural materials above 5%:",
+    formatCountRows(
+      summary.topStructuralMaterialsAbove5Percent.slice(0, 15),
+      "No >5% structural materials detected yet."
+    ),
     "",
     "Most common CAS numbers:",
     formatCountRows(summary.mostCommonCasNumbers.slice(0, 15), "No CAS numbers detected yet."),
@@ -817,6 +1133,10 @@ export function formatGcmsSummaryMarkdown(summary) {
     { label: "Name", value: (row) => row.name },
     { label: "Count", value: (row) => row.count },
   ];
+  const reportColumns = [
+    { label: "Report", value: (row) => row.sourceFilename || row.id },
+    { label: "Detail", value: (row) => row.detail || "" },
+  ];
   return [
     "# GCMS Reference Summary",
     "",
@@ -825,12 +1145,27 @@ export function formatGcmsSummaryMarkdown(summary) {
     "## Counts",
     "",
     `- Reports processed: ${summary.reportsProcessed}`,
+    `- Reports parsed: ${summary.reportsParsed}`,
     `- Reports failed: ${summary.reportsFailed}`,
+    `- True component rows parsed: ${summary.trueComponentRowCount}`,
+    `- Identified component rows parsed: ${summary.identifiedComponentRowCount}`,
     `- Reports needing manual review: ${summary.reportsNeedingManualReview.length}`,
+    `- Extraction confidence: high ${summary.confidenceCounts.high}, medium ${summary.confidenceCounts.medium}, low ${summary.confidenceCounts.low}`,
+    `- Reports with count mismatches: ${summary.reportsWithCountMismatches.length}`,
+    `- Reports with metadata warnings: ${summary.reportsWithMetadataWarnings.length}`,
+    `- Reports with unidentified compounds at or above 5%: ${summary.reportsWithHighUnidentifiedPercent.length}`,
     "",
     "## Most Common Detected Materials",
     "",
     markdownTable(summary.mostCommonDetectedMaterials, countColumns, "No materials detected yet."),
+    "",
+    "## Top Structural Materials Above 5%",
+    "",
+    markdownTable(
+      summary.topStructuralMaterialsAbove5Percent,
+      countColumns,
+      "No >5% structural materials detected yet."
+    ),
     "",
     "## Most Common CAS Numbers",
     "",
@@ -856,6 +1191,39 @@ export function formatGcmsSummaryMarkdown(summary) {
     "",
     markdownTable(summary.recurringAccordFamilies, countColumns, "No accord families detected yet."),
     "",
+    "## Reports With Count Mismatches",
+    "",
+    markdownTable(
+      summary.reportsWithCountMismatches.map((row) => ({
+        ...row,
+        detail: `claimed ${row.componentCountClaimed}; parsed ${row.componentCountParsed}; delta ${row.componentCountDelta}`,
+      })),
+      reportColumns,
+      "No claimed-vs-parsed count mismatches."
+    ),
+    "",
+    "## Reports With Metadata Warnings",
+    "",
+    markdownTable(
+      summary.reportsWithMetadataWarnings.map((row) => ({
+        ...row,
+        detail: row.metadataWarnings.join("; "),
+      })),
+      reportColumns,
+      "No metadata warnings."
+    ),
+    "",
+    "## Reports With High Unidentified Percent",
+    "",
+    markdownTable(
+      summary.reportsWithHighUnidentifiedPercent.map((row) => ({
+        ...row,
+        detail: `${row.unidentifiedPercent?.toFixed?.(3) ?? row.unidentifiedPercent}% unidentified`,
+      })),
+      reportColumns,
+      "No reports have unidentified compounds at or above 5%."
+    ),
+    "",
     "## Reports Needing Manual Review",
     "",
     markdownTable(
@@ -864,6 +1232,10 @@ export function formatGcmsSummaryMarkdown(summary) {
         { label: "Report", value: (row) => row.sourceFilename || row.id },
         { label: "Confidence", value: (row) => row.extractionConfidence },
         { label: "Detected Materials", value: (row) => row.detectedMaterialCount },
+        { label: "Claimed", value: (row) => row.componentCountClaimed ?? "" },
+        { label: "Parsed", value: (row) => row.componentCountParsed ?? "" },
+        { label: "Total %", value: (row) => row.totalPercent ?? "" },
+        { label: "Parse Warnings", value: (row) => row.parseWarningCount ?? 0 },
       ],
       "No reports have been processed yet."
     ),
