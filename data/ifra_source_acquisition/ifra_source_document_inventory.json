@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T12:08:07.889Z",
+    "reportName": "IFRA Source Document Inventory",
+    "sourceDirectory": "downloads/source_documents/ifra",
+    "queueItemCount": 44,
+    "guardrails": [
+      "This inventory links local documents to acquisition queue items for review only.",
+      "It does not parse documents, add IFRA limits, promote records, or prove launch clearance."
+    ]
+  },
+  "summary": {
+    "documentCount": 0,
+    "matchedDocumentCount": 0,
+    "possibleMatchDocumentCount": 0,
+    "unmatchedDocumentCount": 0,
+    "sourceTypeGuessCounts": {}
+  },
+  "documents": []
+}

@@ -68,10 +68,18 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(ifraSourceAcquisition).toContainText("IFRA Source Acquisition");
   await expect(ifraSourceAcquisition).toContainText("High-priority remaining");
   await expect(ifraSourceAcquisition).toContainText("Top Remaining Source Gaps");
+  await expect(ifraSourceAcquisition).toContainText("Document Review Progress");
+  await expect(ifraSourceAcquisition).toContainText("Documents found");
+  await expect(ifraSourceAcquisition).toContainText(
+    "Top queue items still needing documents"
+  );
   await expect(ifraSourceAcquisition).toContainText("Aldehyde C-8");
   await expect(ifraSourceAcquisition).toContainText("Not launch clearance");
   await expect(ifraSourceAcquisition).toContainText(
     "build_hero_ifra_source_acquisition_queue"
+  );
+  await expect(ifraSourceAcquisition).toContainText(
+    "inventory_ifra_source_documents"
   );
 
   let comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");

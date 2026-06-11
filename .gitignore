@@ -4,6 +4,10 @@ dist/
 .env
 .vscode/
 downloads/source_documents/
+downloads/source_documents/ifra/
+downloads/source_documents/**/*.pdf
+downloads/source_documents/**/*.docx
+downloads/source_documents/**/*.xlsx
 downloads/gcms_reports/
 data/gcms_extracted/raw_text/
 test-results/

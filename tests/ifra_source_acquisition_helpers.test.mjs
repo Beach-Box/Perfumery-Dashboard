@@ -13,14 +13,16 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
   assert.equal(panel.missingMessage, IFRA_SOURCE_ACQUISITION_MISSING_MESSAGE);
   assert.equal(panel.counts.highPriorityRemaining, 0);
   assert.deepEqual(panel.topRemainingGaps, []);
+  assert.equal(panel.documentInventory.isAvailable, false);
   assert.match(panel.guardrail, /Not launch clearance/i);
 });
 
-test("IFRA source acquisition panel summarizes counts and top remaining gaps", () => {
+test("IFRA source acquisition panel summarizes counts, review status, and top gaps", () => {
   const panel = buildIfraSourceAcquisitionPanel({
     summary: {
       itemCount: 4,
       statusCounts: { needed: 2, acquired: 1, deferred: 1 },
+      reviewStatusCounts: { not_started: 2, needs_review: 1, reviewed_ok: 1 },
       priorityCounts: { high: 3, low: 1 },
       requiredSourceTypeCounts: {
         natural_uvcb_supplier_document_needed: 1,
@@ -66,13 +68,50 @@ test("IFRA source acquisition panel summarizes counts and top remaining gaps", (
         reviewStatus: "not_started",
       },
     ],
+  }, {
+    summary: {
+      documentCount: 2,
+      matchedDocumentCount: 1,
+      possibleMatchDocumentCount: 1,
+      unmatchedDocumentCount: 0,
+    },
+    documents: [
+      {
+        id: "doc-iso",
+        filename: "Iso_E_Super_IFRA.pdf",
+        matchedQueueItemIds: ["iso-e"],
+        matchConfidence: "high",
+      },
+      {
+        id: "doc-ambiguous",
+        filename: "Seaweed_IFRA.pdf",
+        matchedQueueItemIds: [],
+        matchConfidence: "low",
+        materialGuess: "Seaweed",
+        sourceTypeGuess: "supplier_ifra",
+        possibleMatches: [{ materialName: "Seaweed Absolute 10%" }],
+      },
+    ],
   });
 
   assert.equal(panel.isAvailable, true);
   assert.equal(panel.counts.total, 4);
   assert.equal(panel.counts.highPriorityRemaining, 2);
   assert.equal(panel.counts.acquired, 1);
+  assert.equal(panel.counts.needsReview, 1);
+  assert.equal(panel.counts.reviewedOk, 1);
   assert.equal(panel.counts.deferred, 1);
+  assert.equal(panel.documentInventory.isAvailable, true);
+  assert.equal(panel.documentInventory.counts.documentsFound, 2);
+  assert.equal(panel.documentInventory.counts.matchedDocuments, 1);
+  assert.deepEqual(
+    panel.documentInventory.topUnmatchedDocuments.map((document) => document.filename),
+    ["Seaweed_IFRA.pdf"]
+  );
+  assert.deepEqual(
+    panel.documentInventory.topQueueItemsNeedingDocuments.map((item) => item.materialName),
+    ["Seaweed Absolute 10%"]
+  );
   assert.deepEqual(
     panel.topRemainingGaps.map((gap) => gap.materialName),
     ["Iso E Super", "Seaweed Absolute 10%"]

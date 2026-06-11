@@ -289,6 +289,12 @@ const ifraSourceAcquisitionQueueModules = import.meta.glob(
 );
 const ifraSourceAcquisitionQueueData =
   Object.values(ifraSourceAcquisitionQueueModules)[0]?.default || null;
+const ifraSourceDocumentInventoryModules = import.meta.glob(
+  "../data/ifra_source_acquisition/ifra_source_document_inventory.json",
+  { eager: true }
+);
+const ifraSourceDocumentInventoryData =
+  Object.values(ifraSourceDocumentInventoryModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81484,7 +81490,8 @@ export default function App() {
       beachBoxPatternTranslationData
     );
     const ifraSourceAcquisitionPanel = buildIfraSourceAcquisitionPanel(
-      ifraSourceAcquisitionQueueData
+      ifraSourceAcquisitionQueueData,
+      ifraSourceDocumentInventoryData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82289,6 +82296,228 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#7DD3FC",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                    }}
+                  >
+                    Document Review Progress
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: 8.1,
+                      color: "#94A3B8",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.documentInventory.isAvailable
+                      ? "Local source-document inventory is available for review tracking."
+                      : ifraSourceAcquisitionPanel.documentInventory.missingMessage}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 7.5,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                    overflowWrap: "anywhere",
+                    maxWidth: 420,
+                  }}
+                >
+                  {ifraSourceAcquisitionPanel.inventoryCommand}
+                </div>
+              </div>
+              {ifraSourceAcquisitionPanel.documentInventory.isAvailable && (
+                <>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                      gap: 7,
+                    }}
+                  >
+                    {[
+                      [
+                        "Documents found",
+                        ifraSourceAcquisitionPanel.documentInventory.counts
+                          .documentsFound,
+                        "#7DD3FC",
+                      ],
+                      [
+                        "Matched documents",
+                        ifraSourceAcquisitionPanel.documentInventory.counts
+                          .matchedDocuments,
+                        "#86EFAC",
+                      ],
+                      [
+                        "Needs review",
+                        ifraSourceAcquisitionPanel.documentInventory.counts
+                          .needsReview,
+                        "#FDE68A",
+                      ],
+                      [
+                        "Reviewed OK",
+                        ifraSourceAcquisitionPanel.documentInventory.counts
+                          .reviewedOk,
+                        "#A7F3D0",
+                      ],
+                    ].map(([label, value, color]) => (
+                      <div
+                        key={label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "6px 8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color,
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {Number(value).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            fontSize: 7,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 9px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 7.4,
+                          color: "#FDE68A",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 800,
+                          marginBottom: 5,
+                        }}
+                      >
+                        Top unmatched documents
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 4,
+                          fontSize: 8.1,
+                          color: "#94A3B8",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {ifraSourceAcquisitionPanel.documentInventory
+                          .topUnmatchedDocuments.length ? (
+                          ifraSourceAcquisitionPanel.documentInventory.topUnmatchedDocuments.map(
+                            (document) => (
+                              <div key={document.id}>
+                                {document.filename} ({document.matchConfidence})
+                              </div>
+                            )
+                          )
+                        ) : (
+                          <div>No unmatched local documents in the inventory.</div>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 9px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 7.4,
+                          color: "#FDE68A",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 800,
+                          marginBottom: 5,
+                        }}
+                      >
+                        Top queue items still needing documents
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 4,
+                          fontSize: 8.1,
+                          color: "#94A3B8",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {ifraSourceAcquisitionPanel.documentInventory
+                          .topQueueItemsNeedingDocuments.length ? (
+                          ifraSourceAcquisitionPanel.documentInventory.topQueueItemsNeedingDocuments.map(
+                            (item) => (
+                              <div key={item.id}>
+                                {item.materialName} - {item.sourceTypeLabel}
+                              </div>
+                            )
+                          )
+                        ) : (
+                          <div>No document-needed queue items are currently open.</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <div
               style={{
