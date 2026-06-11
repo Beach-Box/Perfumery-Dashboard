@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T13:56:21.645Z",
+    "generatedAt": "2026-06-11T14:01:36.131Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
     "sourceQueueGeneratedAt": "2026-06-11T11:53:39.602Z",
     "candidateExtractionGeneratedAt": "2026-06-11T12:58:50.387Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T13:35:46.094Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T14:01:36.059Z",
     "ingredientSourceHarvestGeneratedAt": "2026-06-11T12:58:30.309Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
@@ -18,21 +18,23 @@
     "queueItemCount": 44,
     "candidateCount": 1054,
     "retainedCandidateCount": 1054,
-    "reviewedSourceRecordCount": 0,
+    "reviewedSourceRecordCount": 1,
     "evidenceStatusCounts": {
       "review_ready": 24,
-      "likely_fcf_evidence": 2,
+      "likely_fcf_evidence": 1,
       "needs_supplier_doc": 1,
       "insufficient_evidence": 2,
       "identity_only": 6,
+      "already_reviewed": 1,
       "not_applicable": 5,
       "deferred": 4
     },
     "suggestedActionCounts": {
       "review_top_candidate": 24,
-      "promote_fcf_evidence_after_review": 2,
+      "promote_fcf_evidence_after_review": 1,
       "request_supplier_ifra_or_sds": 4,
       "find_global_ifra_standard": 5,
+      "already_reviewed": 1,
       "ignore_not_relevant": 5,
       "defer": 4
     },
@@ -41,10 +43,10 @@
       "low": 13
     },
     "reviewReadyCount": 24,
-    "likelyFcfEvidenceCount": 2,
+    "likelyFcfEvidenceCount": 1,
     "insufficientEvidenceCount": 8,
     "needsSupplierDocCount": 1,
-    "alreadyReviewedCount": 0,
+    "alreadyReviewedCount": 1,
     "deferredCount": 4,
     "topReviewFirstMaterials": [
       "Calone 1951 20%",
@@ -1969,84 +1971,6 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-lemon-fcf-fcf-special-case",
-      "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
-      "materialName": "Lemon FCF",
-      "normalizedName": "Lemon FCF",
-      "formulasUsedIn": [
-        "Damp Shoreline v2"
-      ],
-      "priority": "medium",
-      "requiredSourceType": "fcf_special_case",
-      "currentIfraCategory": "fcfSpecialCase",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "likely_fcf_evidence",
-      "suggestedAction": "promote_fcf_evidence_after_review",
-      "confidence": "high",
-      "score": 185,
-      "whySelected": "Top evidence contains FCF, furocoumarin, bergapten, or phototoxic wording for an FCF citrus special case.",
-      "limitations": [
-        "FCF promotion supports special-case evidence only.",
-        "It does not create or modify IFRA category limits.",
-        "Supplier IFRA/SDS still required before launch clearance."
-      ],
-      "candidateCounts": {
-        "totalMatched": 23,
-        "linked": 23,
-        "highValue": 19,
-        "identityOnly": 4,
-        "suppressedWeak": 22
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-lemon-fcf-fcf-special-case",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf",
-          "materialName": "Lemon FCF",
-          "score": 185,
-          "candidateLimitType": "phototoxic_note",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you superior Bergamot Bergaptene Free , now we bring you Capua's beautiful Lemon Furocoumarin free. Regular",
-          "queueItemIds": [
-            "hero-ifra-source-lemon-fcf-fcf_special_case"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "CAS term matches queue identity",
-            "high review priority",
-            "supplier_product_page source",
-            "phototoxic_note candidate"
-          ],
-          "warnings": [],
-          "generatedCommand": "node scripts/promote_reviewed_ifra_candidates.mjs \\\n  --candidate-id \"candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf\" \\\n  --material \"Lemon FCF\" \\\n  --record-type fcf_phototoxic_note \\\n  --finding furocoumarin_free_or_bergapten_free \\\n  --summary \"Reviewed source supports FCF/bergapten-free handling. Not launch clearance.\"",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": true,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
-            "hasFcf": true,
-            "hasSds": false,
-            "hasAllergen": false,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "e with a heavy hand seriously high quality stuff sean lemon superior oil fcf customer citrus suite essential oils cas 84929 31 7 synonyms lemon oil sfumatrice variety citrus limon l burm f classification top note i first we brought you superior bergamot bergaptene free now we bring you capua s beautiful lemon furocoumarin free regular"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-bergamot-eo-fcf-fcf-special-case",
       "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
       "materialName": "Bergamot EO FCF",
@@ -2700,6 +2624,84 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
             "normalizedSnippet": "and fragrance industry the flavour and fragrance industry 39 s premier source for aroma chemicals and essential oils zanos ltd is a b 2 b supplier of aroma chemicals speciality chemicals natural ingredients and vitamins to a diverse range of customers in autumn 2020 stort chemicals limited completed their acquisition of zanos ltd combining our strengt"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-lemon-fcf-fcf-special-case",
+      "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
+      "materialName": "Lemon FCF",
+      "normalizedName": "Lemon FCF",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "medium",
+      "requiredSourceType": "fcf_special_case",
+      "currentIfraCategory": "fcfSpecialCase",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "already_reviewed",
+      "suggestedAction": "already_reviewed",
+      "confidence": "high",
+      "score": 185,
+      "whySelected": "A reviewed source-evidence record already exists for this material.",
+      "limitations": [
+        "Reviewed evidence is not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 23,
+        "linked": 23,
+        "highValue": 19,
+        "identityOnly": 4,
+        "suppressedWeak": 22
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-lemon-fcf-fcf-special-case",
+      "candidateReviewStatus": "accepted",
+      "reviewedSourceRecordIds": [
+        "reviewed-ifra-source-lemon-fcf-fcf-phototoxic-note-furocoumarin-free-or-bergapten-free-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source"
+      ],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf",
+          "materialName": "Lemon FCF",
+          "score": 185,
+          "candidateLimitType": "phototoxic_note",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you superior Bergamot Bergaptene Free , now we bring you Capua's beautiful Lemon Furocoumarin free. Regular",
+          "queueItemIds": [
+            "hero-ifra-source-lemon-fcf-fcf_special_case"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "CAS term matches queue identity",
+            "high review priority",
+            "supplier_product_page source",
+            "phototoxic_note candidate"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": true,
+            "hasIfra": true,
+            "hasCategory4": false,
+            "hasMaxUse": false,
+            "hasFcf": true,
+            "hasSds": false,
+            "hasAllergen": false,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "e with a heavy hand seriously high quality stuff sean lemon superior oil fcf customer citrus suite essential oils cas 84929 31 7 synonyms lemon oil sfumatrice variety citrus limon l burm f classification top note i first we brought you superior bergamot bergaptene free now we bring you capua s beautiful lemon furocoumarin free regular"
           }
         }
       ]

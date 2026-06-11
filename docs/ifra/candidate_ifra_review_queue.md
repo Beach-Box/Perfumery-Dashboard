@@ -1,6 +1,6 @@
 # Candidate IFRA Review Queue
 
-Generated: 2026-06-11T13:35:46.094Z
+Generated: 2026-06-11T14:01:36.059Z
 
 This queue organizes candidate snippets for human review only. Accepted candidates are not runtime IFRA data, do not add IFRA limits, and do not prove launch clearance.
 
@@ -16,12 +16,13 @@ This queue organizes candidate snippets for human review only. Accepted candidat
 - High-priority review items: 64
 - Medium-priority review items: 23
 - Low-priority review items: 0
-- Accepted: 0
+- Accepted: 1
 - Rejected: 0
 - Needs more source: 0
 
 Review status counts:
-- not_started: 87
+- not_started: 86
+- accepted: 1
 
 ## High Priority Linked Candidates
 
@@ -746,44 +747,6 @@ Top candidate snippets:
   - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-fraterworks-com-products-timbersilk-html-5-ell-in-a-modified-type-of-grojsman-accord-aroma
   - Source: downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-fraterworks-com-products-timbersilk.html
   - Snippet: ell in a modified type of Grojsman accord. aromachem Best Seller Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg IFRA 51: 20% in finished product (Cat. 4) Average Use: 3.1% in a perfume compound Odour Family: Woody Appearance: Colourless liquid Longevity: Lasts > 172 hours on a smelling strip. Odour Profile: Timbersilk delivers a s
-
-### Lemon FCF
-
-- Review item: candidate-ifra-review-hero-ifra-source-lemon-fcf-fcf-special-case
-- Queue item: hero-ifra-source-lemon-fcf-fcf_special_case
-- Required source type: fcf_special_case
-- Formulas used in: Damp Shoreline v2
-- Review status: not_started
-- Highest priority: high
-- Candidate count: 23
-- Accepted candidates: None
-- Rejected candidates: None
-- Source files: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html; downloads/source_documents/ifra/from_csv/lemon-fcf-identity-reference-https-www-thegoodscentscompany-com-data-ex-1390711-html.html
-- Source URLs: https://fraterworks.com/products/lemon-oil-fcf; https://www.thegoodscentscompany.com/data/ex1390711.html
-- Suggested review action: Review the source, material identity, amendment/category context, and supplier wording before accepting any Cat 4/fine-fragrance candidate for a later promotion task.
-- Review notes: None
-
-Top candidate snippets:
-- high ifra_category_limit; category: 4; value: 28 %
-  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-8-t-source-best-seller-citrus-eo-missing-all-docum
-  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
-  - Snippet: t source Best Seller citrus eo missing_all_documents Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg SDS_REQUEST IFRA 51: 28% in finished product (Cat. 4) Average Use: 6.5% in a perfume compound Odour Family: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Lemon "Superior" Oil, FCF
-- high ifra_category_limit; value: 28 %
-  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-10-n-chilled-in-a-moderate-freezer-overnight-before
-  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
-  - Snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 28% IFRA 49: 28% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For T
-- high phototoxic_note
-  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-0-lemon-superior-oil-fcf-ndash-fraterworks-sk
-  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
-  - Snippet: Lemon “Superior” Oil, FCF &ndash; Fraterworks Skip to content 🚨 Get 5% off your next order when you review any product Bases Bases ECCENTRICS ECCENTRICS Bouvardia Fleur De Tabac Honeysuckle Osmanthus More… FLORALS FLORALS Gardenia J. Ellis J
-- high phototoxic_note
-  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-1-ss-green-absolute-orris-pallida-signature-resi
-  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
-  - Snippet: ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarw
-- high phototoxic_note
-  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-3-premium-oakmoss-green-absolute-orris-pallida-s
-  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
-  - Snippet: Premium” Oakmoss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarwood More… TINCTUR
 
 ### Maritima
 
@@ -3329,7 +3292,43 @@ _No items in this group._
 
 ## Accepted
 
-_No items in this group._
+### Lemon FCF
+
+- Review item: candidate-ifra-review-hero-ifra-source-lemon-fcf-fcf-special-case
+- Queue item: hero-ifra-source-lemon-fcf-fcf_special_case
+- Required source type: fcf_special_case
+- Formulas used in: Damp Shoreline v2
+- Review status: accepted
+- Highest priority: high
+- Candidate count: 23
+- Accepted candidates: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf
+- Rejected candidates: None
+- Source files: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html; downloads/source_documents/ifra/from_csv/lemon-fcf-identity-reference-https-www-thegoodscentscompany-com-data-ex-1390711-html.html
+- Source URLs: https://fraterworks.com/products/lemon-oil-fcf; https://www.thegoodscentscompany.com/data/ex1390711.html
+- Suggested review action: Review the source, material identity, amendment/category context, and supplier wording before accepting any Cat 4/fine-fragrance candidate for a later promotion task.
+- Review notes: Reviewed source text supports FCF/furocoumarin-free handling. Regular expressed citrus phototoxic restriction should not be applied as if furocoumarins are present. This is not launch clearance.
+
+Top candidate snippets:
+- high ifra_category_limit; category: 4; value: 28 %
+  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-8-t-source-best-seller-citrus-eo-missing-all-docum
+  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
+  - Snippet: t source Best Seller citrus eo missing_all_documents Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg SDS_REQUEST IFRA 51: 28% in finished product (Cat. 4) Average Use: 6.5% in a perfume compound Odour Family: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Lemon "Superior" Oil, FCF
+- high ifra_category_limit; value: 28 %
+  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-10-n-chilled-in-a-moderate-freezer-overnight-before
+  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
+  - Snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 28% IFRA 49: 28% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For T
+- high phototoxic_note
+  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-0-lemon-superior-oil-fcf-ndash-fraterworks-sk
+  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
+  - Snippet: Lemon “Superior” Oil, FCF &ndash; Fraterworks Skip to content 🚨 Get 5% off your next order when you review any product Bases Bases ECCENTRICS ECCENTRICS Bouvardia Fleur De Tabac Honeysuckle Osmanthus More… FLORALS FLORALS Gardenia J. Ellis J
+- high phototoxic_note
+  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-1-ss-green-absolute-orris-pallida-signature-resi
+  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
+  - Snippet: ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarw
+- high phototoxic_note
+  - Candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-3-premium-oakmoss-green-absolute-orris-pallida-s
+  - Source: downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html
+  - Snippet: Premium” Oakmoss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarwood More… TINCTUR
 
 ## Rejected
 

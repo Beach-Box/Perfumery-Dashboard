@@ -1,13 +1,40 @@
 {
   "metadata": {
-    "generatedAt": null,
+    "generatedAt": "2026-06-11T14:01:24.495Z",
     "reportName": "Reviewed IFRA Source Records",
     "scope": "Reviewed source-evidence metadata for narrow promotion pilots.",
     "guardrails": [
       "Reviewed source records are evidence metadata only.",
       "They do not add or modify IFRA category limits.",
       "They are not launch clearance."
-    ]
+    ],
+    "lastPromotedAt": "2026-06-11T14:01:24.495Z",
+    "pilotScope": "fcf_citrus_phototoxic_source_evidence"
   },
-  "records": []
+  "records": [
+    {
+      "id": "reviewed-ifra-source-lemon-fcf-fcf-phototoxic-note-furocoumarin-free-or-bergapten-free-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source",
+      "materialName": "Lemon FCF",
+      "normalizedName": "lemon fcf",
+      "recordType": "fcf_phototoxic_note",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf"
+      ],
+      "reviewedAt": "2026-06-11T14:01:24.495Z",
+      "reviewedBy": "local_user",
+      "reviewStatus": "reviewed_ok",
+      "finding": "furocoumarin_free_or_bergapten_free",
+      "summary": "Reviewed source text supports FCF/furocoumarin-free handling. Regular expressed citrus phototoxic restriction should not be applied as if furocoumarins are present. This is not launch clearance.",
+      "sourceSnippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you superior Bergamot Bergaptene Free , now we bring you Capua's beautiful Lemon Furocoumarin free. Regular",
+      "runtimeUse": "support_special_case_only",
+      "limitations": [
+        "Not launch clearance",
+        "Does not create or modify IFRA category limits",
+        "Supplier IFRA/SDS still required for final compliance"
+      ]
+    }
+  ]
 }
