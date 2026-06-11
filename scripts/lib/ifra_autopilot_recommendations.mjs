@@ -47,6 +47,8 @@ export const IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND =
   "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md";
 
 const STRONG_CATEGORY_SOURCE_TYPES = new Set([
+  "official_ifra_standard_library",
+  "official_ifra_standard_pdf",
   "supplier_product_page",
   "supplier_ifra",
   "supplier_sds",

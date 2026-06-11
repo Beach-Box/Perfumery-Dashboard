@@ -110,6 +110,47 @@ For cached webpages, the harvester saves `.html` plus a metadata JSON containing
 
 CSV links and cached pages are source-acquisition evidence only. They do not prove compliance.
 
+## Harvest Official IFRA Sources
+
+The official IFRA harvester uses three public IFRA source roles conservatively:
+
+- IFRA Standards Library: source-backed standard metadata and public standard download links.
+- IFRA Transparency List: ingredient identity, CAS, and public disclosure support only.
+- IFRA Standards Documentation: methodology/context reference only.
+
+Run the cache-safe report:
+
+```bash
+node scripts/harvest_official_ifra_sources.mjs \
+  --markdown \
+  --write docs/ifra/official_ifra_harvest_report.md
+```
+
+This writes review-first official candidates to:
+
+```bash
+data/ifra_source_acquisition/official_ifra_source_candidates.json
+docs/ifra/official_ifra_source_candidates.md
+```
+
+Use `--download` to fetch/cache public official IFRA index pages and public standard PDFs where download links are available:
+
+```bash
+node scripts/harvest_official_ifra_sources.mjs --download
+```
+
+Downloaded official IFRA files stay local and ignored under:
+
+```bash
+downloads/source_documents/ifra/official_ifra/
+downloads/source_documents/ifra/official_ifra/standards/
+downloads/source_documents/ifra/official_ifra/transparency/
+```
+
+Official Standards Library matches can become `standard_candidate` records for review. Transparency List matches become `identity_support` records only. The Transparency List must not be used as IFRA category-limit data.
+
+The Smart IFRA Evidence Resolver and Autopilot read `official_ifra_source_candidates.json` when present. Exact/high-confidence official standard matches rank above supplier/product-page snippets, but they still remain review workflow evidence. The resolver does not promote category limits, change runtime IFRA classification, or claim launch clearance.
+
 ## Candidate IFRA/Product-Page Extraction
 
 After linked pages are cached, run:

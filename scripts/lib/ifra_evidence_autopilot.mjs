@@ -49,6 +49,7 @@ import {
   writeIfraAutopilotRecommendations,
   writeProposedIfraStructuredRecords,
 } from "./ifra_autopilot_recommendations.mjs";
+import { DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH } from "./official_ifra_harvest.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -756,6 +757,7 @@ export async function runIfraEvidenceAutopilot({
   candidateExtractionsPath = DEFAULT_CANDIDATE_IFRA_EXTRACTIONS_PATH,
   candidateReviewQueuePath = DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH,
   evidenceResolutionPath = DEFAULT_IFRA_EVIDENCE_RESOLUTION_PATH,
+  officialIfraSourceCandidatesPath = DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH,
   reviewedSourceRecordsPath = DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
   proposedRecordsPath = DEFAULT_PROPOSED_IFRA_STRUCTURED_RECORDS_PATH,
   recommendationsPath = DEFAULT_IFRA_AUTOPILOT_RECOMMENDATIONS_PATH,
@@ -821,9 +823,12 @@ export async function runIfraEvidenceAutopilot({
     loadReviewedIfraSourceRecords(reviewedSourceRecordsPath) ||
     loadJsonIfPresent(reviewedSourceRecordsPath) ||
     {};
+  const officialIfraSourceCandidates =
+    loadJsonIfPresent(officialIfraSourceCandidatesPath) || {};
   let evidenceResolution = buildIfraEvidenceResolution({
     sourceQueue,
     candidateExtractions,
+    officialIfraSourceCandidates,
     candidateReviewQueue,
     reviewedSourceRecords,
     ingredientSourceHarvestReport: harvestReport,
@@ -846,6 +851,7 @@ export async function runIfraEvidenceAutopilot({
   evidenceResolution = buildIfraEvidenceResolution({
     sourceQueue,
     candidateExtractions,
+    officialIfraSourceCandidates,
     candidateReviewQueue,
     reviewedSourceRecords,
     ingredientSourceHarvestReport: harvestReport,

@@ -1,0 +1,1187 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T15:15:04.410Z",
+    "reportName": "Official IFRA Source Harvest",
+    "regenerateCommand": "node scripts/harvest_official_ifra_sources.mjs --markdown --write docs/ifra/official_ifra_harvest_report.md",
+    "officialSources": {
+      "standardsLibrary": "https://ifrafragrance.org/standards-library",
+      "transparencyList": "https://ifrafragrance.org/transparency-list",
+      "standardsDocumentation": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation"
+    },
+    "sourceRoles": {
+      "transparencyList": "Ingredient identity/CAS support only; not IFRA category-limit evidence.",
+      "standardsLibrary": "Primary official IFRA source for standards metadata and PDF download links.",
+      "standardsDocumentation": "Methodology/context reference; not per-material limit data unless explicit material data is present."
+    },
+    "guardrails": [
+      "Official candidates are review-first records.",
+      "No runtime IFRA limits are promoted by this harvester.",
+      "No launch clearance is claimed.",
+      "Weak substring matches are reported but not auto-linked."
+    ]
+  },
+  "summary": {
+    "queueItemCount": 44,
+    "candidateCount": 6,
+    "officialStandardCandidateCount": 6,
+    "officialIdentitySupportCount": 0,
+    "noOfficialMatchCount": 38,
+    "needsSupplierDocumentInsteadCount": 18,
+    "weakAmbiguousMatchCount": 10,
+    "downloadedPdfCount": 0,
+    "candidateUseCounts": {
+      "standard_candidate": 6
+    },
+    "sourceTypeCounts": {
+      "official_ifra_standard_library": 6
+    },
+    "matchTypeCounts": {
+      "cas": 6
+    },
+    "matchConfidenceCounts": {
+      "high": 6
+    }
+  },
+  "officialMatchesFound": [
+    {
+      "id": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",
+      "materialName": "Cashmeran",
+      "formulaMaterialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "materialNames": [
+        "Cashmeran"
+      ],
+      "sourceIdentityNames": [
+        "Cashmeran"
+      ],
+      "queueItemId": "hero-ifra-source-cashmeran-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-cashmeran-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+      "cas": [
+        "33704-61-9"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "3.8",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde",
+      "materialName": "Cyclamen Aldehyde",
+      "formulaMaterialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "materialNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "sourceIdentityNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-cyclamen-aldehyde-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Cyclamen aldehyde",
+      "cas": [
+        "103-95-7"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.95",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca",
+      "materialName": "Helional®",
+      "formulaMaterialName": "Helional®",
+      "sourceIdentityName": "Helional®",
+      "materialNames": [
+        "Helional®"
+      ],
+      "sourceIdentityNames": [
+        "Helional®"
+      ],
+      "queueItemId": "hero-ifra-source-helional-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-helional-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+      "cas": [
+        "1205-17-0"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "2.6",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts",
+      "materialName": "Oakmoss Absolute 10%",
+      "formulaMaterialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "materialNames": [
+        "Oakmoss Absolute 10%"
+      ],
+      "sourceIdentityNames": [
+        "Oakmoss Absolute"
+      ],
+      "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-oakmoss-absolute-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Oakmoss extracts",
+      "cas": [
+        "90028-68-5",
+        "68917-10-2",
+        "9000-50-4"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.1",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+      "materialName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "materialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "sourceIdentityNames": [
+        "Vetiveryl Acetate"
+      ],
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "queueItemIds": [
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Acetylated Vetiver oil",
+      "cas": [
+        "84082-84-8",
+        "68917-34-0",
+        "73246-97-6",
+        "62563-80-8"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang-Ylang Complete Oil",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "materialNames": [
+        "Ylang-Ylang Complete Oil"
+      ],
+      "sourceIdentityNames": [
+        "Ylang-Ylang Complete Oil"
+      ],
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Ylang ylang extracts",
+      "cas": [
+        "8006-81-3",
+        "68606-83-7",
+        "83863-30-3"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.73",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    }
+  ],
+  "identitySupportMatches": [],
+  "noOfficialMatchFound": [
+    {
+      "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
+      "materialName": "Aldehyde C-18",
+      "sourceIdentityName": "Aldehyde C-18",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed",
+      "materialName": "Aldehyde C-8",
+      "sourceIdentityName": "Aldehyde C-8",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
+      "materialName": "Allyl Amyl Glycolate",
+      "sourceIdentityName": "Allyl Amyl Glycolate",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
+      "materialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+      "materialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed",
+      "materialName": "Caryophyllene Oxide",
+      "sourceIdentityName": "Caryophyllene Oxide",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed",
+      "materialName": "Dihydromyrcenol",
+      "sourceIdentityName": "Dihydromyrcenol",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed",
+      "materialName": "Ethyl Linalool",
+      "sourceIdentityName": "Ethyl Linalool",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
+      "materialName": "Ethyl Linalyl Acetate",
+      "sourceIdentityName": "Ethyl Linalyl Acetate",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
+      "materialName": "Ethyl Vanillin 10%",
+      "sourceIdentityName": "Ethyl Vanillin",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed",
+      "materialName": "Geosmin 1% TEC",
+      "sourceIdentityName": "Geosmin",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-hedione-global_ifra_standard_needed",
+      "materialName": "Hedione",
+      "sourceIdentityName": "Hedione",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+      "materialName": "Iso E Super",
+      "sourceIdentityName": "Iso E Super",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+      "materialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed",
+      "materialName": "Phenyl Ethyl Acetate",
+      "sourceIdentityName": "Phenyl Ethyl Acetate",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
+      "materialName": "Cedarwood Virginia EO",
+      "sourceIdentityName": "Cedarwood Virginia EO",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
+      "materialName": "Cypriol",
+      "sourceIdentityName": "Cypriol",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
+      "materialName": "Pink Peppercorn Oil P&N",
+      "sourceIdentityName": "Pink Peppercorn Oil P&N",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+      "materialName": "Seaweed Absolute 10%",
+      "sourceIdentityName": "Seaweed Absolute",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-algenone-specialty_supplier_document_needed",
+      "materialName": "Algenone",
+      "sourceIdentityName": "Algenone",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
+      "materialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+      "materialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
+      "materialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed",
+      "materialName": "Cyclogalbanate",
+      "sourceIdentityName": "Cyclogalbanate",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-florol-specialty_supplier_document_needed",
+      "materialName": "Florol",
+      "sourceIdentityName": "Florol",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed",
+      "materialName": "Hedione HC",
+      "sourceIdentityName": "Hedione HC",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-maritima-specialty_supplier_document_needed",
+      "materialName": "Maritima",
+      "sourceIdentityName": "Maritima",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-oceanol-specialty_supplier_document_needed",
+      "materialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+      "materialName": "Orbitone T Neo",
+      "sourceIdentityName": "Orbitone T Neo",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+      "materialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+      "materialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "requiredSourceType": "fcf_special_case",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
+      "materialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "requiredSourceType": "fcf_special_case",
+      "recommendedNextAction": "Acquire supplier IFRA/SDS or product-specific document."
+    },
+    {
+      "queueItemId": "hero-ifra-source-botanical-musk-accord-accord_component_expansion_deferred",
+      "materialName": "Botanical Musk Accord",
+      "sourceIdentityName": "Botanical Musk Accord",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-driftwood-accord-accord_component_expansion_deferred",
+      "materialName": "Driftwood Accord",
+      "sourceIdentityName": "Driftwood Accord",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-driftwood-accord-v2-accord_component_expansion_deferred",
+      "materialName": "Driftwood Accord v2",
+      "sourceIdentityName": "Driftwood Accord v2",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    },
+    {
+      "queueItemId": "hero-ifra-source-iso-e-amberxtreme-1-accord_component_expansion_deferred",
+      "materialName": "Iso E + AmberXtreme 1%",
+      "sourceIdentityName": "Iso E + AmberXtreme 1%",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "recommendedNextAction": "Search official IFRA Standards Library by exact CAS/title or upload official PDF."
+    }
+  ],
+  "needsSupplierDocumentInstead": [
+    {
+      "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
+      "materialName": "Cedarwood Virginia EO",
+      "sourceIdentityName": "Cedarwood Virginia EO",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
+      "materialName": "Cypriol",
+      "sourceIdentityName": "Cypriol",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
+      "materialName": "Pink Peppercorn Oil P&N",
+      "sourceIdentityName": "Pink Peppercorn Oil P&N",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+      "materialName": "Seaweed Absolute 10%",
+      "sourceIdentityName": "Seaweed Absolute",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-algenone-specialty_supplier_document_needed",
+      "materialName": "Algenone",
+      "sourceIdentityName": "Algenone",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
+      "materialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+      "materialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
+      "materialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed",
+      "materialName": "Cyclogalbanate",
+      "sourceIdentityName": "Cyclogalbanate",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-florol-specialty_supplier_document_needed",
+      "materialName": "Florol",
+      "sourceIdentityName": "Florol",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed",
+      "materialName": "Hedione HC",
+      "sourceIdentityName": "Hedione HC",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-maritima-specialty_supplier_document_needed",
+      "materialName": "Maritima",
+      "sourceIdentityName": "Maritima",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-oceanol-specialty_supplier_document_needed",
+      "materialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+      "materialName": "Orbitone T Neo",
+      "sourceIdentityName": "Orbitone T Neo",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+      "materialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+      "materialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "requiredSourceType": "fcf_special_case",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    },
+    {
+      "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
+      "materialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "requiredSourceType": "fcf_special_case",
+      "recommendedNextAction": "Official IFRA match was not enough; acquire supplier IFRA/SDS for product-specific launch review."
+    }
+  ],
+  "weakAmbiguousMatches": [
+    {
+      "materialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "standardTitle": "Menthadiene-7-methyl formate",
+      "cas": [
+        "68683-20-5"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "7 methyl"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "standardTitle": "7-Methylcoumarin",
+      "cas": [
+        "2445-83-2"
+      ],
+      "standardType": "Prohibition",
+      "amendment": "40",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "7 methyl"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Ethyl Linalool",
+      "sourceIdentityName": "Ethyl Linalool",
+      "standardTitle": "Linalool",
+      "cas": [
+        "78-70-6",
+        "126-90-9",
+        "126-91-0"
+      ],
+      "standardType": "Specification",
+      "amendment": "38",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "ethyl linalool",
+        "supplier ethyl linalool",
+        "supplier product ethyl linalool"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Ethyl Vanillin 10%",
+      "sourceIdentityName": "Ethyl Vanillin",
+      "standardTitle": "Benzaldehyde",
+      "cas": [
+        "100-52-7"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "3 ethoxy 4 hydroxybenzaldehyde"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "standardTitle": "3-Methyl-2-(pentyloxy)cyclopent-2-en-1-one",
+      "cas": [
+        "68922-13-4"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "methyl 2"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "standardTitle": "3,7-Dimethyl-2-octen-1-ol",
+      "cas": [
+        "40607-48-5"
+      ],
+      "standardType": "Prohibition",
+      "amendment": "38",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "methyl 2"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "standardTitle": "3-Methyl-2(3)-nonenenitrile",
+      "cas": [
+        "53153-66-5"
+      ],
+      "standardType": "Prohibition",
+      "amendment": "43",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "methyl 2"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "standardTitle": "3-Methyl-2-(pentyloxy)cyclopent-2-en-1-one",
+      "cas": [
+        "68922-13-4"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "methyl 2"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "standardTitle": "2,4-Dihydroxy-3-methylbenzaldehyde",
+      "cas": [
+        "6248-20-0"
+      ],
+      "standardType": "Prohibition",
+      "amendment": "40",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "4 dihydroxy 3"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    },
+    {
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "standardTitle": "3,7-Dimethyl-2-octen-1-ol",
+      "cas": [
+        "40607-48-5"
+      ],
+      "standardType": "Prohibition",
+      "amendment": "38",
+      "matchType": "weak_substring",
+      "matchConfidence": "low",
+      "matchedTerms": [
+        "methyl 2"
+      ],
+      "notes": [
+        "Weak substring match only; not auto-linked as an official source candidate."
+      ]
+    }
+  ],
+  "downloadedStandardPdfs": [],
+  "candidates": [
+    {
+      "id": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",
+      "materialName": "Cashmeran",
+      "formulaMaterialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "materialNames": [
+        "Cashmeran"
+      ],
+      "sourceIdentityNames": [
+        "Cashmeran"
+      ],
+      "queueItemId": "hero-ifra-source-cashmeran-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-cashmeran-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+      "cas": [
+        "33704-61-9"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "3.8",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde",
+      "materialName": "Cyclamen Aldehyde",
+      "formulaMaterialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "materialNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "sourceIdentityNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-cyclamen-aldehyde-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Cyclamen aldehyde",
+      "cas": [
+        "103-95-7"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.95",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca",
+      "materialName": "Helional®",
+      "formulaMaterialName": "Helional®",
+      "sourceIdentityName": "Helional®",
+      "materialNames": [
+        "Helional®"
+      ],
+      "sourceIdentityNames": [
+        "Helional®"
+      ],
+      "queueItemId": "hero-ifra-source-helional-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-helional-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+      "cas": [
+        "1205-17-0"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "2.6",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts",
+      "materialName": "Oakmoss Absolute 10%",
+      "formulaMaterialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "materialNames": [
+        "Oakmoss Absolute 10%"
+      ],
+      "sourceIdentityNames": [
+        "Oakmoss Absolute"
+      ],
+      "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-oakmoss-absolute-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Oakmoss extracts",
+      "cas": [
+        "90028-68-5",
+        "68917-10-2",
+        "9000-50-4"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.1",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+      "materialName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "materialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "sourceIdentityNames": [
+        "Vetiveryl Acetate"
+      ],
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "queueItemIds": [
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Acetylated Vetiver oil",
+      "cas": [
+        "84082-84-8",
+        "68917-34-0",
+        "73246-97-6",
+        "62563-80-8"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    },
+    {
+      "id": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang-Ylang Complete Oil",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "materialNames": [
+        "Ylang-Ylang Complete Oil"
+      ],
+      "sourceIdentityNames": [
+        "Ylang-Ylang Complete Oil"
+      ],
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "queueItemIds": [
+        "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+      ],
+      "sourceType": "official_ifra_standard_library",
+      "matchType": "cas",
+      "matchConfidence": "high",
+      "queueLinkConfidence": "high",
+      "standardTitle": "Ylang ylang extracts",
+      "cas": [
+        "8006-81-3",
+        "68606-83-7",
+        "83863-30-3"
+      ],
+      "standardType": "Restriction",
+      "amendment": "49",
+      "publicationDate": "2020",
+      "status": "active",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "localFile": "src/data/ifra_master_standards.json",
+      "candidateUse": "standard_candidate",
+      "reviewStatus": "needs_review",
+      "candidateLimitType": "ifra_category_limit",
+      "reviewPriority": "high",
+      "category": "4",
+      "candidateValue": "0.73",
+      "candidateUnit": "%",
+      "snippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
+      "notes": [
+        "Official IFRA source candidate; review before structured promotion.",
+        "This candidate does not update runtime IFRA limits.",
+        "Matched through committed structured master standards."
+      ]
+    }
+  ]
+}

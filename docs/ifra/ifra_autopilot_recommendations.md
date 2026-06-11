@@ -1,23 +1,41 @@
 # IFRA Autopilot Recommendations
 
-Generated: 2026-06-11T15:04:41.094Z
+Generated: 2026-06-11T15:15:18.991Z
 
 Autopilot did the first-pass evidence review. Proposed structured records are staged for final review only; no runtime IFRA limits have been changed and this is not launch clearance.
 
 ## Autopilot Summary
 
 - Queue items: 44
-- Proposed structured records ready for final review: 11
+- Proposed structured records ready for final review: 13
 - Auto-accepted non-limit evidence: 2
 - Needs better source: 24
 - No useful evidence found: 1
 - Rejected/noisy evidence: 229
-- Already handled: 3
+- Already handled: 1
 - Deferred: 4
 
-Recommended next action: 11 proposed records can be reviewed for promotion. No runtime IFRA limits have been changed.
+Recommended next action: 13 proposed records can be reviewed for promotion. No runtime IFRA limits have been changed.
 
 ## Proposed Structured Records Ready For Final Review
+
+### Vetiveryl Acetate
+
+- Source identity: Vetiveryl Acetate
+- Proposed record: ifra_category_limit
+- Proposed category/value: 4 0.9 %
+- Source: https://ifrafragrance.org/standards-library
+- Evidence confidence: high
+- Promotion status: proposed
+- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
+- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
+- Source snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
+
+Final review command suggestion (future workflow; do not run until that script exists):
+
+```bash
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca" --status reviewed_ok
+```
 
 ### Methyl Ionone Alpha Extra
 
@@ -145,76 +163,94 @@ Final review command suggestion (future workflow; do not run until that script e
 node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-timbersilk-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc" --status reviewed_ok
 ```
 
-### Vetiveryl Acetate
-
-- Source identity: Vetiveryl Acetate
-- Proposed record: ifra_category_limit
-- Proposed category/value: n/a 0.909 %
-- Source: https://fraterworks.com/products/vetiveryl-acetate-20326
-- Evidence confidence: high
-- Promotion status: proposed
-- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
-- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
-- Source snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.909% IFRA 49: 0.909% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer...
-
-Final review command suggestion (future workflow; do not run until that script exists):
-
-```bash
-node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-vetiveryl-acetate-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc" --status reviewed_ok
-```
-
 ### Cashmeran
 
 - Source identity: Cashmeran
 - Proposed record: ifra_category_limit
-- Proposed category/value: n/a 3.8 %
-- Source: https://fraterworks.com/products/cashmeran
+- Proposed category/value: 4 3.8 %
+- Source: https://ifrafragrance.org/standards-library
 - Evidence confidence: high
 - Promotion status: proposed
 - Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
 - Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
-- Source snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 3.8% IFRA 49: 3.8% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For
+- Source snippet: Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.
 
 Final review command suggestion (future workflow; do not run until that script exists):
 
 ```bash
-node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-cashmeran-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc" --status reviewed_ok
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-cashmeran-ifra-category-limit-official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-" --status reviewed_ok
 ```
 
 ### Cyclamen Aldehyde
 
 - Source identity: Cyclamen Aldehyde
 - Proposed record: ifra_category_limit
-- Proposed category/value: n/a 0.95 %
-- Source: https://fraterworks.com/products/cyclamen-aldehyde
+- Proposed category/value: 4 0.95 %
+- Source: https://ifrafragrance.org/standards-library
 - Evidence confidence: high
 - Promotion status: proposed
 - Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
 - Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
-- Source snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.95% IFRA 49: 0.95% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... F
+- Source snippet: Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.
 
 Final review command suggestion (future workflow; do not run until that script exists):
 
 ```bash
-node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc" --status reviewed_ok
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-li" --status reviewed_ok
 ```
 
 ### Helional®
 
 - Source identity: Helional®
 - Proposed record: ifra_category_limit
-- Proposed category/value: n/a 2.6 %
-- Source: https://fraterworks.com/products/helional
+- Proposed category/value: 4 2.6 %
+- Source: https://ifrafragrance.org/standards-library
 - Evidence confidence: high
 - Promotion status: proposed
 - Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
 - Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
-- Source snippet: n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 2.6% IFRA 49: 2.6% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For
+- Source snippet: Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.
 
 Final review command suggestion (future workflow; do not run until that script exists):
 
 ```bash
-node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-helional-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc" --status reviewed_ok
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-helional-ifra-category-limit-official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-a" --status reviewed_ok
+```
+
+### Oakmoss Absolute 10%
+
+- Source identity: Oakmoss Absolute
+- Proposed record: ifra_category_limit
+- Proposed category/value: 4 0.1 %
+- Source: https://ifrafragrance.org/standards-library
+- Evidence confidence: high
+- Promotion status: proposed
+- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
+- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
+- Source snippet: Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.
+
+Final review command suggestion (future workflow; do not run until that script exists):
+
+```bash
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-oakmoss-absolute-10-ifra-category-limit-official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-lim" --status reviewed_ok
+```
+
+### Ylang-Ylang Complete Oil
+
+- Source identity: Ylang-Ylang Complete Oil
+- Proposed record: ifra_category_limit
+- Proposed category/value: 4 0.73 %
+- Source: https://ifrafragrance.org/standards-library
+- Evidence confidence: high
+- Promotion status: proposed
+- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
+- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
+- Source snippet: Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.
+
+Final review command suggestion (future workflow; do not run until that script exists):
+
+```bash
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-ylang-ylang-complete-oil-ifra-category-limit-official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-cate" --status reviewed_ok
 ```
 
 ## Auto-Accepted Non-Limit Evidence
@@ -496,22 +532,6 @@ node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-lemon-fcf-photo
 - Next action: No immediate acquisition action needed.
 - Current evidence: already_reviewed
 - Best current snippet: e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you superior Bergamot Bergaptene Free , now we bring you Capua's beautiful Lemon Furocoumarin free. Regular
-
-### Ylang-Ylang Complete Oil
-
-- Source identity: Ylang-Ylang Complete Oil
-- Status: already_handled
-- Next action: No immediate acquisition action needed.
-- Current evidence: not_applicable
-- Best current snippet: ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of
-
-### Oakmoss Absolute 10%
-
-- Source identity: Oakmoss Absolute
-- Status: already_handled
-- Next action: No immediate acquisition action needed.
-- Current evidence: not_applicable
-- Best current snippet: deal with rage productively. Documents Technical Data Sheet (TDS) Technical Data Sheet (TDS) " name="downloadfilename" /> Download Material Safety Data Sheet (MSDS) Material Safety Data Sheet (MSDS) " name="downloadfilename" /> Download IFRA Conformity Certificate IFRA Conformity Certificate " name="downloadfilename" /> Download EU Declaration EU Declaration
 
 ## Deferred
 

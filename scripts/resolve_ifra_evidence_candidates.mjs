@@ -17,6 +17,7 @@ import {
   DEFAULT_CANDIDATE_IFRA_EXTRACTIONS_PATH,
   DEFAULT_INGREDIENT_SOURCE_HARVEST_REPORT_PATH,
 } from "./lib/ifra_source_harvest.mjs";
+import { DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH } from "./lib/official_ifra_harvest.mjs";
 import { DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH } from "./lib/candidate_ifra_review_queue.mjs";
 import { DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH } from "./lib/reviewed_ifra_source_records.mjs";
 
@@ -42,6 +43,8 @@ Options:
   --top <count>             Candidate snippets per material in report. Defaults to 1.
   --queue <path>            Source acquisition queue JSON.
   --candidates <path>       Candidate extraction JSON.
+  --official-candidates <path>
+                            Official IFRA source candidate JSON.
   --review-queue <path>     Candidate review queue JSON.
   --reviewed-records <path> Reviewed IFRA source records JSON.
   --harvest <path>          Ingredient source harvest report JSON.
@@ -50,6 +53,7 @@ Options:
 Defaults:
   queue: ${path.relative(ROOT, DEFAULT_HERO_IFRA_SOURCE_QUEUE_PATH)}
   candidates: ${path.relative(ROOT, DEFAULT_CANDIDATE_IFRA_EXTRACTIONS_PATH)}
+  official candidates: ${path.relative(ROOT, DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH)}
   review queue: ${path.relative(ROOT, DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH)}
   reviewed records: ${path.relative(ROOT, DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH)}
   harvest: ${path.relative(ROOT, DEFAULT_INGREDIENT_SOURCE_HARVEST_REPORT_PATH)}
@@ -65,6 +69,7 @@ function parseArgs(argv) {
     outputPath: DEFAULT_IFRA_EVIDENCE_RESOLUTION_PATH,
     sourceQueuePath: DEFAULT_HERO_IFRA_SOURCE_QUEUE_PATH,
     candidateExtractionsPath: DEFAULT_CANDIDATE_IFRA_EXTRACTIONS_PATH,
+    officialIfraSourceCandidatesPath: DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH,
     candidateReviewQueuePath: DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH,
     reviewedSourceRecordsPath: DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
     ingredientSourceHarvestReportPath: DEFAULT_INGREDIENT_SOURCE_HARVEST_REPORT_PATH,
@@ -101,6 +106,10 @@ function parseArgs(argv) {
       const value = argv[++index];
       if (!value) throw new Error("--candidates requires a path");
       args.candidateExtractionsPath = resolveRepoPath(value);
+    } else if (arg === "--official-candidates") {
+      const value = argv[++index];
+      if (!value) throw new Error("--official-candidates requires a path");
+      args.officialIfraSourceCandidatesPath = resolveRepoPath(value);
     } else if (arg === "--review-queue") {
       const value = argv[++index];
       if (!value) throw new Error("--review-queue requires a path");

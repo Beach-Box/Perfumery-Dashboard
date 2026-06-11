@@ -18,6 +18,10 @@ import {
   loadReviewedIfraSourceRecords,
 } from "./reviewed_ifra_source_records.mjs";
 import { buildIfraSourceIdentity } from "./ifra_source_identity.mjs";
+import {
+  DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH,
+  officialCandidatesAsEvidenceCandidates,
+} from "./official_ifra_harvest.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -40,6 +44,9 @@ export const IFRA_EVIDENCE_RESOLVER_REGENERATE_COMMAND =
 
 const PRIORITY_SCORE = { high: 30, medium: 18, low: 4 };
 const SOURCE_TYPE_SCORE = {
+  official_ifra_standard_pdf: 54,
+  official_ifra_standard_library: 50,
+  official_ifra_transparency_list: 4,
   supplier_ifra: 34,
   supplier_sds: 28,
   supplier_product_page: 24,
@@ -718,6 +725,7 @@ function summarizeResolution(items = [], candidateExtractions = {}, reviewedReco
 export function buildIfraEvidenceResolution({
   sourceQueue = {},
   candidateExtractions = {},
+  officialIfraSourceCandidates = {},
   candidateReviewQueue = {},
   reviewedSourceRecords = {},
   ingredientSourceHarvestReport = {},
@@ -728,13 +736,17 @@ export function buildIfraEvidenceResolution({
   const candidates = Array.isArray(candidateExtractions?.candidates)
     ? candidateExtractions.candidates
     : [];
+  const officialCandidates = officialCandidatesAsEvidenceCandidates(
+    officialIfraSourceCandidates
+  );
+  const allCandidates = [...officialCandidates, ...candidates];
   const reviewQueueLookup = buildReviewQueueLookup(candidateReviewQueue);
   const reviewedLookup = buildReviewedRecordsLookup(reviewedSourceRecords);
   const items = queueItems
     .map((queueItem) =>
       buildResolutionItem({
         queueItem,
-        candidates,
+        candidates: allCandidates,
         reviewQueueLookup,
         reviewedLookup,
         top,
@@ -749,6 +761,8 @@ export function buildIfraEvidenceResolution({
       sourceQueueGeneratedAt: sourceQueue?.metadata?.generatedAt || null,
       candidateExtractionGeneratedAt:
         candidateExtractions?.metadata?.generatedAt || null,
+      officialIfraSourceCandidateGeneratedAt:
+        officialIfraSourceCandidates?.metadata?.generatedAt || null,
       candidateReviewQueueGeneratedAt:
         candidateReviewQueue?.metadata?.generatedAt || null,
       ingredientSourceHarvestGeneratedAt:
@@ -760,7 +774,10 @@ export function buildIfraEvidenceResolution({
         "No launch clearance is claimed.",
       ],
     },
-    summary: summarizeResolution(items, candidateExtractions, reviewedSourceRecords),
+    summary: {
+      ...summarizeResolution(items, candidateExtractions, reviewedSourceRecords),
+      officialIfraSourceCandidateCount: officialCandidates.length,
+    },
     items,
   };
 }
@@ -768,6 +785,7 @@ export function buildIfraEvidenceResolution({
 export function buildIfraEvidenceResolutionFromFiles({
   sourceQueuePath = DEFAULT_HERO_IFRA_SOURCE_QUEUE_PATH,
   candidateExtractionsPath = DEFAULT_CANDIDATE_IFRA_EXTRACTIONS_PATH,
+  officialIfraSourceCandidatesPath = DEFAULT_OFFICIAL_IFRA_SOURCE_CANDIDATES_PATH,
   candidateReviewQueuePath = DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH,
   reviewedSourceRecordsPath = DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
   ingredientSourceHarvestReportPath = DEFAULT_INGREDIENT_SOURCE_HARVEST_REPORT_PATH,
@@ -777,6 +795,8 @@ export function buildIfraEvidenceResolutionFromFiles({
   return buildIfraEvidenceResolution({
     sourceQueue: loadExistingHeroIfraSourceQueue(sourceQueuePath) || {},
     candidateExtractions: loadJsonIfPresent(candidateExtractionsPath) || {},
+    officialIfraSourceCandidates:
+      loadJsonIfPresent(officialIfraSourceCandidatesPath) || {},
     candidateReviewQueue:
       loadExistingCandidateIfraReviewQueue(candidateReviewQueuePath) || {},
     reviewedSourceRecords:
@@ -895,6 +915,10 @@ export function formatIfraEvidenceResolutionMarkdown(report = {}) {
     "",
     formatCountLine("Queue items", summary.queueItemCount),
     formatCountLine("Retained candidates considered", summary.retainedCandidateCount),
+    formatCountLine(
+      "Official IFRA source candidates considered",
+      summary.officialIfraSourceCandidateCount
+    ),
     formatCountLine("Review-ready or candidate-found items", summary.reviewReadyCount),
     formatCountLine("Likely FCF evidence items", summary.likelyFcfEvidenceCount),
     formatCountLine("Needs supplier document items", summary.needsSupplierDocCount),
@@ -931,6 +955,7 @@ export function formatIfraEvidenceResolutionText(report = {}) {
     "",
     `Queue items: ${summary.queueItemCount || 0}`,
     `Retained candidates considered: ${summary.retainedCandidateCount || 0}`,
+    `Official IFRA source candidates considered: ${summary.officialIfraSourceCandidateCount || 0}`,
     `Review-ready/candidate-found: ${summary.reviewReadyCount || 0}`,
     `Likely FCF evidence: ${summary.likelyFcfEvidenceCount || 0}`,
     `Needs supplier document: ${summary.needsSupplierDocCount || 0}`,

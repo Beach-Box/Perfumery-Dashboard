@@ -1,10 +1,11 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:02:00.393Z",
+    "generatedAt": "2026-06-11T15:15:12.078Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
     "sourceQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
     "candidateExtractionGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "officialIfraSourceCandidateGeneratedAt": "2026-06-11T15:15:04.410Z",
     "candidateReviewQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
     "ingredientSourceHarvestGeneratedAt": "2026-06-11T15:02:00.393Z",
     "topCandidatesPerMaterial": 1,
@@ -49,14 +50,97 @@
     "alreadyReviewedCount": 1,
     "deferredCount": 4,
     "topReviewFirstMaterials": [
+      "Vetiveryl Acetate",
       "Methyl Ionone Alpha Extra",
       "Calone 1951 20%",
       "Cetalox",
-      "Clearwood",
-      "Geosmin 1% TEC"
-    ]
+      "Clearwood"
+    ],
+    "officialIfraSourceCandidateCount": 6
   },
   "items": [
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "materialName": "Vetiveryl Acetate",
+      "normalizedName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 211,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 31,
+        "linked": 31,
+        "highValue": 12,
+        "identityOnly": 19,
+        "suppressedWeak": 30
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+          "materialName": "Vetiveryl Acetate",
+          "score": 211,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
+          "candidateValue": "0.9",
+          "candidateUnit": "%",
+          "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+          "queueItemIds": [
+            "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+          ],
+          "queueLinkConfidence": "high",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "official_ifra_standard_library source",
+            "ifra_category_limit candidate",
+            "IFRA language present"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "official ifra standards library match for acetylated vetiver oil type restriction amendment 49 publication date 2020 category 4 0 9"
+          }
+        }
+      ]
+    },
     {
       "id": "ifra-evidence-resolution-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
       "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
@@ -1671,88 +1755,6 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-      "materialName": "Vetiveryl Acetate",
-      "normalizedName": "Vetiveryl Acetate",
-      "formulaMaterialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "activeMaterialName": "Vetiveryl Acetate",
-      "dilutionLabel": "",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 163,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 30,
-        "linked": 30,
-        "highValue": 11,
-        "identityOnly": 19,
-        "suppressedWeak": 29
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "in_review",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before",
-          "materialName": "Vetiveryl Acetate",
-          "score": 163,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
-          "category": "",
-          "candidateValue": "0.909",
-          "candidateUnit": "%",
-          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.909% IFRA 49: 0.909% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer...",
-          "queueItemIds": [
-            "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
-          ],
-          "warnings": [],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": false,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 0 909 ifra 49 0 909 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-ethyl-linalyl-acetate-global-ifra-standard-needed",
       "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
       "materialName": "Ethyl Linalyl Acetate",
@@ -2947,172 +2949,6 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
-      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
-      "materialName": "Ylang-Ylang Complete Oil",
-      "normalizedName": "Ylang-Ylang Complete Oil",
-      "formulaMaterialName": "Ylang Ylang 10%",
-      "sourceIdentityName": "Ylang-Ylang Complete Oil",
-      "activeMaterialName": "Ylang-Ylang Complete Oil",
-      "dilutionLabel": "10%",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1"
-      ],
-      "priority": "low",
-      "requiredSourceType": "already_structured",
-      "currentIfraCategory": "aliasIfraMatch",
-      "queueStatus": "not_applicable",
-      "queueReviewStatus": "reviewed_ok",
-      "evidenceStatus": "not_applicable",
-      "suggestedAction": "ignore_not_relevant",
-      "confidence": "high",
-      "score": 167,
-      "whySelected": "Current structured IFRA coverage already exists.",
-      "limitations": [
-        "Existing coverage is still not launch clearance."
-      ],
-      "candidateCounts": {
-        "totalMatched": 10,
-        "linked": 10,
-        "highValue": 6,
-        "identityOnly": 4,
-        "suppressedWeak": 9
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html-html-1-ith-a-light-green-woody-undertone-an-excellent",
-          "materialName": "Ylang Ylang Complete",
-          "score": 167,
-          "candidateLimitType": "allergen_or_restriction",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of",
-          "queueItemIds": [
-            "hero-ifra-source-ylang-ylang-complete-already_structured",
-            "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "allergen_or_restriction candidate",
-            "source URL came from matched ingredient reference"
-          ],
-          "warnings": [],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "ith a light green woody undertone an excellent fixative appearance colorless to pale yellow transparent slightly oily liquid shipping restriction 0 non hazardous safety considerations possible skin sensitization moderate risk use with caution on hypersensitive or damaged skin and on children under two years of age a maximum dermal use level of"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-oakmoss-absolute-already-structured",
-      "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
-      "materialName": "Oakmoss Absolute 10%",
-      "normalizedName": "Oakmoss Absolute",
-      "formulaMaterialName": "Oakmoss Absolute 10%",
-      "sourceIdentityName": "Oakmoss Absolute",
-      "activeMaterialName": "Oakmoss Absolute",
-      "dilutionLabel": "10%",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "low",
-      "requiredSourceType": "already_structured",
-      "currentIfraCategory": "aliasIfraMatch",
-      "queueStatus": "not_applicable",
-      "queueReviewStatus": "reviewed_ok",
-      "evidenceStatus": "not_applicable",
-      "suggestedAction": "ignore_not_relevant",
-      "confidence": "high",
-      "score": 165,
-      "whySelected": "Current structured IFRA coverage already exists.",
-      "limitations": [
-        "Existing coverage is still not launch clearance."
-      ],
-      "candidateCounts": {
-        "totalMatched": 13,
-        "linked": 13,
-        "highValue": 6,
-        "identityOnly": 6,
-        "suppressedWeak": 12
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-oakmoss-absolute-already-structured",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-oakmoss-absolute-10-product-page-https-www-natureinbottle-com-product-oakmoss-absolute-html-2-deal-with-rage-productively-documents-technical",
-          "materialName": "Oakmoss Absolute 10%",
-          "score": 165,
-          "candidateLimitType": "allergen_or_restriction",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://www.natureinbottle.com/product/oakmoss_absolute",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/oakmoss-absolute-10-product-page-https-www-natureinbottle-com-product-oakmoss-absolute.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "deal with rage productively. Documents Technical Data Sheet (TDS) Technical Data Sheet (TDS) \" name=\"downloadfilename\" /> Download Material Safety Data Sheet (MSDS) Material Safety Data Sheet (MSDS) \" name=\"downloadfilename\" /> Download IFRA Conformity Certificate IFRA Conformity Certificate \" name=\"downloadfilename\" /> Download EU Declaration EU Declaration",
-          "queueItemIds": [
-            "hero-ifra-source-oakmoss-absolute-already_structured"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "allergen_or_restriction candidate",
-            "source URL came from matched ingredient reference"
-          ],
-          "warnings": [],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
-            "hasFcf": false,
-            "hasSds": true,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "deal with rage productively documents technical data sheet tds technical data sheet tds name downloadfilename download material safety data sheet msds material safety data sheet msds name downloadfilename download ifra conformity certificate ifra conformity certificate name downloadfilename download eu declaration eu declaration"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-cashmeran-already-structured",
       "queueItemId": "hero-ifra-source-cashmeran-already_structured",
       "materialName": "Cashmeran",
@@ -3136,46 +2972,46 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 163,
+      "score": 211,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
       ],
       "candidateCounts": {
-        "totalMatched": 15,
-        "linked": 15,
-        "highValue": 8,
+        "totalMatched": 16,
+        "linked": 16,
+        "highValue": 9,
         "identityOnly": 7,
-        "suppressedWeak": 14
+        "suppressedWeak": 15
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-cashmeran-already-structured",
       "candidateReviewStatus": "not_started",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cashmeran-product-page-https-fraterworks-com-products-cashmeran-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
+          "id": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",
           "materialName": "Cashmeran",
-          "score": 163,
+          "score": 211,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/cashmeran",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/cashmeran-product-page-https-fraterworks-com-products-cashmeran.html",
-          "category": "",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
           "candidateValue": "3.8",
           "candidateUnit": "%",
-          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 3.8% IFRA 49: 3.8% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+          "snippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
           "queueItemIds": [
             "hero-ifra-source-cashmeran-already_structured"
           ],
-          "queueLinkConfidence": "source_metadata",
+          "queueLinkConfidence": "high",
           "reasons": [
             "linked to this queue item",
             "exact material-name match",
             "high review priority",
-            "supplier_product_page source",
+            "official_ifra_standard_library source",
             "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
+            "IFRA language present"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3184,14 +3020,14 @@
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
+            "hasCategory4": true,
+            "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
-            "hasAllergen": false,
+            "hasAllergen": true,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 3 8 ifra 49 3 8 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer for"
+            "normalizedSnippet": "official ifra standards library match for 6 7 dihydro 1 1 2 3 3 pentamethyl 4 5 h indanone dpmi type restriction amendment 49 publication date 2020 category 4 3 8"
           }
         }
       ]
@@ -3219,46 +3055,46 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 163,
+      "score": 211,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
       ],
       "candidateCounts": {
-        "totalMatched": 17,
-        "linked": 17,
-        "highValue": 8,
+        "totalMatched": 18,
+        "linked": 18,
+        "highValue": 9,
         "identityOnly": 9,
-        "suppressedWeak": 16
+        "suppressedWeak": 17
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-cyclamen-aldehyde-already-structured",
       "candidateReviewStatus": "not_started",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
+          "id": "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde",
           "materialName": "Cyclamen Aldehyde",
-          "score": 163,
+          "score": 211,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/cyclamen-aldehyde",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde.html",
-          "category": "",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
           "candidateValue": "0.95",
           "candidateUnit": "%",
-          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.95% IFRA 49: 0.95% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... F",
+          "snippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
           "queueItemIds": [
             "hero-ifra-source-cyclamen-aldehyde-already_structured"
           ],
-          "queueLinkConfidence": "source_metadata",
+          "queueLinkConfidence": "high",
           "reasons": [
             "linked to this queue item",
             "exact material-name match",
             "high review priority",
-            "supplier_product_page source",
+            "official_ifra_standard_library source",
             "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
+            "IFRA language present"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3267,14 +3103,14 @@
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
+            "hasCategory4": true,
+            "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
-            "hasAllergen": false,
+            "hasAllergen": true,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 0 95 ifra 49 0 95 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer f"
+            "normalizedSnippet": "official ifra standards library match for cyclamen aldehyde type restriction amendment 49 publication date 2020 category 4 0 95"
           }
         }
       ]
@@ -3303,46 +3139,46 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 163,
+      "score": 211,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
       ],
       "candidateCounts": {
-        "totalMatched": 13,
-        "linked": 13,
-        "highValue": 6,
+        "totalMatched": 14,
+        "linked": 14,
+        "highValue": 7,
         "identityOnly": 7,
-        "suppressedWeak": 12
+        "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-helional-already-structured",
       "candidateReviewStatus": "not_started",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-helional-product-page-https-fraterworks-com-products-helional-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
-          "materialName": "Helional",
-          "score": 163,
+          "id": "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca",
+          "materialName": "Helional®",
+          "score": 211,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/helional",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/helional-product-page-https-fraterworks-com-products-helional.html",
-          "category": "",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
           "candidateValue": "2.6",
           "candidateUnit": "%",
-          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 2.6% IFRA 49: 2.6% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+          "snippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
           "queueItemIds": [
             "hero-ifra-source-helional-already_structured"
           ],
-          "queueLinkConfidence": "source_metadata",
+          "queueLinkConfidence": "high",
           "reasons": [
             "linked to this queue item",
             "exact material-name match",
             "high review priority",
-            "supplier_product_page source",
+            "official_ifra_standard_library source",
             "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
+            "IFRA language present"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3351,14 +3187,179 @@
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
+            "hasCategory4": true,
+            "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
-            "hasAllergen": false,
+            "hasAllergen": true,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 2 6 ifra 49 2 6 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer for"
+            "normalizedSnippet": "official ifra standards library match for alpha methyl 1 3 benzodioxole 5 propionaldehyde mmdhca type restriction amendment 49 publication date 2020 category 4 2 6"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-oakmoss-absolute-already-structured",
+      "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
+      "materialName": "Oakmoss Absolute 10%",
+      "normalizedName": "Oakmoss Absolute",
+      "formulaMaterialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "activeMaterialName": "Oakmoss Absolute",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "queueStatus": "not_applicable",
+      "queueReviewStatus": "reviewed_ok",
+      "evidenceStatus": "not_applicable",
+      "suggestedAction": "ignore_not_relevant",
+      "confidence": "high",
+      "score": 211,
+      "whySelected": "Current structured IFRA coverage already exists.",
+      "limitations": [
+        "Existing coverage is still not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 14,
+        "linked": 14,
+        "highValue": 7,
+        "identityOnly": 6,
+        "suppressedWeak": 13
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-oakmoss-absolute-already-structured",
+      "candidateReviewStatus": "not_started",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts",
+          "materialName": "Oakmoss Absolute 10%",
+          "score": 211,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
+          "candidateValue": "0.1",
+          "candidateUnit": "%",
+          "snippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+          "queueItemIds": [
+            "hero-ifra-source-oakmoss-absolute-already_structured"
+          ],
+          "queueLinkConfidence": "high",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "official_ifra_standard_library source",
+            "ifra_category_limit candidate",
+            "IFRA language present"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "official ifra standards library match for oakmoss extracts type restriction amendment 49 publication date 2020 category 4 0 1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "normalizedName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang Ylang 10%",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "activeMaterialName": "Ylang-Ylang Complete Oil",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "queueStatus": "not_applicable",
+      "queueReviewStatus": "reviewed_ok",
+      "evidenceStatus": "not_applicable",
+      "suggestedAction": "ignore_not_relevant",
+      "confidence": "high",
+      "score": 211,
+      "whySelected": "Current structured IFRA coverage already exists.",
+      "limitations": [
+        "Existing coverage is still not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 11,
+        "linked": 11,
+        "highValue": 7,
+        "identityOnly": 4,
+        "suppressedWeak": 10
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
+      "candidateReviewStatus": "not_started",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",
+          "materialName": "Ylang-Ylang Complete Oil",
+          "score": 211,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
+          "candidateValue": "0.73",
+          "candidateUnit": "%",
+          "snippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
+          "queueItemIds": [
+            "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+          ],
+          "queueLinkConfidence": "high",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "official_ifra_standard_library source",
+            "ifra_category_limit candidate",
+            "IFRA language present"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "official ifra standards library match for ylang ylang extracts type restriction amendment 49 publication date 2020 category 4 0 73"
           }
         }
       ]

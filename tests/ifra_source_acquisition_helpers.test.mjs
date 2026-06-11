@@ -20,6 +20,11 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
   assert.match(panel.evidenceResolver.regenerateCommand, /resolve_ifra_evidence_candidates/);
   assert.equal(panel.autopilot.isAvailable, false);
   assert.match(panel.autopilot.regenerateCommand, /run_ifra_evidence_autopilot/);
+  assert.equal(panel.recommendations.isAvailable, false);
+  assert.match(
+    panel.recommendations.regenerateCommand,
+    /generate_ifra_autopilot_recommendations/
+  );
   assert.match(panel.guardrail, /Not launch clearance/i);
 });
 
@@ -199,6 +204,45 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
           whySelected: "Strong source.",
         },
       ],
+    },
+    {
+      metadata: {
+        regenerateCommand:
+          "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md",
+      },
+      summary: {
+        proposedStructuredRecordCount: 12,
+        autoAcceptedNonLimitEvidenceCount: 2,
+        needsBetterSourceCount: 4,
+        noUsefulEvidenceCount: 1,
+        rejectedNoiseCount: 18,
+        alreadyHandledCount: 5,
+        nextRecommendedAction:
+          "12 proposed records can be reviewed for promotion. No runtime IFRA limits have been changed.",
+      },
+      proposedStructuredRecords: [
+        {
+          id: "proposed-iso",
+          materialName: "Iso E Super",
+          sourceIdentityName: "Iso E Super",
+          recordType: "ifra_category_limit",
+          category: "4",
+          candidateValue: "100",
+          candidateUnit: "%",
+          evidenceConfidence: "high",
+          sourceUrl: "https://example.test/iso",
+        },
+      ],
+      needsBetterSource: [
+        {
+          queueItemId: "seaweed",
+          materialName: "Seaweed Absolute 10%",
+          sourceIdentityName: "Seaweed Absolute",
+          recommendationStatus: "needs_better_source",
+          suggestedAction: "Need supplier IFRA/SDS.",
+          evidenceStatus: "needs_supplier_doc",
+        },
+      ],
     }
   );
 
@@ -254,4 +298,18 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
     panel.autopilot.topReviewFirstMaterials.map((item) => item.materialName),
     ["Iso E Super"]
   );
+  assert.equal(panel.recommendations.isAvailable, true);
+  assert.equal(panel.recommendations.counts.proposedStructuredRecords, 12);
+  assert.equal(panel.recommendations.counts.autoAcceptedNonLimitEvidence, 2);
+  assert.equal(panel.recommendations.counts.needsBetterSource, 5);
+  assert.equal(panel.recommendations.counts.rejectedNoise, 18);
+  assert.deepEqual(
+    panel.recommendations.topProposedRecords.map((record) => record.materialName),
+    ["Iso E Super"]
+  );
+  assert.deepEqual(
+    panel.recommendations.topNeedsBetterSource.map((item) => item.materialName),
+    ["Seaweed Absolute 10%"]
+  );
+  assert.match(panel.recommendations.guardrail, /no runtime IFRA limits/i);
 });

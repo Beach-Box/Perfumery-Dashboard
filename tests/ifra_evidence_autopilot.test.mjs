@@ -164,7 +164,7 @@ test("IFRA evidence autopilot marks source queue needs-more-source only when no 
   assert.equal(result.sourceQueue.items[1].reviewNotes, "Already emailed supplier.");
 });
 
-test("IFRA evidence autopilot accepts only existing reviewed FCF non-limit evidence", () => {
+test("IFRA evidence autopilot accepts existing reviewed FCF non-limit evidence", () => {
   const result = applyAutopilotReviewUpdates({
     sourceQueue: {
       items: [
@@ -216,6 +216,77 @@ test("IFRA evidence autopilot accepts only existing reviewed FCF non-limit evide
   assert.equal(updatedReview.reviewStatus, "accepted");
   assert.deepEqual(updatedReview.acceptedCandidateIds, ["candidate-bergamot-fcf"]);
   assert.match(updatedReview.reviewNotes, /not an IFRA limit/i);
+});
+
+test("IFRA evidence autopilot can auto-accept linked likely FCF evidence without creating limits", () => {
+  const result = applyAutopilotReviewUpdates({
+    sourceQueue: {
+      items: [
+        queueItem({
+          id: "hero-ifra-source-bergamot-fcf-fcf_special_case",
+          materialName: "Bergamot EO FCF",
+          requiredSourceType: "fcf_special_case",
+        }),
+      ],
+    },
+    candidateReviewQueue: {
+      items: [
+        reviewItem({
+          id: "candidate-ifra-review-bergamot",
+          queueItemId: "hero-ifra-source-bergamot-fcf-fcf_special_case",
+          materialName: "Bergamot EO FCF",
+          candidateIds: ["candidate-bergamot-fcf"],
+        }),
+      ],
+    },
+    evidenceResolution: {
+      items: [
+        resolutionItem({
+          queueItemId: "hero-ifra-source-bergamot-fcf-fcf_special_case",
+          materialName: "Bergamot EO FCF",
+          sourceIdentityName: "Bergamot EO FCF",
+          evidenceStatus: "likely_fcf_evidence",
+          suggestedAction: "promote_fcf_evidence_after_review",
+          candidateReviewItemId: "candidate-ifra-review-bergamot",
+          bestCandidates: [
+            {
+              id: "candidate-bergamot-fcf",
+              materialName: "Bergamot EO FCF",
+              sourceIdentityName: "Bergamot EO FCF",
+              candidateLimitType: "phototoxic_note",
+              reviewPriority: "high",
+              sourceType: "supplier_product_page",
+              snippet: "Bergamot EO FCF is bergapten-free and furocoumarin-free.",
+              queueItemIds: ["hero-ifra-source-bergamot-fcf-fcf_special_case"],
+              signals: {
+                linked: true,
+                exactName: true,
+                hasFcf: true,
+                hasGhsCategory4: false,
+                hasRifmUsage: false,
+              },
+            },
+          ],
+        }),
+      ],
+    },
+    candidateExtractions: {
+      candidates: [
+        {
+          id: "candidate-bergamot-fcf",
+          candidateLimitType: "phototoxic_note",
+        },
+      ],
+    },
+    reviewedSourceRecords: { records: [] },
+    now: "2026-06-11T12:00:00.000Z",
+  });
+  const updatedReview = result.candidateReviewQueue.items[0];
+
+  assert.equal(updatedReview.reviewStatus, "accepted");
+  assert.deepEqual(updatedReview.acceptedCandidateIds, ["candidate-bergamot-fcf"]);
+  assert.match(result.candidateReviewUpdates[0].reason, /non-limit source evidence/i);
+  assert.doesNotMatch(JSON.stringify(result), /categoryLimits/);
 });
 
 test("IFRA evidence autopilot does not auto-accept category-limit candidates even when a reviewed record is present", () => {

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:04:41.094Z",
+    "generatedAt": "2026-06-11T15:15:18.991Z",
     "reportName": "Proposed IFRA Structured Records",
     "guardrails": [
       "Proposed records are not runtime-active.",
@@ -9,19 +9,51 @@
     ]
   },
   "summary": {
-    "recordCount": 13,
-    "proposedForReviewCount": 11,
+    "recordCount": 15,
+    "proposedForReviewCount": 13,
     "autoAcceptedNonLimitCount": 2,
     "recordTypeCounts": {
-      "ifra_category_limit": 11,
+      "ifra_category_limit": 13,
       "phototoxic_note": 2
     },
     "promotionStatusCounts": {
-      "proposed": 11,
+      "proposed": 13,
       "reviewed_ok": 2
     }
   },
   "records": [
+    {
+      "id": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
+      "materialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "formulaMaterialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "candidateIds": [
+        "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil"
+      ],
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.9,
+      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
     {
       "id": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
       "materialName": "Methyl Ionone Alpha Extra",
@@ -247,56 +279,24 @@
       ]
     },
     {
-      "id": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
-      "materialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "formulaMaterialNames": [
-        "Vetiveryl Acetate"
-      ],
-      "recordType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
-      "candidateIds": [
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before"
-      ],
-      "category": "",
-      "candidateValue": "0.909",
-      "candidateUnit": "%",
-      "normalizedCandidateValue": 0.909,
-      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.909% IFRA 49: 0.909% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer...",
-      "evidenceConfidence": "high",
-      "autopilotRecommendation": "propose_for_review",
-      "promotionStatus": "proposed",
-      "limitations": [
-        "Not runtime-active",
-        "Requires review before promotion",
-        "Not launch clearance"
-      ],
-      "notes": [
-        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
-        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
-      ]
-    },
-    {
-      "id": "proposed-ifra-cashmeran-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "id": "proposed-ifra-cashmeran-ifra-category-limit-official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-",
       "materialName": "Cashmeran",
       "sourceIdentityName": "Cashmeran",
       "formulaMaterialNames": [
         "Cashmeran"
       ],
       "recordType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/cashmeran",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/cashmeran-product-page-https-fraterworks-com-products-cashmeran.html",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
       "candidateIds": [
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cashmeran-product-page-https-fraterworks-com-products-cashmeran-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+        "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi"
       ],
-      "category": "",
+      "category": "4",
       "candidateValue": "3.8",
       "candidateUnit": "%",
       "normalizedCandidateValue": 3.8,
-      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 3.8% IFRA 49: 3.8% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+      "sourceSnippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
       "evidenceConfidence": "high",
       "autopilotRecommendation": "propose_for_review",
       "promotionStatus": "proposed",
@@ -311,24 +311,24 @@
       ]
     },
     {
-      "id": "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "id": "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-li",
       "materialName": "Cyclamen Aldehyde",
       "sourceIdentityName": "Cyclamen Aldehyde",
       "formulaMaterialNames": [
         "Cyclamen Aldehyde"
       ],
       "recordType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/cyclamen-aldehyde",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde.html",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
       "candidateIds": [
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+        "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde"
       ],
-      "category": "",
+      "category": "4",
       "candidateValue": "0.95",
       "candidateUnit": "%",
       "normalizedCandidateValue": 0.95,
-      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.95% IFRA 49: 0.95% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... F",
+      "sourceSnippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
       "evidenceConfidence": "high",
       "autopilotRecommendation": "propose_for_review",
       "promotionStatus": "proposed",
@@ -343,7 +343,7 @@
       ]
     },
     {
-      "id": "proposed-ifra-helional-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "id": "proposed-ifra-helional-ifra-category-limit-official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-a",
       "materialName": "Helional®",
       "sourceIdentityName": "Helional®",
       "formulaMaterialNames": [
@@ -351,17 +351,82 @@
         "Helional®"
       ],
       "recordType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/helional",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/helional-product-page-https-fraterworks-com-products-helional.html",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
       "candidateIds": [
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-helional-product-page-https-fraterworks-com-products-helional-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+        "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca"
       ],
-      "category": "",
+      "category": "4",
       "candidateValue": "2.6",
       "candidateUnit": "%",
       "normalizedCandidateValue": 2.6,
-      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 2.6% IFRA 49: 2.6% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+      "sourceSnippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-oakmoss-absolute-10-ifra-category-limit-official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-lim",
+      "materialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "formulaMaterialNames": [
+        "Oakmoss Absolute 10%"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "candidateIds": [
+        "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts"
+      ],
+      "category": "4",
+      "candidateValue": "0.1",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.1,
+      "sourceSnippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-ylang-ylang-complete-oil-ifra-category-limit-official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-cate",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialNames": [
+        "Ylang Ylang 10%",
+        "Ylang-Ylang Complete Oil"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "candidateIds": [
+        "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts"
+      ],
+      "category": "4",
+      "candidateValue": "0.73",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.73,
+      "sourceSnippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
       "evidenceConfidence": "high",
       "autopilotRecommendation": "propose_for_review",
       "promotionStatus": "proposed",
