@@ -184,6 +184,42 @@ test("IFRA evidence resolver ranks linked candidates above unlinked candidates",
   assert.equal(report.items[0].bestCandidates[0].id, "candidate-linked");
 });
 
+test("IFRA evidence resolver links diluted formula stocks to parent source identity candidates", () => {
+  const queueItem = makeQueueItem({
+    id: "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+    materialName: "Calone 1951 20%",
+    formulaMaterialName: "Calone 1951 20%",
+    normalizedName: "Calone 1951",
+    sourceIdentityName: "Calone 1951",
+    activeMaterialName: "Calone 1951",
+    dilutionLabel: "20%",
+    candidateSearchTerms: ["Calone 1951", "Calone", "IFRA Calone"],
+  });
+  const report = buildIfraEvidenceResolution({
+    sourceQueue: { items: [queueItem] },
+    candidateExtractions: {
+      candidates: [
+        makeCandidate({
+          id: "candidate-calone-parent",
+          materialName: "Calone 1951",
+          sourceIdentityName: "Calone 1951",
+          queueItemIds: [],
+          sourceType: "supplier_product_page",
+          snippet:
+            "Calone 1951 IFRA Category 4 fine fragrance maximum use level from supplier product page.",
+        }),
+      ],
+    },
+  });
+  const item = report.items[0];
+
+  assert.equal(item.materialName, "Calone 1951 20%");
+  assert.equal(item.sourceIdentityName, "Calone 1951");
+  assert.equal(item.bestCandidates[0].id, "candidate-calone-parent");
+  assert.equal(item.bestCandidates[0].signals.exactName, true);
+  assert.notEqual(item.evidenceStatus, "insufficient_evidence");
+});
+
 test("IFRA evidence resolver markdown keeps only requested top snippets", () => {
   const queueItem = makeQueueItem();
   const report = buildIfraEvidenceResolution({

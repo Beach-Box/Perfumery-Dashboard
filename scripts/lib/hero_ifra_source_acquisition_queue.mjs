@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import {
+  addSourceIdentityFields,
+  stripSourceDilutionTerms,
+} from "./ifra_source_identity.mjs";
+
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
 export const DEFAULT_HERO_IFRA_SOURCE_QUEUE_PATH = path.join(
@@ -114,7 +119,7 @@ function orderedCountEntries(counts, order) {
 
 export function makeHeroIfraSourceQueueItemId(row = {}) {
   const sourceType = row.requiredSourceType || "source_needed";
-  return `hero-ifra-source-${slugify(row.normalizedName || row.materialName)}-${sourceType}`;
+  return `hero-ifra-source-${slugify(row.sourceIdentityName || row.normalizedName || row.materialName)}-${sourceType}`;
 }
 
 function makeExistingLookup(existingQueue = {}) {
@@ -126,14 +131,18 @@ function makeExistingLookup(existingQueue = {}) {
     const key = `${normalizeName(item?.normalizedName || item?.materialName)}::${
       item?.requiredSourceType || ""
     }`;
+    const sourceIdentityKey = `${normalizeName(item?.sourceIdentityName || item?.normalizedName || item?.materialName)}::${
+      item?.requiredSourceType || ""
+    }`;
     if (key !== "::") byMaterialAndSource.set(key, item);
+    if (sourceIdentityKey !== "::") byMaterialAndSource.set(sourceIdentityKey, item);
   }
   return { byId, byMaterialAndSource };
 }
 
 function getExistingItem(row, existingLookup) {
   const id = makeHeroIfraSourceQueueItemId(row);
-  const key = `${normalizeName(row.normalizedName || row.materialName)}::${
+  const key = `${normalizeName(row.sourceIdentityName || row.normalizedName || row.materialName)}::${
     row.requiredSourceType || ""
   }`;
   return existingLookup.byId.get(id) || existingLookup.byMaterialAndSource.get(key) || null;
@@ -223,7 +232,8 @@ function getHigherPriority(left, right) {
 
 function mergeGapReportRows(materials = []) {
   const byId = new Map();
-  for (const row of materials) {
+  for (const rawRow of materials) {
+    const row = addSourceIdentityFields(rawRow, rawRow.materialName);
     const id = makeHeroIfraSourceQueueItemId(row);
     if (!byId.has(id)) {
       byId.set(id, {
@@ -245,10 +255,18 @@ function mergeGapReportRows(materials = []) {
       ...(existing.formulasUsedIn || []),
       ...(row.formulasUsedIn || []),
     ]);
-    existing.candidateSearchTerms = uniqueStrings([
-      ...(existing.candidateSearchTerms || []),
-      ...(row.candidateSearchTerms || []),
-    ]);
+    existing.candidateSearchTerms = uniqueStrings(
+      uniqueStrings([
+        ...(existing.candidateSearchTerms || []),
+        ...(row.candidateSearchTerms || []),
+      ]).map(stripSourceDilutionTerms)
+    );
+    existing.sourceSearchTerms = uniqueStrings(
+      uniqueStrings([
+        ...(existing.sourceSearchTerms || []),
+        ...(row.sourceSearchTerms || []),
+      ]).map(stripSourceDilutionTerms)
+    );
     existing.reason = uniqueStrings([existing.reason, row.reason]).join(" ");
     existing.currentIfraCategory = uniqueStrings([
       existing.currentIfraCategory,
@@ -267,19 +285,36 @@ export function buildQueueItemsFromGapReport({
 } = {}) {
   const existingLookup = makeExistingLookup(existingQueue);
   return mergeGapReportRows(gapReport.materials || [])
-    .map((row) => {
+    .map((rawRow) => {
+      const row = addSourceIdentityFields(rawRow, rawRow.materialName);
       const id = makeHeroIfraSourceQueueItemId(row);
       const existing = getExistingItem(row, existingLookup);
+      const candidateSearchTerms = uniqueStrings(
+        [
+        ...(row.sourceSearchTerms || []),
+        ...(row.candidateSearchTerms || []),
+        ].map(stripSourceDilutionTerms)
+      );
       const base = {
         id,
         materialName: row.materialName || "",
         normalizedName: row.normalizedName || row.materialName || "",
+        formulaMaterialName: row.formulaMaterialName || row.materialName || "",
+        sourceIdentityName:
+          row.sourceIdentityName || row.normalizedName || row.materialName || "",
+        activeMaterialName:
+          row.activeMaterialName || row.sourceIdentityName || row.normalizedName || "",
+        dilutionLabel: row.dilutionLabel || "",
+        carrierLabel: row.carrierLabel || "",
         formulasUsedIn: row.formulasUsedIn || [],
         priority: row.priority || "medium",
         requiredSourceType: row.requiredSourceType || "global_ifra_standard_needed",
         suggestedDocumentName: row.suggestedDocumentName || "",
         suggestedSource: getSuggestedSource(row),
-        candidateSearchTerms: uniqueStrings(row.candidateSearchTerms || []),
+        candidateSearchTerms: uniqueStrings(candidateSearchTerms),
+        sourceSearchTerms: uniqueStrings(
+          (row.sourceSearchTerms || []).map(stripSourceDilutionTerms)
+        ),
         knownReferenceLinks: buildKnownReferenceLinks(row),
         currentIfraCategory: row.currentIfraCategory || "unknown",
         reason: row.reason || "",
@@ -380,6 +415,10 @@ function formatItemForMarkdown(item) {
   return [
     `### ${item.materialName}`,
     "",
+    item.sourceIdentityName && item.sourceIdentityName !== item.materialName
+      ? `- Source identity: ${item.sourceIdentityName}`
+      : null,
+    item.dilutionLabel ? `- Dilution: ${item.dilutionLabel}` : null,
     `- Formulas used in: ${item.formulasUsedIn.join(", ") || "Unknown"}`,
     `- Required source type: ${REQUIRED_SOURCE_LABELS[item.requiredSourceType] || item.requiredSourceType}`,
     `- Current status: ${item.status}`,

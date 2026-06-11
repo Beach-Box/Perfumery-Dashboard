@@ -79,8 +79,10 @@ function buildQueue() {
         id: "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
         materialName: "Seaweed Absolute 10%",
         normalizedName: "Seaweed Absolute",
+        sourceIdentityName: "Seaweed Absolute",
+        dilutionLabel: "10%",
         requiredSourceType: "natural_uvcb_supplier_document_needed",
-        candidateSearchTerms: ["Seaweed Absolute", "Seaweed Absolute 10%"],
+        candidateSearchTerms: ["Seaweed Absolute"],
         sourceRowNames: ["Seaweed Absolute 10%"],
         status: "needed",
         reviewStatus: "not_started",
@@ -108,6 +110,10 @@ test("ingredient CSV harvest extracts and classifies source links without downlo
   assert.equal(report.summary.sourceLinkTypeCounts.product_page, 2);
   assert.equal(report.summary.sourceLinkTypeCounts.identity_reference, 1);
   assert.ok(report.sourceLinks.every((link) => link.downloadStatus === "not_requested"));
+  const seaweedLink = report.sourceLinks.find((link) =>
+    (link.materialNames || []).includes("Seaweed Absolute 10%")
+  );
+  assert.ok(seaweedLink.sourceIdentityNames.includes("Seaweed Absolute"));
   assert.equal(report.ifra51Pdf.found, false);
 
   const markdown = formatIngredientSourceHarvestMarkdown(report);
@@ -212,6 +218,7 @@ test("download mode caches source content and metadata using a supplied fetch im
   assert.equal(metadata.sourceUrl, link.sourceUrl);
   assert.equal(metadata.httpStatus, 200);
   assert.equal(metadata.sourceType, link.sourceType);
+  assert.equal(metadata.sourceIdentityName, "Octanal / Aldehyde C-8");
   assert.ok(metadata.localPath);
 });
 
@@ -542,6 +549,8 @@ test("candidate extractor safely links candidates to queue items by exact materi
         sourceUrl: "https://supplier.test/seaweed",
         materialName: "Seaweed Absolute 10%",
         materialNames: ["Seaweed Absolute 10%"],
+        sourceIdentityName: "Seaweed Absolute",
+        sourceIdentityNames: ["Seaweed Absolute"],
         queueItemIds: [],
         httpStatus: 200,
         contentType: "text/html",
@@ -565,6 +574,7 @@ test("candidate extractor safely links candidates to queue items by exact materi
   assert.ok(linked);
   assert.equal(linked.queueItemIds[0], "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed");
   assert.equal(linked.queueLinkConfidence, "material_exact");
+  assert.equal(linked.sourceIdentityName, "Seaweed Absolute");
   assert.equal(report.summary.linkedCandidateCount, report.candidates.length);
 });
 

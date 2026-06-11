@@ -15,6 +15,10 @@ import {
   buildHeroFormulaRawDbSupportRows,
   getHeroFormulaAccordRecipe,
 } from "../src/lib/hero_formula_material_support.js";
+import {
+  buildIfraSourceIdentity,
+  stripSourceDilutionTerms,
+} from "./lib/ifra_source_identity.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -505,23 +509,23 @@ function getHint(materialName, identity) {
   return SOURCE_HINTS.find((hint) => hint.match.test(haystack)) || null;
 }
 
-function stripDilutionSuffix(value) {
-  return String(value || "")
-    .replace(/\s+\d+(?:\.\d+)?\s*%\s*(?:tec|dpg|etoh|ethanol|ipm)?$/i, "")
-    .replace(/\s+\d+(?:\.\d+)?\s*%$/i, "")
-    .trim();
-}
-
 function addAldehydeAbbreviationTerms(term) {
   const match = String(term || "").match(/\baldehyde\s+c[-\s]?(\d{1,2})\b/i);
   if (!match) return [];
   return [`Ald C-${match[1]}`, `Ald C${match[1]}`];
 }
 
-function buildMaterialReferenceTerms({ materialName, identity, material, hint }) {
+function buildMaterialReferenceTerms({
+  materialName,
+  sourceIdentity,
+  identity,
+  material,
+  hint,
+}) {
   const baseTerms = uniqueStrings([
     materialName,
-    stripDilutionSuffix(materialName),
+    sourceIdentity?.sourceIdentityName,
+    ...(sourceIdentity?.sourceSearchTerms || []),
     identity?.canonicalAppName,
     identity?.normalizedName,
     ...(identity?.aliases || []),
@@ -532,7 +536,11 @@ function buildMaterialReferenceTerms({ materialName, identity, material, hint })
   ]);
   const expandedTerms = [];
   for (const term of baseTerms) {
-    expandedTerms.push(term, stripDilutionSuffix(term), ...addAldehydeAbbreviationTerms(term));
+    expandedTerms.push(
+      term,
+      stripSourceDilutionTerms(term),
+      ...addAldehydeAbbreviationTerms(term)
+    );
   }
   return uniqueStrings(expandedTerms);
 }
@@ -732,22 +740,23 @@ function classifyRequiredSourceType({
 }
 
 function getSuggestedDocumentName(row) {
-  const baseName = row.normalizedName || row.materialName;
+  const baseName = row.sourceIdentityName || row.normalizedName || row.materialName;
+  const displayName = row.materialName || baseName;
   switch (row.requiredSourceType) {
     case "already_structured":
       return `Existing structured IFRA standard for ${row.matchedMaterial || baseName}`;
     case "fcf_special_case":
-      return `${row.materialName} supplier IFRA certificate confirming FCF/furocoumarin-free identity`;
+      return `${displayName} supplier IFRA certificate confirming FCF/furocoumarin-free identity`;
     case "accord_component_expansion_deferred":
-      return `${row.materialName} component IFRA expansion worksheet`;
+      return `${displayName} component IFRA expansion worksheet`;
     case "natural_uvcb_supplier_document_needed":
-      return `${row.materialName} supplier IFRA certificate, SDS, and product identity/spec document`;
+      return `${baseName} supplier IFRA certificate, SDS, and product identity/spec document`;
     case "specialty_supplier_document_needed":
-      return `${row.materialName} supplier or manufacturer IFRA certificate and SDS`;
+      return `${baseName} supplier or manufacturer IFRA certificate and SDS`;
     case "supplier_ifra_or_sds_needed":
-      return `${row.materialName} supplier IFRA certificate and SDS`;
+      return `${baseName} supplier IFRA certificate and SDS`;
     case "defer_low_priority":
-      return `${row.materialName} source document when this row becomes decision-critical`;
+      return `${baseName} source document when this row becomes decision-critical`;
     default:
       return `IFRA 51st Amendment standard for ${baseName}`;
   }
@@ -794,6 +803,7 @@ function buildReason({ uniqueRow, auditRow, requiredSourceType, hint }) {
 
 function buildSearchTerms({
   materialName,
+  sourceIdentity,
   identity,
   material,
   hint,
@@ -802,14 +812,17 @@ function buildSearchTerms({
 }) {
   const casTerms = getCasTerms(identity, material).map((cas) => `CAS ${cas}`);
   const aliasTerms = uniqueStrings([
-    materialName,
+    sourceIdentity?.sourceIdentityName || materialName,
+    ...(sourceIdentity?.sourceSearchTerms || []),
     identity?.canonicalAppName,
     identity?.normalizedName,
     ...(identity?.aliases || []),
     material?.canonicalName,
     ...(material?.synonyms || []),
     ...(hint?.terms || []),
-  ]).filter((term) => term && !/\b\d{2,7}-\d{2}-\d\b/.test(term));
+  ])
+    .map(stripSourceDilutionTerms)
+    .filter((term) => term && !/\b\d{2,7}-\d{2}-\d\b/.test(term));
 
   const ifraTerms =
     requiredSourceType === "already_structured"
@@ -822,7 +835,7 @@ function buildSearchTerms({
     requiredSourceType.includes("supplier") ||
     requiredSourceType.includes("natural") ||
     requiredSourceType.includes("specialty")
-      ? [`${materialName} SDS`, `${materialName} IFRA certificate`]
+      ? [`${sourceIdentity?.sourceIdentityName || materialName} SDS`, `${sourceIdentity?.sourceIdentityName || materialName} IFRA certificate`]
       : [];
   const referenceTerms =
     referenceFields?.referenceMatchConfidence === "confirmed"
@@ -833,14 +846,13 @@ function buildSearchTerms({
           referenceFields.referenceSupplier,
           ...extractCasNumbers(referenceFields.referenceCas).map((cas) => `CAS ${cas}`),
           referenceFields.referenceSdsLink
-            ? `supplier SDS ${referenceFields.referenceIngredient || materialName}`
+            ? `supplier SDS ${sourceIdentity?.sourceIdentityName || referenceFields.referenceIngredient || materialName}`
             : null,
           referenceFields.referenceProductPage
-            ? `supplier product ${referenceFields.referenceIngredient || materialName}`
+            ? `supplier product ${sourceIdentity?.sourceIdentityName || referenceFields.referenceIngredient || materialName}`
             : null,
         ])
       : [];
-
   return uniqueStrings([
     ...aliasTerms,
     ...casTerms,
@@ -855,8 +867,14 @@ function buildNotes({
   material,
   masterDataHasCandidate,
   referenceFields,
+  sourceIdentity,
 }) {
   const notes = [];
+  if (sourceIdentity?.dilutionLabel) {
+    notes.push(
+      `Formula stock ${sourceIdentity.displayName} searches as source identity ${sourceIdentity.sourceIdentityName}; dilution still belongs to active-load math.`
+    );
+  }
   if (requiredSourceType === "global_ifra_standard_needed") {
     notes.push("Need a source-backed IFRA standard before adding a structured limit.");
     if (!masterDataHasCandidate) {
@@ -953,11 +971,16 @@ export function buildHeroIfraSourceGapReport({
       const materialName = uniqueRow.materialName;
       const auditRow = auditRowsByName.get(materialName) || null;
       const record = supportDb[materialName] || {};
-      const identity = resolveIngredientIdentity(materialName);
-      const material = getIfraMaterialRecord(materialName);
-      const hint = getHint(materialName, identity);
+      const sourceIdentity = buildIfraSourceIdentity(materialName, { supportRecord: record });
+      const sourceIdentityName = sourceIdentity.sourceIdentityName || materialName;
+      const identity =
+        resolveIngredientIdentity(sourceIdentityName) || resolveIngredientIdentity(materialName);
+      const material =
+        getIfraMaterialRecord(sourceIdentityName) || getIfraMaterialRecord(materialName);
+      const hint = getHint(sourceIdentityName, identity) || getHint(materialName, identity);
       const materialReferenceTerms = buildMaterialReferenceTerms({
         materialName,
+        sourceIdentity,
         identity,
         material,
         hint,
@@ -980,6 +1003,8 @@ export function buildHeroIfraSourceGapReport({
         hint,
       });
       const likelyCasOrAliasTerms = uniqueStrings([
+        sourceIdentityName,
+        ...(sourceIdentity.sourceSearchTerms || []),
         ...(identity?.aliases || []),
         ...(material?.cas || []),
         ...(material?.synonyms || []),
@@ -999,7 +1024,14 @@ export function buildHeroIfraSourceGapReport({
       );
       const baseRow = {
         materialName,
+        formulaMaterialName: materialName,
+        sourceIdentityName,
+        activeMaterialName: sourceIdentity.activeMaterialName || sourceIdentityName,
+        dilutionLabel: sourceIdentity.dilutionLabel || "",
+        carrierLabel: sourceIdentity.carrierLabel || "",
+        sourceSearchTerms: sourceIdentity.sourceSearchTerms || [],
         normalizedName:
+          sourceIdentityName ||
           identity?.normalizedName ||
           identity?.canonicalAppName ||
           material?.canonicalName ||
@@ -1021,6 +1053,7 @@ export function buildHeroIfraSourceGapReport({
       baseRow.suggestedDocumentName = getSuggestedDocumentName(baseRow);
       baseRow.candidateSearchTerms = buildSearchTerms({
         materialName,
+        sourceIdentity,
         identity,
         material,
         hint,
@@ -1044,6 +1077,7 @@ export function buildHeroIfraSourceGapReport({
         material,
         masterDataHasCandidate,
         referenceFields,
+        sourceIdentity,
       });
       return baseRow;
     })
@@ -1214,13 +1248,15 @@ export function formatMarkdownReport(report) {
     "",
     "## Materials",
     "",
-    "| Priority | Material | Current IFRA | Required source | Used in | Suggested document | Search terms | Safe to map now |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| Priority | Formula material | Source identity | Dilution | Current IFRA | Required source | Used in | Suggested document | Search terms | Safe to map now |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...report.materials
       .map((row) =>
         [
           row.priority,
           row.materialName,
+          row.sourceIdentityName || row.normalizedName || row.materialName,
+          row.dilutionLabel || "",
           row.currentIfraCategory,
           `${getRequiredSourceTypeLabel(row.requiredSourceType)} (${row.requiredSourceType})`,
           row.formulasUsedIn.join(", "),
@@ -1303,6 +1339,10 @@ export function formatTextReport(report) {
     );
     lines.push(`  Used in: ${row.formulasUsedIn.join(", ")}`);
     lines.push(`  Suggested document: ${row.suggestedDocumentName}`);
+    if (row.sourceIdentityName && row.sourceIdentityName !== row.materialName) {
+      lines.push(`  Source identity: ${row.sourceIdentityName}`);
+      if (row.dilutionLabel) lines.push(`  Dilution: ${row.dilutionLabel}`);
+    }
     lines.push(`  Search: ${row.candidateSearchTerms.slice(0, 8).join("; ")}`);
     if (row.referenceMatchConfidence === "confirmed") {
       lines.push(
@@ -1318,7 +1358,7 @@ export function formatTextReport(report) {
   lines.push("", "All materials:");
   for (const row of report.materials) {
     lines.push(
-      `- [${row.priority}] ${row.materialName} -> ${row.requiredSourceType}; safeToMapNow=${row.safeToMapNow ? "yes" : "no"}`
+      `- [${row.priority}] ${row.materialName}${row.sourceIdentityName && row.sourceIdentityName !== row.materialName ? ` (source: ${row.sourceIdentityName})` : ""} -> ${row.requiredSourceType}; safeToMapNow=${row.safeToMapNow ? "yes" : "no"}`
     );
   }
 

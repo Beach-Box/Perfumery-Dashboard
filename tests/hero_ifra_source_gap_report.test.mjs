@@ -93,6 +93,12 @@ test("hero IFRA source gap report keeps structured, FCF, supplier, and accord st
   assert.equal(seaweed.currentIfraCategory, "supplierSdsNeeded");
   assert.equal(seaweed.requiredSourceType, "natural_uvcb_supplier_document_needed");
   assert.equal(seaweed.safeToMapNow, false);
+  assert.equal(seaweed.sourceIdentityName, "Seaweed Absolute");
+  assert.equal(seaweed.dilutionLabel, "10%");
+  assert.equal(
+    seaweed.candidateSearchTerms.some((term) => /Seaweed Absolute 10%|10%/.test(term)),
+    false
+  );
 
   const cetalox = findMaterial(report, "Cetalox");
   assert.equal(cetalox.currentIfraCategory, "supplierSdsNeeded");
@@ -137,9 +143,36 @@ test("hero IFRA source gap report formats text and markdown output", () => {
   assert.match(text, /Hero IFRA Source Gap Report/);
   assert.match(text, /High-priority source gaps: 37/);
   assert.match(markdown, /^# Hero IFRA Source Gap Report/);
-  assert.match(markdown, /\| Priority \| Material \| Current IFRA \|/);
+  assert.match(markdown, /\| Priority \| Formula material \| Source identity \| Dilution \|/);
   assert.match(markdown, /Natural\/UVCB supplier docs needed/);
   assert.match(markdown, /Specialty supplier document needed/);
+});
+
+test("hero IFRA source gap report separates diluted stock display names from source identity search", () => {
+  const report = buildHeroIfraSourceGapReport({
+    generatedAt: "2026-06-09T00:00:00.000Z",
+  });
+
+  const calone = findMaterial(report, "Calone 1951 20%");
+  assert.equal(calone.formulaMaterialName, "Calone 1951 20%");
+  assert.equal(calone.sourceIdentityName, "Calone 1951");
+  assert.equal(calone.activeMaterialName, "Calone 1951");
+  assert.equal(calone.dilutionLabel, "20%");
+  assert.ok(calone.candidateSearchTerms.includes("Calone 1951"));
+  assert.ok(calone.candidateSearchTerms.includes("Calone"));
+  assert.equal(
+    calone.candidateSearchTerms.some((term) => /20%|TEC|dilution|stock/i.test(term)),
+    false
+  );
+
+  const geosmin = findMaterial(report, "Geosmin 1% TEC");
+  assert.equal(geosmin.sourceIdentityName, "Geosmin");
+  assert.equal(geosmin.dilutionLabel, "1% TEC");
+  assert.equal(geosmin.carrierLabel, "TEC");
+  assert.equal(
+    geosmin.candidateSearchTerms.some((term) => /1%|TEC/i.test(term)),
+    false
+  );
 });
 
 test("ingredient reference CSV enriches confirmed active hero material matches", () => {

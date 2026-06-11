@@ -11,6 +11,10 @@ import {
   normalizeReviewText,
   slugifyReviewText,
 } from "./ifra_source_document_review.mjs";
+import {
+  buildIfraSourceIdentity,
+  stripSourceDilutionTerms,
+} from "./ifra_source_identity.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -155,13 +159,16 @@ function countBy(items, key) {
 
 function normalizeCandidateTerms(values = []) {
   return uniqueStrings(values)
-    .flatMap((value) => [
-      value,
-      String(value || "").replace(/\b\d+(?:\.\d+)?\s*%\s*(?:tec|dpg|etoh|ethanol)?\b/gi, ""),
-      String(value || "").replace(/^IFRA\s+/i, ""),
-      String(value || "").replace(/\bSDS\b/gi, ""),
-      String(value || "").replace(/\bCAS\s+/gi, ""),
-    ])
+    .flatMap((value) => {
+      const stripped = stripSourceDilutionTerms(value);
+      return [
+        stripped,
+        String(stripped || "").replace(/^IFRA\s+/i, ""),
+        String(stripped || "").replace(/\bSDS\b/gi, ""),
+        String(stripped || "").replace(/\bCAS\s+/gi, ""),
+        ...buildIfraSourceIdentity(stripped).sourceSearchTerms,
+      ];
+    })
     .map(normalizeReviewText)
     .filter(Boolean);
 }
@@ -172,6 +179,9 @@ function buildQueueLookup(queue = {}) {
     terms: normalizeCandidateTerms([
       item.materialName,
       item.normalizedName,
+      item.sourceIdentityName,
+      item.activeMaterialName,
+      ...(item.sourceSearchTerms || []),
       item.suggestedDocumentName,
       ...(item.sourceRowNames || []),
       ...(item.candidateSearchTerms || []),
@@ -201,6 +211,11 @@ function matchCsvRowToQueueItems(row, queueLookup = []) {
             queueItemId: item.id,
             materialName: item.materialName,
             normalizedName: item.normalizedName,
+            formulaMaterialName: item.formulaMaterialName || item.materialName,
+            sourceIdentityName: item.sourceIdentityName || item.normalizedName || item.materialName,
+            activeMaterialName: item.activeMaterialName || item.sourceIdentityName || item.normalizedName,
+            dilutionLabel: item.dilutionLabel || "",
+            carrierLabel: item.carrierLabel || "",
             requiredSourceType: item.requiredSourceType,
             matchedTerms,
           }
@@ -319,6 +334,7 @@ export function buildIngredientSourceHarvestReport({
         suppliers: [row.supplier].filter(Boolean),
         queueItemIds: row.queueMatches.map((match) => match.queueItemId),
         materialNames: row.queueMatches.map((match) => match.materialName),
+        sourceIdentityNames: row.queueMatches.map((match) => match.sourceIdentityName),
         downloadStatus: download ? "pending" : "not_requested",
         localPath: "",
         metadataPath: "",
@@ -342,6 +358,11 @@ export function buildIngredientSourceHarvestReport({
       ),
       materialNames: uniqueStrings(
         relatedRows.flatMap((row) => row.queueMatches.map((match) => match.materialName))
+      ),
+      sourceIdentityNames: uniqueStrings(
+        relatedRows.flatMap((row) =>
+          row.queueMatches.map((match) => match.sourceIdentityName)
+        )
       ),
     };
   });
@@ -402,7 +423,11 @@ function buildCachePathForLink(
   sourceDir = DEFAULT_IFRA_SOURCE_DOCUMENT_DIR
 ) {
   const directory = getCacheDirectoryForSourceType(link.sourceType, sourceDir);
-  const material = link.materialNames?.[0] || link.ingredients?.[0] || "source";
+  const material =
+    link.sourceIdentityNames?.[0] ||
+    link.materialNames?.[0] ||
+    link.ingredients?.[0] ||
+    "source";
   const extension = chooseCacheExtension({
     url: link.sourceUrl,
     contentType,
@@ -552,6 +577,11 @@ export async function downloadHarvestSources({
         sourceUrl: link.sourceUrl,
         materialName: link.materialNames?.[0] || link.ingredients?.[0] || "",
         materialNames: link.materialNames || [],
+        sourceIdentityName:
+          link.sourceIdentityNames?.[0] ||
+          buildIfraSourceIdentity(link.materialNames?.[0] || link.ingredients?.[0] || "")
+            .sourceIdentityName,
+        sourceIdentityNames: link.sourceIdentityNames || [],
         queueItemIds: link.queueItemIds || [],
         supplier: link.suppliers?.[0] || "",
         suppliers: link.suppliers || [],
@@ -761,6 +791,7 @@ function buildHarvestSourceIndex(harvestReport = null) {
     index.set(link.sourceUrl, {
       queueItemIds: uniqueStrings(link.queueItemIds || []),
       materialNames: uniqueStrings(link.materialNames || []),
+      sourceIdentityNames: uniqueStrings(link.sourceIdentityNames || []),
     });
   }
   return index;
@@ -783,9 +814,12 @@ function resolveQueueLinksForMetadata(metadata = {}, { queueLookup = [], harvest
   const metadataTerms = new Set(
     normalizeCandidateTerms([
       metadata.materialName,
-      ...(metadata.materialNames || []),
-      ...(harvestLink?.materialNames || []),
-    ])
+    ...(metadata.materialNames || []),
+    metadata.sourceIdentityName,
+    ...(metadata.sourceIdentityNames || []),
+    ...(harvestLink?.materialNames || []),
+    ...(harvestLink?.sourceIdentityNames || []),
+  ])
   );
   if (!metadataTerms.size) {
     return {
@@ -1056,6 +1090,14 @@ function buildCandidateRecordsForFile(filePath, root = DEFAULT_ROOT, context = {
       id: makeCandidateId(filePath, index, snippet),
       materialName: metadata.materialName || "",
       materialNames: metadata.materialNames || [],
+      formulaMaterialName: metadata.materialName || "",
+      sourceIdentityName:
+        metadata.sourceIdentityName ||
+        buildIfraSourceIdentity(metadata.materialName || "").sourceIdentityName,
+      sourceIdentityNames: uniqueStrings([
+        metadata.sourceIdentityName,
+        ...(metadata.sourceIdentityNames || []),
+      ]),
       queueItemIds: queueLinks.queueItemIds,
       ambiguousQueueItemIds: queueLinks.ambiguousQueueItemIds,
       queueLinkConfidence: queueLinks.queueLinkConfidence,

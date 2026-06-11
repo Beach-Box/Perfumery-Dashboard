@@ -1,6 +1,6 @@
 # Hero IFRA Source Acquisition Queue
 
-Generated: 2026-06-11T11:53:39.602Z
+Generated: 2026-06-11T14:23:10.802Z
 
 This is an acquisition and review tracker. It is not launch clearance, does not add IFRA limits, and does not promote structured IFRA records.
 
@@ -35,7 +35,7 @@ Review status counts:
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
-- Suggested document: IFRA 51st Amendment standard for Gamma Nonalactone
+- Suggested document: IFRA 51st Amendment standard for Aldehyde C-18
 - Search terms: Aldehyde C-18; Gamma Nonalactone; IFRA Gamma Nonalactone; IFRA Aldehyde C-18
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.
@@ -47,7 +47,7 @@ Review status counts:
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
-- Suggested document: IFRA 51st Amendment standard for Octanal / Aldehyde C-8
+- Suggested document: IFRA 51st Amendment standard for Aldehyde C-8
 - Search terms: Aldehyde C-8; Octanal / Aldehyde C-8; Ald C-8; Aldehyde C8; Octanal; IFRA Octanal; CAS 124-13-0; IFRA Aldehyde C-8; IFRA Octanal / Aldehyde C-8; IFRA Ald C-8
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions. Known-restriction review is likely useful.
@@ -66,37 +66,42 @@ Review status counts:
 
 ### Ambrettolide 50% TEC
 
+- Source identity: Ambrettolide
+- Dilution: 50% TEC
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Required source type: Global IFRA standard needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Ambrettolide
-- Search terms: Ambrettolide 50% TEC; Ambrettolide; IFRA Ambrettolide; CAS 7779-50-2; IFRA Ambrettolide 50% TEC
+- Search terms: Ambrettolide; IFRA Ambrettolide; CAS 7779-50-2
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions.
 
 ### Ambroxan Crystals
 
+- Dilution: 50%
 - Formulas used in: Damp Shoreline v1, Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v2
 - Required source type: Global IFRA standard needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Ambroxan Crystals
-- Search terms: Ambroxan 50%; Ambroxan Crystals; Ambroxan; Ambroxide; IFRA Ambroxan; IFRA Ambroxide; IFRA Ambroxan 50%; IFRA Ambroxan Crystals; Ambroxan 50% TEC; IFRA Ambroxan 50% TEC
+- Search terms: Ambroxan Crystals; Ambroxan; Ambroxide; IFRA Ambroxan; IFRA Ambroxide; IFRA Ambroxan Crystals
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions.
 
 ### Calone 1951 20%
 
+- Source identity: Calone 1951
+- Dilution: 20%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Global IFRA standard needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Calone 1951
-- Search terms: Calone 1951 20%; Calone 1951; Calone; Calone 1951®; IFRA Calone; CAS 28940-11-6; IFRA Calone 1951 20%; IFRA Calone 1951
+- Search terms: Calone 1951; Calone; Calone 1951®; IFRA Calone; CAS 28940-11-6; IFRA Calone 1951; IFRA Calone 1951®
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.
 
@@ -108,7 +113,7 @@ Review status counts:
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Caryophyllene Oxide
-- Search terms: Caryophyllene Oxide; Caryophyllene oxide; IFRA Caryophyllene Oxide; IFRA Caryophyllene oxide; Caryophyllene Oxide 10%; IFRA Caryophyllene Oxide 10%
+- Search terms: Caryophyllene Oxide; Caryophyllene oxide; IFRA Caryophyllene Oxide; IFRA Caryophyllene oxide
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.
 
@@ -150,25 +155,29 @@ Review status counts:
 
 ### Ethyl Vanillin 10%
 
+- Source identity: Ethyl Vanillin
+- Dilution: 10%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Required source type: Global IFRA standard needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Ethyl Vanillin
-- Search terms: Ethyl Vanillin 10%; Ethyl Vanillin; Ethylvanillin; IFRA Ethylvanillin; CAS 121-32-4; IFRA Ethyl Vanillin 10%; IFRA Ethyl Vanillin
+- Search terms: Ethyl Vanillin; Ethylvanillin; IFRA Ethylvanillin; CAS 121-32-4; IFRA Ethyl Vanillin
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.
 
 ### Geosmin 1% TEC
 
+- Source identity: Geosmin
+- Dilution: 1% TEC
 - Formulas used in: Damp Shoreline v2
 - Required source type: Global IFRA standard needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
 - Suggested document: IFRA 51st Amendment standard for Geosmin
-- Search terms: Geosmin 1% TEC; Geosmin; IFRA Geosmin 1% TEC; IFRA Geosmin
+- Search terms: Geosmin; IFRA Geosmin
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.
 
@@ -179,8 +188,8 @@ Review status counts:
 - Current status: needed
 - Review status: not_started
 - Suggested source: IFRA Standards Library or committed IFRA standard source package
-- Suggested document: IFRA 51st Amendment standard for Methyl dihydrojasmonate / Hedione
-- Search terms: Hedione; Methyl dihydrojasmonate / Hedione; Hedione®; Methyl dihydrojasmonate; MDJ; IFRA methyl dihydrojasmonate; CAS 24851-98-7; IFRA Hedione; IFRA Methyl dihydrojasmonate / Hedione; IFRA Hedione®
+- Suggested document: IFRA 51st Amendment standard for Hedione
+- Search terms: Hedione; Methyl dihydrojasmonate; MDJ; Methyl dihydrojasmonate / Hedione; Hedione®; IFRA methyl dihydrojasmonate; CAS 24851-98-7; IFRA Hedione; IFRA Methyl dihydrojasmonate; IFRA MDJ
 - Known reference links: None yet
 - Why it matters: Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.
 
@@ -270,13 +279,15 @@ Review status counts:
 
 ### Seaweed Absolute 10%
 
+- Source identity: Seaweed Absolute
+- Dilution: 10%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Natural/UVCB supplier documentation needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec
-- Suggested document: Seaweed Absolute 10% supplier IFRA certificate, SDS, and product identity/spec document
-- Search terms: Seaweed Absolute 10%; Seaweed Absolute; Seaweed; Seaweed Absolute IFRA; Seaweed Absolute SDS; IFRA Seaweed Absolute 10%; IFRA Seaweed Absolute; IFRA Seaweed; Seaweed Absolute 10% SDS; Seaweed Absolute 10% IFRA certificate
+- Suggested document: Seaweed Absolute supplier IFRA certificate, SDS, and product identity/spec document
+- Search terms: Seaweed Absolute; Seaweed; Seaweed Absolute IFRA; Seaweed Absolute SDS; IFRA Seaweed Absolute; IFRA Seaweed; Seaweed Absolute IFRA certificate
 - Known reference links: None yet
 - Why it matters: Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.
 
@@ -312,7 +323,7 @@ Review status counts:
 - Review status: not_started
 - Suggested source: Supplier or manufacturer specialty-material IFRA certificate and SDS
 - Suggested document: Cetalox supplier or manufacturer IFRA certificate and SDS
-- Search terms: Cetalox; Cetalox®; Cetalox IFRA; Cetalox SDS; IFRA Cetalox; IFRA Cetalox®; Cetalox IFRA certificate; Cetalox 50% TEC; IFRA Cetalox 50% TEC; Cetalox 50% TEC SDS
+- Search terms: Cetalox; Cetalox®; Cetalox IFRA; Cetalox SDS; IFRA Cetalox; IFRA Cetalox®; Cetalox IFRA certificate
 - Known reference links: None yet
 - Why it matters: Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula. Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas.
 
@@ -360,7 +371,7 @@ Review status counts:
 - Review status: not_started
 - Suggested source: Supplier or manufacturer specialty-material IFRA certificate and SDS
 - Suggested document: Hedione HC supplier or manufacturer IFRA certificate and SDS
-- Search terms: Hedione HC; Hedione High Cis; Hedione® High Cis; Hedione; Methyl dihydrojasmonate; MDJ; IFRA methyl dihydrojasmonate; IFRA Hedione HC; IFRA Hedione High Cis; IFRA Hedione® High Cis
+- Search terms: Hedione HC; Hedione; Methyl dihydrojasmonate; MDJ; Hedione High Cis; Hedione® High Cis; IFRA methyl dihydrojasmonate; IFRA Hedione HC; IFRA Hedione; IFRA Methyl dihydrojasmonate
 - Known reference links: None yet
 - Why it matters: Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas. High-impact material for odor/model decisions.
 
@@ -378,13 +389,15 @@ Review status counts:
 
 ### Oceanol 10%
 
+- Source identity: Oceanol
+- Dilution: 10%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Specialty supplier document needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: Supplier or manufacturer specialty-material IFRA certificate and SDS
-- Suggested document: Oceanol 10% supplier or manufacturer IFRA certificate and SDS
-- Search terms: Oceanol 10%; Oceanol; Oceanol®; Oceanol IFRA; Oceanol SDS; IFRA Oceanol 10%; IFRA Oceanol; IFRA Oceanol®; Oceanol 10% SDS; Oceanol 10% IFRA certificate
+- Suggested document: Oceanol supplier or manufacturer IFRA certificate and SDS
+- Search terms: Oceanol; Oceanol®; Oceanol IFRA; Oceanol SDS; IFRA Oceanol; IFRA Oceanol®; Oceanol IFRA certificate
 - Known reference links: None yet
 - Why it matters: Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas. High-impact material for odor/model decisions.
 
@@ -414,13 +427,15 @@ Review status counts:
 
 ### Veramoss 20% TEC
 
+- Source identity: Veramoss
+- Dilution: 20% TEC
 - Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Specialty supplier document needed
 - Current status: needed
 - Review status: not_started
 - Suggested source: Supplier or manufacturer specialty-material IFRA certificate and SDS
-- Suggested document: Veramoss 20% TEC supplier or manufacturer IFRA certificate and SDS
-- Search terms: Veramoss 20% TEC; Veramoss; Methyl atrarate / Veramoss; Veramoss®; Evernyl; Evernyl®; Methyl atrarate; IFRA methyl atrarate; IFRA Veramoss 20% TEC; IFRA Veramoss
+- Suggested document: Veramoss supplier or manufacturer IFRA certificate and SDS
+- Search terms: Veramoss; Evernyl; Methyl atrarate; Methyl atrarate / Veramoss; Veramoss®; Evernyl®; IFRA methyl atrarate; IFRA Veramoss; IFRA Evernyl; IFRA Methyl atrarate
 - Known reference links: None yet
 - Why it matters: Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas. Known-restriction review is likely useful.
 
@@ -478,7 +493,7 @@ _No items in this group._
 - Review status: not_started
 - Suggested source: Internal accord recipe expansion review
 - Suggested document: Iso E + AmberXtreme 1% component IFRA expansion worksheet
-- Search terms: Iso E + AmberXtreme 1%; IFRA Iso E + AmberXtreme 1%
+- Search terms: Iso E + AmberXtreme 1%; IFRA Iso E + AmberXtreme
 - Known reference links: None yet
 - Why it matters: Current IFRA category is accordLevelOnly. Appears in 1 active hero formula. Formula row is an accord; component IFRA expansion is deferred.
 
@@ -532,38 +547,42 @@ _No items in this group._
 - Known reference links: None yet
 - Why it matters: Current IFRA category is exactIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.
 
-### Helional
+### Helional®
 
+- Dilution: 25%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Already structured
 - Current status: not_applicable
 - Review status: reviewed_ok
 - Suggested source: Current structured IFRA dataset
 - Suggested document: Existing structured IFRA standard for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)
-- Search terms: Helional 25%; Helional; Helional 25; alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA); 1,3-Benzodioxole-5-propanal, α-methyl3-(1,3-Benzodioxol-5-yl)-2-methylpropanal; 2-Methyl-3-(3,4-methylenedioxyphenyl)- propionaldehyde; 2-Methyl-3-(3,4-methylenedioxyphenyl)propanal α-Methyl-3,4-(methylenedioxy)-hydrocinnamaldehyde α-Methyl-1,3-benzodioxole-5-propanal α-Methyl-1,3-benzodioxole-5-propionaldehyde; 3-(3,4-Methylenedioxyphenyl)-2-methylpropanal α-Methyl-3,4-methylene-dioxyhydrocinnamic aldehyde; Heliofolal (commercial name); Heliogan (commercial name)
+- Search terms: Helional®; Helional; alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA); 1,3-Benzodioxole-5-propanal, α-methyl3-(1,3-Benzodioxol-5-yl)-2-methylpropanal; 2-Methyl-3-(3,4-methylenedioxyphenyl)- propionaldehyde; 2-Methyl-3-(3,4-methylenedioxyphenyl)propanal α-Methyl-3,4-(methylenedioxy)-hydrocinnamaldehyde α-Methyl-1,3-benzodioxole-5-propanal α-Methyl-1,3-benzodioxole-5-propionaldehyde; 3-(3,4-Methylenedioxyphenyl)-2-methylpropanal α-Methyl-3,4-methylene-dioxyhydrocinnamic aldehyde; Heliofolal (commercial name); Heliogan (commercial name); Helional (commercial name)
 - Known reference links: None yet
 - Why it matters: Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.
 
 ### Oakmoss Absolute 10%
 
+- Source identity: Oakmoss Absolute
+- Dilution: 10%
 - Formulas used in: Damp Shoreline v1, Damp Shoreline v2
 - Required source type: Already structured
 - Current status: not_applicable
 - Review status: reviewed_ok
 - Suggested source: Current structured IFRA dataset
 - Suggested document: Existing structured IFRA standard for Oakmoss extracts
-- Search terms: Oakmoss Absolute 10%; Oakmoss Absolute; Oakmoss absolute; Oakmoss; Oakmoss extracts; Evernia absolute; Evernia prunastri, ext.; Mousse de Chêne absolute; Oakmoss absolute (Evernia prunastri); Evernia prunastri (Oakmoss) extract
+- Search terms: Oakmoss Absolute; Oakmoss absolute; Oakmoss; Oakmoss extracts; Evernia absolute; Evernia prunastri, ext.; Mousse de Chêne absolute; Oakmoss absolute (Evernia prunastri); Evernia prunastri (Oakmoss) extract; CAS 90028-68-5
 - Known reference links: None yet
 - Why it matters: Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.
 
-### Ylang Ylang Complete
+### Ylang-Ylang Complete Oil
 
+- Dilution: 10%
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Required source type: Already structured
 - Current status: not_applicable
 - Review status: reviewed_ok
 - Suggested source: Current structured IFRA dataset
 - Suggested document: Existing structured IFRA standard for Ylang ylang extracts
-- Search terms: Ylang Ylang 10%; Ylang Ylang Complete 10%; Ylang Ylang Complete; Ylang-Ylang Complete 10%; Ylang-Ylang Complete Oil 10%; Ylang ylang extracts; Cananga odorata (Lamark) (Hooker et Thompson) (Anonaceae); Cananga odorata extract; Cananga odorata flower oil; Cananga odorata oil
+- Search terms: Ylang-Ylang Complete Oil; Ylang Ylang Complete; Ylang-Ylang Complete; Ylang Ylang Oil Complete; Ylang ylang extracts; Cananga odorata (Lamark) (Hooker et Thompson) (Anonaceae); Cananga odorata extract; Cananga odorata flower oil; Cananga odorata oil; Cananga oil
 - Known reference links: None yet
 - Why it matters: Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.

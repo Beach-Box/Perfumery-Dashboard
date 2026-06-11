@@ -4,6 +4,22 @@ This workflow turns active hero formula IFRA/source gaps into a local acquisitio
 
 It does not prove compliance, add IFRA limits, parse PDFs, or promote structured IFRA records.
 
+## Source Identity vs Formula Stock Name
+
+IFRA/source acquisition uses the regulated or source material identity, not the bench-stock display name. Diluted formula rows still keep their original formula names for loading, costing, and UI display, but source search and evidence matching should use the parent active material.
+
+Examples:
+
+- `Calone 1951 20% TEC` searches as `Calone 1951` / `Calone`.
+- `Geosmin 1% TEC` searches as `Geosmin`.
+- `Ambrettolide 50% TEC` searches as `Ambrettolide`.
+- `Ethyl Vanillin 10%` searches as `Ethyl Vanillin`.
+- `Helional 25%` searches as `Helional`.
+- `Veramoss 20% TEC` searches as `Veramoss` / `Evernyl` / `Methyl atrarate`.
+- `Seaweed Absolute 10%` searches as `Seaweed Absolute`.
+
+The dilution percentage and carrier still matter for active-load math, carrier grams, and formula interpretation. They should not be searched as if `20% TEC`, `1% TEC`, `DPG`, `EtOH`, or other carrier labels were regulated material identities.
+
 ## Run The Queue Builder
 
 From the repo root:
@@ -129,7 +145,7 @@ node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/
 node scripts/build_candidate_ifra_review_queue.mjs --json
 ```
 
-The queue reads `data/ifra_source_acquisition/candidate_ifra_source_extractions.json` and `data/ifra_source_acquisition/hero_ifra_source_queue.json`, then groups candidates by queue item/material. High-priority `ifra_category_limit`, `phototoxic_note`, and SDS/restriction candidates are shown before identity-only snippets. Markdown output shows only the top few snippets per item so the report stays reviewable.
+The queue reads `data/ifra_source_acquisition/candidate_ifra_source_extractions.json` and `data/ifra_source_acquisition/hero_ifra_source_queue.json`, then groups candidates by queue item/material. Diluted formula stocks are grouped under their source identity for evidence matching while preserving the original formula material display name. High-priority `ifra_category_limit`, `phototoxic_note`, and SDS/restriction candidates are shown before identity-only snippets. Markdown output shows only the top few snippets per item so the report stays reviewable.
 
 Manual review state is preserved in:
 
@@ -182,7 +198,7 @@ Resolver statuses mean:
 - `needs_supplier_doc`: request or locate supplier IFRA/SDS documentation.
 - `already_reviewed`, `not_applicable`, and `deferred`: no immediate candidate review is recommended.
 
-The scoring is transparent: linked queue items, exact material names, CAS terms, supplier SDS/product sources, IFRA/Cat 4/fine-fragrance/max-use language, and FCF/phototoxic wording increase priority. Identity-reference pages, Good Scents navigation/supplier-directory text, GHS hazard Category 4, RIFM average-use percentages, and unlinked snippets are penalized or treated as weak evidence.
+The scoring is transparent: linked queue items, exact source-identity/material names, CAS terms, supplier SDS/product sources, IFRA/Cat 4/fine-fragrance/max-use language, and FCF/phototoxic wording increase priority. Identity-reference pages, Good Scents navigation/supplier-directory text, GHS hazard Category 4, RIFM average-use percentages, and unlinked snippets are penalized or treated as weak evidence.
 
 The Markdown report intentionally shows only the best candidate per material by default. Use `--top 3` only when you want a little more context. Do not paste every candidate into review docs.
 

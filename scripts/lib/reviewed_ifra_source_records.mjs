@@ -8,6 +8,7 @@ import {
   updateCandidateIfraReviewStatus,
   writeCandidateIfraReviewQueue,
 } from "./candidate_ifra_review_queue.mjs";
+import { buildIfraSourceIdentity } from "./ifra_source_identity.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -124,8 +125,15 @@ function assertMaterialCompatible({ requestedMaterial, candidate }) {
   }
 
   const requested = normalizeText(requestedMaterial);
+  const requestedSourceIdentity = normalizeText(
+    buildIfraSourceIdentity(requestedMaterial).sourceIdentityName
+  );
   const candidateMaterial = normalizeText(candidate.materialName);
+  const candidateSourceIdentity = normalizeText(
+    candidate.sourceIdentityName || buildIfraSourceIdentity(candidate.materialName).sourceIdentityName
+  );
   if (candidateMaterial && requested !== candidateMaterial) {
+    if (candidateSourceIdentity && requestedSourceIdentity === candidateSourceIdentity) return;
     const bothBergamotFcf =
       requested.includes("bergamot") &&
       requested.includes("fcf") &&
@@ -184,6 +192,7 @@ function buildReviewedSourceRecord({
   reviewedAt,
   reviewedBy = "local_user",
 } = {}) {
+  const sourceIdentity = buildIfraSourceIdentity(materialName);
   const id = makeReviewedSourceRecordId({
     materialName,
     recordType,
@@ -193,6 +202,11 @@ function buildReviewedSourceRecord({
   return {
     id,
     materialName,
+    formulaMaterialName: materialName,
+    sourceIdentityName: sourceIdentity.sourceIdentityName,
+    activeMaterialName: sourceIdentity.activeMaterialName,
+    dilutionLabel: sourceIdentity.dilutionLabel,
+    carrierLabel: sourceIdentity.carrierLabel,
     normalizedName: normalizeText(materialName),
     recordType,
     sourceType: candidate.sourceType || "unknown",

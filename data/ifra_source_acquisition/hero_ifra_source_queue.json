@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T11:53:39.602Z",
+    "generatedAt": "2026-06-11T14:23:10.802Z",
     "reportName": "Hero IFRA Source Acquisition Queue",
-    "sourceGapReportGeneratedAt": "2026-06-11T11:53:39.336Z",
+    "sourceGapReportGeneratedAt": "2026-06-11T14:23:10.570Z",
     "sourceGapReportName": "Hero IFRA Source Gap Report",
     "regenerateCommand": "node scripts/build_hero_ifra_source_acquisition_queue.mjs --markdown --write docs/ifra/hero_ifra_source_acquisition_queue.md",
     "guardrails": [
@@ -51,9 +51,14 @@
   },
   "items": [
     {
-      "id": "hero-ifra-source-gamma-nonalactone-global_ifra_standard_needed",
+      "id": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
       "materialName": "Aldehyde C-18",
-      "normalizedName": "Gamma Nonalactone",
+      "normalizedName": "Aldehyde C-18",
+      "formulaMaterialName": "Aldehyde C-18",
+      "sourceIdentityName": "Aldehyde C-18",
+      "activeMaterialName": "Aldehyde C-18",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -61,9 +66,15 @@
       ],
       "priority": "high",
       "requiredSourceType": "global_ifra_standard_needed",
-      "suggestedDocumentName": "IFRA 51st Amendment standard for Gamma Nonalactone",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Aldehyde C-18",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Aldehyde C-18",
+        "Gamma Nonalactone",
+        "IFRA Gamma Nonalactone",
+        "IFRA Aldehyde C-18"
+      ],
+      "sourceSearchTerms": [
         "Aldehyde C-18",
         "Gamma Nonalactone",
         "IFRA Gamma Nonalactone",
@@ -80,12 +91,17 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     },
     {
-      "id": "hero-ifra-source-octanal-aldehyde-c-8-global_ifra_standard_needed",
+      "id": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed",
       "materialName": "Aldehyde C-8",
-      "normalizedName": "Octanal / Aldehyde C-8",
+      "normalizedName": "Aldehyde C-8",
+      "formulaMaterialName": "Aldehyde C-8",
+      "sourceIdentityName": "Aldehyde C-8",
+      "activeMaterialName": "Aldehyde C-8",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -94,9 +110,21 @@
       ],
       "priority": "high",
       "requiredSourceType": "global_ifra_standard_needed",
-      "suggestedDocumentName": "IFRA 51st Amendment standard for Octanal / Aldehyde C-8",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Aldehyde C-8",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Aldehyde C-8",
+        "Octanal / Aldehyde C-8",
+        "Ald C-8",
+        "Aldehyde C8",
+        "Octanal",
+        "IFRA Octanal",
+        "CAS 124-13-0",
+        "IFRA Aldehyde C-8",
+        "IFRA Octanal / Aldehyde C-8",
+        "IFRA Ald C-8"
+      ],
+      "sourceSearchTerms": [
         "Aldehyde C-8",
         "Octanal / Aldehyde C-8",
         "Ald C-8",
@@ -119,12 +147,17 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     },
     {
       "id": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
       "materialName": "Allyl Amyl Glycolate",
       "normalizedName": "Allyl Amyl Glycolate",
+      "formulaMaterialName": "Allyl Amyl Glycolate",
+      "sourceIdentityName": "Allyl Amyl Glycolate",
+      "activeMaterialName": "Allyl Amyl Glycolate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -136,6 +169,12 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Allyl Amyl Glycolate",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Allyl Amyl Glycolate",
+        "Allyl amyl glycolate",
+        "IFRA Allyl Amyl Glycolate",
+        "IFRA Allyl amyl glycolate"
+      ],
+      "sourceSearchTerms": [
         "Allyl Amyl Glycolate",
         "Allyl amyl glycolate",
         "IFRA Allyl Amyl Glycolate",
@@ -158,6 +197,11 @@
       "id": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
       "materialName": "Ambrettolide 50% TEC",
       "normalizedName": "Ambrettolide",
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "activeMaterialName": "Ambrettolide",
+      "dilutionLabel": "50% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -168,11 +212,14 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Ambrettolide",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
-        "Ambrettolide 50% TEC",
         "Ambrettolide",
         "IFRA Ambrettolide",
-        "CAS 7779-50-2",
-        "IFRA Ambrettolide 50% TEC"
+        "CAS 7779-50-2"
+      ],
+      "sourceSearchTerms": [
+        "Ambrettolide",
+        "IFRA Ambrettolide",
+        "CAS 7779-50-2"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "sourceUnavailable",
@@ -191,6 +238,11 @@
       "id": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
       "materialName": "Ambroxan Crystals",
       "normalizedName": "Ambroxan Crystals",
+      "formulaMaterialName": "Ambroxan 50%",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "activeMaterialName": "Ambroxan Crystals",
+      "dilutionLabel": "50%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Random Concoction - Original",
@@ -202,16 +254,20 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Ambroxan Crystals",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
-        "Ambroxan 50%",
         "Ambroxan Crystals",
         "Ambroxan",
         "Ambroxide",
         "IFRA Ambroxan",
         "IFRA Ambroxide",
-        "IFRA Ambroxan 50%",
-        "IFRA Ambroxan Crystals",
-        "Ambroxan 50% TEC",
-        "IFRA Ambroxan 50% TEC"
+        "IFRA Ambroxan Crystals"
+      ],
+      "sourceSearchTerms": [
+        "Ambroxan Crystals",
+        "Ambroxan",
+        "Ambroxide",
+        "IFRA Ambroxan",
+        "IFRA Ambroxide",
+        "IFRA Ambroxan Crystals"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "sourceUnavailable",
@@ -232,6 +288,11 @@
       "id": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
       "materialName": "Calone 1951 20%",
       "normalizedName": "Calone 1951",
+      "formulaMaterialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "activeMaterialName": "Calone 1951",
+      "dilutionLabel": "20%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -243,14 +304,22 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Calone 1951",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
-        "Calone 1951 20%",
         "Calone 1951",
         "Calone",
         "Calone 1951®",
         "IFRA Calone",
         "CAS 28940-11-6",
-        "IFRA Calone 1951 20%",
-        "IFRA Calone 1951"
+        "IFRA Calone 1951",
+        "IFRA Calone 1951®"
+      ],
+      "sourceSearchTerms": [
+        "Calone 1951",
+        "Calone",
+        "Calone 1951®",
+        "IFRA Calone",
+        "CAS 28940-11-6",
+        "IFRA Calone 1951",
+        "IFRA Calone 1951®"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "sourceUnavailable",
@@ -269,6 +338,11 @@
       "id": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed",
       "materialName": "Caryophyllene Oxide",
       "normalizedName": "Caryophyllene Oxide",
+      "formulaMaterialName": "Caryophyllene Oxide",
+      "sourceIdentityName": "Caryophyllene Oxide",
+      "activeMaterialName": "Caryophyllene Oxide",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2",
         "Damp Shoreline v1"
@@ -281,9 +355,13 @@
         "Caryophyllene Oxide",
         "Caryophyllene oxide",
         "IFRA Caryophyllene Oxide",
-        "IFRA Caryophyllene oxide",
-        "Caryophyllene Oxide 10%",
-        "IFRA Caryophyllene Oxide 10%"
+        "IFRA Caryophyllene oxide"
+      ],
+      "sourceSearchTerms": [
+        "Caryophyllene Oxide",
+        "Caryophyllene oxide",
+        "IFRA Caryophyllene Oxide",
+        "IFRA Caryophyllene oxide"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "sourceUnavailable",
@@ -303,6 +381,11 @@
       "id": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed",
       "materialName": "Dihydromyrcenol",
       "normalizedName": "Dihydromyrcenol",
+      "formulaMaterialName": "Dihydromyrcenol",
+      "sourceIdentityName": "Dihydromyrcenol",
+      "activeMaterialName": "Dihydromyrcenol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -314,6 +397,11 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Dihydromyrcenol",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Dihydromyrcenol",
+        "IFRA Dihydromyrcenol",
+        "CAS 18479-58-8"
+      ],
+      "sourceSearchTerms": [
         "Dihydromyrcenol",
         "IFRA Dihydromyrcenol",
         "CAS 18479-58-8"
@@ -335,6 +423,11 @@
       "id": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed",
       "materialName": "Ethyl Linalool",
       "normalizedName": "Ethyl Linalool",
+      "formulaMaterialName": "Ethyl Linalool",
+      "sourceIdentityName": "Ethyl Linalool",
+      "activeMaterialName": "Ethyl Linalool",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -344,6 +437,12 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Linalool",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Ethyl Linalool",
+        "Ethyl linalool",
+        "IFRA Ethyl Linalool",
+        "IFRA Ethyl linalool"
+      ],
+      "sourceSearchTerms": [
         "Ethyl Linalool",
         "Ethyl linalool",
         "IFRA Ethyl Linalool",
@@ -366,6 +465,11 @@
       "id": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
       "materialName": "Ethyl Linalyl Acetate",
       "normalizedName": "Ethyl Linalyl Acetate",
+      "formulaMaterialName": "Ethyl Linalyl Acetate",
+      "sourceIdentityName": "Ethyl Linalyl Acetate",
+      "activeMaterialName": "Ethyl Linalyl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -375,6 +479,12 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Linalyl Acetate",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Ethyl Linalyl Acetate",
+        "Ethyl linalyl acetate",
+        "IFRA Ethyl Linalyl Acetate",
+        "IFRA Ethyl linalyl acetate"
+      ],
+      "sourceSearchTerms": [
         "Ethyl Linalyl Acetate",
         "Ethyl linalyl acetate",
         "IFRA Ethyl Linalyl Acetate",
@@ -397,6 +507,11 @@
       "id": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
       "materialName": "Ethyl Vanillin 10%",
       "normalizedName": "Ethyl Vanillin",
+      "formulaMaterialName": "Ethyl Vanillin 10%",
+      "sourceIdentityName": "Ethyl Vanillin",
+      "activeMaterialName": "Ethyl Vanillin",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -407,12 +522,17 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Vanillin",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
-        "Ethyl Vanillin 10%",
         "Ethyl Vanillin",
         "Ethylvanillin",
         "IFRA Ethylvanillin",
         "CAS 121-32-4",
-        "IFRA Ethyl Vanillin 10%",
+        "IFRA Ethyl Vanillin"
+      ],
+      "sourceSearchTerms": [
+        "Ethyl Vanillin",
+        "Ethylvanillin",
+        "IFRA Ethylvanillin",
+        "CAS 121-32-4",
         "IFRA Ethyl Vanillin"
       ],
       "knownReferenceLinks": [],
@@ -432,6 +552,11 @@
       "id": "hero-ifra-source-geosmin-global_ifra_standard_needed",
       "materialName": "Geosmin 1% TEC",
       "normalizedName": "Geosmin",
+      "formulaMaterialName": "Geosmin 1% TEC",
+      "sourceIdentityName": "Geosmin",
+      "activeMaterialName": "Geosmin",
+      "dilutionLabel": "1% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -440,9 +565,11 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Geosmin",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
-        "Geosmin 1% TEC",
         "Geosmin",
-        "IFRA Geosmin 1% TEC",
+        "IFRA Geosmin"
+      ],
+      "sourceSearchTerms": [
+        "Geosmin",
         "IFRA Geosmin"
       ],
       "knownReferenceLinks": [],
@@ -459,9 +586,14 @@
       "lastUpdated": "2026-06-11T11:50:06.162Z"
     },
     {
-      "id": "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
+      "id": "hero-ifra-source-hedione-global_ifra_standard_needed",
       "materialName": "Hedione",
-      "normalizedName": "Methyl dihydrojasmonate / Hedione",
+      "normalizedName": "Hedione",
+      "formulaMaterialName": "Hedione",
+      "sourceIdentityName": "Hedione",
+      "activeMaterialName": "Hedione",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -470,19 +602,31 @@
       ],
       "priority": "high",
       "requiredSourceType": "global_ifra_standard_needed",
-      "suggestedDocumentName": "IFRA 51st Amendment standard for Methyl dihydrojasmonate / Hedione",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Hedione",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
         "Hedione",
-        "Methyl dihydrojasmonate / Hedione",
-        "Hedione®",
         "Methyl dihydrojasmonate",
         "MDJ",
+        "Methyl dihydrojasmonate / Hedione",
+        "Hedione®",
         "IFRA methyl dihydrojasmonate",
         "CAS 24851-98-7",
         "IFRA Hedione",
-        "IFRA Methyl dihydrojasmonate / Hedione",
-        "IFRA Hedione®"
+        "IFRA Methyl dihydrojasmonate",
+        "IFRA MDJ"
+      ],
+      "sourceSearchTerms": [
+        "Hedione",
+        "Methyl dihydrojasmonate",
+        "MDJ",
+        "Methyl dihydrojasmonate / Hedione",
+        "Hedione®",
+        "IFRA methyl dihydrojasmonate",
+        "CAS 24851-98-7",
+        "IFRA Hedione",
+        "IFRA Methyl dihydrojasmonate",
+        "IFRA MDJ"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "sourceUnavailable",
@@ -495,12 +639,17 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     },
     {
       "id": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
       "materialName": "Iso E Super",
       "normalizedName": "Iso E Super",
+      "formulaMaterialName": "Iso E Super",
+      "sourceIdentityName": "Iso E Super",
+      "activeMaterialName": "Iso E Super",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -512,6 +661,15 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Iso E Super",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Iso E Super",
+        "OTNE",
+        "Tetramethyl acetyloctahydronaphthalenes",
+        "IFRA OTNE",
+        "CAS 54464-57-2",
+        "IFRA Iso E Super",
+        "IFRA Tetramethyl acetyloctahydronaphthalenes"
+      ],
+      "sourceSearchTerms": [
         "Iso E Super",
         "OTNE",
         "Tetramethyl acetyloctahydronaphthalenes",
@@ -537,6 +695,11 @@
       "id": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
       "materialName": "Methyl Ionone Alpha Extra",
       "normalizedName": "Methyl Ionone Alpha Extra",
+      "formulaMaterialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "activeMaterialName": "Methyl Ionone Alpha Extra",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -547,6 +710,12 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Methyl Ionone Alpha Extra",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Methyl Ionone Alpha Extra",
+        "Methyl ionone alpha extra",
+        "IFRA Methyl Ionone Alpha Extra",
+        "IFRA Methyl ionone alpha extra"
+      ],
+      "sourceSearchTerms": [
         "Methyl Ionone Alpha Extra",
         "Methyl ionone alpha extra",
         "IFRA Methyl Ionone Alpha Extra",
@@ -569,6 +738,11 @@
       "id": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed",
       "materialName": "Phenyl Ethyl Acetate",
       "normalizedName": "Phenyl Ethyl Acetate",
+      "formulaMaterialName": "Phenyl Ethyl Acetate",
+      "sourceIdentityName": "Phenyl Ethyl Acetate",
+      "activeMaterialName": "Phenyl Ethyl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -579,6 +753,14 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Phenyl Ethyl Acetate",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Phenyl Ethyl Acetate",
+        "Phenethyl acetate",
+        "Phenylethyl acetate",
+        "IFRA Phenyl Ethyl Acetate",
+        "IFRA Phenethyl acetate",
+        "IFRA Phenylethyl acetate"
+      ],
+      "sourceSearchTerms": [
         "Phenyl Ethyl Acetate",
         "Phenethyl acetate",
         "Phenylethyl acetate",
@@ -603,6 +785,11 @@
       "id": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
       "materialName": "Vetiveryl Acetate",
       "normalizedName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1"
       ],
@@ -611,6 +798,12 @@
       "suggestedDocumentName": "IFRA 51st Amendment standard for Vetiveryl Acetate",
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
+        "Vetiveryl Acetate",
+        "Vetiveryl acetate",
+        "IFRA Vetiveryl Acetate",
+        "IFRA Vetiveryl acetate"
+      ],
+      "sourceSearchTerms": [
         "Vetiveryl Acetate",
         "Vetiveryl acetate",
         "IFRA Vetiveryl Acetate",
@@ -633,6 +826,11 @@
       "id": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
       "materialName": "Cedarwood Virginia EO",
       "normalizedName": "Cedarwood Virginia EO",
+      "formulaMaterialName": "Cedarwood Virginia EO",
+      "sourceIdentityName": "Cedarwood Virginia EO",
+      "activeMaterialName": "Cedarwood Virginia EO",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -641,6 +839,26 @@
       "suggestedDocumentName": "Cedarwood Virginia EO supplier IFRA certificate, SDS, and product identity/spec document",
       "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
       "candidateSearchTerms": [
+        "Cedarwood Virginia EO",
+        "Cedarwood virginia",
+        "Cedarwood Virginia",
+        "Virginia cedarwood",
+        "Cedarwood oil",
+        "Juniperus Virginiana Wood Oil",
+        "cedarwood virginia eo",
+        "cedarwood virginia",
+        "virginia cedarwood",
+        "cedarwood oil",
+        "juniperus virginiana wood oil",
+        "Juniperus virginiana wood oil",
+        "Cedarwood Virginia IFRA",
+        "Cedarwood Virginia SDS",
+        "CAS 8000-27-9",
+        "IFRA Cedarwood Virginia EO",
+        "IFRA Cedarwood virginia",
+        "IFRA Cedarwood Virginia"
+      ],
+      "sourceSearchTerms": [
         "Cedarwood Virginia EO",
         "Cedarwood virginia",
         "Cedarwood Virginia",
@@ -677,6 +895,11 @@
       "id": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
       "materialName": "Cypriol",
       "normalizedName": "Cypriol",
+      "formulaMaterialName": "Cypriol",
+      "sourceIdentityName": "Cypriol",
+      "activeMaterialName": "Cypriol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -685,6 +908,15 @@
       "suggestedDocumentName": "Cypriol supplier IFRA certificate, SDS, and product identity/spec document",
       "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
       "candidateSearchTerms": [
+        "Cypriol",
+        "Cypriol oil",
+        "Cypriol IFRA",
+        "Cypriol SDS",
+        "IFRA Cypriol",
+        "IFRA Cypriol oil",
+        "Cypriol IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Cypriol",
         "Cypriol oil",
         "Cypriol IFRA",
@@ -710,6 +942,11 @@
       "id": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
       "materialName": "Pink Peppercorn Oil P&N",
       "normalizedName": "Pink Peppercorn Oil P&N",
+      "formulaMaterialName": "Pink Peppercorn Oil P&N",
+      "sourceIdentityName": "Pink Peppercorn Oil P&N",
+      "activeMaterialName": "Pink Peppercorn Oil P&N",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -721,6 +958,18 @@
       "suggestedDocumentName": "Pink Peppercorn Oil P&N supplier IFRA certificate, SDS, and product identity/spec document",
       "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
       "candidateSearchTerms": [
+        "Pink Peppercorn Oil P&N",
+        "Pink Peppercorn Oil",
+        "Pink pepper oil",
+        "Pink Peppercorn Oil IFRA",
+        "Pink Peppercorn Oil SDS",
+        "IFRA Pink Peppercorn Oil P&N",
+        "IFRA Pink Peppercorn Oil",
+        "IFRA Pink pepper oil",
+        "Pink Peppercorn Oil P&N SDS",
+        "Pink Peppercorn Oil P&N IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Pink Peppercorn Oil P&N",
         "Pink Peppercorn Oil",
         "Pink pepper oil",
@@ -749,6 +998,11 @@
       "id": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
       "materialName": "Seaweed Absolute 10%",
       "normalizedName": "Seaweed Absolute",
+      "formulaMaterialName": "Seaweed Absolute 10%",
+      "sourceIdentityName": "Seaweed Absolute",
+      "activeMaterialName": "Seaweed Absolute",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -757,19 +1011,25 @@
       ],
       "priority": "high",
       "requiredSourceType": "natural_uvcb_supplier_document_needed",
-      "suggestedDocumentName": "Seaweed Absolute 10% supplier IFRA certificate, SDS, and product identity/spec document",
+      "suggestedDocumentName": "Seaweed Absolute supplier IFRA certificate, SDS, and product identity/spec document",
       "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
       "candidateSearchTerms": [
-        "Seaweed Absolute 10%",
         "Seaweed Absolute",
         "Seaweed",
         "Seaweed Absolute IFRA",
         "Seaweed Absolute SDS",
-        "IFRA Seaweed Absolute 10%",
         "IFRA Seaweed Absolute",
         "IFRA Seaweed",
-        "Seaweed Absolute 10% SDS",
-        "Seaweed Absolute 10% IFRA certificate"
+        "Seaweed Absolute IFRA certificate"
+      ],
+      "sourceSearchTerms": [
+        "Seaweed Absolute",
+        "Seaweed",
+        "Seaweed Absolute IFRA",
+        "Seaweed Absolute SDS",
+        "IFRA Seaweed Absolute",
+        "IFRA Seaweed",
+        "Seaweed Absolute IFRA certificate"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "supplierSdsNeeded",
@@ -788,6 +1048,11 @@
       "id": "hero-ifra-source-algenone-specialty_supplier_document_needed",
       "materialName": "Algenone",
       "normalizedName": "Algenone",
+      "formulaMaterialName": "Algenone",
+      "sourceIdentityName": "Algenone",
+      "activeMaterialName": "Algenone",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -799,6 +1064,13 @@
       "suggestedDocumentName": "Algenone supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Algenone",
+        "Algenone IFRA",
+        "Algenone SDS",
+        "IFRA Algenone",
+        "Algenone IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Algenone",
         "Algenone IFRA",
         "Algenone SDS",
@@ -822,6 +1094,11 @@
       "id": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
       "materialName": "Celestafleur",
       "normalizedName": "Celestafleur",
+      "formulaMaterialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "activeMaterialName": "Celestafleur",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1"
@@ -831,6 +1108,15 @@
       "suggestedDocumentName": "Celestafleur supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Celestafleur",
+        "Celestafleur®",
+        "Celestafleur IFRA",
+        "Celestafleur SDS",
+        "IFRA Celestafleur",
+        "IFRA Celestafleur®",
+        "Celestafleur IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Celestafleur",
         "Celestafleur®",
         "Celestafleur IFRA",
@@ -856,6 +1142,11 @@
       "id": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
       "materialName": "Cetalox",
       "normalizedName": "Cetalox",
+      "formulaMaterialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "activeMaterialName": "Cetalox",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2",
         "Random Concoction - Original",
@@ -873,11 +1164,16 @@
         "Cetalox SDS",
         "IFRA Cetalox",
         "IFRA Cetalox®",
-        "Cetalox IFRA certificate",
-        "Cetalox 50% TEC",
-        "IFRA Cetalox 50% TEC",
-        "Cetalox 50% TEC SDS",
-        "Cetalox 50% TEC IFRA certificate"
+        "Cetalox IFRA certificate"
+      ],
+      "sourceSearchTerms": [
+        "Cetalox",
+        "Cetalox®",
+        "Cetalox IFRA",
+        "Cetalox SDS",
+        "IFRA Cetalox",
+        "IFRA Cetalox®",
+        "Cetalox IFRA certificate"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "supplierSdsNeeded",
@@ -897,6 +1193,11 @@
       "id": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
       "materialName": "Clearwood",
       "normalizedName": "Clearwood",
+      "formulaMaterialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "activeMaterialName": "Clearwood",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -905,6 +1206,14 @@
       "suggestedDocumentName": "Clearwood supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Clearwood",
+        "Clearwood®",
+        "IFRA Clearwood",
+        "IFRA Clearwood®",
+        "Clearwood SDS",
+        "Clearwood IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Clearwood",
         "Clearwood®",
         "IFRA Clearwood",
@@ -929,6 +1238,11 @@
       "id": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed",
       "materialName": "Cyclogalbanate",
       "normalizedName": "Cyclogalbanate",
+      "formulaMaterialName": "Cyclogalbanate",
+      "sourceIdentityName": "Cyclogalbanate",
+      "activeMaterialName": "Cyclogalbanate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -940,6 +1254,12 @@
       "suggestedDocumentName": "Cyclogalbanate supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Cyclogalbanate",
+        "IFRA Cyclogalbanate",
+        "Cyclogalbanate SDS",
+        "Cyclogalbanate IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Cyclogalbanate",
         "IFRA Cyclogalbanate",
         "Cyclogalbanate SDS",
@@ -962,6 +1282,11 @@
       "id": "hero-ifra-source-florol-specialty_supplier_document_needed",
       "materialName": "Florol",
       "normalizedName": "Florol",
+      "formulaMaterialName": "Florol",
+      "sourceIdentityName": "Florol",
+      "activeMaterialName": "Florol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -972,6 +1297,15 @@
       "suggestedDocumentName": "Florol supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Florol",
+        "Florol®",
+        "Florol IFRA",
+        "Florol SDS",
+        "IFRA Florol",
+        "IFRA Florol®",
+        "Florol IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Florol",
         "Florol®",
         "Florol IFRA",
@@ -994,9 +1328,14 @@
       "lastUpdated": "2026-06-11T11:50:06.162Z"
     },
     {
-      "id": "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed",
+      "id": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed",
       "materialName": "Hedione HC",
-      "normalizedName": "Hedione High Cis",
+      "normalizedName": "Hedione HC",
+      "formulaMaterialName": "Hedione HC",
+      "sourceIdentityName": "Hedione HC",
+      "activeMaterialName": "Hedione HC",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -1008,15 +1347,29 @@
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
         "Hedione HC",
-        "Hedione High Cis",
-        "Hedione® High Cis",
         "Hedione",
         "Methyl dihydrojasmonate",
         "MDJ",
+        "Hedione High Cis",
+        "Hedione® High Cis",
         "IFRA methyl dihydrojasmonate",
         "IFRA Hedione HC",
-        "IFRA Hedione High Cis",
-        "IFRA Hedione® High Cis",
+        "IFRA Hedione",
+        "IFRA Methyl dihydrojasmonate",
+        "Hedione HC SDS",
+        "Hedione HC IFRA certificate"
+      ],
+      "sourceSearchTerms": [
+        "Hedione HC",
+        "Hedione",
+        "Methyl dihydrojasmonate",
+        "MDJ",
+        "Hedione High Cis",
+        "Hedione® High Cis",
+        "IFRA methyl dihydrojasmonate",
+        "IFRA Hedione HC",
+        "IFRA Hedione",
+        "IFRA Methyl dihydrojasmonate",
         "Hedione HC SDS",
         "Hedione HC IFRA certificate"
       ],
@@ -1031,12 +1384,17 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     },
     {
       "id": "hero-ifra-source-maritima-specialty_supplier_document_needed",
       "materialName": "Maritima",
       "normalizedName": "Maritima",
+      "formulaMaterialName": "Maritima",
+      "sourceIdentityName": "Maritima",
+      "activeMaterialName": "Maritima",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1048,6 +1406,15 @@
       "suggestedDocumentName": "Maritima supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Maritima",
+        "Maritima®",
+        "Maritima IFRA",
+        "Maritima SDS",
+        "IFRA Maritima",
+        "IFRA Maritima®",
+        "Maritima IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Maritima",
         "Maritima®",
         "Maritima IFRA",
@@ -1073,6 +1440,11 @@
       "id": "hero-ifra-source-oceanol-specialty_supplier_document_needed",
       "materialName": "Oceanol 10%",
       "normalizedName": "Oceanol",
+      "formulaMaterialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "activeMaterialName": "Oceanol",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1081,19 +1453,25 @@
       ],
       "priority": "high",
       "requiredSourceType": "specialty_supplier_document_needed",
-      "suggestedDocumentName": "Oceanol 10% supplier or manufacturer IFRA certificate and SDS",
+      "suggestedDocumentName": "Oceanol supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
-        "Oceanol 10%",
         "Oceanol",
         "Oceanol®",
         "Oceanol IFRA",
         "Oceanol SDS",
-        "IFRA Oceanol 10%",
         "IFRA Oceanol",
         "IFRA Oceanol®",
-        "Oceanol 10% SDS",
-        "Oceanol 10% IFRA certificate"
+        "Oceanol IFRA certificate"
+      ],
+      "sourceSearchTerms": [
+        "Oceanol",
+        "Oceanol®",
+        "Oceanol IFRA",
+        "Oceanol SDS",
+        "IFRA Oceanol",
+        "IFRA Oceanol®",
+        "Oceanol IFRA certificate"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "supplierSdsNeeded",
@@ -1112,6 +1490,11 @@
       "id": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
       "materialName": "Orbitone T Neo",
       "normalizedName": "Orbitone T Neo",
+      "formulaMaterialName": "Orbitone T Neo",
+      "sourceIdentityName": "Orbitone T Neo",
+      "activeMaterialName": "Orbitone T Neo",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1120,6 +1503,14 @@
       "suggestedDocumentName": "Orbitone T Neo supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Orbitone T Neo",
+        "Orbitone® T Neo",
+        "IFRA Orbitone T Neo",
+        "IFRA Orbitone® T Neo",
+        "Orbitone T Neo SDS",
+        "Orbitone T Neo IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Orbitone T Neo",
         "Orbitone® T Neo",
         "IFRA Orbitone T Neo",
@@ -1144,6 +1535,11 @@
       "id": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
       "materialName": "Timbersilk",
       "normalizedName": "Timbersilk",
+      "formulaMaterialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "activeMaterialName": "Timbersilk",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1152,6 +1548,14 @@
       "suggestedDocumentName": "Timbersilk supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
+        "Timbersilk",
+        "Timbersilk®",
+        "IFRA Timbersilk",
+        "IFRA Timbersilk®",
+        "Timbersilk SDS",
+        "Timbersilk IFRA certificate"
+      ],
+      "sourceSearchTerms": [
         "Timbersilk",
         "Timbersilk®",
         "IFRA Timbersilk",
@@ -1173,9 +1577,14 @@
       "lastUpdated": "2026-06-11T11:50:06.162Z"
     },
     {
-      "id": "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed",
+      "id": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
       "materialName": "Veramoss 20% TEC",
-      "normalizedName": "Methyl atrarate / Veramoss",
+      "normalizedName": "Veramoss",
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "activeMaterialName": "Veramoss",
+      "dilutionLabel": "20% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -1183,22 +1592,35 @@
       ],
       "priority": "high",
       "requiredSourceType": "specialty_supplier_document_needed",
-      "suggestedDocumentName": "Veramoss 20% TEC supplier or manufacturer IFRA certificate and SDS",
+      "suggestedDocumentName": "Veramoss supplier or manufacturer IFRA certificate and SDS",
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
-        "Veramoss 20% TEC",
         "Veramoss",
+        "Evernyl",
+        "Methyl atrarate",
         "Methyl atrarate / Veramoss",
         "Veramoss®",
-        "Evernyl",
         "Evernyl®",
-        "Methyl atrarate",
         "IFRA methyl atrarate",
-        "IFRA Veramoss 20% TEC",
         "IFRA Veramoss",
-        "IFRA Methyl atrarate / Veramoss",
-        "Veramoss 20% TEC SDS",
-        "Veramoss 20% TEC IFRA certificate"
+        "IFRA Evernyl",
+        "IFRA Methyl atrarate",
+        "Veramoss SDS",
+        "Veramoss IFRA certificate"
+      ],
+      "sourceSearchTerms": [
+        "Veramoss",
+        "Evernyl",
+        "Methyl atrarate",
+        "Methyl atrarate / Veramoss",
+        "Veramoss®",
+        "Evernyl®",
+        "IFRA methyl atrarate",
+        "IFRA Veramoss",
+        "IFRA Evernyl",
+        "IFRA Methyl atrarate",
+        "Veramoss SDS",
+        "Veramoss IFRA certificate"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "supplierSdsNeeded",
@@ -1211,12 +1633,17 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     },
     {
       "id": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
       "materialName": "Bergamot EO FCF",
       "normalizedName": "Bergamot EO FCF",
+      "formulaMaterialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "activeMaterialName": "Bergamot EO FCF",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1228,6 +1655,26 @@
       "suggestedDocumentName": "Bergamot EO FCF supplier IFRA certificate confirming FCF/furocoumarin-free identity",
       "suggestedSource": "Supplier certificate confirming FCF/furocoumarin-free identity",
       "candidateSearchTerms": [
+        "Bergamot EO FCF",
+        "Bergamot FCF",
+        "Bergamot Oil FCF",
+        "Bergamot Oil FCF, Cote d'Ivoire",
+        "Bergamot Oil FCF, Côte d'Ivoire",
+        "Bergamot Oil FCF, Organic",
+        "Bergamot Oil FCF, Terpeneless",
+        "Bergamot “Superior” Oil, FCF",
+        "bergamot eo fcf",
+        "bergamot fcf",
+        "bergamot oil fcf",
+        "bergamot oil fcf, cote d'ivoire",
+        "bergamot oil fcf, côte d'ivoire",
+        "bergamot oil fcf organic",
+        "bergamot oil fcf, organic",
+        "bergamot oil fcf terpeneless",
+        "bergamot oil fcf, terpeneless",
+        "bergamot superior oil fcf"
+      ],
+      "sourceSearchTerms": [
         "Bergamot EO FCF",
         "Bergamot FCF",
         "Bergamot Oil FCF",
@@ -1264,6 +1711,11 @@
       "id": "hero-ifra-source-lemon-fcf-fcf_special_case",
       "materialName": "Lemon FCF",
       "normalizedName": "Lemon FCF",
+      "formulaMaterialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "activeMaterialName": "Lemon FCF",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1272,6 +1724,21 @@
       "suggestedDocumentName": "Lemon FCF supplier IFRA certificate confirming FCF/furocoumarin-free identity",
       "suggestedSource": "Supplier certificate confirming FCF/furocoumarin-free identity",
       "candidateSearchTerms": [
+        "Lemon FCF",
+        "Lemon EO FCF",
+        "Lemon Oil FCF",
+        "Furocoumarin-Free Lemon",
+        "lemon fcf",
+        "lemon eo fcf",
+        "lemon oil fcf",
+        "furocoumarin-free lemon",
+        "lemon furocoumarin free",
+        "CAS 84929-31-7",
+        "IFRA Lemon FCF",
+        "IFRA Lemon EO FCF",
+        "IFRA Lemon Oil FCF"
+      ],
+      "sourceSearchTerms": [
         "Lemon FCF",
         "Lemon EO FCF",
         "Lemon Oil FCF",
@@ -1303,6 +1770,11 @@
       "id": "hero-ifra-source-botanical-musk-accord-accord_component_expansion_deferred",
       "materialName": "Botanical Musk Accord",
       "normalizedName": "Botanical Musk Accord",
+      "formulaMaterialName": "Botanical Musk Accord",
+      "sourceIdentityName": "Botanical Musk Accord",
+      "activeMaterialName": "Botanical Musk Accord",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1314,6 +1786,10 @@
       "suggestedDocumentName": "Botanical Musk Accord component IFRA expansion worksheet",
       "suggestedSource": "Internal accord recipe expansion review",
       "candidateSearchTerms": [
+        "Botanical Musk Accord",
+        "IFRA Botanical Musk Accord"
+      ],
+      "sourceSearchTerms": [
         "Botanical Musk Accord",
         "IFRA Botanical Musk Accord"
       ],
@@ -1334,6 +1810,11 @@
       "id": "hero-ifra-source-driftwood-accord-accord_component_expansion_deferred",
       "materialName": "Driftwood Accord",
       "normalizedName": "Driftwood Accord",
+      "formulaMaterialName": "Driftwood Accord",
+      "sourceIdentityName": "Driftwood Accord",
+      "activeMaterialName": "Driftwood Accord",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1344,6 +1825,10 @@
       "suggestedDocumentName": "Driftwood Accord component IFRA expansion worksheet",
       "suggestedSource": "Internal accord recipe expansion review",
       "candidateSearchTerms": [
+        "Driftwood Accord",
+        "IFRA Driftwood Accord"
+      ],
+      "sourceSearchTerms": [
         "Driftwood Accord",
         "IFRA Driftwood Accord"
       ],
@@ -1364,6 +1849,11 @@
       "id": "hero-ifra-source-driftwood-accord-v2-accord_component_expansion_deferred",
       "materialName": "Driftwood Accord v2",
       "normalizedName": "Driftwood Accord v2",
+      "formulaMaterialName": "Driftwood Accord v2",
+      "sourceIdentityName": "Driftwood Accord v2",
+      "activeMaterialName": "Driftwood Accord v2",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1372,6 +1862,10 @@
       "suggestedDocumentName": "Driftwood Accord v2 component IFRA expansion worksheet",
       "suggestedSource": "Internal accord recipe expansion review",
       "candidateSearchTerms": [
+        "Driftwood Accord v2",
+        "IFRA Driftwood Accord v2"
+      ],
+      "sourceSearchTerms": [
         "Driftwood Accord v2",
         "IFRA Driftwood Accord v2"
       ],
@@ -1392,6 +1886,11 @@
       "id": "hero-ifra-source-iso-e-amberxtreme-1-accord_component_expansion_deferred",
       "materialName": "Iso E + AmberXtreme 1%",
       "normalizedName": "Iso E + AmberXtreme 1%",
+      "formulaMaterialName": "Iso E + AmberXtreme 1%",
+      "sourceIdentityName": "Iso E + AmberXtreme 1%",
+      "activeMaterialName": "Iso E + AmberXtreme 1%",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1401,7 +1900,11 @@
       "suggestedSource": "Internal accord recipe expansion review",
       "candidateSearchTerms": [
         "Iso E + AmberXtreme 1%",
-        "IFRA Iso E + AmberXtreme 1%"
+        "IFRA Iso E + AmberXtreme"
+      ],
+      "sourceSearchTerms": [
+        "Iso E + AmberXtreme 1%",
+        "IFRA Iso E + AmberXtreme"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "accordLevelOnly",
@@ -1420,6 +1923,11 @@
       "id": "hero-ifra-source-cashmeran-already_structured",
       "materialName": "Cashmeran",
       "normalizedName": "Cashmeran",
+      "formulaMaterialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "activeMaterialName": "Cashmeran",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1431,6 +1939,15 @@
       "suggestedDocumentName": "Existing structured IFRA standard for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
       "suggestedSource": "Current structured IFRA dataset",
       "candidateSearchTerms": [
+        "Cashmeran",
+        "Cashmeran®",
+        "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+        "1,2,3,5,6,7-Hexahydro-1,1,2,3,3-pentamethyl-4H-inden-4-one",
+        "4H-Inden-4-one, 1,2,3,5,6,7-hexahydro-1,1,2,3,3-pentamethyl1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
+        "Cashmeran (commercial name)",
+        "CAS 33704-61-9"
+      ],
+      "sourceSearchTerms": [
         "Cashmeran",
         "Cashmeran®",
         "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
@@ -1456,6 +1973,11 @@
       "id": "hero-ifra-source-cyclamen-aldehyde-already_structured",
       "materialName": "Cyclamen Aldehyde",
       "normalizedName": "Cyclamen Aldehyde",
+      "formulaMaterialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "activeMaterialName": "Cyclamen Aldehyde",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1466,6 +1988,17 @@
       "suggestedDocumentName": "Existing structured IFRA standard for Cyclamen aldehyde",
       "suggestedSource": "Current structured IFRA dataset",
       "candidateSearchTerms": [
+        "Cyclamen Aldehyde",
+        "Cyclamen aldehyde",
+        "Benzenepropanal, α-methyl-4-(1-methylethyl)Benzenepropanol, .α.-methyl-4-(1-methylethyl)3-p-Cumenyl-2-methylpropionaldehyde p-Isopropyl-α-methylhydrocinnamaldehyde",
+        "3-(4-Isopropylphenyl)-2-methylpropanal",
+        "2-Methyl-3-(p-isopropylphenyl)propionaldehyde α-Methyl-p-isopropylphenylpropylaldehyde α-Methyl-4-(1-methylethyl)benzenepropanal",
+        "Cyclamal (commercial name)",
+        "Cyclaviol (commercial name)",
+        "Cyclosal (commercial name)",
+        "CAS 103-95-7"
+      ],
+      "sourceSearchTerms": [
         "Cyclamen Aldehyde",
         "Cyclamen aldehyde",
         "Benzenepropanal, α-methyl-4-(1-methylethyl)Benzenepropanol, .α.-methyl-4-(1-methylethyl)3-p-Cumenyl-2-methylpropionaldehyde p-Isopropyl-α-methylhydrocinnamaldehyde",
@@ -1491,8 +2024,13 @@
     },
     {
       "id": "hero-ifra-source-helional-already_structured",
-      "materialName": "Helional",
-      "normalizedName": "Helional",
+      "materialName": "Helional®",
+      "normalizedName": "Helional®",
+      "formulaMaterialName": "Helional 25%",
+      "sourceIdentityName": "Helional®",
+      "activeMaterialName": "Helional®",
+      "dilutionLabel": "25%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1504,9 +2042,8 @@
       "suggestedDocumentName": "Existing structured IFRA standard for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
       "suggestedSource": "Current structured IFRA dataset",
       "candidateSearchTerms": [
-        "Helional 25%",
+        "Helional®",
         "Helional",
-        "Helional 25",
         "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
         "1,3-Benzodioxole-5-propanal, α-methyl3-(1,3-Benzodioxol-5-yl)-2-methylpropanal",
         "2-Methyl-3-(3,4-methylenedioxyphenyl)- propionaldehyde",
@@ -1516,8 +2053,21 @@
         "Heliogan (commercial name)",
         "Helional (commercial name)",
         "Tropional (commercial name)",
-        "CAS 1205-17-0",
-        "Helional®"
+        "CAS 1205-17-0"
+      ],
+      "sourceSearchTerms": [
+        "Helional®",
+        "Helional",
+        "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+        "1,3-Benzodioxole-5-propanal, α-methyl3-(1,3-Benzodioxol-5-yl)-2-methylpropanal",
+        "2-Methyl-3-(3,4-methylenedioxyphenyl)- propionaldehyde",
+        "2-Methyl-3-(3,4-methylenedioxyphenyl)propanal α-Methyl-3,4-(methylenedioxy)-hydrocinnamaldehyde α-Methyl-1,3-benzodioxole-5-propanal α-Methyl-1,3-benzodioxole-5-propionaldehyde",
+        "3-(3,4-Methylenedioxyphenyl)-2-methylpropanal α-Methyl-3,4-methylene-dioxyhydrocinnamic aldehyde",
+        "Heliofolal (commercial name)",
+        "Heliogan (commercial name)",
+        "Helional (commercial name)",
+        "Tropional (commercial name)",
+        "CAS 1205-17-0"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "aliasIfraMatch",
@@ -1537,6 +2087,11 @@
       "id": "hero-ifra-source-oakmoss-absolute-already_structured",
       "materialName": "Oakmoss Absolute 10%",
       "normalizedName": "Oakmoss Absolute",
+      "formulaMaterialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "activeMaterialName": "Oakmoss Absolute",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -1546,7 +2101,20 @@
       "suggestedDocumentName": "Existing structured IFRA standard for Oakmoss extracts",
       "suggestedSource": "Current structured IFRA dataset",
       "candidateSearchTerms": [
-        "Oakmoss Absolute 10%",
+        "Oakmoss Absolute",
+        "Oakmoss absolute",
+        "Oakmoss",
+        "Oakmoss extracts",
+        "Evernia absolute",
+        "Evernia prunastri, ext.",
+        "Mousse de Chêne absolute",
+        "Oakmoss absolute (Evernia prunastri)",
+        "Evernia prunastri (Oakmoss) extract",
+        "CAS 90028-68-5",
+        "CAS 68917-10-2",
+        "CAS 9000-50-4"
+      ],
+      "sourceSearchTerms": [
         "Oakmoss Absolute",
         "Oakmoss absolute",
         "Oakmoss",
@@ -1574,9 +2142,14 @@
       "lastUpdated": "2026-06-11T11:50:06.162Z"
     },
     {
-      "id": "hero-ifra-source-ylang-ylang-complete-already_structured",
-      "materialName": "Ylang Ylang Complete",
-      "normalizedName": "Ylang Ylang Complete",
+      "id": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "normalizedName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang Ylang 10%",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "activeMaterialName": "Ylang-Ylang Complete Oil",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1587,11 +2160,10 @@
       "suggestedDocumentName": "Existing structured IFRA standard for Ylang ylang extracts",
       "suggestedSource": "Current structured IFRA dataset",
       "candidateSearchTerms": [
-        "Ylang Ylang 10%",
-        "Ylang Ylang Complete 10%",
+        "Ylang-Ylang Complete Oil",
         "Ylang Ylang Complete",
-        "Ylang-Ylang Complete 10%",
-        "Ylang-Ylang Complete Oil 10%",
+        "Ylang-Ylang Complete",
+        "Ylang Ylang Oil Complete",
         "Ylang ylang extracts",
         "Cananga odorata (Lamark) (Hooker et Thompson) (Anonaceae)",
         "Cananga odorata extract",
@@ -1604,7 +2176,28 @@
         "Ylang ylang oil II",
         "Ylang ylang oil III",
         "Ylang ylang, Cananga odorata, ext.",
-        "CAS 8006-81-3"
+        "CAS 8006-81-3",
+        "CAS 68606-83-7"
+      ],
+      "sourceSearchTerms": [
+        "Ylang-Ylang Complete Oil",
+        "Ylang Ylang Complete",
+        "Ylang-Ylang Complete",
+        "Ylang Ylang Oil Complete",
+        "Ylang ylang extracts",
+        "Cananga odorata (Lamark) (Hooker et Thompson) (Anonaceae)",
+        "Cananga odorata extract",
+        "Cananga odorata flower oil",
+        "Cananga odorata oil",
+        "Cananga oil",
+        "Ylang ylang oil (Cananga odorata Hook. f. and Thomas)",
+        "Ylang ylang oil extra",
+        "Ylang ylang oil I",
+        "Ylang ylang oil II",
+        "Ylang ylang oil III",
+        "Ylang ylang, Cananga odorata, ext.",
+        "CAS 8006-81-3",
+        "CAS 68606-83-7"
       ],
       "knownReferenceLinks": [],
       "currentIfraCategory": "aliasIfraMatch",
@@ -1618,7 +2211,7 @@
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:22:36.582Z"
     }
   ]
 }

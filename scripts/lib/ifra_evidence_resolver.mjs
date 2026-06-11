@@ -17,6 +17,7 @@ import {
   DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
   loadReviewedIfraSourceRecords,
 } from "./reviewed_ifra_source_records.mjs";
+import { buildIfraSourceIdentity } from "./ifra_source_identity.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -161,7 +162,10 @@ function getQueueNameTerms(queueItem = {}) {
   return uniqueStrings([
     queueItem.materialName,
     queueItem.normalizedName,
+    queueItem.sourceIdentityName,
+    queueItem.activeMaterialName,
     ...(queueItem.sourceRowNames || []),
+    ...(queueItem.sourceSearchTerms || []),
     ...(queueItem.candidateSearchTerms || []).filter((term) => !/^IFRA\b/i.test(term)),
   ]).map((term) => ({
     raw: term,
@@ -173,7 +177,10 @@ function getQueueCasTerms(queueItem = {}) {
   return extractCasTerms([
     queueItem.materialName,
     queueItem.normalizedName,
+    queueItem.sourceIdentityName,
+    queueItem.activeMaterialName,
     ...(queueItem.sourceRowNames || []),
+    ...(queueItem.sourceSearchTerms || []),
     ...(queueItem.candidateSearchTerms || []),
     ...(queueItem.knownReferenceLinks || []).flatMap((link) => [
       link.url,
@@ -199,8 +206,11 @@ function buildReviewQueueLookup(candidateReviewQueue = {}) {
 function reviewedRecordMatchesQueue(record = {}, queueItem = {}) {
   const names = getQueueNameTerms(queueItem).map((term) => term.normalized);
   const recordNames = [
+    normalizeText(record.formulaMaterialName),
     normalizeText(record.materialName),
     normalizeText(record.normalizedName),
+    normalizeText(record.sourceIdentityName),
+    normalizeText(record.activeMaterialName),
   ];
   return recordNames.some((name) => name && names.includes(name));
 }
@@ -234,7 +244,10 @@ function isFcfQueueItem(queueItem = {}) {
 function candidateText(candidate = {}) {
   return [
     candidate.materialName,
+    candidate.formulaMaterialName,
+    candidate.sourceIdentityName,
     ...(candidate.materialNames || []),
+    ...(candidate.sourceIdentityNames || []),
     candidate.sourceUrl,
     candidate.sourceFile,
     candidate.snippet,
@@ -254,7 +267,10 @@ function sourceMatchesKnownLink(candidate = {}, queueItem = {}) {
 function candidateHasExactName(candidate = {}, queueItem = {}) {
   const materialNames = [
     candidate.materialName,
+    candidate.formulaMaterialName,
+    candidate.sourceIdentityName,
     ...(candidate.materialNames || []),
+    ...(candidate.sourceIdentityNames || []),
   ].map(normalizeText);
   const queueTerms = getQueueNameTerms(queueItem).map((term) => term.normalized);
   return materialNames.some((name) => name && queueTerms.includes(name));
@@ -583,6 +599,9 @@ function buildResolutionItem({
   reviewedLookup,
   top = 1,
 }) {
+  const sourceIdentity = buildIfraSourceIdentity(queueItem.materialName || "", {
+    extraSearchTerms: [queueItem.normalizedName, queueItem.sourceIdentityName],
+  });
   const reviewedRecords = reviewedLookup.forQueueItem(queueItem);
   const scoredCandidates = candidates
     .filter((candidate) => candidateCanBelongToQueue(candidate, queueItem))
@@ -610,6 +629,19 @@ function buildResolutionItem({
     queueItemId: queueItem.id,
     materialName: queueItem.materialName || "",
     normalizedName: queueItem.normalizedName || "",
+    formulaMaterialName: queueItem.formulaMaterialName || queueItem.materialName || "",
+    sourceIdentityName:
+      queueItem.sourceIdentityName ||
+      sourceIdentity.sourceIdentityName ||
+      queueItem.normalizedName ||
+      "",
+    activeMaterialName:
+      queueItem.activeMaterialName ||
+      queueItem.sourceIdentityName ||
+      sourceIdentity.activeMaterialName ||
+      "",
+    dilutionLabel: queueItem.dilutionLabel || sourceIdentity.dilutionLabel || "",
+    carrierLabel: queueItem.carrierLabel || sourceIdentity.carrierLabel || "",
     formulasUsedIn: queueItem.formulasUsedIn || [],
     priority: queueItem.priority || "medium",
     requiredSourceType: queueItem.requiredSourceType || "",
@@ -793,6 +825,10 @@ function formatResolutionItemMarkdown(item = {}) {
   return [
     `### ${item.materialName}`,
     "",
+    item.sourceIdentityName && item.sourceIdentityName !== item.materialName
+      ? `- Source identity: ${item.sourceIdentityName}`
+      : "",
+    item.dilutionLabel ? `- Dilution: ${item.dilutionLabel}` : "",
     `- Queue item: ${item.queueItemId}`,
     `- Formulas used in: ${(item.formulasUsedIn || []).join(", ") || "Unknown"}`,
     `- Evidence status: ${item.evidenceStatus}`,
@@ -803,7 +839,9 @@ function formatResolutionItemMarkdown(item = {}) {
     "",
     ...(candidateBlocks.length ? candidateBlocks : ["- Best candidate: None"]),
     "",
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function groupItemsForMarkdown(items = []) {

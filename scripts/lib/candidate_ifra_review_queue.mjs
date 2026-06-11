@@ -6,6 +6,7 @@ import {
   DEFAULT_HERO_IFRA_SOURCE_QUEUE_PATH,
   loadExistingHeroIfraSourceQueue,
 } from "./hero_ifra_source_acquisition_queue.mjs";
+import { buildIfraSourceIdentity } from "./ifra_source_identity.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -159,6 +160,10 @@ function buildCandidateSummary(candidate = {}) {
   return {
     id: candidate.id,
     materialName: candidate.materialName || "",
+    formulaMaterialName: candidate.formulaMaterialName || candidate.materialName || "",
+    sourceIdentityName:
+      candidate.sourceIdentityName ||
+      buildIfraSourceIdentity(candidate.materialName || "").sourceIdentityName,
     candidateLimitType: candidate.candidateLimitType || "unknown",
     reviewPriority: getCandidatePriority(candidate),
     sourceType: candidate.sourceType || "unknown",
@@ -213,6 +218,24 @@ function buildLinkedReviewItem({
     id: makeLinkedReviewItemId(queueItemId),
     queueItemId,
     materialName: queueItem?.materialName || sortedCandidates[0]?.materialName || "",
+    formulaMaterialName:
+      queueItem?.formulaMaterialName ||
+      queueItem?.materialName ||
+      sortedCandidates[0]?.formulaMaterialName ||
+      sortedCandidates[0]?.materialName ||
+      "",
+    sourceIdentityName:
+      queueItem?.sourceIdentityName ||
+      queueItem?.normalizedName ||
+      sortedCandidates[0]?.sourceIdentityName ||
+      buildIfraSourceIdentity(sortedCandidates[0]?.materialName || "").sourceIdentityName,
+    activeMaterialName:
+      queueItem?.activeMaterialName ||
+      queueItem?.sourceIdentityName ||
+      sortedCandidates[0]?.sourceIdentityName ||
+      "",
+    dilutionLabel: queueItem?.dilutionLabel || "",
+    carrierLabel: queueItem?.carrierLabel || "",
     requiredSourceType: queueItem?.requiredSourceType || "",
     formulasUsedIn: queueItem?.formulasUsedIn || [],
     candidateIds: sortedCandidates.map((candidate) => candidate.id),
@@ -238,10 +261,16 @@ function buildLinkedReviewItem({
 function buildUnlinkedReviewItem({ materialName, candidates, existingItem, generatedAt }) {
   const sortedCandidates = [...candidates].sort(compareCandidates);
   const topCandidates = sortedCandidates.slice(0, 5).map(buildCandidateSummary);
+  const sourceIdentity = buildIfraSourceIdentity(materialName);
   const base = {
     id: makeUnlinkedReviewItemId(materialName),
     queueItemId: "",
     materialName: materialName || "Unlinked candidates",
+    formulaMaterialName: materialName || "Unlinked candidates",
+    sourceIdentityName: sourceIdentity.sourceIdentityName || materialName || "",
+    activeMaterialName: sourceIdentity.activeMaterialName || "",
+    dilutionLabel: sourceIdentity.dilutionLabel || "",
+    carrierLabel: sourceIdentity.carrierLabel || "",
     requiredSourceType: "unlinked_candidate",
     formulasUsedIn: [],
     candidateIds: sortedCandidates.map((candidate) => candidate.id),
@@ -295,7 +324,8 @@ function groupCandidatesByQueueItem(candidates = []) {
       }
       continue;
     }
-    const key = normalizeText(candidate.materialName) || "unlinked candidates";
+    const sourceIdentity = buildIfraSourceIdentity(candidate.sourceIdentityName || candidate.materialName);
+    const key = normalizeText(sourceIdentity.sourceIdentityName) || "unlinked candidates";
     if (!unlinked.has(key)) {
       unlinked.set(key, {
         materialName: candidate.materialName || "Unlinked candidates",
@@ -463,6 +493,10 @@ function formatReviewItemMarkdown(item = {}) {
   return [
     `### ${item.materialName}`,
     "",
+    item.sourceIdentityName && item.sourceIdentityName !== item.materialName
+      ? `- Source identity: ${item.sourceIdentityName}`
+      : null,
+    item.dilutionLabel ? `- Dilution: ${item.dilutionLabel}` : null,
     `- Review item: ${item.id}`,
     `- Queue item: ${item.queueItemId || "Unlinked"}`,
     `- Required source type: ${item.requiredSourceType || "Unlinked candidate"}`,
@@ -480,7 +514,9 @@ function formatReviewItemMarkdown(item = {}) {
     "Top candidate snippets:",
     ...(item.topCandidates || []).slice(0, 5).map(formatCandidateLine),
     "",
-  ].join("\n");
+  ]
+    .filter((line) => line != null)
+    .join("\n");
 }
 
 function classifyMarkdownGroup(item = {}) {

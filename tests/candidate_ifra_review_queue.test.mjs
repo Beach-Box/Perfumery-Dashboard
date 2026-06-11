@@ -26,6 +26,17 @@ function buildSyntheticSourceQueue() {
         formulasUsedIn: ["Damp Shoreline v2"],
         requiredSourceType: "fcf_special_case",
       },
+      {
+        id: "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+        materialName: "Calone 1951 20%",
+        formulaMaterialName: "Calone 1951 20%",
+        normalizedName: "Calone 1951",
+        sourceIdentityName: "Calone 1951",
+        activeMaterialName: "Calone 1951",
+        dilutionLabel: "20%",
+        formulasUsedIn: ["Damp Shoreline v2"],
+        requiredSourceType: "global_ifra_standard_needed",
+      },
     ],
   };
 }
@@ -90,6 +101,15 @@ function buildSyntheticExtractions() {
         reviewPriority: "low",
         snippet: "Unlinked identity candidate.",
       }),
+      candidate({
+        id: "c-calone",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone 1951",
+        queueItemIds: ["hero-ifra-source-calone-1951-global_ifra_standard_needed"],
+        candidateLimitType: "ifra_category_limit",
+        reviewPriority: "high",
+        snippet: "Calone 1951 IFRA Category 4 source candidate.",
+      }),
     ],
   };
 }
@@ -101,11 +121,11 @@ test("candidate IFRA review queue groups candidates by queue item and material",
     generatedAt: "2026-06-11T02:00:00.000Z",
   });
 
-  assert.equal(queue.summary.itemCount, 3);
-  assert.equal(queue.summary.linkedItemCount, 2);
+  assert.equal(queue.summary.itemCount, 4);
+  assert.equal(queue.summary.linkedItemCount, 3);
   assert.equal(queue.summary.unlinkedItemCount, 1);
-  assert.equal(queue.summary.candidateCount, 5);
-  assert.equal(queue.summary.linkedCandidateCount, 4);
+  assert.equal(queue.summary.candidateCount, 6);
+  assert.equal(queue.summary.linkedCandidateCount, 5);
   assert.equal(queue.summary.unlinkedCandidateCount, 1);
 
   const octanal = queue.items.find((item) =>
@@ -122,6 +142,13 @@ test("candidate IFRA review queue groups candidates by queue item and material",
   const unlinked = queue.items.find((item) => !item.queueItemId);
   assert.equal(unlinked.materialName, "Alcohol C8");
   assert.equal(unlinked.requiredSourceType, "unlinked_candidate");
+
+  const calone = queue.items.find((item) =>
+    item.id.includes("calone-1951-global-ifra-standard-needed")
+  );
+  assert.equal(calone.materialName, "Calone 1951 20%");
+  assert.equal(calone.sourceIdentityName, "Calone 1951");
+  assert.equal(calone.dilutionLabel, "20%");
 });
 
 test("candidate IFRA review queue preserves manual review state on regeneration", () => {

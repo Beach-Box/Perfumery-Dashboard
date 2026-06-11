@@ -1,11 +1,11 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:01:36.131Z",
+    "generatedAt": "2026-06-11T14:23:40.045Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-11T11:53:39.602Z",
+    "sourceQueueGeneratedAt": "2026-06-11T14:23:10.802Z",
     "candidateExtractionGeneratedAt": "2026-06-11T12:58:50.387Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T14:01:36.059Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T14:23:34.146Z",
     "ingredientSourceHarvestGeneratedAt": "2026-06-11T12:58:30.309Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
@@ -62,6 +62,11 @@
       "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
       "materialName": "Calone 1951 20%",
       "normalizedName": "Calone 1951",
+      "formulaMaterialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "activeMaterialName": "Calone 1951",
+      "dilutionLabel": "20%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -142,6 +147,11 @@
       "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
       "materialName": "Cetalox",
       "normalizedName": "Cetalox",
+      "formulaMaterialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "activeMaterialName": "Cetalox",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2",
         "Random Concoction - Original",
@@ -222,6 +232,11 @@
       "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
       "materialName": "Clearwood",
       "normalizedName": "Clearwood",
+      "formulaMaterialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "activeMaterialName": "Clearwood",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -299,6 +314,11 @@
       "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed",
       "materialName": "Geosmin 1% TEC",
       "normalizedName": "Geosmin",
+      "formulaMaterialName": "Geosmin 1% TEC",
+      "sourceIdentityName": "Geosmin",
+      "activeMaterialName": "Geosmin",
+      "dilutionLabel": "1% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -376,6 +396,11 @@
       "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
       "materialName": "Iso E Super",
       "normalizedName": "Iso E Super",
+      "formulaMaterialName": "Iso E Super",
+      "sourceIdentityName": "Iso E Super",
+      "activeMaterialName": "Iso E Super",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -457,6 +482,11 @@
       "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
       "materialName": "Celestafleur",
       "normalizedName": "Celestafleur",
+      "formulaMaterialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "activeMaterialName": "Celestafleur",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1"
@@ -535,6 +565,11 @@
       "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
       "materialName": "Methyl Ionone Alpha Extra",
       "normalizedName": "Methyl Ionone Alpha Extra",
+      "formulaMaterialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "activeMaterialName": "Methyl Ionone Alpha Extra",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -614,6 +649,11 @@
       "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
       "materialName": "Cypriol",
       "normalizedName": "Cypriol",
+      "formulaMaterialName": "Cypriol",
+      "sourceIdentityName": "Cypriol",
+      "activeMaterialName": "Cypriol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -691,6 +731,11 @@
       "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
       "materialName": "Seaweed Absolute 10%",
       "normalizedName": "Seaweed Absolute",
+      "formulaMaterialName": "Seaweed Absolute 10%",
+      "sourceIdentityName": "Seaweed Absolute",
+      "activeMaterialName": "Seaweed Absolute",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -771,6 +816,11 @@
       "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
       "materialName": "Ambrettolide 50% TEC",
       "normalizedName": "Ambrettolide",
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "activeMaterialName": "Ambrettolide",
+      "dilutionLabel": "50% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -852,6 +902,11 @@
       "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
       "materialName": "Ambroxan Crystals",
       "normalizedName": "Ambroxan Crystals",
+      "formulaMaterialName": "Ambroxan 50%",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "activeMaterialName": "Ambroxan Crystals",
+      "dilutionLabel": "50%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Random Concoction - Original",
@@ -934,6 +989,11 @@
       "queueItemId": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed",
       "materialName": "Caryophyllene Oxide",
       "normalizedName": "Caryophyllene Oxide",
+      "formulaMaterialName": "Caryophyllene Oxide",
+      "sourceIdentityName": "Caryophyllene Oxide",
+      "activeMaterialName": "Caryophyllene Oxide",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2",
         "Damp Shoreline v1"
@@ -1014,6 +1074,11 @@
       "queueItemId": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed",
       "materialName": "Ethyl Linalool",
       "normalizedName": "Ethyl Linalool",
+      "formulaMaterialName": "Ethyl Linalool",
+      "sourceIdentityName": "Ethyl Linalool",
+      "activeMaterialName": "Ethyl Linalool",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -1094,6 +1159,11 @@
       "queueItemId": "hero-ifra-source-florol-specialty_supplier_document_needed",
       "materialName": "Florol",
       "normalizedName": "Florol",
+      "formulaMaterialName": "Florol",
+      "sourceIdentityName": "Florol",
+      "activeMaterialName": "Florol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Skin-Air Bridge",
         "Damp Shoreline v1",
@@ -1171,175 +1241,15 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-methyl-dihydrojasmonate-hedione-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
-      "materialName": "Hedione",
-      "normalizedName": "Methyl dihydrojasmonate / Hedione",
-      "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 155,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 23,
-        "linked": 23,
-        "highValue": 10,
-        "identityOnly": 13,
-        "suppressedWeak": 22
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-methyl-dihydrojasmonate-hedione-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
-          "materialName": "Hedione",
-          "score": 155,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/hedione-high-cis",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
-          "queueItemIds": [
-            "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
-            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "IFRA language present"
-          ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "glorious check out our paradise molecule the closest thing you can get to firmenich s captive paradisone aromachem best seller no reg ifra 51 no restriction for category 4 average use 4 in a perfume compound appearance colourless liquid longevity lasts 70 hours on a smelling strip odour profile hedione high cis delivers a powerful clean fres"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-hedione-high-cis-specialty-supplier-document-needed",
-      "queueItemId": "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed",
-      "materialName": "Hedione HC",
-      "normalizedName": "Hedione High Cis",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "specialty_supplier_document_needed",
-      "currentIfraCategory": "supplierSdsNeeded",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 155,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 23,
-        "linked": 23,
-        "highValue": 10,
-        "identityOnly": 13,
-        "suppressedWeak": 22
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-hedione-high-cis-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
-          "materialName": "Hedione",
-          "score": 155,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/hedione-high-cis",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
-          "queueItemIds": [
-            "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
-            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "IFRA language present"
-          ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "glorious check out our paradise molecule the closest thing you can get to firmenich s captive paradisone aromachem best seller no reg ifra 51 no restriction for category 4 average use 4 in a perfume compound appearance colourless liquid longevity lasts 70 hours on a smelling strip odour profile hedione high cis delivers a powerful clean fres"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-maritima-specialty-supplier-document-needed",
       "queueItemId": "hero-ifra-source-maritima-specialty_supplier_document_needed",
       "materialName": "Maritima",
       "normalizedName": "Maritima",
+      "formulaMaterialName": "Maritima",
+      "sourceIdentityName": "Maritima",
+      "activeMaterialName": "Maritima",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1422,6 +1332,11 @@
       "queueItemId": "hero-ifra-source-oceanol-specialty_supplier_document_needed",
       "materialName": "Oceanol 10%",
       "normalizedName": "Oceanol",
+      "formulaMaterialName": "Oceanol 10%",
+      "sourceIdentityName": "Oceanol",
+      "activeMaterialName": "Oceanol",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1500,91 +1415,15 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-methyl-atrarate-veramoss-specialty-supplier-document-needed",
-      "queueItemId": "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed",
-      "materialName": "Veramoss 20% TEC",
-      "normalizedName": "Methyl atrarate / Veramoss",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "specialty_supplier_document_needed",
-      "currentIfraCategory": "supplierSdsNeeded",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 155,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 14,
-        "linked": 14,
-        "highValue": 7,
-        "identityOnly": 6,
-        "suppressedWeak": 13
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-methyl-atrarate-veramoss-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
-          "materialName": "Veramoss 20% TEC",
-          "score": 155,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/veramoss",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
-          "queueItemIds": [
-            "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "IFRA language present"
-          ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "luated directly 3 10 strength but exerts a powerful influence in blends 9 10 impact use sparingly to avoid overwhelming compositions ifra 51 no restriction for category 4 average use 0 2 in a perfume compound odour family mossy appearance fine off white powder longevity lasts 360 hours on a smelling strip odour profile dry woody earthy arom"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-orbitone-t-neo-specialty-supplier-document-needed",
       "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
       "materialName": "Orbitone T Neo",
       "normalizedName": "Orbitone T Neo",
+      "formulaMaterialName": "Orbitone T Neo",
+      "sourceIdentityName": "Orbitone T Neo",
+      "activeMaterialName": "Orbitone T Neo",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1663,6 +1502,11 @@
       "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
       "materialName": "Timbersilk",
       "normalizedName": "Timbersilk",
+      "formulaMaterialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "activeMaterialName": "Timbersilk",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -1741,6 +1585,11 @@
       "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
       "materialName": "Vetiveryl Acetate",
       "normalizedName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1"
       ],
@@ -1818,6 +1667,11 @@
       "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
       "materialName": "Ethyl Linalyl Acetate",
       "normalizedName": "Ethyl Linalyl Acetate",
+      "formulaMaterialName": "Ethyl Linalyl Acetate",
+      "sourceIdentityName": "Ethyl Linalyl Acetate",
+      "activeMaterialName": "Ethyl Linalyl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -1896,6 +1750,11 @@
       "queueItemId": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed",
       "materialName": "Phenyl Ethyl Acetate",
       "normalizedName": "Phenyl Ethyl Acetate",
+      "formulaMaterialName": "Phenyl Ethyl Acetate",
+      "sourceIdentityName": "Phenyl Ethyl Acetate",
+      "activeMaterialName": "Phenyl Ethyl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -1971,10 +1830,279 @@
       ]
     },
     {
+      "id": "ifra-evidence-resolution-hero-ifra-source-hedione-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-hedione-global_ifra_standard_needed",
+      "materialName": "Hedione",
+      "normalizedName": "Hedione",
+      "formulaMaterialName": "Hedione",
+      "sourceIdentityName": "Hedione",
+      "activeMaterialName": "Hedione",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 112,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 23,
+        "linked": 0,
+        "highValue": 10,
+        "identityOnly": 13,
+        "suppressedWeak": 22
+      },
+      "candidateReviewItemId": "",
+      "candidateReviewStatus": "",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
+          "materialName": "Hedione",
+          "score": 112,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/hedione-high-cis",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html",
+          "category": "4",
+          "candidateValue": "No restriction",
+          "candidateUnit": "",
+          "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
+          "queueItemIds": [
+            "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
+            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "exact material-name match",
+            "high review priority",
+            "supplier_product_page source",
+            "ifra_category_limit candidate",
+            "IFRA language present",
+            "Cat 4/fine-fragrance language present"
+          ],
+          "warnings": [
+            "not directly linked to this queue item",
+            "RIFM/average-use text is not an IFRA category limit"
+          ],
+          "generatedCommand": "",
+          "signals": {
+            "linked": false,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": true,
+            "normalizedSnippet": "glorious check out our paradise molecule the closest thing you can get to firmenich s captive paradisone aromachem best seller no reg ifra 51 no restriction for category 4 average use 4 in a perfume compound appearance colourless liquid longevity lasts 70 hours on a smelling strip odour profile hedione high cis delivers a powerful clean fres"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-hedione-hc-specialty-supplier-document-needed",
+      "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed",
+      "materialName": "Hedione HC",
+      "normalizedName": "Hedione HC",
+      "formulaMaterialName": "Hedione HC",
+      "sourceIdentityName": "Hedione HC",
+      "activeMaterialName": "Hedione HC",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 112,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 23,
+        "linked": 0,
+        "highValue": 10,
+        "identityOnly": 13,
+        "suppressedWeak": 22
+      },
+      "candidateReviewItemId": "",
+      "candidateReviewStatus": "",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
+          "materialName": "Hedione",
+          "score": 112,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/hedione-high-cis",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html",
+          "category": "4",
+          "candidateValue": "No restriction",
+          "candidateUnit": "",
+          "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
+          "queueItemIds": [
+            "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
+            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "exact material-name match",
+            "high review priority",
+            "supplier_product_page source",
+            "ifra_category_limit candidate",
+            "IFRA language present",
+            "Cat 4/fine-fragrance language present"
+          ],
+          "warnings": [
+            "not directly linked to this queue item",
+            "RIFM/average-use text is not an IFRA category limit"
+          ],
+          "generatedCommand": "",
+          "signals": {
+            "linked": false,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": true,
+            "normalizedSnippet": "glorious check out our paradise molecule the closest thing you can get to firmenich s captive paradisone aromachem best seller no reg ifra 51 no restriction for category 4 average use 4 in a perfume compound appearance colourless liquid longevity lasts 70 hours on a smelling strip odour profile hedione high cis delivers a powerful clean fres"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-veramoss-specialty-supplier-document-needed",
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "normalizedName": "Veramoss",
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "activeMaterialName": "Veramoss",
+      "dilutionLabel": "20% TEC",
+      "carrierLabel": "TEC",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 112,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 14,
+        "linked": 0,
+        "highValue": 7,
+        "identityOnly": 6,
+        "suppressedWeak": 13
+      },
+      "candidateReviewItemId": "",
+      "candidateReviewStatus": "",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
+          "materialName": "Veramoss 20% TEC",
+          "score": 112,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/veramoss",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
+          "category": "4",
+          "candidateValue": "No restriction",
+          "candidateUnit": "",
+          "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
+          "queueItemIds": [
+            "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "exact material-name match",
+            "high review priority",
+            "supplier_product_page source",
+            "ifra_category_limit candidate",
+            "IFRA language present",
+            "Cat 4/fine-fragrance language present"
+          ],
+          "warnings": [
+            "not directly linked to this queue item",
+            "RIFM/average-use text is not an IFRA category limit"
+          ],
+          "generatedCommand": "",
+          "signals": {
+            "linked": false,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": true,
+            "normalizedSnippet": "luated directly 3 10 strength but exerts a powerful influence in blends 9 10 impact use sparingly to avoid overwhelming compositions ifra 51 no restriction for category 4 average use 0 2 in a perfume compound odour family mossy appearance fine off white powder longevity lasts 360 hours on a smelling strip odour profile dry woody earthy arom"
+          }
+        }
+      ]
+    },
+    {
       "id": "ifra-evidence-resolution-hero-ifra-source-bergamot-eo-fcf-fcf-special-case",
       "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
       "materialName": "Bergamot EO FCF",
       "normalizedName": "Bergamot EO FCF",
+      "formulaMaterialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "activeMaterialName": "Bergamot EO FCF",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2056,6 +2184,11 @@
       "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
       "materialName": "Cedarwood Virginia EO",
       "normalizedName": "Cedarwood Virginia EO",
+      "formulaMaterialName": "Cedarwood Virginia EO",
+      "sourceIdentityName": "Cedarwood Virginia EO",
+      "activeMaterialName": "Cedarwood Virginia EO",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -2085,10 +2218,15 @@
       "bestCandidates": []
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-gamma-nonalactone-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-gamma-nonalactone-global_ifra_standard_needed",
+      "id": "ifra-evidence-resolution-hero-ifra-source-aldehyde-c-18-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
       "materialName": "Aldehyde C-18",
-      "normalizedName": "Gamma Nonalactone",
+      "normalizedName": "Aldehyde C-18",
+      "formulaMaterialName": "Aldehyde C-18",
+      "sourceIdentityName": "Aldehyde C-18",
+      "activeMaterialName": "Aldehyde C-18",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2120,10 +2258,15 @@
       "bestCandidates": []
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-octanal-aldehyde-c-8-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-octanal-aldehyde-c-8-global_ifra_standard_needed",
+      "id": "ifra-evidence-resolution-hero-ifra-source-aldehyde-c-8-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed",
       "materialName": "Aldehyde C-8",
-      "normalizedName": "Octanal / Aldehyde C-8",
+      "normalizedName": "Aldehyde C-8",
+      "formulaMaterialName": "Aldehyde C-8",
+      "sourceIdentityName": "Aldehyde C-8",
+      "activeMaterialName": "Aldehyde C-8",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2160,6 +2303,11 @@
       "queueItemId": "hero-ifra-source-algenone-specialty_supplier_document_needed",
       "materialName": "Algenone",
       "normalizedName": "Algenone",
+      "formulaMaterialName": "Algenone",
+      "sourceIdentityName": "Algenone",
+      "activeMaterialName": "Algenone",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2239,6 +2387,11 @@
       "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
       "materialName": "Allyl Amyl Glycolate",
       "normalizedName": "Allyl Amyl Glycolate",
+      "formulaMaterialName": "Allyl Amyl Glycolate",
+      "sourceIdentityName": "Allyl Amyl Glycolate",
+      "activeMaterialName": "Allyl Amyl Glycolate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2318,6 +2471,11 @@
       "queueItemId": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed",
       "materialName": "Cyclogalbanate",
       "normalizedName": "Cyclogalbanate",
+      "formulaMaterialName": "Cyclogalbanate",
+      "sourceIdentityName": "Cyclogalbanate",
+      "activeMaterialName": "Cyclogalbanate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2397,6 +2555,11 @@
       "queueItemId": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed",
       "materialName": "Dihydromyrcenol",
       "normalizedName": "Dihydromyrcenol",
+      "formulaMaterialName": "Dihydromyrcenol",
+      "sourceIdentityName": "Dihydromyrcenol",
+      "activeMaterialName": "Dihydromyrcenol",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2476,6 +2639,11 @@
       "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
       "materialName": "Ethyl Vanillin 10%",
       "normalizedName": "Ethyl Vanillin",
+      "formulaMaterialName": "Ethyl Vanillin 10%",
+      "sourceIdentityName": "Ethyl Vanillin",
+      "activeMaterialName": "Ethyl Vanillin",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2554,6 +2722,11 @@
       "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
       "materialName": "Pink Peppercorn Oil P&N",
       "normalizedName": "Pink Peppercorn Oil P&N",
+      "formulaMaterialName": "Pink Peppercorn Oil P&N",
+      "sourceIdentityName": "Pink Peppercorn Oil P&N",
+      "activeMaterialName": "Pink Peppercorn Oil P&N",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2633,6 +2806,11 @@
       "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
       "materialName": "Lemon FCF",
       "normalizedName": "Lemon FCF",
+      "formulaMaterialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "activeMaterialName": "Lemon FCF",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -2707,88 +2885,15 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-already-structured",
-      "queueItemId": "hero-ifra-source-ylang-ylang-complete-already_structured",
-      "materialName": "Ylang Ylang Complete",
-      "normalizedName": "Ylang Ylang Complete",
-      "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1"
-      ],
-      "priority": "low",
-      "requiredSourceType": "already_structured",
-      "currentIfraCategory": "aliasIfraMatch",
-      "queueStatus": "not_applicable",
-      "queueReviewStatus": "reviewed_ok",
-      "evidenceStatus": "not_applicable",
-      "suggestedAction": "ignore_not_relevant",
-      "confidence": "high",
-      "score": 157,
-      "whySelected": "Current structured IFRA coverage already exists.",
-      "limitations": [
-        "Existing coverage is still not launch clearance."
-      ],
-      "candidateCounts": {
-        "totalMatched": 10,
-        "linked": 10,
-        "highValue": 6,
-        "identityOnly": 4,
-        "suppressedWeak": 9
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ylang-ylang-complete-already-structured",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html-html-1-ith-a-light-green-woody-undertone-an-excellent",
-          "materialName": "Ylang Ylang Complete",
-          "score": 157,
-          "candidateLimitType": "allergen_or_restriction",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of",
-          "queueItemIds": [
-            "hero-ifra-source-ylang-ylang-complete-already_structured"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "allergen_or_restriction candidate",
-            "IFRA language present"
-          ],
-          "warnings": [],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "ith a light green woody undertone an excellent fixative appearance colorless to pale yellow transparent slightly oily liquid shipping restriction 0 non hazardous safety considerations possible skin sensitization moderate risk use with caution on hypersensitive or damaged skin and on children under two years of age a maximum dermal use level of"
-          }
-        }
-      ]
-    },
-    {
       "id": "ifra-evidence-resolution-hero-ifra-source-oakmoss-absolute-already-structured",
       "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
       "materialName": "Oakmoss Absolute 10%",
       "normalizedName": "Oakmoss Absolute",
+      "formulaMaterialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "activeMaterialName": "Oakmoss Absolute",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
@@ -2866,6 +2971,11 @@
       "queueItemId": "hero-ifra-source-cashmeran-already_structured",
       "materialName": "Cashmeran",
       "normalizedName": "Cashmeran",
+      "formulaMaterialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "activeMaterialName": "Cashmeran",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -2945,6 +3055,11 @@
       "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
       "materialName": "Cyclamen Aldehyde",
       "normalizedName": "Cyclamen Aldehyde",
+      "formulaMaterialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "activeMaterialName": "Cyclamen Aldehyde",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -3021,8 +3136,13 @@
     {
       "id": "ifra-evidence-resolution-hero-ifra-source-helional-already-structured",
       "queueItemId": "hero-ifra-source-helional-already_structured",
-      "materialName": "Helional",
-      "normalizedName": "Helional",
+      "materialName": "Helional®",
+      "normalizedName": "Helional®",
+      "formulaMaterialName": "Helional 25%",
+      "sourceIdentityName": "Helional®",
+      "activeMaterialName": "Helional®",
+      "dilutionLabel": "25%",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -3098,10 +3218,100 @@
       ]
     },
     {
+      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "normalizedName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang Ylang 10%",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "activeMaterialName": "Ylang-Ylang Complete Oil",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "queueStatus": "not_applicable",
+      "queueReviewStatus": "reviewed_ok",
+      "evidenceStatus": "not_applicable",
+      "suggestedAction": "ignore_not_relevant",
+      "confidence": "high",
+      "score": 114,
+      "whySelected": "Current structured IFRA coverage already exists.",
+      "limitations": [
+        "Existing coverage is still not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 10,
+        "linked": 0,
+        "highValue": 6,
+        "identityOnly": 4,
+        "suppressedWeak": 9
+      },
+      "candidateReviewItemId": "",
+      "candidateReviewStatus": "",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html-html-1-ith-a-light-green-woody-undertone-an-excellent",
+          "materialName": "Ylang Ylang Complete",
+          "score": 114,
+          "candidateLimitType": "allergen_or_restriction",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of",
+          "queueItemIds": [
+            "hero-ifra-source-ylang-ylang-complete-already_structured"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "exact material-name match",
+            "high review priority",
+            "supplier_product_page source",
+            "allergen_or_restriction candidate",
+            "IFRA language present",
+            "maximum-use/restriction wording present"
+          ],
+          "warnings": [
+            "not directly linked to this queue item"
+          ],
+          "generatedCommand": "",
+          "signals": {
+            "linked": false,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": false,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "ith a light green woody undertone an excellent fixative appearance colorless to pale yellow transparent slightly oily liquid shipping restriction 0 non hazardous safety considerations possible skin sensitization moderate risk use with caution on hypersensitive or damaged skin and on children under two years of age a maximum dermal use level of"
+          }
+        }
+      ]
+    },
+    {
       "id": "ifra-evidence-resolution-hero-ifra-source-botanical-musk-accord-accord-component-expansion-deferred",
       "queueItemId": "hero-ifra-source-botanical-musk-accord-accord_component_expansion_deferred",
       "materialName": "Botanical Musk Accord",
       "normalizedName": "Botanical Musk Accord",
+      "formulaMaterialName": "Botanical Musk Accord",
+      "sourceIdentityName": "Botanical Musk Accord",
+      "activeMaterialName": "Botanical Musk Accord",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -3138,6 +3348,11 @@
       "queueItemId": "hero-ifra-source-driftwood-accord-accord_component_expansion_deferred",
       "materialName": "Driftwood Accord",
       "normalizedName": "Driftwood Accord",
+      "formulaMaterialName": "Driftwood Accord",
+      "sourceIdentityName": "Driftwood Accord",
+      "activeMaterialName": "Driftwood Accord",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Random Concoction - Original",
         "Skin-Air Bridge",
@@ -3173,6 +3388,11 @@
       "queueItemId": "hero-ifra-source-driftwood-accord-v2-accord_component_expansion_deferred",
       "materialName": "Driftwood Accord v2",
       "normalizedName": "Driftwood Accord v2",
+      "formulaMaterialName": "Driftwood Accord v2",
+      "sourceIdentityName": "Driftwood Accord v2",
+      "activeMaterialName": "Driftwood Accord v2",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],
@@ -3206,6 +3426,11 @@
       "queueItemId": "hero-ifra-source-iso-e-amberxtreme-1-accord_component_expansion_deferred",
       "materialName": "Iso E + AmberXtreme 1%",
       "normalizedName": "Iso E + AmberXtreme 1%",
+      "formulaMaterialName": "Iso E + AmberXtreme 1%",
+      "sourceIdentityName": "Iso E + AmberXtreme 1%",
+      "activeMaterialName": "Iso E + AmberXtreme 1%",
+      "dilutionLabel": "",
+      "carrierLabel": "",
       "formulasUsedIn": [
         "Damp Shoreline v2"
       ],

@@ -89,6 +89,8 @@ test("hero IFRA source acquisition queue generates stable actionable items", () 
     seaweed.id,
     "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
   );
+  assert.equal(seaweed.sourceIdentityName, "Seaweed Absolute");
+  assert.equal(seaweed.dilutionLabel, "10%");
   assert.deepEqual(
     seaweed.knownReferenceLinks.map((link) => link.type),
     ["sds", "product_page"]
@@ -170,7 +172,11 @@ test("hero IFRA source acquisition queue merges duplicate normalized source need
     "Skin-Air Bridge",
     "Damp Shoreline v2",
   ]);
-  assert.ok(isoRows[0].candidateSearchTerms.includes("Iso E Super 10%"));
+  assert.ok(isoRows[0].candidateSearchTerms.includes("Iso E Super"));
+  assert.equal(
+    isoRows[0].candidateSearchTerms.some((term) => /Iso E Super 10%|10%/.test(term)),
+    false
+  );
 });
 
 test("hero IFRA source acquisition markdown groups source states and avoids limits", () => {

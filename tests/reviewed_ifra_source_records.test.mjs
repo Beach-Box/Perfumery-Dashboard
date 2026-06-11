@@ -54,6 +54,8 @@ test("reviewed FCF promotion creates evidence metadata without IFRA limits", () 
   });
 
   assert.equal(result.record.materialName, "Bergamot EO FCF");
+  assert.equal(result.record.formulaMaterialName, "Bergamot EO FCF");
+  assert.equal(result.record.sourceIdentityName, "Bergamot EO FCF");
   assert.equal(result.record.recordType, "fcf_phototoxic_note");
   assert.equal(result.record.runtimeUse, "support_special_case_only");
   assert.equal(result.record.reviewStatus, "reviewed_ok");

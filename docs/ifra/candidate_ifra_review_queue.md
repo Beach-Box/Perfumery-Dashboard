@@ -1,6 +1,6 @@
 # Candidate IFRA Review Queue
 
-Generated: 2026-06-11T14:01:36.059Z
+Generated: 2026-06-11T14:23:34.146Z
 
 This queue organizes candidate snippets for human review only. Accepted candidates are not runtime IFRA data, do not add IFRA limits, and do not prove launch clearance.
 
@@ -28,6 +28,8 @@ Review status counts:
 
 ### Ambrettolide 50% TEC
 
+- Source identity: Ambrettolide
+- Dilution: 50% TEC
 - Review item: candidate-ifra-review-hero-ifra-source-ambrettolide-global-ifra-standard-needed
 - Queue item: hero-ifra-source-ambrettolide-global_ifra_standard_needed
 - Required source type: global_ifra_standard_needed
@@ -66,6 +68,7 @@ Top candidate snippets:
 
 ### Ambroxan Crystals
 
+- Dilution: 50%
 - Review item: candidate-ifra-review-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed
 - Queue item: hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed
 - Required source type: global_ifra_standard_needed
@@ -142,6 +145,8 @@ Top candidate snippets:
 
 ### Calone 1951 20%
 
+- Source identity: Calone 1951
+- Dilution: 20%
 - Review item: candidate-ifra-review-hero-ifra-source-calone-1951-global-ifra-standard-needed
 - Queue item: hero-ifra-source-calone-1951-global_ifra_standard_needed
 - Required source type: global_ifra_standard_needed
@@ -560,6 +565,8 @@ Top candidate snippets:
 
 ### Geosmin 1% TEC
 
+- Source identity: Geosmin
+- Dilution: 1% TEC
 - Review item: candidate-ifra-review-hero-ifra-source-geosmin-global-ifra-standard-needed
 - Queue item: hero-ifra-source-geosmin-global_ifra_standard_needed
 - Required source type: global_ifra_standard_needed
@@ -600,8 +607,8 @@ Top candidate snippets:
 
 - Review item: candidate-ifra-review-hero-ifra-source-methyl-dihydrojasmonate-hedione-global-ifra-standard-needed
 - Queue item: hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed
-- Required source type: global_ifra_standard_needed
-- Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
+- Required source type: Unlinked candidate
+- Formulas used in: Unknown
 - Review status: not_started
 - Highest priority: high
 - Candidate count: 23
@@ -634,12 +641,12 @@ Top candidate snippets:
   - Source: downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html
   - Snippet: ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarw
 
-### Hedione HC
+### Hedione
 
 - Review item: candidate-ifra-review-hero-ifra-source-hedione-high-cis-specialty-supplier-document-needed
 - Queue item: hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed
-- Required source type: specialty_supplier_document_needed
-- Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
+- Required source type: Unlinked candidate
+- Formulas used in: Unknown
 - Review status: not_started
 - Highest priority: high
 - Candidate count: 23
@@ -672,8 +679,9 @@ Top candidate snippets:
   - Source: downloads/source_documents/ifra/product_pages/hedione-product-page-https-fraterworks-com-products-hedione-high-cis.html
   - Snippet: ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarw
 
-### Helional
+### Helional®
 
+- Dilution: 25%
 - Review item: candidate-ifra-review-hero-ifra-source-helional-already-structured
 - Queue item: hero-ifra-source-helional-already_structured
 - Required source type: already_structured
@@ -826,6 +834,8 @@ Top candidate snippets:
 
 ### Oakmoss Absolute 10%
 
+- Source identity: Oakmoss Absolute
+- Dilution: 10%
 - Review item: candidate-ifra-review-hero-ifra-source-oakmoss-absolute-already-structured
 - Queue item: hero-ifra-source-oakmoss-absolute-already_structured
 - Required source type: already_structured
@@ -864,6 +874,8 @@ Top candidate snippets:
 
 ### Oceanol 10%
 
+- Source identity: Oceanol
+- Dilution: 10%
 - Review item: candidate-ifra-review-hero-ifra-source-oceanol-specialty-supplier-document-needed
 - Queue item: hero-ifra-source-oceanol-specialty_supplier_document_needed
 - Required source type: specialty_supplier_document_needed
@@ -978,6 +990,8 @@ Top candidate snippets:
 
 ### Seaweed Absolute 10%
 
+- Source identity: Seaweed Absolute
+- Dilution: 10%
 - Review item: candidate-ifra-review-hero-ifra-source-seaweed-absolute-natural-uvcb-supplier-document-needed
 - Queue item: hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed
 - Required source type: natural_uvcb_supplier_document_needed
@@ -1054,10 +1068,11 @@ Top candidate snippets:
 
 ### Veramoss 20% TEC
 
+- Source identity: Veramoss
 - Review item: candidate-ifra-review-hero-ifra-source-methyl-atrarate-veramoss-specialty-supplier-document-needed
 - Queue item: hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed
-- Required source type: specialty_supplier_document_needed
-- Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
+- Required source type: Unlinked candidate
+- Formulas used in: Unknown
 - Review status: not_started
 - Highest priority: high
 - Candidate count: 14
@@ -1132,8 +1147,8 @@ Top candidate snippets:
 
 - Review item: candidate-ifra-review-hero-ifra-source-ylang-ylang-complete-already-structured
 - Queue item: hero-ifra-source-ylang-ylang-complete-already_structured
-- Required source type: already_structured
-- Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
+- Required source type: Unlinked candidate
+- Formulas used in: Unknown
 - Review status: not_started
 - Highest priority: high
 - Candidate count: 10
@@ -1318,6 +1333,8 @@ Top candidate snippets:
 
 ### Ethyl Vanillin 10%
 
+- Source identity: Ethyl Vanillin
+- Dilution: 10%
 - Review item: candidate-ifra-review-hero-ifra-source-ethyl-vanillin-global-ifra-standard-needed
 - Queue item: hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed
 - Required source type: global_ifra_standard_needed
@@ -1400,6 +1417,8 @@ _No items in this group._
 
 ### Ald C-11 (10%)
 
+- Source identity: Ald C-11
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-ald-c-11-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -1438,6 +1457,8 @@ Top candidate snippets:
 
 ### Ald C-12 MNA (10%)
 
+- Source identity: Ald C-12 MNA
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-ald-c-12-mna-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -1894,6 +1915,8 @@ Top candidate snippets:
 
 ### Floralozone (10%)
 
+- Source identity: Floralozone
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-floralozone-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -1932,6 +1955,8 @@ Top candidate snippets:
 
 ### Galaxolide 50% IPM
 
+- Source identity: Galaxolide
+- Dilution: 50% IPM
 - Review item: candidate-ifra-review-unlinked-galaxolide-50-ipm
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -2160,6 +2185,8 @@ Top candidate snippets:
 
 ### Isobutyl Quinoline (0.19%)
 
+- Source identity: Isobutyl Quinoline
+- Dilution: 0.19%
 - Review item: candidate-ifra-review-unlinked-isobutyl-quinoline-0-19
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -2692,6 +2719,8 @@ Top candidate snippets:
 
 ### Ald C-18 (10%)
 
+- Source identity: Ald C-18
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-ald-c-18-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -2730,6 +2759,8 @@ Top candidate snippets:
 
 ### Ambrette Seed CO₂ (10%)
 
+- Source identity: Ambrette Seed CO₂
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-ambrette-seed-co-2-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -3072,6 +3103,8 @@ Top candidate snippets:
 
 ### Frangipani Absolute (10%)
 
+- Source identity: Frangipani Absolute
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-frangipani-absolute-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
@@ -3148,6 +3181,8 @@ Top candidate snippets:
 
 ### Osmanthus Absolute (10%)
 
+- Source identity: Osmanthus Absolute
+- Dilution: 10%
 - Review item: candidate-ifra-review-unlinked-osmanthus-absolute-10
 - Queue item: Unlinked
 - Required source type: unlinked_candidate
