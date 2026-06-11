@@ -1,16 +1,17 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:43:33.704Z",
+    "generatedAt": "2026-06-11T15:02:00.393Z",
     "reportName": "Candidate IFRA Review Queue",
-    "candidateExtractionGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "sourceQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "candidateExtractionGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "sourceQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
     "regenerateCommand": "node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/candidate_ifra_review_queue.md",
     "guardrails": [
       "This queue organizes candidate IFRA/SDS/source snippets for human review only.",
       "Accepted candidates are not runtime IFRA data and do not prove launch clearance.",
       "Promotion into structured IFRA records is a separate reviewed task."
     ],
-    "missingCandidateExtractions": false
+    "missingCandidateExtractions": false,
+    "lastAutopilotReviewUpdateAt": "2026-06-11T15:02:00.393Z"
   },
   "summary": {
     "itemCount": 91,
@@ -25,16 +26,16 @@
       "medium": 23
     },
     "reviewStatusCounts": {
-      "not_started": 66,
-      "in_review": 24,
-      "accepted": 1
+      "accepted": 2,
+      "not_started": 65,
+      "in_review": 24
     },
     "highPriorityItemCount": 68,
     "mediumPriorityItemCount": 23,
     "lowPriorityItemCount": 0,
-    "notStartedCount": 66,
+    "notStartedCount": 65,
     "inReviewCount": 24,
-    "acceptedCount": 1,
+    "acceptedCount": 2,
     "rejectedCount": 0,
     "needsMoreSourceCount": 0,
     "deferredCount": 0
@@ -106,11 +107,13 @@
         "https://www.thegoodscentscompany.com/data/es1001871.html"
       ],
       "suggestedReviewAction": "Review the source, material identity, amendment/category context, and supplier wording before accepting any Cat 4/fine-fragrance candidate for a later promotion task.",
-      "reviewStatus": "not_started",
-      "acceptedCandidateIds": [],
+      "reviewStatus": "accepted",
+      "acceptedCandidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-10-ily-citrus-appearance-pale-yellow-liquid-longe"
+      ],
       "rejectedCandidateIds": [],
-      "reviewNotes": "",
-      "lastUpdated": "2026-06-11T13:15:10.914Z",
+      "reviewNotes": "Autopilot linked an existing reviewed FCF source-evidence record. This is not an IFRA limit.",
+      "lastUpdated": "2026-06-11T15:02:00.393Z",
       "topCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-11-n-chilled-in-a-moderate-freezer-overnight-before",

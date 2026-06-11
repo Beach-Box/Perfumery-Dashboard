@@ -1,6 +1,6 @@
 # IFRA Evidence Autopilot Report
 
-Generated: 2026-06-11T14:43:33.704Z
+Generated: 2026-06-11T15:02:00.393Z
 
 Autopilot runs the source-acquisition workflow end to end, ranks evidence, and applies only conservative review metadata updates. It does not promote IFRA limits, change runtime IFRA classification, or prove launch clearance.
 
@@ -15,7 +15,7 @@ Autopilot runs the source-acquisition workflow end to end, ranks evidence, and a
 - Needs global standards: 1
 - Insufficient / identity-only evidence: 7
 - Manual review still required: 34
-- Auto-updated review statuses: 0
+- Auto-updated review statuses: 1
 - Downloaded/cached source count: 86
 - Failed download count: 0
 
@@ -32,7 +32,9 @@ Autopilot class counts:
 
 ## Auto-Updated Review Statuses
 
-No review statuses were auto-updated.
+| Scope | Material | From | To | Reason |
+| --- | --- | --- | --- | --- |
+| candidate review | Bergamot EO FCF | not_started | accepted | Autopilot accepted linked non-limit source evidence only; no IFRA category limit was created. |
 
 ## Top Review-Ready Materials
 

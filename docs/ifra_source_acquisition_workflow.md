@@ -268,6 +268,50 @@ Safe automatic updates are limited to review workflow metadata:
 
 Autopilot refuses to auto-accept category-limit candidates, promote category limits, write runtime IFRA standards, overwrite manual notes, or claim launch clearance. `review_ready` means “look here first,” not “approved.” `accepted` still means “suitable evidence for a later reviewed promotion task,” not runtime compliance.
 
+## Autopilot Recommendations And Proposed Records
+
+After running evidence autopilot, generate the short recommendation report:
+
+```bash
+node scripts/generate_ifra_autopilot_recommendations.mjs \
+  --markdown \
+  --write docs/ifra/ifra_autopilot_recommendations.md
+```
+
+The recommendation JSON is written to:
+
+```bash
+data/ifra_source_acquisition/ifra_autopilot_recommendations.json
+```
+
+Staged proposed records are written to:
+
+```bash
+data/ifra_source_acquisition/proposed_ifra_structured_records.json
+```
+
+The data states are intentionally separate:
+
+- `candidate`: raw extracted snippet from cached source pages/documents. It can be useful, noisy, ambiguous, or wrong.
+- `proposed structured record`: source-backed structured candidate staged for final review. It is not runtime-active.
+- `reviewed source evidence`: accepted non-limit source metadata, such as FCF/bergapten-free support. It does not create category limits.
+- `runtime IFRA standard`: structured data used by app IFRA calculations. Promotion into this layer is a later, explicit, reviewed implementation step.
+
+Autopilot can auto-accept only non-limit evidence when it is linked to the exact queue item and does not alter IFRA category limits. Current safe examples are FCF/phototoxic evidence and limited source-identity support from supplier/SDS/product sources. Category-limit evidence is never auto-accepted into runtime data.
+
+Strong Cat 4/fine-fragrance candidates can be staged as `proposed` records when they are linked to the queue item, match the source identity, come from a supplier product page or supplier IFRA/SDS source, contain clear IFRA/category/max-use language, and avoid GHS Category 4, RIFM average usage, navigation text, and identity-reference noise. Proposed records must be reviewed one at a time before any future promotion.
+
+The recommendation report groups work into:
+
+- proposed structured records ready for final review,
+- auto-accepted non-limit evidence,
+- needs better source,
+- rejected/noisy evidence,
+- already handled,
+- deferred.
+
+This is meant to reduce manual review burden: start with proposed records and unresolved source requests instead of reading every candidate snippet. It still does not claim compliance, does not prove launch clearance, and does not change formula data.
+
 ## Reviewed Candidate Promotion Pilot
 
 The first promotion workflow is intentionally narrow: reviewed FCF/furocoumarin-free citrus evidence for `Bergamot EO FCF`, `Bergamot FCF`, and `Lemon FCF`.

@@ -319,6 +319,12 @@ const ifraEvidenceAutopilotModules = import.meta.glob(
 );
 const ifraEvidenceAutopilotData =
   Object.values(ifraEvidenceAutopilotModules)[0]?.default || null;
+const ifraAutopilotRecommendationsModules = import.meta.glob(
+  "../data/ifra_source_acquisition/ifra_autopilot_recommendations.json",
+  { eager: true }
+);
+const ifraAutopilotRecommendationsData =
+  Object.values(ifraAutopilotRecommendationsModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81525,7 +81531,8 @@ export default function App() {
       ifraSourceDocumentInventoryData,
       candidateIfraReviewQueueData,
       ifraEvidenceResolutionData,
-      ifraEvidenceAutopilotData
+      ifraEvidenceAutopilotData,
+      ifraAutopilotRecommendationsData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82458,6 +82465,263 @@ export default function App() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                      display: "grid",
+                      gap: 7,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        alignItems: "flex-start",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 7.4,
+                            color: "#A7F3D0",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 800,
+                          }}
+                        >
+                          Autopilot Recommendations
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 3,
+                            fontSize: 8.1,
+                            color: "#94A3B8",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {ifraSourceAcquisitionPanel.recommendations.isAvailable
+                            ? "Autopilot did the first-pass review and staged concrete next actions."
+                            : ifraSourceAcquisitionPanel.recommendations.missingMessage}
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 7.4,
+                          color: "#CBD5E1",
+                          lineHeight: 1.45,
+                          overflowWrap: "anywhere",
+                          maxWidth: 430,
+                        }}
+                      >
+                        {ifraSourceAcquisitionPanel.recommendations.regenerateCommand}
+                      </div>
+                    </div>
+                    {ifraSourceAcquisitionPanel.recommendations.isAvailable ? (
+                      <>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                            gap: 7,
+                          }}
+                        >
+                          {[
+                            [
+                              "Proposed records",
+                              ifraSourceAcquisitionPanel.recommendations.counts
+                                .proposedStructuredRecords,
+                              "#A7F3D0",
+                            ],
+                            [
+                              "Auto-accepted",
+                              ifraSourceAcquisitionPanel.recommendations.counts
+                                .autoAcceptedNonLimitEvidence,
+                              "#7DD3FC",
+                            ],
+                            [
+                              "Needs source",
+                              ifraSourceAcquisitionPanel.recommendations.counts
+                                .needsBetterSource,
+                              "#FDE68A",
+                            ],
+                            [
+                              "Rejected/noise",
+                              ifraSourceAcquisitionPanel.recommendations.counts
+                                .rejectedNoise,
+                              "#FCA5A5",
+                            ],
+                          ].map(([label, value, color]) => (
+                            <div
+                              key={label}
+                              style={{
+                                background: "#071826",
+                                border: "1px solid #1E3A52",
+                                borderRadius: 8,
+                                padding: "6px 8px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  color,
+                                  fontSize: 10.5,
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {Number(value).toLocaleString()}
+                              </div>
+                              <div
+                                style={{
+                                  marginTop: 2,
+                                  fontSize: 7,
+                                  color: "#64748B",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.08em",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {label}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.3,
+                            color: "#E2E8F0",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {ifraSourceAcquisitionPanel.recommendations.nextRecommendedAction}
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                            gap: 8,
+                          }}
+                        >
+                          <div
+                            style={{
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              padding: "8px 9px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 7.3,
+                                color: "#A7F3D0",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 800,
+                                marginBottom: 5,
+                              }}
+                            >
+                              Top proposed records
+                            </div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gap: 4,
+                                fontSize: 8.1,
+                                color: "#94A3B8",
+                                lineHeight: 1.45,
+                              }}
+                            >
+                              {ifraSourceAcquisitionPanel.recommendations
+                                .topProposedRecords.length ? (
+                                ifraSourceAcquisitionPanel.recommendations.topProposedRecords.map(
+                                  (record) => (
+                                    <div key={record.id}>
+                                      <span
+                                        style={{
+                                          color: "#E2E8F0",
+                                          fontWeight: 800,
+                                        }}
+                                      >
+                                        {record.materialName}
+                                      </span>{" "}
+                                      - {record.category || "Cat ?"}{" "}
+                                      {`${record.candidateValue || ""} ${record.candidateUnit || ""}`.trim() || "review value"}
+                                    </div>
+                                  )
+                                )
+                              ) : (
+                                <div>No proposed records staged yet.</div>
+                              )}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              background: "#071826",
+                              border: "1px solid #1E3A52",
+                              borderRadius: 8,
+                              padding: "8px 9px",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 7.3,
+                                color: "#FDE68A",
+                                textTransform: "uppercase",
+                                letterSpacing: "0.08em",
+                                fontWeight: 800,
+                                marginBottom: 5,
+                              }}
+                            >
+                              Top unresolved actions
+                            </div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gap: 4,
+                                fontSize: 8.1,
+                                color: "#94A3B8",
+                                lineHeight: 1.45,
+                              }}
+                            >
+                              {ifraSourceAcquisitionPanel.recommendations
+                                .topNeedsBetterSource.length ? (
+                                ifraSourceAcquisitionPanel.recommendations.topNeedsBetterSource.map(
+                                  (item) => (
+                                    <div key={`${item.queueItemId}-${item.materialName}`}>
+                                      <span
+                                        style={{
+                                          color: "#E2E8F0",
+                                          fontWeight: 800,
+                                        }}
+                                      >
+                                        {item.materialName}
+                                      </span>{" "}
+                                      - {item.recommendationStatus}
+                                    </div>
+                                  )
+                                )
+                              ) : (
+                                <div>No unresolved recommendation items in the top list.</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            color: "#FDE68A",
+                            fontSize: 8.1,
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {ifraSourceAcquisitionPanel.recommendations.guardrail}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                   <div
                     style={{

@@ -13,6 +13,9 @@ export const IFRA_EVIDENCE_RESOLVER_COMMAND =
 export const IFRA_EVIDENCE_AUTOPILOT_COMMAND =
   'node scripts/run_ifra_evidence_autopilot.mjs --ingredient-reference "...Ingredient data - Ingredient Data.csv" --download --markdown --write docs/ifra/ifra_evidence_autopilot_report.md';
 
+export const IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND =
+  "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md";
+
 export const IFRA_SOURCE_ACQUISITION_MISSING_MESSAGE =
   "Run the IFRA source acquisition queue script to generate the document checklist.";
 
@@ -343,12 +346,92 @@ function buildAutopilotProgress(autopilotReport) {
   };
 }
 
+function isAvailableRecommendationReport(recommendations) {
+  return Boolean(recommendations && recommendations.summary);
+}
+
+function buildTopProposedRecords(recommendations) {
+  if (!isAvailableRecommendationReport(recommendations)) return [];
+  return (recommendations.proposedStructuredRecords || []).slice(0, 5).map((record) => ({
+    id: record.id,
+    materialName: record.materialName,
+    sourceIdentityName: record.sourceIdentityName,
+    recordType: record.recordType,
+    category: record.category,
+    candidateValue: record.candidateValue,
+    candidateUnit: record.candidateUnit,
+    evidenceConfidence: record.evidenceConfidence,
+    source: record.sourceUrl || record.sourceFile || "",
+  }));
+}
+
+function buildTopRecommendationNeedsSource(recommendations) {
+  if (!isAvailableRecommendationReport(recommendations)) return [];
+  return (recommendations.needsBetterSource || []).slice(0, 5).map((item) => ({
+    queueItemId: item.queueItemId,
+    materialName: item.materialName,
+    sourceIdentityName: item.sourceIdentityName,
+    recommendationStatus: item.recommendationStatus,
+    suggestedAction: item.suggestedAction,
+    evidenceStatus: item.evidenceStatus,
+  }));
+}
+
+function buildRecommendationProgress(recommendations) {
+  if (!isAvailableRecommendationReport(recommendations)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Run IFRA autopilot recommendations to stage proposed records and reduce manual review to concrete next actions.",
+      regenerateCommand: IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND,
+      guardrail: "Recommendations do not promote runtime IFRA limits.",
+      counts: {
+        proposedStructuredRecords: 0,
+        autoAcceptedNonLimitEvidence: 0,
+        needsBetterSource: 0,
+        rejectedNoise: 0,
+        alreadyHandled: 0,
+      },
+      nextRecommendedAction:
+        "Generate recommendations after autopilot evidence resolution.",
+      topProposedRecords: [],
+      topNeedsBetterSource: [],
+    };
+  }
+  const summary = recommendations.summary || {};
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      recommendations.metadata?.regenerateCommand ||
+      IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND,
+    guardrail:
+      "Proposed records are staged for review only; no runtime IFRA limits have been changed.",
+    counts: {
+      proposedStructuredRecords: summary.proposedStructuredRecordCount || 0,
+      autoAcceptedNonLimitEvidence:
+        summary.autoAcceptedNonLimitEvidenceCount || 0,
+      needsBetterSource:
+        (summary.needsBetterSourceCount || 0) +
+        (summary.noUsefulEvidenceCount || 0),
+      rejectedNoise: summary.rejectedNoiseCount || 0,
+      alreadyHandled: summary.alreadyHandledCount || 0,
+    },
+    nextRecommendedAction:
+      summary.nextRecommendedAction ||
+      "Review proposed records before any promotion task.",
+    topProposedRecords: buildTopProposedRecords(recommendations),
+    topNeedsBetterSource: buildTopRecommendationNeedsSource(recommendations),
+  };
+}
+
 export function buildIfraSourceAcquisitionPanel(
   queue,
   documentInventory = null,
   candidateReviewQueue = null,
   evidenceResolution = null,
-  autopilotReport = null
+  autopilotReport = null,
+  autopilotRecommendations = null
 ) {
   if (!isAvailableQueue(queue)) {
     return {
@@ -387,6 +470,7 @@ export function buildIfraSourceAcquisitionPanel(
       candidateReview: buildCandidateReviewProgress(candidateReviewQueue),
       evidenceResolver: buildEvidenceResolverProgress(evidenceResolution),
       autopilot: buildAutopilotProgress(autopilotReport),
+      recommendations: buildRecommendationProgress(autopilotRecommendations),
     };
   }
 
@@ -416,6 +500,7 @@ export function buildIfraSourceAcquisitionPanel(
   const candidateReviewProgress = buildCandidateReviewProgress(candidateReviewQueue);
   const evidenceResolverProgress = buildEvidenceResolverProgress(evidenceResolution);
   const autopilotProgress = buildAutopilotProgress(autopilotReport);
+  const recommendationProgress = buildRecommendationProgress(autopilotRecommendations);
 
   return {
     isAvailable: true,
@@ -458,5 +543,6 @@ export function buildIfraSourceAcquisitionPanel(
     candidateReview: candidateReviewProgress,
     evidenceResolver: evidenceResolverProgress,
     autopilot: autopilotProgress,
+    recommendations: recommendationProgress,
   };
 }

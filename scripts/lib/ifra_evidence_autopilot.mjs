@@ -40,6 +40,15 @@ import {
   DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
   loadReviewedIfraSourceRecords,
 } from "./reviewed_ifra_source_records.mjs";
+import {
+  DEFAULT_IFRA_AUTOPILOT_RECOMMENDATIONS_PATH,
+  DEFAULT_PROPOSED_IFRA_STRUCTURED_RECORDS_PATH,
+  buildIfraAutopilotRecommendations,
+  buildProposedIfraStructuredRecordsFile,
+  isAutoAcceptableNonLimitEvidence,
+  writeIfraAutopilotRecommendations,
+  writeProposedIfraStructuredRecords,
+} from "./ifra_autopilot_recommendations.mjs";
 
 const DEFAULT_ROOT = path.resolve(new URL("../..", import.meta.url).pathname);
 
@@ -323,6 +332,36 @@ export function applyAutopilotReviewUpdates({
         from: reviewItem.reviewStatus,
         to: "in_review",
         reason: "High-confidence resolver candidate is ready for human review.",
+      });
+      continue;
+    }
+
+    const bestCandidate = getBestCandidate(item);
+    if (
+      isAutoAcceptableNonLimitEvidence({ item, candidate: bestCandidate }) &&
+      !["accepted", "rejected", "deferred", "needs_more_source"].includes(
+        reviewItem.reviewStatus || ""
+      ) &&
+      !reviewItem.reviewNotes
+    ) {
+      const acceptedCandidateId = bestCandidate.id;
+      const nextItem = applyCandidateReviewAutopilotUpdate({
+        item: reviewItem,
+        nextReviewStatus: "accepted",
+        acceptedCandidateId,
+        now,
+      });
+      candidateReviewItems[reviewIndex] = nextItem;
+      candidateReviewUpdates.push({
+        reviewItemId: reviewItem.id,
+        queueItemId: reviewItem.queueItemId,
+        materialName: reviewItem.materialName,
+        field: "reviewStatus",
+        from: reviewItem.reviewStatus,
+        to: "accepted",
+        acceptedCandidateId,
+        reason:
+          "Autopilot accepted linked non-limit source evidence only; no IFRA category limit was created.",
       });
       continue;
     }
@@ -718,6 +757,8 @@ export async function runIfraEvidenceAutopilot({
   candidateReviewQueuePath = DEFAULT_CANDIDATE_IFRA_REVIEW_QUEUE_PATH,
   evidenceResolutionPath = DEFAULT_IFRA_EVIDENCE_RESOLUTION_PATH,
   reviewedSourceRecordsPath = DEFAULT_REVIEWED_IFRA_SOURCE_RECORDS_PATH,
+  proposedRecordsPath = DEFAULT_PROPOSED_IFRA_STRUCTURED_RECORDS_PATH,
+  recommendationsPath = DEFAULT_IFRA_AUTOPILOT_RECOMMENDATIONS_PATH,
   outputPath = DEFAULT_IFRA_EVIDENCE_AUTOPILOT_REPORT_PATH,
   fetchImpl = globalThis.fetch,
 } = {}) {
@@ -826,8 +867,27 @@ export async function runIfraEvidenceAutopilot({
   });
   writeIfraEvidenceAutopilotReport(outputPath, report);
 
+  const recommendations = buildIfraAutopilotRecommendations({
+    evidenceResolution,
+    candidateExtractions,
+    reviewedSourceRecords,
+    autopilotReport: report,
+    generatedAt,
+  });
+  const proposedRecordsFile = buildProposedIfraStructuredRecordsFile({
+    records: [
+      ...(recommendations.proposedStructuredRecords || []),
+      ...(recommendations.autoAcceptedNonLimitEvidence || []),
+    ],
+    generatedAt,
+  });
+  writeIfraAutopilotRecommendations(recommendationsPath, recommendations);
+  writeProposedIfraStructuredRecords(proposedRecordsPath, proposedRecordsFile);
+
   return {
     report,
+    recommendations,
+    proposedRecordsFile,
     sourceQueue,
     harvestReport,
     documentInventory,

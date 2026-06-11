@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:43:33.704Z",
+    "generatedAt": "2026-06-11T15:02:00.393Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "ingredientSourceHarvestGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "sourceQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "candidateExtractionGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "ingredientSourceHarvestGeneratedAt": "2026-06-11T15:02:00.393Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
       "Evidence resolver output is review triage only.",
@@ -2137,7 +2137,7 @@
         "suppressedWeak": 34
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-bergamot-eo-fcf-fcf-special-case",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "accepted",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {

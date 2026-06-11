@@ -1,0 +1,442 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T15:04:41.094Z",
+    "reportName": "Proposed IFRA Structured Records",
+    "guardrails": [
+      "Proposed records are not runtime-active.",
+      "They require final review before promotion.",
+      "They do not prove compliance or launch clearance."
+    ]
+  },
+  "summary": {
+    "recordCount": 13,
+    "proposedForReviewCount": 11,
+    "autoAcceptedNonLimitCount": 2,
+    "recordTypeCounts": {
+      "ifra_category_limit": 11,
+      "phototoxic_note": 2
+    },
+    "promotionStatusCounts": {
+      "proposed": 11,
+      "reviewed_ok": 2
+    }
+  },
+  "records": [
+    {
+      "id": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "formulaMaterialNames": [
+        "Methyl Ionone Alpha Extra"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra-html-7-thyl-ionone-5-10-79-89-0-beta-isomethyl-ionone-3"
+      ],
+      "category": "4",
+      "candidateValue": "30",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 30,
+      "sourceSnippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Longevity: Lasts > 124 hours on a smelling strip. Odour Profile: Methyl Ionone Alpha Extra delivers a sophisticated powdery-flo",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-calone-1951-20-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "formulaMaterialNames": [
+        "Calone 1951 20%"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/calone-plus",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/calone-1951-20-product-page-https-fraterworks-com-products-calone-plus.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-calone-1951-20-product-page-https-fraterworks-com-products-calone-plus-html-6-use-because-it-comes-in-a-liquid-form-making-it"
+      ],
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "use because it comes in a liquid form, making it a cinch to add to your formulas. aromachem Best Seller locale:pure is powder no_reg power IFRA 51: No restriction for category 4 Odour Family: Ozonic Appearance: Colourless liquid Longevity: Lasts > 600 hours on a smelling strip. Odour Profile: Calone delivers an intensely fresh sea-breeze character with prom",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-cetalox-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "formulaMaterialNames": [
+        "Cetalox"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/cetalox",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/cetalox-product-page-https-fraterworks-com-products-cetalox.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cetalox-product-page-https-fraterworks-com-products-cetalox-html-7-ox-shows-balanced-behavior-with-moderate-streng"
+      ],
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a smelling strip. Odour Profile: Ambrotech delivers a warm, creamy ambergris character with soft woody",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-clearwood-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "formulaMaterialNames": [
+        "Clearwood"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/clearwood",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/clearwood-product-page-https-fraterworks-com-products-clearwood.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-clearwood-product-page-https-fraterworks-com-products-clearwood-html-6-clearwood-prisma-range-launched-by-firmenich-in"
+      ],
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "Clearwood PRISMA range, launched by Firmenich in 2024. Contains 0.05% of Tocopherol as a preservative. Best Seller natural no_reg patchouli IFRA 51: No restriction for category 4 Odour Family: Woody Appearance: Colourless liquid Longevity: Lasts > 180 hours on a smelling strip. Odour Profile: Clearwood has a rich, warm woody scent with creamy patchouli-like",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-geosmin-1-tec-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Geosmin 1% TEC",
+      "sourceIdentityName": "Geosmin",
+      "formulaMaterialNames": [
+        "Geosmin 1% TEC"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/geosmin",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/geosmin-1-tec-product-page-https-fraterworks-com-products-geosmin.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-geosmin-1-tec-product-page-https-fraterworks-com-products-geosmin-html-6-areful-overdose-gives-interesting-effects-geosm"
+      ],
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "areful overdose gives interesting effects. Geosmin is a radiant and adds power and diffusion to any fragrance. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Odour Family: Earthy Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Geosmin presents an extraordinarily powerful earthy odour reminisc",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-celestafleur-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "formulaMaterialNames": [
+        "Celestafleur"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/celestafleur",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/celestafleur-product-page-https-fraterworks-com-products-celestafleur.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-celestafleur-product-page-https-fraterworks-com-products-celestafleur-html-5-ith-celestafleur-tm-and-herbal-bases-such-as-sur"
+      ],
+      "category": "4",
+      "candidateValue": "9.4",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 9.4,
+      "sourceSnippet": "ith Celestafleur ™, and herbal bases such as Suralette™ Extra and Artemal ™ are wonderful with it. Best Seller floral lyral mahonial no_reg IFRA 51: 9.4% in finished product (Cat. 4) Appearance: Colourless liquid Longevity: Lasts 240 hours on a smelling strip. Odour Profile: Celestafleur delivers an effervescent, sparkling lily character with radiant longevi",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-timbersilk-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "formulaMaterialNames": [
+        "Timbersilk"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/timbersilk",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-fraterworks-com-products-timbersilk.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-fraterworks-com-products-timbersilk-html-6-n-chilled-in-a-moderate-freezer-overnight-before"
+      ],
+      "category": "",
+      "candidateValue": "20",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 20,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For T",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "formulaMaterialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before"
+      ],
+      "category": "",
+      "candidateValue": "0.909",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.909,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.909% IFRA 49: 0.909% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer...",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-cashmeran-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "formulaMaterialNames": [
+        "Cashmeran"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/cashmeran",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/cashmeran-product-page-https-fraterworks-com-products-cashmeran.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cashmeran-product-page-https-fraterworks-com-products-cashmeran-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+      ],
+      "category": "",
+      "candidateValue": "3.8",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 3.8,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 3.8% IFRA 49: 3.8% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "formulaMaterialNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/cyclamen-aldehyde",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+      ],
+      "category": "",
+      "candidateValue": "0.95",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.95,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.95% IFRA 49: 0.95% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... F",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-helional-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Helional®",
+      "sourceIdentityName": "Helional®",
+      "formulaMaterialNames": [
+        "Helional 25%",
+        "Helional®"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/helional",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/helional-product-page-https-fraterworks-com-products-helional.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-helional-product-page-https-fraterworks-com-products-helional-html-7-n-chilled-in-a-moderate-freezer-overnight-before"
+      ],
+      "category": "",
+      "candidateValue": "2.6",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 2.6,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 2.6% IFRA 49: 2.6% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-bergamot-eo-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "formulaMaterialNames": [
+        "Bergamot EO FCF"
+      ],
+      "recordType": "phototoxic_note",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/bergamot-oil-fcf",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-10-ily-citrus-appearance-pale-yellow-liquid-longe"
+      ],
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "ily: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Bright, fruity-sweet citrus without phototoxic components. Uses: Essential in skin-safe fine fragrance formulations, especially for citruses, colognes, fougères, and chypres requiring the bergamot signature. Alternative Names: Bergamot - Essential Oil (BF)",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "auto_accept_non_limit",
+      "promotionStatus": "reviewed_ok",
+      "limitations": [
+        "Not runtime-active",
+        "Non-limit source evidence only",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot accepted this as source evidence only because it does not create or modify IFRA category limits."
+      ]
+    },
+    {
+      "id": "proposed-ifra-lemon-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "formulaMaterialNames": [
+        "Lemon FCF"
+      ],
+      "recordType": "phototoxic_note",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf"
+      ],
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you superior Bergamot Bergaptene Free , now we bring you Capua's beautiful Lemon Furocoumarin free. Regular",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "auto_accept_non_limit",
+      "promotionStatus": "reviewed_ok",
+      "limitations": [
+        "Not launch clearance",
+        "Does not create or modify IFRA category limits",
+        "Supplier IFRA/SDS still required for final compliance"
+      ],
+      "notes": [
+        "Existing reviewed FCF source-evidence record detected.",
+        "Regular expressed citrus phototoxic limits are not applied as if furocoumarins are present."
+      ]
+    }
+  ]
+}

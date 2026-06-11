@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:43:33.704Z",
+    "generatedAt": "2026-06-11T15:02:00.393Z",
     "reportName": "IFRA Evidence Autopilot Report",
     "regenerateCommand": "node scripts/run_ifra_evidence_autopilot.mjs --ingredient-reference \"...Ingredient data - Ingredient Data.csv\" --download --markdown --write docs/ifra/ifra_evidence_autopilot_report.md",
     "mode": "dry_run",
@@ -23,12 +23,12 @@
       "apply_safe_review_metadata_updates",
       "write_autopilot_report"
     ],
-    "sourceQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "harvestGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "documentInventoryGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
-    "evidenceResolutionGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "sourceQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "harvestGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "documentInventoryGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "candidateExtractionGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "evidenceResolutionGeneratedAt": "2026-06-11T15:02:00.393Z",
     "reviewedSourceRecordCount": 1
   },
   "summary": {
@@ -53,9 +53,9 @@
     "deferredCount": 4,
     "unresolvedCount": 9,
     "manualReviewStillRequiredCount": 34,
-    "autoUpdatedReviewStatusCount": 0,
+    "autoUpdatedReviewStatusCount": 1,
     "sourceQueueAutoUpdateCount": 0,
-    "candidateReviewAutoUpdateCount": 0,
+    "candidateReviewAutoUpdateCount": 1,
     "downloadedOrCachedSourceCount": 86,
     "failedDownloadCount": 0,
     "documentCount": 86,
@@ -64,7 +64,18 @@
   },
   "autoUpdates": {
     "sourceQueue": [],
-    "candidateReviewQueue": []
+    "candidateReviewQueue": [
+      {
+        "reviewItemId": "candidate-ifra-review-hero-ifra-source-bergamot-eo-fcf-fcf-special-case",
+        "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+        "materialName": "Bergamot EO FCF",
+        "field": "reviewStatus",
+        "from": "not_started",
+        "to": "accepted",
+        "acceptedCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-10-ily-citrus-appearance-pale-yellow-liquid-longe",
+        "reason": "Autopilot accepted linked non-limit source evidence only; no IFRA category limit was created."
+      }
+    ]
   },
   "topReviewReadyMaterials": [
     {

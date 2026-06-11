@@ -35,7 +35,7 @@ Options:
   --rate-limit-ms <number>       Delay between downloads. Default: 350.
   --help                         Show this help.
 
-Autopilot runs the IFRA source queue, CSV harvest, optional cache/download, document inventory, candidate extraction, review queue, resolver, and safe review-metadata updates. It does not promote IFRA limits, change runtime IFRA classification, or prove launch clearance.`);
+Autopilot runs the IFRA source queue, CSV harvest, optional cache/download, document inventory, candidate extraction, review queue, resolver, safe review-metadata updates, recommendation staging, and proposed-record output. It does not promote IFRA limits, change runtime IFRA classification, or prove launch clearance.`);
 }
 
 function parseArgs(argv) {
