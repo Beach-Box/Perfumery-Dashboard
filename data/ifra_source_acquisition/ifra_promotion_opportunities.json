@@ -1,0 +1,1712 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T16:19:29.249Z",
+    "reportName": "IFRA Promotion Opportunities",
+    "guardrails": [
+      "This report ranks review opportunities only.",
+      "No IFRA limits are promoted by this report.",
+      "Promotion remains one reviewed record at a time.",
+      "This is not launch clearance."
+    ]
+  },
+  "summary": {
+    "proposedRecordCount": 15,
+    "auditedRecordCount": 15,
+    "remainingUnpromotedProposedCount": 14,
+    "recommendedNextPromotionCount": 0,
+    "goodCandidateAfterReviewCount": 5,
+    "needsBetterSourceCount": 7,
+    "doNotPromoteYetCount": 0,
+    "alreadyPromotedCount": 1,
+    "specialCaseOnlyCount": 2,
+    "sourceTypeCounts": {
+      "official_ifra_standard_library": 5,
+      "supplier_product_page": 9,
+      "official_ifra_standard_pdf": 1
+    },
+    "classificationCounts": {
+      "good_candidate_after_review": 5,
+      "needs_better_source": 7,
+      "already_promoted": 1,
+      "special_case_only": 2
+    }
+  },
+  "opportunities": [
+    {
+      "proposedRecordId": "proposed-ifra-cashmeran-ifra-category-limit-official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-",
+      "materialName": "Cashmeran",
+      "sourceIdentityName": "Cashmeran",
+      "formulaMaterialNames": [
+        "Cashmeran"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "3.8",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 3.8,
+      "sourceSnippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",
+      "officialStandardTitle": "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-cashmeran-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-li",
+      "materialName": "Cyclamen Aldehyde",
+      "sourceIdentityName": "Cyclamen Aldehyde",
+      "formulaMaterialNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "0.95",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.95,
+      "sourceSnippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde",
+      "officialStandardTitle": "Cyclamen aldehyde",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "exactIfraMatch",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-helional-ifra-category-limit-official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-a",
+      "materialName": "Helional®",
+      "sourceIdentityName": "Helional®",
+      "formulaMaterialNames": [
+        "Helional 25%",
+        "Helional®"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "2.6",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 2.6,
+      "sourceSnippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca",
+      "officialStandardTitle": "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-helional-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-oakmoss-absolute-10-ifra-category-limit-official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-lim",
+      "materialName": "Oakmoss Absolute 10%",
+      "sourceIdentityName": "Oakmoss Absolute",
+      "formulaMaterialNames": [
+        "Oakmoss Absolute 10%"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "0.1",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.1,
+      "sourceSnippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts",
+      "officialStandardTitle": "Oakmoss extracts",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-ylang-ylang-complete-oil-ifra-category-limit-official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-cate",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialNames": [
+        "Ylang Ylang 10%",
+        "Ylang-Ylang Complete Oil"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "0.73",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.73,
+      "sourceSnippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",
+      "officialStandardTitle": "Ylang ylang extracts",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-calone-1951-20-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Calone 1951 20%",
+      "sourceIdentityName": "Calone 1951",
+      "formulaMaterialNames": [
+        "Calone 1951 20%"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/calone-plus",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/calone-1951-20-product-page-https-fraterworks-com-products-calone-plus.html",
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "use because it comes in a liquid form, making it a cinch to add to your formulas. aromachem Best Seller locale:pure is powder no_reg power IFRA 51: No restriction for category 4 Odour Family: Ozonic Appearance: Colourless liquid Longevity: Lasts > 600 hours o...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 22,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-geosmin-1-tec-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Geosmin 1% TEC",
+      "sourceIdentityName": "Geosmin",
+      "formulaMaterialNames": [
+        "Geosmin 1% TEC"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/geosmin",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/geosmin-1-tec-product-page-https-fraterworks-com-products-geosmin.html",
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "areful overdose gives interesting effects. Geosmin is a radiant and adds power and diffusion to any fragrance. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Odour Family: Earthy Appearance: Colourless liquid Longevity: Lasts > 70 hours o...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 22,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "formulaMaterialNames": [
+        "Methyl Ionone Alpha Extra"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra.html",
+      "category": "4",
+      "candidateValue": "30",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 30,
+      "sourceSnippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Longevity: Lasts > 124 hou...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 22,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-celestafleur-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Celestafleur",
+      "sourceIdentityName": "Celestafleur",
+      "formulaMaterialNames": [
+        "Celestafleur"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/celestafleur",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/celestafleur-product-page-https-fraterworks-com-products-celestafleur.html",
+      "category": "4",
+      "candidateValue": "9.4",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 9.4,
+      "sourceSnippet": "ith Celestafleur ™, and herbal bases such as Suralette™ Extra and Artemal ™ are wonderful with it. Best Seller floral lyral mahonial no_reg IFRA 51: 9.4% in finished product (Cat. 4) Appearance: Colourless liquid Longevity: Lasts 240 hours on a smelling strip...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 2,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "material still needs supplier-specific IFRA/SDS documentation",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-cetalox-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Cetalox",
+      "sourceIdentityName": "Cetalox",
+      "formulaMaterialNames": [
+        "Cetalox"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/cetalox",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/cetalox-product-page-https-fraterworks-com-products-cetalox.html",
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "formulasUsedIn": [
+        "Damp Shoreline v2",
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 2,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "material still needs supplier-specific IFRA/SDS documentation",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-clearwood-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Clearwood",
+      "sourceIdentityName": "Clearwood",
+      "formulaMaterialNames": [
+        "Clearwood"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/clearwood",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/clearwood-product-page-https-fraterworks-com-products-clearwood.html",
+      "category": "4",
+      "candidateValue": "No restriction",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "Clearwood PRISMA range, launched by Firmenich in 2024. Contains 0.05% of Tocopherol as a preservative. Best Seller natural no_reg patchouli IFRA 51: No restriction for category 4 Odour Family: Woody Appearance: Colourless liquid Longevity: Lasts > 180 hours o...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 2,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "supplier/product-page-only source needs human review before any runtime use",
+        "material still needs supplier-specific IFRA/SDS documentation",
+        "snippet may include marketing, GHS, RIFM, or navigation noise"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-timbersilk-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Timbersilk",
+      "sourceIdentityName": "Timbersilk",
+      "formulaMaterialNames": [
+        "Timbersilk"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/timbersilk",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-fraterworks-com-products-timbersilk.html",
+      "category": "",
+      "candidateValue": "20",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 20,
+      "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived from calculated conce...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": -10,
+      "confidenceLabel": "low",
+      "classification": "needs_better_source",
+      "why": [
+        "category value is parseable or explicitly no restriction",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "Cat 4 / fine-fragrance context is not explicit",
+        "supplier/product-page-only source needs human review before any runtime use",
+        "material still needs supplier-specific IFRA/SDS documentation"
+      ],
+      "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
+      "materialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "formulaMaterialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_pdf",
+      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.9,
+      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+      "officialStandardTitle": "Acetylated Vetiver oil",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "queuePriority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "promotionStatus": "promoted",
+      "reviewedSourceRecordIds": [],
+      "score": 0,
+      "confidenceLabel": "low",
+      "classification": "already_promoted",
+      "why": [
+        "official IFRA source candidate",
+        "official IFRA PDF/source file present",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "high-priority hero IFRA queue item",
+        "autopilot confidence is high",
+        "record has already been promoted into runtime structured overlay"
+      ],
+      "risk": [
+        "No major ranking risk detected, but source review is still required."
+      ],
+      "recommendedAction": "No action. This record is already represented in the reviewed runtime overlay.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-bergamot-eo-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Bergamot EO FCF",
+      "sourceIdentityName": "Bergamot EO FCF",
+      "formulaMaterialNames": [
+        "Bergamot EO FCF"
+      ],
+      "recordType": "phototoxic_note",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/bergamot-oil-fcf",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf.html",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "ily: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Bright, fruity-sweet citrus without phototoxic components. Uses: Essential in skin-safe fine fragrance formulations, especially for citruses, colognes, fou...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+      "queuePriority": "medium",
+      "requiredSourceType": "fcf_special_case",
+      "currentIfraCategory": "fcfSpecialCase",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "reviewed_ok",
+      "reviewedSourceRecordIds": [],
+      "score": -18,
+      "confidenceLabel": "low",
+      "classification": "special_case_only",
+      "why": [
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "candidate category value is not parseable",
+        "supplier/product-page-only source needs human review before any runtime use",
+        "snippet may include marketing, GHS, RIFM, or navigation noise",
+        "special-case evidence is not a regular category-limit promotion"
+      ],
+      "recommendedAction": "Keep as non-limit evidence or special-case support; do not promote as a regular Cat 4 IFRA limit.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-lemon-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+      "materialName": "Lemon FCF",
+      "sourceIdentityName": "Lemon FCF",
+      "formulaMaterialNames": [
+        "Lemon FCF"
+      ],
+      "recordType": "phototoxic_note",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "normalizedCandidateValue": null,
+      "sourceSnippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you su...",
+      "officialCandidateId": "",
+      "officialStandardTitle": "",
+      "officialMatchType": "",
+      "officialMatchConfidence": "",
+      "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
+      "queuePriority": "medium",
+      "requiredSourceType": "fcf_special_case",
+      "currentIfraCategory": "fcfSpecialCase",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "promotionStatus": "reviewed_ok",
+      "reviewedSourceRecordIds": [
+        "reviewed-ifra-source-lemon-fcf-fcf-phototoxic-note-furocoumarin-free-or-bergapten-free-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source"
+      ],
+      "score": -40,
+      "confidenceLabel": "low",
+      "classification": "special_case_only",
+      "why": [
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "candidate category value is not parseable",
+        "Cat 4 / fine-fragrance context is not explicit",
+        "supplier/product-page-only source needs human review before any runtime use",
+        "special-case evidence is not a regular category-limit promotion"
+      ],
+      "recommendedAction": "Keep as non-limit evidence or special-case support; do not promote as a regular Cat 4 IFRA limit.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    }
+  ],
+  "grouped": {
+    "promote_next": [],
+    "good_candidate_after_review": [
+      {
+        "proposedRecordId": "proposed-ifra-cashmeran-ifra-category-limit-official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-",
+        "materialName": "Cashmeran",
+        "sourceIdentityName": "Cashmeran",
+        "formulaMaterialNames": [
+          "Cashmeran"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "3.8",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 3.8,
+        "sourceSnippet": "Official IFRA Standards Library match for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 3.8%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",
+        "officialStandardTitle": "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-cashmeran-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "aliasIfraMatch",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-cyclamen-aldehyde-ifra-category-limit-official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-li",
+        "materialName": "Cyclamen Aldehyde",
+        "sourceIdentityName": "Cyclamen Aldehyde",
+        "formulaMaterialNames": [
+          "Cyclamen Aldehyde"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "0.95",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 0.95,
+        "sourceSnippet": "Official IFRA Standards Library match for Cyclamen aldehyde. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.95%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-cyclamen-aldehyde-already-structured-ifra-category-limit-cas-cyclamen-aldehyde",
+        "officialStandardTitle": "Cyclamen aldehyde",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "exactIfraMatch",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-helional-ifra-category-limit-official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-a",
+        "materialName": "Helional®",
+        "sourceIdentityName": "Helional®",
+        "formulaMaterialNames": [
+          "Helional 25%",
+          "Helional®"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "2.6",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 2.6,
+        "sourceSnippet": "Official IFRA Standards Library match for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA). Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 2.6%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-helional-already-structured-ifra-category-limit-cas-alpha-methyl-1-3-benzodioxole-5-propionaldehyde-mmdhca",
+        "officialStandardTitle": "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-helional-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "aliasIfraMatch",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-oakmoss-absolute-10-ifra-category-limit-official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-lim",
+        "materialName": "Oakmoss Absolute 10%",
+        "sourceIdentityName": "Oakmoss Absolute",
+        "formulaMaterialNames": [
+          "Oakmoss Absolute 10%"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "0.1",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 0.1,
+        "sourceSnippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts",
+        "officialStandardTitle": "Oakmoss extracts",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "aliasIfraMatch",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-ylang-ylang-complete-oil-ifra-category-limit-official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-cate",
+        "materialName": "Ylang-Ylang Complete Oil",
+        "sourceIdentityName": "Ylang-Ylang Complete Oil",
+        "formulaMaterialNames": [
+          "Ylang Ylang 10%",
+          "Ylang-Ylang Complete Oil"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "0.73",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 0.73,
+        "sourceSnippet": "Official IFRA Standards Library match for Ylang ylang extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.73%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",
+        "officialStandardTitle": "Ylang ylang extracts",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "aliasIfraMatch",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      }
+    ],
+    "needs_better_source": [
+      {
+        "proposedRecordId": "proposed-ifra-calone-1951-20-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Calone 1951 20%",
+        "sourceIdentityName": "Calone 1951",
+        "formulaMaterialNames": [
+          "Calone 1951 20%"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/calone-plus",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/calone-1951-20-product-page-https-fraterworks-com-products-calone-plus.html",
+        "category": "4",
+        "candidateValue": "No restriction",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "use because it comes in a liquid form, making it a cinch to add to your formulas. aromachem Best Seller locale:pure is powder no_reg power IFRA 51: No restriction for category 4 Odour Family: Ozonic Appearance: Colourless liquid Longevity: Lasts > 600 hours o...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "global_ifra_standard_needed",
+        "currentIfraCategory": "sourceUnavailable",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 22,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-geosmin-1-tec-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Geosmin 1% TEC",
+        "sourceIdentityName": "Geosmin",
+        "formulaMaterialNames": [
+          "Geosmin 1% TEC"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/geosmin",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/geosmin-1-tec-product-page-https-fraterworks-com-products-geosmin.html",
+        "category": "4",
+        "candidateValue": "No restriction",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "areful overdose gives interesting effects. Geosmin is a radiant and adds power and diffusion to any fragrance. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Odour Family: Earthy Appearance: Colourless liquid Longevity: Lasts > 70 hours o...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "global_ifra_standard_needed",
+        "currentIfraCategory": "sourceUnavailable",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 22,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Methyl Ionone Alpha Extra",
+        "sourceIdentityName": "Methyl Ionone Alpha Extra",
+        "formulaMaterialNames": [
+          "Methyl Ionone Alpha Extra"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra.html",
+        "category": "4",
+        "candidateValue": "30",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 30,
+        "sourceSnippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Longevity: Lasts > 124 hou...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "global_ifra_standard_needed",
+        "currentIfraCategory": "sourceUnavailable",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 22,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-celestafleur-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Celestafleur",
+        "sourceIdentityName": "Celestafleur",
+        "formulaMaterialNames": [
+          "Celestafleur"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/celestafleur",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/celestafleur-product-page-https-fraterworks-com-products-celestafleur.html",
+        "category": "4",
+        "candidateValue": "9.4",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 9.4,
+        "sourceSnippet": "ith Celestafleur ™, and herbal bases such as Suralette™ Extra and Artemal ™ are wonderful with it. Best Seller floral lyral mahonial no_reg IFRA 51: 9.4% in finished product (Cat. 4) Appearance: Colourless liquid Longevity: Lasts 240 hours on a smelling strip...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "currentIfraCategory": "supplierSdsNeeded",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 2,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "material still needs supplier-specific IFRA/SDS documentation",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-cetalox-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Cetalox",
+        "sourceIdentityName": "Cetalox",
+        "formulaMaterialNames": [
+          "Cetalox"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/cetalox",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/cetalox-product-page-https-fraterworks-com-products-cetalox.html",
+        "category": "4",
+        "candidateValue": "No restriction",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "currentIfraCategory": "supplierSdsNeeded",
+        "formulasUsedIn": [
+          "Damp Shoreline v2",
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 2,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "material still needs supplier-specific IFRA/SDS documentation",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-clearwood-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Clearwood",
+        "sourceIdentityName": "Clearwood",
+        "formulaMaterialNames": [
+          "Clearwood"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/clearwood",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/clearwood-product-page-https-fraterworks-com-products-clearwood.html",
+        "category": "4",
+        "candidateValue": "No restriction",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "Clearwood PRISMA range, launched by Firmenich in 2024. Contains 0.05% of Tocopherol as a preservative. Best Seller natural no_reg patchouli IFRA 51: No restriction for category 4 Odour Family: Woody Appearance: Colourless liquid Longevity: Lasts > 180 hours o...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "currentIfraCategory": "supplierSdsNeeded",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 2,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "supplier/product-page-only source needs human review before any runtime use",
+          "material still needs supplier-specific IFRA/SDS documentation",
+          "snippet may include marketing, GHS, RIFM, or navigation noise"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-timbersilk-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Timbersilk",
+        "sourceIdentityName": "Timbersilk",
+        "formulaMaterialNames": [
+          "Timbersilk"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/timbersilk",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-fraterworks-com-products-timbersilk.html",
+        "category": "",
+        "candidateValue": "20",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 20,
+        "sourceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived from calculated conce...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "currentIfraCategory": "supplierSdsNeeded",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": -10,
+        "confidenceLabel": "low",
+        "classification": "needs_better_source",
+        "why": [
+          "category value is parseable or explicitly no restriction",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "Cat 4 / fine-fragrance context is not explicit",
+          "supplier/product-page-only source needs human review before any runtime use",
+          "material still needs supplier-specific IFRA/SDS documentation"
+        ],
+        "recommendedAction": "Acquire or review a stronger official IFRA standard or supplier IFRA/SDS before promotion.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      }
+    ],
+    "do_not_promote_yet": [],
+    "already_promoted": [
+      {
+        "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
+        "materialName": "Vetiveryl Acetate",
+        "sourceIdentityName": "Vetiveryl Acetate",
+        "formulaMaterialNames": [
+          "Vetiveryl Acetate"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_pdf",
+        "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+        "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
+        "category": "4",
+        "candidateValue": "0.9",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 0.9,
+        "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+        "officialStandardTitle": "Acetylated Vetiver oil",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "queuePriority": "high",
+        "requiredSourceType": "global_ifra_standard_needed",
+        "currentIfraCategory": "sourceUnavailable",
+        "formulasUsedIn": [
+          "Damp Shoreline v1"
+        ],
+        "promotionStatus": "promoted",
+        "reviewedSourceRecordIds": [],
+        "score": 0,
+        "confidenceLabel": "low",
+        "classification": "already_promoted",
+        "why": [
+          "official IFRA source candidate",
+          "official IFRA PDF/source file present",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "high-priority hero IFRA queue item",
+          "autopilot confidence is high",
+          "record has already been promoted into runtime structured overlay"
+        ],
+        "risk": [
+          "No major ranking risk detected, but source review is still required."
+        ],
+        "recommendedAction": "No action. This record is already represented in the reviewed runtime overlay.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      }
+    ],
+    "special_case_only": [
+      {
+        "proposedRecordId": "proposed-ifra-bergamot-eo-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Bergamot EO FCF",
+        "sourceIdentityName": "Bergamot EO FCF",
+        "formulaMaterialNames": [
+          "Bergamot EO FCF"
+        ],
+        "recordType": "phototoxic_note",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/bergamot-oil-fcf",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf.html",
+        "category": "",
+        "candidateValue": "",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "ily: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Bright, fruity-sweet citrus without phototoxic components. Uses: Essential in skin-safe fine fragrance formulations, especially for citruses, colognes, fou...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+        "queuePriority": "medium",
+        "requiredSourceType": "fcf_special_case",
+        "currentIfraCategory": "fcfSpecialCase",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "reviewed_ok",
+        "reviewedSourceRecordIds": [],
+        "score": -18,
+        "confidenceLabel": "low",
+        "classification": "special_case_only",
+        "why": [
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "candidate category value is not parseable",
+          "supplier/product-page-only source needs human review before any runtime use",
+          "snippet may include marketing, GHS, RIFM, or navigation noise",
+          "special-case evidence is not a regular category-limit promotion"
+        ],
+        "recommendedAction": "Keep as non-limit evidence or special-case support; do not promote as a regular Cat 4 IFRA limit.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-lemon-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
+        "materialName": "Lemon FCF",
+        "sourceIdentityName": "Lemon FCF",
+        "formulaMaterialNames": [
+          "Lemon FCF"
+        ],
+        "recordType": "phototoxic_note",
+        "sourceType": "supplier_product_page",
+        "sourceUrl": "https://fraterworks.com/products/lemon-oil-fcf",
+        "sourceFile": "downloads/source_documents/ifra/product_pages/lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf.html",
+        "category": "",
+        "candidateValue": "",
+        "candidateUnit": "",
+        "normalizedCandidateValue": null,
+        "sourceSnippet": "e with a heavy hand. Seriously high-quality stuff.” Sean Lemon “Superior” Oil, FCF Customer 🍊Citrus Suite | Essential Oils CAS: 84929-31-7 Synonyms: Lemon Oil Sfumatrice Variety: Citrus limon, (L) BURM. f. Classification: Top Note [i] First we brought you su...",
+        "officialCandidateId": "",
+        "officialStandardTitle": "",
+        "officialMatchType": "",
+        "officialMatchConfidence": "",
+        "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case",
+        "queuePriority": "medium",
+        "requiredSourceType": "fcf_special_case",
+        "currentIfraCategory": "fcfSpecialCase",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "promotionStatus": "reviewed_ok",
+        "reviewedSourceRecordIds": [
+          "reviewed-ifra-source-lemon-fcf-fcf-phototoxic-note-furocoumarin-free-or-bergapten-free-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source"
+        ],
+        "score": -40,
+        "confidenceLabel": "low",
+        "classification": "special_case_only",
+        "why": [
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "candidate category value is not parseable",
+          "Cat 4 / fine-fragrance context is not explicit",
+          "supplier/product-page-only source needs human review before any runtime use",
+          "special-case evidence is not a regular category-limit promotion"
+        ],
+        "recommendedAction": "Keep as non-limit evidence or special-case support; do not promote as a regular Cat 4 IFRA limit.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      }
+    ]
+  }
+}

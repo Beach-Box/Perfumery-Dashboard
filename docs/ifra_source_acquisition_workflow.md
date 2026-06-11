@@ -502,3 +502,25 @@ Promotion layers:
 Official IFRA records are preferred over supplier/product-page candidates for runtime structured promotion. Supplier-only records should stay in review until a separate promotion workflow is designed for that source type.
 
 Promoted runtime records still do not prove launch clearance. Complete structured coverage, supplier IFRA/SDS review where needed, finished-product context, and final compliance review remain separate requirements.
+
+## IFRA Promotion Opportunity Ranking
+
+To rank the remaining proposed structured IFRA records before choosing the next one-record promotion:
+
+```bash
+node scripts/rank_ifra_promotion_opportunities.mjs
+node scripts/rank_ifra_promotion_opportunities.mjs --markdown --write docs/ifra/ifra_promotion_opportunities.md
+```
+
+The ranker compares proposed records against official IFRA candidates, reviewed runtime overlays, source queue status, cached source files, and autopilot recommendations. It classifies records as:
+
+- `promote_next`: strongest official/source-backed candidate after final human review.
+- `good_candidate_after_review`: plausible source-backed record, but not the immediate safest promotion.
+- `needs_better_source`: useful evidence exists, but source quality, supplier specificity, or identity confidence is not strong enough.
+- `do_not_promote_yet`: source identity or limit context is too risky for runtime data.
+- `already_promoted`: already represented in the reviewed structured runtime overlay.
+- `special_case_only`: non-limit evidence such as FCF/phototoxic support; do not promote as a regular Cat 4 limit.
+
+Promotion commands are shown only for `promote_next` items and must still be run manually. The ranker does not promote records, does not add runtime IFRA limits, and does not claim launch clearance.
+
+Official IFRA Standards Library/PDF sources are preferred over supplier product-page evidence. Supplier-only candidates can help decide what to request or review next, but they should not be treated as equivalent to reviewed official structured data.
