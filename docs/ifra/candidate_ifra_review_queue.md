@@ -1,6 +1,6 @@
 # Candidate IFRA Review Queue
 
-Generated: 2026-06-11T13:17:29.541Z
+Generated: 2026-06-11T13:35:46.094Z
 
 This queue organizes candidate snippets for human review only. Accepted candidates are not runtime IFRA data, do not add IFRA limits, and do not prove launch clearance.
 
