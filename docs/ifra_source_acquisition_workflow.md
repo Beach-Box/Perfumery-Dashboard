@@ -108,6 +108,17 @@ The candidate extractor scans cached HTML/text pages for review snippets mention
 
 Candidate values from product pages are not runtime IFRA standards. A report entry like “Candidate IFRA value found on supplier product page” means the value requires source review before any later structured IFRA promotion.
 
+The extractor is review triage, not compliance logic. It now prioritizes:
+
+- high-priority IFRA/product candidates, such as Cat 4/fine-fragrance values and supplier product-page IFRA language,
+- phototoxic/FCF candidates,
+- SDS, allergen, and restriction candidates,
+- identity-only references.
+
+High-priority candidates should be reviewed before identity-only references. Identity-reference pages, including Good Scents-style pages, are useful for CAS/name/source targeting but are not compliance evidence. Generic navigation, supplier-directory prose, social links, and broad unknown snippets from identity references are suppressed or demoted so they do not create review spam.
+
+Candidate extraction does not update `src/data/ifra_master_standards.json`, runtime IFRA aliases, formula IFRA classification, or launch-readiness state.
+
 ## Inventory Acquired Documents
 
 After placing documents in the local folder, run:

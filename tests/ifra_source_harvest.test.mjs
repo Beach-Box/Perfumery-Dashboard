@@ -202,10 +202,63 @@ test("download mode caches source content and metadata using a supplied fetch im
   const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
 
   assert.equal(link.downloadStatus, "downloaded");
+  assert.equal(downloaded.metadata.mode, "download");
+  assert.equal(downloaded.summary.downloadAttemptCount, 1);
+  assert.equal(downloaded.summary.downloadSuccessCount, 1);
+  assert.equal(downloaded.summary.downloadFetchedCount, 1);
+  assert.equal(downloaded.summary.downloadFailureCount, 0);
+  assert.equal(downloaded.summary.downloadedByType[link.sourceType], 1);
+  assert.deepEqual(downloaded.summary.downloadFailures, []);
   assert.equal(metadata.sourceUrl, link.sourceUrl);
   assert.equal(metadata.httpStatus, 200);
   assert.equal(metadata.sourceType, link.sourceType);
   assert.ok(metadata.localPath);
+});
+
+test("download mode records individual failures without failing the whole report", async () => {
+  const tempDir = makeTempDir();
+  const report = {
+    metadata: { mode: "download" },
+    summary: { duplicateUrlCount: 2 },
+    sourceLinks: [
+      {
+        sourceUrl: "https://supplier.test/missing.pdf",
+        sourceType: "supplier_sds",
+        materialNames: ["Aldehyde C-8"],
+        ingredients: ["Aldehyde C-8"],
+        suppliers: ["Synthetic Supplier"],
+        queueItemIds: ["hero-ifra-source-octanal-aldehyde-c-8-global_ifra_standard_needed"],
+      },
+    ],
+  };
+  const fakeFetch = async () => ({
+    ok: false,
+    status: 404,
+    headers: { get: () => "text/html" },
+    arrayBuffer: async () => Buffer.from("not found").buffer,
+  });
+
+  const downloaded = await downloadHarvestSources({
+    report,
+    fetchImpl: fakeFetch,
+    rateLimitMs: 0,
+    root: tempDir,
+    sourceDir: path.join(tempDir, "source_documents", "ifra"),
+  });
+
+  assert.equal(downloaded.sourceLinks[0].downloadStatus, "failed");
+  assert.equal(downloaded.summary.downloadAttemptCount, 1);
+  assert.equal(downloaded.summary.downloadSuccessCount, 0);
+  assert.equal(downloaded.summary.downloadFailureCount, 1);
+  assert.equal(downloaded.summary.downloadSkippedDuplicateCount, 2);
+  assert.deepEqual(downloaded.summary.downloadFailures[0], {
+    sourceUrl: "https://supplier.test/missing.pdf",
+    materialName: "Aldehyde C-8",
+    sourceType: "supplier_sds",
+    reason: "HTTP 404",
+    httpStatus: 404,
+    notes: [],
+  });
 });
 
 test("candidate extractor finds product-page Cat 4 snippets as review candidates only", () => {
@@ -251,12 +304,268 @@ test("candidate extractor finds product-page Cat 4 snippets as review candidates
   assert.equal(cat4.sourceType, "supplier_product_page");
   assert.equal(cat4.category, "4");
   assert.equal(cat4.candidateValue, "2.5");
+  assert.equal(cat4.reviewPriority, "high");
   assert.equal(cat4.reviewStatus, "needs_review");
   assert.deepEqual(cat4.queueItemIds, [
     "hero-ifra-source-octanal-aldehyde-c-8-global_ifra_standard_needed",
   ]);
   assert.match(markdown, /review only/);
   assert.doesNotMatch(markdown, /runtime IFRA data updated/i);
+});
+
+test("candidate extractor prefers explicit IFRA finished-product value over average-use text", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "product_pages", "cashmeran.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    "<html><body>IFRA 51: 3.8% in finished product (Cat. 4) Average Use: 0.33% in a perfume compound.</body></html>"
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://supplier.test/cashmeran",
+        materialName: "Cashmeran",
+        materialNames: ["Cashmeran"],
+        queueItemIds: ["hero-ifra-source-cashmeran-already_structured"],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "product_page",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+  const cat4 = report.candidates.find(
+    (candidate) => candidate.candidateLimitType === "ifra_category_limit"
+  );
+
+  assert.ok(cat4);
+  assert.equal(cat4.category, "4");
+  assert.equal(cat4.candidateValue, "3.8");
+  assert.equal(cat4.reviewPriority, "high");
+});
+
+test("candidate extractor suppresses identity-reference navigation noise", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "from_csv", "goodscents-octanal.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    [
+      "<html><body>",
+      "Twitter Instagram Linkedin Pinterest Upcoming Events Blog Navigating IFRA Limits.",
+      "neutral filler ".repeat(50),
+      "Products List: Octanal. Name: octanal CAS Number: 124-13-0 Synonyms: Aldehyde C-8.",
+      "neutral filler ".repeat(50),
+      "Supplier directory: Example Co SDS More SDS Product(s) View full details Customer Reviews.",
+      "Footer Search Demo Formulas Shipping Policy Privacy Policy.",
+      "</body></html>",
+    ].join(" ")
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://www.thegoodscentscompany.test/octanal",
+        materialName: "Aldehyde C-8",
+        materialNames: ["Aldehyde C-8"],
+        queueItemIds: [],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "identity_reference",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+
+  assert.equal(report.summary.candidateTypeCounts.unknown || 0, 0);
+  assert.ok(report.summary.suppressedSnippetCount > 0);
+  assert.ok(report.candidates.some((candidate) => candidate.candidateLimitType === "identity"));
+  assert.ok(report.candidates.every((candidate) => candidate.reviewPriority === "low"));
+});
+
+test("candidate extractor retains phototoxic and FCF snippets as high-priority review candidates", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "product_pages", "bergamot.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    "<html><body>Bergamot FCF material. Phototoxic furocoumarin and bergapten-free status should be reviewed.</body></html>"
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://supplier.test/bergamot-fcf",
+        materialName: "Bergamot FCF",
+        materialNames: ["Bergamot FCF"],
+        queueItemIds: ["hero-ifra-source-bergamot-fcf-fcf_special_case"],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "product_page",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+  const phototoxic = report.candidates.find(
+    (candidate) => candidate.candidateLimitType === "phototoxic_note"
+  );
+
+  assert.ok(phototoxic);
+  assert.equal(phototoxic.reviewPriority, "high");
+  assert.equal(report.summary.reviewPriorityCounts.high, 1);
+});
+
+test("candidate extractor does not treat GHS Category 4 hazards as IFRA Cat 4 limits", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "from_csv", "ghs-category.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    "<html><body>GHS Classification Flammable liquids (Category 4), H227. Skin irritation (Category 2), H315.</body></html>"
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://identity.test/ghs",
+        materialName: "Birch Tar Oil Rectified",
+        materialNames: ["Birch Tar Oil Rectified"],
+        queueItemIds: [],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "identity_reference",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+
+  assert.equal(report.summary.candidateTypeCounts.ifra_category_limit || 0, 0);
+  assert.equal(report.summary.reviewPriorityCounts.high || 0, 0);
+});
+
+test("candidate extractor does not treat RIFM usage recommendations as IFRA Cat 4 limits", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "from_csv", "rifm-usage.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    "<html><body>RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Recommendation for octanol usage levels up to: 2.0000 % in the fragrance concentrate.</body></html>"
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://identity.test/rifm",
+        materialName: "Alcohol C8 (Octanol)",
+        materialNames: ["Alcohol C8 (Octanol)"],
+        queueItemIds: [],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "identity_reference",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+
+  assert.equal(report.summary.candidateTypeCounts.ifra_category_limit || 0, 0);
+  assert.ok(
+    report.candidates.some(
+      (candidate) => candidate.candidateLimitType === "allergen_or_restriction"
+    )
+  );
+});
+
+test("candidate extractor safely links candidates to queue items by exact material terms", () => {
+  const tempDir = makeTempDir();
+  const htmlPath = path.join(tempDir, "product_pages", "seaweed.html");
+  fs.mkdirSync(path.dirname(htmlPath), { recursive: true });
+  fs.writeFileSync(
+    htmlPath,
+    "<html><body>Seaweed Absolute CAS identity and SDS available. Supplier page requires review.</body></html>"
+  );
+  fs.writeFileSync(
+    `${htmlPath}.metadata.json`,
+    `${JSON.stringify(
+      {
+        sourceUrl: "https://supplier.test/seaweed",
+        materialName: "Seaweed Absolute 10%",
+        materialNames: ["Seaweed Absolute 10%"],
+        queueItemIds: [],
+        httpStatus: 200,
+        contentType: "text/html",
+        localPath: htmlPath,
+        sourceType: "product_page",
+      },
+      null,
+      2
+    )}\n`
+  );
+
+  const report = buildCandidateIfraSourceExtractions({
+    sourceDir: tempDir,
+    generatedAt: "2026-06-11T02:00:00.000Z",
+    root: tempDir,
+    queue: buildQueue(),
+    harvestReport: null,
+  });
+  const linked = report.candidates.find((candidate) => candidate.queueItemIds.length);
+
+  assert.ok(linked);
+  assert.equal(linked.queueItemIds[0], "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed");
+  assert.equal(linked.queueLinkConfidence, "material_exact");
+  assert.equal(report.summary.linkedCandidateCount, report.candidates.length);
 });
 
 test("harvest and extraction helpers do not mutate queue status or runtime IFRA data", () => {
