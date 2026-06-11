@@ -27,7 +27,7 @@ export const DEFAULT_BEACH_BOX_PATTERN_TRANSLATION_MARKDOWN_PATH = path.join(
   "beach_box_pattern_translation.md"
 );
 
-const ACTIVE_HERO_NAMES = [
+export const ACTIVE_HERO_NAMES = [
   "Random Concoction - Original",
   "Skin-Air Bridge",
   "Damp Shoreline v1",
@@ -57,7 +57,7 @@ const GENERIC_CONTAINS_TERMS = [
   "spice",
 ];
 
-const PATTERN_DEFINITIONS = [
+export const PATTERN_DEFINITIONS = [
   {
     id: "airy_diffusion_architecture",
     patternName: "Airy Diffusion Architecture",

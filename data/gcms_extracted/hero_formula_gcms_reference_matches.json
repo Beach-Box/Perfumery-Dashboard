@@ -1,0 +1,2102 @@
+{
+  "generatedAt": "2026-06-11T11:38:27.580Z",
+  "sourceStructuredCandidatesPath": "data/gcms_extracted/gcms_structured_candidates.json",
+  "sourceConstructionPatternsPath": "data/gcms_extracted/gcms_construction_patterns.json",
+  "sourceBeachBoxTranslationPath": "data/gcms_extracted/beach_box_pattern_translation.json",
+  "activeHeroFormulaCount": 4,
+  "gcmsReferenceCount": 124,
+  "trueComponentRowCount": 15871,
+  "guardrails": [
+    "GCMS reference matching is pattern guidance, not formula reconstruction.",
+    "Use matches to inform original Beach Box design decisions and controlled testing.",
+    "Do not copy commercial formulas, exact GCMS percentages, or reference material breadth.",
+    "This report does not change active formulas, IFRA logic, pricing, accord recipes, sensory data, candidate statuses, UI, or AI behavior."
+  ],
+  "formulas": [
+    {
+      "formulaName": "Random Concoction - Original",
+      "formulaKey": "seed-hero-random-concoction-original",
+      "closestReferenceConstructionFamilies": [
+        {
+          "patternName": "Marine / Mineral Architecture",
+          "representedBy": [
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Helional",
+            "Oceanol",
+            "Calone 1951"
+          ]
+        },
+        {
+          "patternName": "Airy Diffusion Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Hedione"
+          ]
+        },
+        {
+          "patternName": "Skin Musk / Soft Base Architecture",
+          "representedBy": [
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ]
+        },
+        {
+          "patternName": "Woody Amber / Driftwood Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Driftwood Accord",
+            "Vetiveryl Acetate"
+          ]
+        }
+      ],
+      "referenceResemblance": "Most references overlap through Airy Diffusion Architecture, Skin Musk / Soft Base Architecture, Woody Amber / Driftwood Architecture.",
+      "sharedMaterials": [
+        "Aldehyde C-8",
+        "Ambrettolide",
+        "Ambroxan Crystals",
+        "Calone 1951",
+        "Cashmeran",
+        "Cyclamen Aldehyde",
+        "Dihydromyrcenol",
+        "Ethylene Brassylate",
+        "Habanolide",
+        "Hedione",
+        "Helional",
+        "Iso E Super",
+        "Helvetolide",
+        "Muscenone",
+        "Ethyl Vanillin"
+      ],
+      "sharedArchitecturePatterns": [
+        "Airy Diffusion Architecture",
+        "Skin Musk / Soft Base Architecture",
+        "Woody Amber / Driftwood Architecture",
+        "Marine / Mineral Architecture",
+        "Citrus / Terpene Lift",
+        "Floral Transparency / Heart Bridge",
+        "Dark / Dirty / Realism Modifiers"
+      ],
+      "beachBoxDivergence": "Uses proven modern woody/musk diffusion as a frame, then bends it toward salted skin, mineral air, and driftwood.",
+      "whatThisSuggests": "Treat the GCMS corpus as evidence for construction roles, then test the Beach Box formula on skin before changing dosage or materials.",
+      "whatNotToCopy": "Do not copy exact GCMS percentages, commercial material breadth, or reference-style citrus/musk bulk blindly.",
+      "potentialUsefulMove": "Validate whether the marine/mineral heart feels skinlike and coastal before adding more marine force.",
+      "riskCaveat": "Marine/mineral materials can become loud, metallic, or generic before they become more realistic.",
+      "worthConsideringLater": [
+        {
+          "material": "Phenylethyl Alcohol",
+          "reason": "Worth reviewing later for skin-warmed floral body if wear tests need more humid heart volume."
+        },
+        {
+          "material": "Vanillin",
+          "reason": "Only consider if drydown needs warmth; avoid if it turns the coastal skin direction gourmand."
+        },
+        {
+          "material": "Limonene",
+          "reason": "Only useful as citrus lift if the opening needs sparkle; citrus oils may already cover part of this role."
+        }
+      ],
+      "topReferenceMatches": [
+        {
+          "referenceId": "dior-higher-2001-gcms",
+          "referenceFragrance": "Higher",
+          "brand": "Dior",
+          "releaseYear": 2001,
+          "perfumer": "Olivier Gillotin and Olivier Pescheux",
+          "displayName": "Dior Higher (2001)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Calone 1951",
+            "Cashmeran",
+            "Cyclamen Aldehyde",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helional",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 12,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 3,
+            "signalSummary": "12 shared material identities; 7 shared construction families; 2 high-dose overlaps; 3 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "creed-original-santal-2005-gcms",
+          "referenceFragrance": "Original Santal",
+          "brand": "Creed",
+          "releaseYear": 2005,
+          "perfumer": "Pierre Bourdon",
+          "displayName": "Creed Original Santal (2005)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Hedione",
+            "Helional",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 10,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-balade-sauvage-2018-gcms",
+          "referenceFragrance": "Balade Sauvage",
+          "brand": "Dior",
+          "releaseYear": 2018,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Balade Sauvage (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helional",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+          "referenceFragrance": "Crépuscule des Âmes",
+          "brand": "Atelier des Ors",
+          "releaseYear": 2018,
+          "perfumer": "Undisclosed",
+          "displayName": "Atelier des Ors Crépuscule des Âmes (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helional",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "carolina-herrera-212-vip-2010-gcms",
+          "referenceFragrance": "212 VIP",
+          "brand": "Carolina Herrera",
+          "releaseYear": 2010,
+          "perfumer": "Lucas Sieuzac",
+          "displayName": "Carolina Herrera 212 VIP (2010)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helional",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 9,
+            "sharedRelatedIdentityGroupCount": 8,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "9 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "clive-christian-blonde-amber-2022-gcms",
+          "referenceFragrance": "Blonde Amber",
+          "brand": "Clive Christian",
+          "releaseYear": 2022,
+          "perfumer": "Vincent Ricord",
+          "displayName": "Clive Christian Blonde Amber (2022)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Vanillin",
+            "Ethylene Brassylate",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "Beach Box pushes the structure more toward marine/mineral shoreline texture than this reference.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 9,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 6,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "9 shared material identities; 6 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-gris-dior-2017-gcms",
+          "referenceFragrance": "Gris Dior",
+          "brand": "Dior",
+          "releaseYear": 2017,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Gris Dior (2017)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helional",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 9,
+            "sharedRelatedIdentityGroupCount": 8,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "9 shared material identities; 7 shared construction families; 2 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "hermes-un-jardin-sur-le-nil-2005-gcms",
+          "referenceFragrance": "Un Jardin sur le Nil",
+          "brand": "Hermes",
+          "releaseYear": 2005,
+          "perfumer": "Jean-Claude Ellena",
+          "displayName": "Hermes Un Jardin sur le Nil (2005)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Helional",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "hedione_jasmine_diffusion"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 8,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "8 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns; 1 related identity-group overlaps"
+          }
+        }
+      ]
+    },
+    {
+      "formulaName": "Skin-Air Bridge",
+      "formulaKey": "seed-hero-skin-air-bridge",
+      "closestReferenceConstructionFamilies": [
+        {
+          "patternName": "Airy Diffusion Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Driftwood Accord"
+          ]
+        },
+        {
+          "patternName": "Marine / Mineral Architecture",
+          "representedBy": [
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Helional®",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Oceanol",
+            "Calone 1951"
+          ]
+        },
+        {
+          "patternName": "Skin Musk / Soft Base Architecture",
+          "representedBy": [
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ]
+        },
+        {
+          "patternName": "Floral Transparency / Heart Bridge",
+          "representedBy": [
+            "Hedione",
+            "Hedione® High Cis",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete",
+            "Phenyl Ethyl Acetate"
+          ]
+        }
+      ],
+      "referenceResemblance": "Most references overlap through Airy Diffusion Architecture, Skin Musk / Soft Base Architecture, Woody Amber / Driftwood Architecture.",
+      "sharedMaterials": [
+        "Aldehyde C-8",
+        "Ambrettolide",
+        "Ambroxan Crystals",
+        "Calone 1951",
+        "Cashmeran",
+        "Cyclamen Aldehyde",
+        "Dihydromyrcenol",
+        "Ethylene Brassylate",
+        "Habanolide",
+        "Hedione",
+        "Hedione® High Cis",
+        "Iso E Super",
+        "Florol",
+        "Helvetolide",
+        "Muscenone",
+        "Veramoss"
+      ],
+      "sharedArchitecturePatterns": [
+        "Airy Diffusion Architecture",
+        "Skin Musk / Soft Base Architecture",
+        "Woody Amber / Driftwood Architecture",
+        "Marine / Mineral Architecture",
+        "Citrus / Terpene Lift",
+        "Floral Transparency / Heart Bridge",
+        "Dark / Dirty / Realism Modifiers"
+      ],
+      "beachBoxDivergence": "Uses proven modern woody/musk diffusion as a frame, then bends it toward salted skin, mineral air, and driftwood.",
+      "whatThisSuggests": "Treat the GCMS corpus as evidence for construction roles, then test the Beach Box formula on skin before changing dosage or materials.",
+      "whatNotToCopy": "Do not copy exact GCMS percentages, commercial material breadth, or reference-style citrus/musk bulk blindly.",
+      "potentialUsefulMove": "Validate whether the marine/mineral heart feels skinlike and coastal before adding more marine force.",
+      "riskCaveat": "Marine/mineral materials can become loud, metallic, or generic before they become more realistic.",
+      "worthConsideringLater": [
+        {
+          "material": "Phenylethyl Alcohol",
+          "reason": "Worth reviewing later for skin-warmed floral body if wear tests need more humid heart volume."
+        },
+        {
+          "material": "Vanillin",
+          "reason": "Only consider if drydown needs warmth; avoid if it turns the coastal skin direction gourmand."
+        },
+        {
+          "material": "Limonene",
+          "reason": "Only useful as citrus lift if the opening needs sparkle; citrus oils may already cover part of this role."
+        }
+      ],
+      "topReferenceMatches": [
+        {
+          "referenceId": "dior-higher-2001-gcms",
+          "referenceFragrance": "Higher",
+          "brand": "Dior",
+          "releaseYear": 2001,
+          "perfumer": "Olivier Gillotin and Olivier Pescheux",
+          "displayName": "Dior Higher (2001)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Calone 1951",
+            "Cashmeran",
+            "Cyclamen Aldehyde",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 12,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 3,
+            "signalSummary": "12 shared material identities; 7 shared construction families; 2 high-dose overlaps; 3 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+          "referenceFragrance": "Crépuscule des Âmes",
+          "brand": "Atelier des Ors",
+          "releaseYear": 2018,
+          "perfumer": "Undisclosed",
+          "displayName": "Atelier des Ors Crépuscule des Âmes (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 3 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "clive-christian-blonde-amber-2022-gcms",
+          "referenceFragrance": "Blonde Amber",
+          "brand": "Clive Christian",
+          "releaseYear": 2022,
+          "perfumer": "Vincent Ricord",
+          "displayName": "Clive Christian Blonde Amber (2022)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Vanillin",
+            "Ethylene Brassylate",
+            "Florol",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "Beach Box pushes the structure more toward marine/mineral shoreline texture than this reference.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 6,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 6 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-balade-sauvage-2018-gcms",
+          "referenceFragrance": "Balade Sauvage",
+          "brand": "Dior",
+          "releaseYear": 2018,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Balade Sauvage (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 10,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "nishane-nefs-2019-gcms",
+          "referenceFragrance": "Nefs",
+          "brand": "Nishane",
+          "releaseYear": 2019,
+          "perfumer": "Chris Maurice",
+          "displayName": "Nishane Nefs (2019)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Florol",
+            "Gamma Nonalactone",
+            "Habanolide",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 8,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-gris-dior-2017-gcms",
+          "referenceFragrance": "Gris Dior",
+          "brand": "Dior",
+          "releaseYear": 2017,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Gris Dior (2017)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 10,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "creed-original-santal-2005-gcms",
+          "referenceFragrance": "Original Santal",
+          "brand": "Creed",
+          "releaseYear": 2005,
+          "perfumer": "Pierre Bourdon",
+          "displayName": "Creed Original Santal (2005)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 9,
+            "sharedRelatedIdentityGroupCount": 10,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "9 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns; 1 related identity-group overlaps"
+          }
+        },
+        {
+          "referenceId": "amouage-homage-attar-2008-gcms",
+          "referenceFragrance": "Homage Attar",
+          "brand": "Amouage",
+          "releaseYear": 2008,
+          "perfumer": "Undisclosed",
+          "displayName": "Amouage Homage Attar (2008)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "Beach Box pushes the structure more toward marine/mineral shoreline texture than this reference.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 6,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 6 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        }
+      ]
+    },
+    {
+      "formulaName": "Damp Shoreline v1",
+      "formulaKey": "seed-hero-damp-shoreline-v1",
+      "closestReferenceConstructionFamilies": [
+        {
+          "patternName": "Airy Diffusion Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Ambrettolide",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Driftwood Accord"
+          ]
+        },
+        {
+          "patternName": "Marine / Mineral Architecture",
+          "representedBy": [
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Helional®",
+            "Seaweed Absolute",
+            "Maritima",
+            "Algenone",
+            "Oceanol",
+            "Calone 1951"
+          ]
+        },
+        {
+          "patternName": "Skin Musk / Soft Base Architecture",
+          "representedBy": [
+            "Ambrettolide",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Muscenone"
+          ]
+        },
+        {
+          "patternName": "Floral Transparency / Heart Bridge",
+          "representedBy": [
+            "Hedione",
+            "Hedione® High Cis",
+            "Florol",
+            "Celestafleur",
+            "Ylang Ylang Complete",
+            "Phenyl Ethyl Acetate"
+          ]
+        }
+      ],
+      "referenceResemblance": "Most references overlap through Airy Diffusion Architecture, Skin Musk / Soft Base Architecture, Woody Amber / Driftwood Architecture.",
+      "sharedMaterials": [
+        "Aldehyde C-8",
+        "Ambrettolide",
+        "Ambroxan Crystals",
+        "Calone 1951",
+        "Caryophyllene Oxide",
+        "Cashmeran",
+        "Cyclamen Aldehyde",
+        "Dihydromyrcenol",
+        "Ethyl Linalool",
+        "Ethylene Brassylate",
+        "Habanolide",
+        "Hedione",
+        "Hedione® High Cis",
+        "Iso E Super",
+        "Florol",
+        "Helvetolide"
+      ],
+      "sharedArchitecturePatterns": [
+        "Airy Diffusion Architecture",
+        "Skin Musk / Soft Base Architecture",
+        "Woody Amber / Driftwood Architecture",
+        "Marine / Mineral Architecture",
+        "Citrus / Terpene Lift",
+        "Floral Transparency / Heart Bridge",
+        "Dark / Dirty / Realism Modifiers"
+      ],
+      "beachBoxDivergence": "Uses proven modern woody/musk diffusion as a frame, then bends it toward salted skin, mineral air, and driftwood.",
+      "whatThisSuggests": "Treat the GCMS corpus as evidence for construction roles, then test the Beach Box formula on skin before changing dosage or materials.",
+      "whatNotToCopy": "Do not copy exact GCMS percentages, commercial material breadth, or reference-style citrus/musk bulk blindly.",
+      "potentialUsefulMove": "Validate whether the marine/mineral heart feels skinlike and coastal before adding more marine force.",
+      "riskCaveat": "Marine/mineral materials can become loud, metallic, or generic before they become more realistic.",
+      "worthConsideringLater": [
+        {
+          "material": "Phenylethyl Alcohol",
+          "reason": "Worth reviewing later for skin-warmed floral body if wear tests need more humid heart volume."
+        },
+        {
+          "material": "Vanillin",
+          "reason": "Only consider if drydown needs warmth; avoid if it turns the coastal skin direction gourmand."
+        },
+        {
+          "material": "Limonene",
+          "reason": "Only useful as citrus lift if the opening needs sparkle; citrus oils may already cover part of this role."
+        }
+      ],
+      "topReferenceMatches": [
+        {
+          "referenceId": "dior-higher-2001-gcms",
+          "referenceFragrance": "Higher",
+          "brand": "Dior",
+          "releaseYear": 2001,
+          "perfumer": "Olivier Gillotin and Olivier Pescheux",
+          "displayName": "Dior Higher (2001)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Calone 1951",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Cyclamen Aldehyde",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 14,
+            "sharedRelatedIdentityGroupCount": 13,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 3,
+            "signalSummary": "14 shared material identities; 7 shared construction families; 2 high-dose overlaps; 3 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+          "referenceFragrance": "Crépuscule des Âmes",
+          "brand": "Atelier des Ors",
+          "releaseYear": 2018,
+          "perfumer": "Undisclosed",
+          "displayName": "Atelier des Ors Crépuscule des Âmes (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 12,
+            "sharedRelatedIdentityGroupCount": 12,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "12 shared material identities; 7 shared construction families; 3 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "clive-christian-blonde-amber-2022-gcms",
+          "referenceFragrance": "Blonde Amber",
+          "brand": "Clive Christian",
+          "releaseYear": 2022,
+          "perfumer": "Vincent Ricord",
+          "displayName": "Clive Christian Blonde Amber (2022)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Linalool",
+            "Ethyl Vanillin",
+            "Ethylene Brassylate",
+            "Florol",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "Beach Box pushes the structure more toward marine/mineral shoreline texture than this reference.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 12,
+            "sharedRelatedIdentityGroupCount": 12,
+            "sharedConstructionFamilyCount": 6,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "12 shared material identities; 6 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "carolina-herrera-212-vip-2010-gcms",
+          "referenceFragrance": "212 VIP",
+          "brand": "Carolina Herrera",
+          "releaseYear": 2010,
+          "perfumer": "Lucas Sieuzac",
+          "displayName": "Carolina Herrera 212 VIP (2010)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-balade-sauvage-2018-gcms",
+          "referenceFragrance": "Balade Sauvage",
+          "brand": "Dior",
+          "releaseYear": 2018,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Balade Sauvage (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "nishane-nefs-2019-gcms",
+          "referenceFragrance": "Nefs",
+          "brand": "Nishane",
+          "releaseYear": 2019,
+          "perfumer": "Chris Maurice",
+          "displayName": "Nishane Nefs (2019)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Florol",
+            "Gamma Nonalactone",
+            "Habanolide",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Ambroxan Crystals",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-gris-dior-2017-gcms",
+          "referenceFragrance": "Gris Dior",
+          "brand": "Dior",
+          "releaseYear": 2017,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Gris Dior (2017)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-rouge-trafalgar-2020-gcms",
+          "referenceFragrance": "Rouge Trafalgar",
+          "brand": "Dior",
+          "releaseYear": 2020,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Rouge Trafalgar (2020)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Allyl Amyl Glycolate",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Ethyl Linalool",
+            "Florol",
+            "Habanolide",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Iso E Super",
+            "Hedione",
+            "Ambroxan Crystals",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Iso E Super + Cashmeran",
+            "Ambroxan + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 10,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        }
+      ]
+    },
+    {
+      "formulaName": "Damp Shoreline v2",
+      "formulaKey": "seed-hero-damp-shoreline-v2",
+      "closestReferenceConstructionFamilies": [
+        {
+          "patternName": "Woody Amber / Driftwood Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Orbitone T Neo",
+            "Timbersilk",
+            "Clearwood",
+            "Cedarwood Virginia EO",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran"
+          ]
+        },
+        {
+          "patternName": "Airy Diffusion Architecture",
+          "representedBy": [
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Cetalox",
+            "Cashmeran",
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Ambrettolide",
+            "Hedione"
+          ]
+        },
+        {
+          "patternName": "Marine / Mineral Architecture",
+          "representedBy": [
+            "Cetalox",
+            "Helional®",
+            "Algenone",
+            "Maritima",
+            "Oceanol",
+            "Calone 1951",
+            "Seaweed Absolute",
+            "Allyl Amyl Glycolate"
+          ]
+        },
+        {
+          "patternName": "Skin Musk / Soft Base Architecture",
+          "representedBy": [
+            "Botanical Musk Accord",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Habanolide",
+            "Helvetolide",
+            "Ambrettolide",
+            "Muscenone"
+          ]
+        }
+      ],
+      "referenceResemblance": "Most references overlap through Airy Diffusion Architecture, Skin Musk / Soft Base Architecture, Woody Amber / Driftwood Architecture.",
+      "sharedMaterials": [
+        "Amber Xtreme",
+        "Ambrettolide",
+        "Ambroxan Crystals",
+        "Dihydromyrcenol",
+        "Ethyl Linalool",
+        "Ethylene Brassylate",
+        "Florol",
+        "Habanolide",
+        "Hedione",
+        "Helvetolide",
+        "Iso E Super",
+        "Muscenone",
+        "Veramoss",
+        "Aldehyde C-8",
+        "Calone 1951",
+        "Caryophyllene Oxide"
+      ],
+      "sharedArchitecturePatterns": [
+        "Airy Diffusion Architecture",
+        "Skin Musk / Soft Base Architecture",
+        "Woody Amber / Driftwood Architecture",
+        "Marine / Mineral Architecture",
+        "Citrus / Terpene Lift",
+        "Floral Transparency / Heart Bridge",
+        "Dark / Dirty / Realism Modifiers"
+      ],
+      "beachBoxDivergence": "Uses proven modern woody/musk diffusion as a frame, then bends it toward salted skin, mineral air, and driftwood.",
+      "whatThisSuggests": "Treat the GCMS corpus as evidence for construction roles, then test the Beach Box formula on skin before changing dosage or materials.",
+      "whatNotToCopy": "Do not copy exact GCMS percentages, commercial material breadth, or reference-style citrus/musk bulk blindly.",
+      "potentialUsefulMove": "Validate whether the marine/mineral heart feels skinlike and coastal before adding more marine force.",
+      "riskCaveat": "Marine/mineral materials can become loud, metallic, or generic before they become more realistic.",
+      "worthConsideringLater": [
+        {
+          "material": "Phenylethyl Alcohol",
+          "reason": "Worth reviewing later for skin-warmed floral body if wear tests need more humid heart volume."
+        },
+        {
+          "material": "Vanillin",
+          "reason": "Only consider if drydown needs warmth; avoid if it turns the coastal skin direction gourmand."
+        },
+        {
+          "material": "Limonene",
+          "reason": "Only useful as citrus lift if the opening needs sparkle; citrus oils may already cover part of this role."
+        }
+      ],
+      "topReferenceMatches": [
+        {
+          "referenceId": "atelier-des-ors-crepuscule-des-ames-2018-gcms",
+          "referenceFragrance": "Crépuscule des Âmes",
+          "brand": "Atelier des Ors",
+          "releaseYear": 2018,
+          "perfumer": "Undisclosed",
+          "displayName": "Atelier des Ors Crépuscule des Âmes (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Amber Xtreme",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 13,
+            "sharedRelatedIdentityGroupCount": 13,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "13 shared material identities; 7 shared construction families; 3 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-higher-2001-gcms",
+          "referenceFragrance": "Higher",
+          "brand": "Dior",
+          "releaseYear": 2001,
+          "perfumer": "Olivier Gillotin and Olivier Pescheux",
+          "displayName": "Dior Higher (2001)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Calone 1951",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 13,
+            "sharedRelatedIdentityGroupCount": 12,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "13 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "carolina-herrera-212-vip-2010-gcms",
+          "referenceFragrance": "212 VIP",
+          "brand": "Carolina Herrera",
+          "releaseYear": 2010,
+          "perfumer": "Lucas Sieuzac",
+          "displayName": "Carolina Herrera 212 VIP (2010)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-balade-sauvage-2018-gcms",
+          "referenceFragrance": "Balade Sauvage",
+          "brand": "Dior",
+          "releaseYear": 2018,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Balade Sauvage (2018)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "clive-christian-blonde-amber-2022-gcms",
+          "referenceFragrance": "Blonde Amber",
+          "brand": "Clive Christian",
+          "releaseYear": 2022,
+          "perfumer": "Vincent Ricord",
+          "displayName": "Clive Christian Blonde Amber (2022)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Aldehyde C-8",
+            "Ambroxan Crystals",
+            "Cashmeran",
+            "Ethyl Linalool",
+            "Ethylene Brassylate",
+            "Florol",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "Beach Box pushes the structure more toward marine/mineral shoreline texture than this reference.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 6,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "11 shared material identities; 6 shared construction families; 3 high-dose overlaps; 2 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "dior-gris-dior-2017-gcms",
+          "referenceFragrance": "Gris Dior",
+          "brand": "Dior",
+          "releaseYear": 2017,
+          "perfumer": "François Demachy",
+          "displayName": "Dior Gris Dior (2017)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Florol",
+            "Habanolide",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone",
+            "Veramoss"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 2 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "nishane-nefs-2019-gcms",
+          "referenceFragrance": "Nefs",
+          "brand": "Nishane",
+          "releaseYear": 2019,
+          "perfumer": "Chris Maurice",
+          "displayName": "Nishane Nefs (2019)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Amber Xtreme",
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Ethylene Brassylate",
+            "Exaltolide",
+            "Florol",
+            "Habanolide",
+            "Hedione® High Cis",
+            "Iso E Super"
+          ],
+          "sharedIdentityGroups": [],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super",
+            "Ambroxan Crystals",
+            "Hedione® High Cis"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 11,
+            "sharedRelatedIdentityGroupCount": 9,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 3,
+            "sharedCoOccurrencePatternCount": 1,
+            "signalSummary": "11 shared material identities; 7 shared construction families; 3 high-dose overlaps; 1 shared co-occurrence patterns"
+          }
+        },
+        {
+          "referenceId": "creed-original-santal-2005-gcms",
+          "referenceFragrance": "Original Santal",
+          "brand": "Creed",
+          "releaseYear": 2005,
+          "perfumer": "Pierre Bourdon",
+          "displayName": "Creed Original Santal (2005)",
+          "similarityLabel": "strong construction resemblance",
+          "sharedConstructionPatterns": [
+            "Airy Diffusion Architecture",
+            "Skin Musk / Soft Base Architecture",
+            "Woody Amber / Driftwood Architecture",
+            "Marine / Mineral Architecture",
+            "Citrus / Terpene Lift",
+            "Floral Transparency / Heart Bridge",
+            "Dark / Dirty / Realism Modifiers"
+          ],
+          "sharedMaterials": [
+            "Ambrettolide",
+            "Ambroxan Crystals",
+            "Caryophyllene Oxide",
+            "Cashmeran",
+            "Dihydromyrcenol",
+            "Ethylene Brassylate",
+            "Hedione",
+            "Helvetolide",
+            "Iso E Super",
+            "Muscenone"
+          ],
+          "sharedIdentityGroups": [
+            "helional"
+          ],
+          "sharedHighDoseSignals": [
+            "Hedione",
+            "Iso E Super"
+          ],
+          "sharedCoOccurrencePatterns": [
+            "Hedione + Iso E Super",
+            "Iso E Super + Cashmeran"
+          ],
+          "keyDifference": "The overlap is mostly woody/musk structure; Beach Box keeps the coastal skin and mineral story as the differentiator.",
+          "usefulLesson": "Use this as evidence that airy woody amber plus transparent floral/musk lift can carry trail without adding more aquatic force.",
+          "matchSignals": {
+            "sharedMaterialIdentityCount": 10,
+            "sharedRelatedIdentityGroupCount": 11,
+            "sharedConstructionFamilyCount": 7,
+            "sharedHighDoseSignalCount": 2,
+            "sharedCoOccurrencePatternCount": 2,
+            "signalSummary": "10 shared material identities; 7 shared construction families; 2 high-dose overlaps; 2 shared co-occurrence patterns; 1 related identity-group overlaps"
+          }
+        }
+      ]
+    }
+  ],
+  "crossFormulaLessons": [
+    {
+      "topic": "Best embodiment of proven modern construction patterns",
+      "formulaName": "Damp Shoreline v1",
+      "lesson": "This formula has the densest overlap with recurring airy diffusion, woody amber, musk, and transparency patterns; use wear tests to decide whether that strength feels like Beach Box rather than generic modern structure."
+    },
+    {
+      "topic": "Most differentiated construction read",
+      "formulaName": "Random Concoction - Original",
+      "lesson": "Lower direct reference resemblance can be valuable if the Beach Box coastal skin/marine/wood idea reads clearly in wear tests."
+    },
+    {
+      "topic": "Highest risk of overusing marine/mineral effects",
+      "formulaName": "Random Concoction - Original",
+      "lesson": "Treat marine/mineral overlap as a restraint signal: test realism and skin integration before increasing Calone/Oceanol/seaweed-style force."
+    },
+    {
+      "topic": "Strongest woody/musk architecture",
+      "formulaName": "Damp Shoreline v2",
+      "lesson": "The woody/musk base is the most commercially familiar architecture; use it as support, not as the whole identity."
+    },
+    {
+      "topic": "Most needs wear-test validation",
+      "formulaName": "Random Concoction - Original",
+      "lesson": "The model can compare construction patterns, but skin evolution, projection, and drydown appeal remain unproven without controlled testing."
+    }
+  ],
+  "corpusContext": {
+    "translationSectionCount": 7,
+    "inventoryGapsWorthConsidering": [
+      "Limonene",
+      "Phenylethyl Alcohol",
+      "Vanillin"
+    ]
+  }
+}

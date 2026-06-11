@@ -33,6 +33,8 @@ node scripts/analyze_gcms_construction_patterns.mjs
 node scripts/analyze_gcms_construction_patterns.mjs --markdown --write docs/gcms/gcms_construction_patterns.md
 node scripts/translate_gcms_patterns_to_beach_box.mjs
 node scripts/translate_gcms_patterns_to_beach_box.mjs --markdown --write docs/gcms/beach_box_pattern_translation.md
+node scripts/match_hero_formulas_to_gcms_references.mjs
+node scripts/match_hero_formulas_to_gcms_references.mjs --markdown --write docs/gcms/hero_formula_gcms_reference_matches.md
 ```
 
 ## Outputs
@@ -94,6 +96,20 @@ docs/gcms/beach_box_pattern_translation.md
 ```
 
 The translator converts corpus observations into Beach Box decision prompts such as airy diffusion architecture, skin musk/base structure, woody amber driftwood support, marine/mineral restraint, citrus lift, floral transparency, and dark realism modifiers. It is a pattern-translation tool, not a formula reconstruction tool: it does not output commercial formulas, does not copy GCMS percentages, and does not change active formulas, IFRA logic, pricing, accord recipes, sensory data, candidate statuses, UI, or AI behavior.
+
+`scripts/match_hero_formulas_to_gcms_references.mjs` compares each active Beach Box hero formula against the structured GCMS reference corpus and writes:
+
+```bash
+data/gcms_extracted/hero_formula_gcms_reference_matches.json
+```
+
+Markdown output can be written to:
+
+```bash
+docs/gcms/hero_formula_gcms_reference_matches.md
+```
+
+The matcher expands known accord components for analysis, then compares active hero formulas to GCMS references through explainable signals: material identity overlap, related identity groups, construction-family overlap, high-dose structural similarity, and co-occurrence pattern overlap. It reports closest reference construction families, top qualitative reference matches, Beach Box divergence, useful lessons, what not to copy, and high-value material gaps worth considering later. It does not reconstruct commercial formulas, does not recommend copying GCMS percentages, and does not mutate active formulas or runtime app behavior.
 
 GCMS material identity matching is handled with raw-name preservation. The analyzer keeps the raw GCMS material name, then adds normalized identity fields for reporting:
 
