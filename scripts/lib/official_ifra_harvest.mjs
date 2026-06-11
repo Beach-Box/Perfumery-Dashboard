@@ -157,6 +157,13 @@ function stripTags(value = "") {
     .trim();
 }
 
+function stripWrappingQuotes(value = "") {
+  return decodeHtmlEntities(String(value || ""))
+    .replace(/\\"/g, '"')
+    .replace(/^"+|"+$/g, "")
+    .trim();
+}
+
 function extractHref(value = "") {
   const match = String(value).match(/\bhref\s*=\s*["']([^"']+)["']/i);
   return match ? decodeHtmlEntities(match[1]).trim() : "";
@@ -250,11 +257,46 @@ function normalizeCasCell(value = "") {
   return extractCasTerms([value]);
 }
 
+function parseOfficialStandardsDataLayerRows(
+  html = "",
+  { sourceUrl = OFFICIAL_IFRA_STANDARDS_LIBRARY_URL } = {}
+) {
+  return [...String(html).matchAll(/<a\b[^>]*\bdata-layer\s*=\s*(["'])([\s\S]*?)\1[^>]*>/gi)]
+    .map((match) => {
+      const anchorHtml = match[0];
+      const decodedDataLayer = decodeHtmlEntities(match[2]);
+      let data = null;
+      try {
+        data = JSON.parse(decodedDataLayer);
+      } catch {
+        return null;
+      }
+      if (normalizeText(data?.document_type) !== "standards") return null;
+      const title = stripWrappingQuotes(data.document_name || "");
+      const cas = normalizeCasCell(data.cas_number || "");
+      const downloadUrl = resolveOfficialUrl(extractHref(anchorHtml), sourceUrl);
+      if (!title || !cas.length || !downloadUrl) return null;
+      return {
+        standardTitle: title,
+        cas,
+        standardType: typeLabel(data.type || ""),
+        amendment: String(data.amendment || "").trim(),
+        publicationDate: String(data.publication_date || "").trim(),
+        status: String(data.status || "").trim(),
+        sourceUrl,
+        downloadUrl,
+        sourceType: "official_ifra_standard_library",
+        sourceOrigin: "official_ifra_cached_page",
+      };
+    })
+    .filter(Boolean);
+}
+
 export function parseOfficialStandardsLibraryHtml(
   html = "",
   { sourceUrl = OFFICIAL_IFRA_STANDARDS_LIBRARY_URL } = {}
 ) {
-  const rows = [...String(html).matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]
+  const tableRows = [...String(html).matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]
     .map((match) => match[0])
     .map((rowHtml) => {
       const cells = rowCells(rowHtml);
@@ -264,7 +306,7 @@ export function parseOfficialStandardsLibraryHtml(
         return null;
       }
       const [casCell, titleCell, typeCell, publicationDateCell, amendmentCell, statusCell] = cells;
-      const title = String(titleCell || "").replace(/^"|"$/g, "").trim();
+      const title = stripWrappingQuotes(titleCell);
       const cas = normalizeCasCell(casCell);
       if (!title || !cas.length) return null;
       return {
@@ -281,6 +323,8 @@ export function parseOfficialStandardsLibraryHtml(
       };
     })
     .filter(Boolean);
+  const dataLayerRows = parseOfficialStandardsDataLayerRows(html, { sourceUrl });
+  const rows = [...tableRows, ...dataLayerRows];
   return uniqueObjectsBy(rows, (row) =>
     `${normalizeText(row.standardTitle)}|${row.cas.join(",")}|${row.amendment}`
   );
@@ -297,7 +341,7 @@ export function parseOfficialTransparencyListHtml(
       const joined = normalizeText(cells.join(" "));
       if (joined.includes("cas") && joined.includes("principal name")) return null;
       const [casCell, principalNameCell, naturalsCategoryCell] = cells;
-      const principalName = String(principalNameCell || "").replace(/^"|"$/g, "").trim();
+      const principalName = stripWrappingQuotes(principalNameCell);
       const cas = normalizeCasCell(casCell);
       if (!principalName || !cas.length) return null;
       return {
@@ -362,6 +406,51 @@ function loadCachedOfficialStandards({
         ? toRepoRelative(metadataPath, root)
         : "",
     }));
+  });
+}
+
+function attachCachedOfficialDownloadLinks(masterStandards = [], cachedStandards = []) {
+  return masterStandards.map((standard) => {
+    const standardCas = new Set(standard.cas || []);
+    const standardTitle = normalizeText(standard.standardTitle);
+    const cachedMatch = cachedStandards.find((cached) => {
+      const hasCasMatch = (cached.cas || []).some((cas) => standardCas.has(cas));
+      const hasTitleMatch =
+        standardTitle &&
+        normalizeText(cached.standardTitle) &&
+        standardTitle === normalizeText(cached.standardTitle);
+      return hasCasMatch || hasTitleMatch;
+    });
+    if (!cachedMatch?.downloadUrl) return standard;
+    return {
+      ...standard,
+      downloadUrl: cachedMatch.downloadUrl,
+      sourceUrl: cachedMatch.sourceUrl || standard.sourceUrl,
+      officialLibraryLocalFile: cachedMatch.localFile || "",
+      officialLibraryMetadataFile: cachedMatch.metadataFile || "",
+    };
+  });
+}
+
+function attachDownloadedOfficialPdfRecords(candidates = [], downloadedPdfs = []) {
+  const pdfRecordsByUrl = new Map(
+    downloadedPdfs
+      .filter(
+        (item) =>
+          item.sourceType === "official_ifra_standard_pdf" &&
+          item.sourceUrl &&
+          ["downloaded", "skipped_cached"].includes(item.status)
+      )
+      .map((item) => [item.sourceUrl, item])
+  );
+  return candidates.map((candidate) => {
+    const pdfRecord = pdfRecordsByUrl.get(candidate.downloadUrl);
+    if (!pdfRecord?.localPath) return candidate;
+    return {
+      ...candidate,
+      officialPdfLocalFile: pdfRecord.localPath,
+      officialPdfMetadataFile: pdfRecord.metadataPath || "",
+    };
   });
 }
 
@@ -628,6 +717,8 @@ function buildStandardCandidate({ profile, standard, match }) {
     sourceUrl,
     sourceFile,
     localFile: sourceFile,
+    officialLibraryLocalFile: standard.officialLibraryLocalFile || "",
+    officialLibraryMetadataFile: standard.officialLibraryMetadataFile || "",
     candidateUse: "standard_candidate",
     reviewStatus: "needs_review",
     candidateLimitType,
@@ -728,6 +819,12 @@ function summarizeOfficialHarvest({ candidates, queueItems, weakMatches, downloa
       SOURCE_TYPES_REQUIRING_SUPPLIER_DOCS.has(item.requiredSourceType) &&
       !standardCandidates.some((candidate) => candidate.queueItemId === item.id)
   ).length;
+  const officialDownloadSuccessCount = downloadedPdfs.filter((item) =>
+    ["downloaded", "skipped_cached"].includes(item.status)
+  ).length;
+  const officialDownloadFailureCount = downloadedPdfs.filter(
+    (item) => item.status === "failed"
+  ).length;
   return {
     queueItemCount: queueItems.length,
     candidateCount: candidates.length,
@@ -736,7 +833,28 @@ function summarizeOfficialHarvest({ candidates, queueItems, weakMatches, downloa
     noOfficialMatchCount,
     needsSupplierDocumentInsteadCount,
     weakAmbiguousMatchCount: weakMatches.length,
-    downloadedPdfCount: downloadedPdfs.length,
+    officialDownloadAttemptCount: downloadedPdfs.length,
+    officialDownloadSuccessCount,
+    officialDownloadFailureCount,
+    officialPageCacheCount: downloadedPdfs.filter(
+      (item) =>
+        [
+          "official_ifra_standards_library",
+          "official_ifra_transparency_list",
+          "official_ifra_standards_documentation",
+        ].includes(item.sourceType) && ["downloaded", "skipped_cached"].includes(item.status)
+    ).length,
+    officialPdfDownloadAttemptCount: downloadedPdfs.filter(
+      (item) => item.sourceType === "official_ifra_standard_pdf"
+    ).length,
+    officialPdfDownloadFailureCount: downloadedPdfs.filter(
+      (item) => item.sourceType === "official_ifra_standard_pdf" && item.status === "failed"
+    ).length,
+    downloadedPdfCount: downloadedPdfs.filter(
+      (item) =>
+        item.sourceType === "official_ifra_standard_pdf" &&
+        ["downloaded", "skipped_cached"].includes(item.status)
+    ).length,
     candidateUseCounts: countBy(candidates, "candidateUse"),
     sourceTypeCounts: countBy(candidates, "sourceType"),
     matchTypeCounts: countBy(candidates, "matchType"),
@@ -754,8 +872,11 @@ export function buildOfficialIfraHarvestReport({
 } = {}) {
   const queueItems = Array.isArray(sourceQueue?.items) ? sourceQueue.items : [];
   const profiles = queueItems.map(buildQueueProfile);
-  const masterStandards = loadMasterStandardRows(masterStandardsPath);
   const cachedStandards = loadCachedOfficialStandards({ cacheDir, root });
+  const masterStandards = attachCachedOfficialDownloadLinks(
+    loadMasterStandardRows(masterStandardsPath),
+    cachedStandards
+  );
   const transparencyRows = loadCachedOfficialTransparency({
     cacheDir: path.join(cacheDir, "transparency"),
     root,
@@ -823,8 +944,9 @@ export function buildOfficialIfraHarvestReport({
     }
   }
 
-  const dedupedCandidates = uniqueObjectsBy(candidates, (candidate) => candidate.id).sort(
-    candidateSort
+  const dedupedCandidates = attachDownloadedOfficialPdfRecords(
+    uniqueObjectsBy(candidates, (candidate) => candidate.id).sort(candidateSort),
+    downloadedPdfs
   );
   const dedupedWeakMatches = uniqueObjectsBy(
     weakMatches,
@@ -872,6 +994,7 @@ export function buildOfficialIfraHarvestReport({
     needsSupplierDocumentInstead,
     weakAmbiguousMatches: dedupedWeakMatches,
     downloadedStandardPdfs: downloadedPdfs,
+    officialDownloadRecords: downloadedPdfs,
     candidates: dedupedCandidates,
   };
 }
@@ -1093,6 +1216,7 @@ function formatCandidateLine(candidate = {}) {
     candidate.standardType ? `- Standard type: ${candidate.standardType}` : "",
     candidate.amendment ? `- Amendment: ${candidate.amendment}` : "",
     source ? `- Source: ${source}` : "",
+    candidate.officialPdfLocalFile ? `- Official PDF: ${candidate.officialPdfLocalFile}` : "",
     candidate.localFile ? `- Local file: ${candidate.localFile}` : "",
     `- Recommended next action: ${
       candidate.candidateUse === "standard_candidate"
@@ -1134,6 +1258,11 @@ export function formatOfficialIfraHarvestMarkdown(report = {}) {
     formatCountLine("No official match found", summary.noOfficialMatchCount),
     formatCountLine("Needs supplier document instead", summary.needsSupplierDocumentInsteadCount),
     formatCountLine("Weak/ambiguous matches", summary.weakAmbiguousMatchCount),
+    formatCountLine("Official download attempts", summary.officialDownloadAttemptCount),
+    formatCountLine("Official download successes", summary.officialDownloadSuccessCount),
+    formatCountLine("Official download failures", summary.officialDownloadFailureCount),
+    formatCountLine("Official HTML/pages cached", summary.officialPageCacheCount),
+    formatCountLine("Official PDF download attempts", summary.officialPdfDownloadAttemptCount),
     formatCountLine("Downloaded standard PDFs", summary.downloadedPdfCount),
     "",
     "## Official IFRA Matches Found",
@@ -1162,14 +1291,28 @@ export function formatOfficialIfraHarvestMarkdown(report = {}) {
     "",
     "## Downloaded Standard PDFs",
     "",
-    report.downloadedStandardPdfs?.length
+    report.downloadedStandardPdfs?.filter((item) => item.sourceType === "official_ifra_standard_pdf")
+      .length
       ? report.downloadedStandardPdfs
+          .filter((item) => item.sourceType === "official_ifra_standard_pdf")
           .map(
             (item) =>
               `- ${item.materialOrQuery || item.materialName || item.sourceUrl}: ${item.status} ${item.localPath || ""}`
           )
           .join("\n")
       : "_No official standard PDFs downloaded in this run._",
+    "",
+    "## Official Download Failures",
+    "",
+    report.officialDownloadRecords?.filter((item) => item.status === "failed").length
+      ? report.officialDownloadRecords
+          .filter((item) => item.status === "failed")
+          .map(
+            (item) =>
+              `- ${item.sourceUrl}: ${item.reason || "download failed"} (${item.sourceType})`
+          )
+          .join("\n")
+      : "_No official download failures recorded._",
     "",
     "## Weak/Ambiguous Matches",
     "",
@@ -1192,6 +1335,11 @@ export function formatOfficialIfraHarvestText(report = {}) {
     `Identity-support matches: ${summary.officialIdentitySupportCount || 0}`,
     `No official match found: ${summary.noOfficialMatchCount || 0}`,
     `Weak/ambiguous matches: ${summary.weakAmbiguousMatchCount || 0}`,
+    `Official download attempts: ${summary.officialDownloadAttemptCount || 0}`,
+    `Official download successes: ${summary.officialDownloadSuccessCount || 0}`,
+    `Official download failures: ${summary.officialDownloadFailureCount || 0}`,
+    `Official HTML/pages cached: ${summary.officialPageCacheCount || 0}`,
+    `Official PDF download attempts: ${summary.officialPdfDownloadAttemptCount || 0}`,
     `Downloaded PDFs: ${summary.downloadedPdfCount || 0}`,
     "",
   ].join("\n");
@@ -1215,6 +1363,8 @@ export function writeOfficialIfraMarkdown(filePath, markdown) {
 export function officialCandidatesAsEvidenceCandidates(officialCandidatesFile = {}) {
   return (officialCandidatesFile.candidates || []).map((candidate) => ({
     ...candidate,
+    structuredSourceFile: candidate.sourceFile || "",
+    sourceFile: candidate.officialPdfLocalFile || candidate.sourceFile || "",
     sourceType:
       candidate.candidateUse === "identity_support"
         ? "official_ifra_transparency_list"

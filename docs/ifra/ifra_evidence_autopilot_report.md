@@ -1,13 +1,13 @@
 # IFRA Evidence Autopilot Report
 
-Generated: 2026-06-11T15:02:00.393Z
+Generated: 2026-06-11T15:28:12.854Z
 
 Autopilot runs the source-acquisition workflow end to end, ranks evidence, and applies only conservative review metadata updates. It does not promote IFRA limits, change runtime IFRA classification, or prove launch clearance.
 
 ## Summary
 
 - Total queue items: 44
-- Candidates considered: 1,054
+- Candidates considered: 1,088
 - Review-ready items: 24
 - Likely FCF evidence: 1
 - Already reviewed items: 6
@@ -15,8 +15,8 @@ Autopilot runs the source-acquisition workflow end to end, ranks evidence, and a
 - Needs global standards: 1
 - Insufficient / identity-only evidence: 7
 - Manual review still required: 34
-- Auto-updated review statuses: 1
-- Downloaded/cached source count: 86
+- Auto-updated review statuses: 0
+- Downloaded/cached source count: 87
 - Failed download count: 0
 
 Next recommended action: Review likely FCF evidence first; promote only as non-limit FCF source evidence after review.
@@ -32,12 +32,22 @@ Autopilot class counts:
 
 ## Auto-Updated Review Statuses
 
-| Scope | Material | From | To | Reason |
-| --- | --- | --- | --- | --- |
-| candidate review | Bergamot EO FCF | not_started | accepted | Autopilot accepted linked non-limit source evidence only; no IFRA category limit was created. |
+No review statuses were auto-updated.
 
 ## Top Review-Ready Materials
 
+### Vetiveryl Acetate
+- Formulas used in: Damp Shoreline v1
+- Autopilot class: auto_review_ready
+- Evidence status: review_ready
+- Suggested action: review_top_candidate
+- Confidence: high
+- Source identity: official_ifra_standard_library
+- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
+- Best candidate: official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil
+- Snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
+- Why selected: A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.
+- Limitation: Review candidate and mark accepted only.; Structured limit promotion is a later task.
 ### Methyl Ionone Alpha Extra
 - Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Autopilot class: auto_review_ready
@@ -146,18 +156,6 @@ Autopilot class counts:
 - Source: https://fraterworks.com/products/cetalox
 - Best candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cetalox-product-page-https-fraterworks-com-products-cetalox-html-7-ox-shows-balanced-behavior-with-moderate-streng
 - Snippet: ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a smelling strip. Odour Profile: Ambrotec...
-- Why selected: A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.
-- Limitation: Review candidate and mark accepted only.; Structured limit promotion is a later task.
-### Cypriol
-- Formulas used in: Damp Shoreline v2
-- Autopilot class: auto_review_ready
-- Evidence status: review_ready
-- Suggested action: review_top_candidate
-- Confidence: high
-- Source identity: supplier_product_page
-- Source: https://www.edenbotanicals.com/nagarmotha-cyperus.html
-- Best candidate: candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cypriol-product-page-https-www-edenbotanicals-com-nagarmotha-cyperus-html-html-1-es-and-uniformity-of-odor-throughout-the-drydown
-- Snippet: es and uniformity of odor throughout the drydown. Appearance Light amber or brownish-yellow, transparent, slightly viscous liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations No known concerns.* Dilute before using. A patch test should be performed before use for those with sensiti...
 - Why selected: A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.
 - Limitation: Review candidate and mark accepted only.; Structured limit promotion is a later task.
 ## Top Unresolved Materials

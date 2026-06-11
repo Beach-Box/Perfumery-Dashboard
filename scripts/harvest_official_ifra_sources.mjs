@@ -116,12 +116,14 @@ export async function main(argv = process.argv.slice(2)) {
   }
 
   let report = buildOfficialIfraHarvestReport({
-    downloadedPdfs: indexDownloads.filter((item) => item.status === "downloaded"),
+    downloadedPdfs: indexDownloads,
   });
 
   if (args.download) {
     downloadedPdfs = await downloadOfficialStandardPdfs({ report });
-    report = buildOfficialIfraHarvestReport({ downloadedPdfs });
+    report = buildOfficialIfraHarvestReport({
+      downloadedPdfs: [...indexDownloads, ...downloadedPdfs],
+    });
   }
 
   const candidatesFile = buildOfficialIfraSourceCandidatesFile(report);

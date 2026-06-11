@@ -1,13 +1,13 @@
 # IFRA Evidence Resolution
 
-Generated: 2026-06-11T15:15:12.078Z
+Generated: 2026-06-11T15:28:05.100Z
 
 This report ranks already harvested IFRA/SDS/product-page candidates for review. It does not scrape new pages, promote IFRA limits, or prove launch clearance.
 
 ## Summary
 
 - Queue items: 44
-- Retained candidates considered: 1,054
+- Retained candidates considered: 1,088
 - Official IFRA source candidates considered: 6
 - Review-ready or candidate-found items: 24
 - Likely FCF evidence items: 1
@@ -46,7 +46,7 @@ Suggested action counts:
 - Limitations: Review candidate and mark accepted only.; Structured limit promotion is a later task.
 - Best candidate: ifra_category_limit (official_ifra_standard_library, score 211)
 - Candidate ID: official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil
-- Source: https://ifrafragrance.org/standards-library
+- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
 - Snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
 - Why selected: linked to this queue item; exact material-name match; high review priority; official_ifra_standard_library source; ifra_category_limit candidate; IFRA language present
 ### Methyl Ionone Alpha Extra

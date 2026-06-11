@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   buildOfficialIfraHarvestReport,
   cacheOfficialIfraIndexPages,
+  officialCandidatesAsEvidenceCandidates,
   parseOfficialStandardsLibraryHtml,
   parseOfficialTransparencyListHtml,
 } from "../scripts/lib/official_ifra_harvest.mjs";
@@ -74,6 +75,31 @@ test("Official IFRA Standards Library rows parse standard metadata and download 
   assert.equal(rows[0].standardType, "Restriction");
   assert.equal(rows[0].amendment, "51");
   assert.equal(rows[0].downloadUrl, "https://ifrafragrance.org/download/calone.pdf");
+});
+
+test("Official IFRA Standards Library data-layer links parse standard metadata and download links", () => {
+  const html = `
+    <a
+      class="js-data-layer"
+      href="https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf"
+      data-layer="{&quot;event&quot;:&quot;download&quot;,&quot;document_name&quot;:&quot;\\&quot;Acetylated Vetiver oil\\&quot;&quot;,&quot;document_type&quot;:&quot;standards&quot;,&quot;cas_number&quot;:&quot;84082-84-8 68917-34-0&quot;,&quot;publication_date&quot;:&quot;2020-01&quot;,&quot;type&quot;:&quot;R&quot;,&quot;amendment&quot;:&quot;49&quot;}">
+      Download
+    </a>
+  `;
+
+  const rows = parseOfficialStandardsLibraryHtml(html, {
+    sourceUrl: "https://ifrafragrance.org/standards-library",
+  });
+
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].standardTitle, "Acetylated Vetiver oil");
+  assert.deepEqual(rows[0].cas, ["84082-84-8", "68917-34-0"]);
+  assert.equal(rows[0].standardType, "Restriction");
+  assert.equal(rows[0].amendment, "49");
+  assert.equal(
+    rows[0].downloadUrl,
+    "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf"
+  );
 });
 
 test("Official IFRA Transparency List rows parse as identity support only", () => {
@@ -290,6 +316,27 @@ test("Official exact candidates outrank supplier product-page candidates in reso
   assert.equal(resolution.items[0].bestCandidates[0].id, "official-calone");
   assert.equal(resolution.items[0].bestCandidates[0].sourceType, "official_ifra_standard_library");
   assert.equal(resolution.summary.officialIfraSourceCandidateCount, 1);
+});
+
+test("Official candidate evidence prefers cached PDF path while preserving structured source file", () => {
+  const candidates = officialCandidatesAsEvidenceCandidates({
+    candidates: [
+      {
+        id: "official-vetiveryl-acetate",
+        candidateUse: "standard_candidate",
+        sourceType: "official_ifra_standard_library",
+        sourceFile: "src/data/ifra_master_standards.json",
+        officialPdfLocalFile:
+          "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
+      },
+    ],
+  });
+
+  assert.equal(
+    candidates[0].sourceFile,
+    "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf"
+  );
+  assert.equal(candidates[0].structuredSourceFile, "src/data/ifra_master_standards.json");
 });
 
 test("Official cache download writes review metadata shape without requiring live network", async () => {

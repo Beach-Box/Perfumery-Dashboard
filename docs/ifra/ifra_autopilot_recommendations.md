@@ -1,6 +1,6 @@
 # IFRA Autopilot Recommendations
 
-Generated: 2026-06-11T15:15:18.991Z
+Generated: 2026-06-11T15:28:22.389Z
 
 Autopilot did the first-pass evidence review. Proposed structured records are staged for final review only; no runtime IFRA limits have been changed and this is not launch clearance.
 
@@ -11,7 +11,7 @@ Autopilot did the first-pass evidence review. Proposed structured records are st
 - Auto-accepted non-limit evidence: 2
 - Needs better source: 24
 - No useful evidence found: 1
-- Rejected/noisy evidence: 229
+- Rejected/noisy evidence: 236
 - Already handled: 1
 - Deferred: 4
 
@@ -24,7 +24,7 @@ Recommended next action: 13 proposed records can be reviewed for promotion. No r
 - Source identity: Vetiveryl Acetate
 - Proposed record: ifra_category_limit
 - Proposed category/value: 4 0.9 %
-- Source: https://ifrafragrance.org/standards-library
+- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
 - Evidence confidence: high
 - Promotion status: proposed
 - Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:15:18.991Z",
+    "generatedAt": "2026-06-11T15:28:22.389Z",
     "reportName": "IFRA Autopilot Recommendations",
     "regenerateCommand": "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md",
-    "autopilotGeneratedAt": "2026-06-11T15:02:00.393Z",
-    "evidenceResolutionGeneratedAt": "2026-06-11T15:15:12.078Z",
+    "autopilotGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "evidenceResolutionGeneratedAt": "2026-06-11T15:28:12.854Z",
     "guardrails": [
       "Recommendations are review workflow output only.",
       "Proposed structured records are not runtime IFRA standards.",
@@ -20,7 +20,7 @@
     "noUsefulEvidenceCount": 1,
     "alreadyHandledCount": 1,
     "deferredCount": 4,
-    "rejectedNoiseCount": 229,
+    "rejectedNoiseCount": 236,
     "recommendationStatusCounts": {
       "proposed_structured_record_ready_for_final_review": 13,
       "needs_better_source": 24,
@@ -51,8 +51,8 @@
       "bestCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
       "bestCandidateType": "ifra_category_limit",
       "sourceType": "official_ifra_standard_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "src/data/ifra_master_standards.json",
+      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
       "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
@@ -1166,8 +1166,8 @@
       ],
       "recordType": "ifra_category_limit",
       "sourceType": "official_ifra_standard_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "src/data/ifra_master_standards.json",
+      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
       "candidateIds": [
         "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil"
       ],

@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:15:12.078Z",
+    "generatedAt": "2026-06-11T15:28:12.854Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T15:02:00.393Z",
-    "officialIfraSourceCandidateGeneratedAt": "2026-06-11T15:15:04.410Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T15:02:00.393Z",
-    "ingredientSourceHarvestGeneratedAt": "2026-06-11T15:02:00.393Z",
+    "sourceQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "candidateExtractionGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "officialIfraSourceCandidateGeneratedAt": "2026-06-11T15:27:58.626Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "ingredientSourceHarvestGeneratedAt": "2026-06-11T15:28:12.854Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
       "Evidence resolver output is review triage only.",
@@ -17,8 +17,8 @@
   },
   "summary": {
     "queueItemCount": 44,
-    "candidateCount": 1054,
-    "retainedCandidateCount": 1054,
+    "candidateCount": 1088,
+    "retainedCandidateCount": 1088,
     "reviewedSourceRecordCount": 1,
     "evidenceStatusCounts": {
       "review_ready": 24,
@@ -104,8 +104,8 @@
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "official_ifra_standard_library",
-          "sourceUrl": "https://ifrafragrance.org/standards-library",
-          "sourceFile": "src/data/ifra_master_standards.json",
+          "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+          "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
           "category": "4",
           "candidateValue": "0.9",
           "candidateUnit": "%",
