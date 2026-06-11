@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:23:10.802Z",
+    "generatedAt": "2026-06-11T14:43:33.704Z",
     "reportName": "Hero IFRA Source Acquisition Queue",
-    "sourceGapReportGeneratedAt": "2026-06-11T14:23:10.570Z",
+    "sourceGapReportGeneratedAt": "2026-06-11T14:43:33.707Z",
     "sourceGapReportName": "Hero IFRA Source Gap Report",
     "regenerateCommand": "node scripts/build_hero_ifra_source_acquisition_queue.mjs --markdown --write docs/ifra/hero_ifra_source_acquisition_queue.md",
     "guardrails": [
@@ -19,7 +19,8 @@
       "not_applicable": 5
     },
     "reviewStatusCounts": {
-      "not_started": 39,
+      "not_started": 37,
+      "needs_more_source": 2,
       "reviewed_ok": 5
     },
     "priorityCounts": {
@@ -72,15 +73,53 @@
         "Aldehyde C-18",
         "Gamma Nonalactone",
         "IFRA Gamma Nonalactone",
+        "Ald C-18",
+        "5-pentyloxolan-2-one",
+        "Ventos",
+        "CAS 104-61-0",
+        "supplier SDS Aldehyde C-18",
+        "supplier product Aldehyde C-18",
         "IFRA Aldehyde C-18"
       ],
       "sourceSearchTerms": [
         "Aldehyde C-18",
         "Gamma Nonalactone",
         "IFRA Gamma Nonalactone",
+        "Ald C-18",
+        "5-pentyloxolan-2-one",
+        "Ventos",
+        "CAS 104-61-0",
+        "supplier SDS Aldehyde C-18",
+        "supplier product Aldehyde C-18",
         "IFRA Aldehyde C-18"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/5996.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-5996-aldehyde-c-18-coconut-so-called.aspx"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.ventos.com/index.php/en/producto/2257/ALDEHYDE+C-18+%28GAMMA-NONALACTONE%29/223"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/SDS_ALDEHYDE_C-18_GAMMA-NONALACTONE.pdf?v=1713563617"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1000531.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
       "sourceRowNames": [
@@ -143,11 +182,11 @@
         "Aldehyde C-8"
       ],
       "status": "needed",
-      "reviewStatus": "not_started",
+      "reviewStatus": "needs_more_source",
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T14:22:36.582Z"
+      "lastUpdated": "2026-06-11T14:39:46.777Z"
     },
     {
       "id": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
@@ -171,16 +210,47 @@
       "candidateSearchTerms": [
         "Allyl Amyl Glycolate",
         "Allyl amyl glycolate",
+        "prop-2-enyl 2-(3-methylbutoxy)acetate",
+        "CAS 67634-00-8",
+        "CAS 67634-01-9",
+        "supplier SDS Allyl Amyl Glycolate",
+        "supplier product Allyl Amyl Glycolate",
         "IFRA Allyl Amyl Glycolate",
         "IFRA Allyl amyl glycolate"
       ],
       "sourceSearchTerms": [
         "Allyl Amyl Glycolate",
         "Allyl amyl glycolate",
+        "prop-2-enyl 2-(3-methylbutoxy)acetate",
+        "CAS 67634-00-8",
+        "CAS 67634-01-9",
+        "supplier SDS Allyl Amyl Glycolate",
+        "supplier product Allyl Amyl Glycolate",
         "IFRA Allyl Amyl Glycolate",
         "IFRA Allyl amyl glycolate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/ALLYL-AMYL-GLYCOLATE-GHS-SDS.pdf?v=1717492026"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-5999-allyl-amyl-glycolate-iff.aspx"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://shop.perfumersapprentice.com/p-5999-allyl-amyl-glycolate-iff.aspx"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1001841.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -214,14 +284,52 @@
       "candidateSearchTerms": [
         "Ambrettolide",
         "IFRA Ambrettolide",
-        "CAS 7779-50-2"
+        "CAS 7779-50-2",
+        "Oxacycloheptadec-10-en-2-one",
+        "IFF",
+        "CAS 28645-51-4",
+        "CAS 63286-42-0",
+        "supplier SDS Ambrettolide",
+        "supplier product Ambrettolide"
       ],
       "sourceSearchTerms": [
         "Ambrettolide",
         "IFRA Ambrettolide",
-        "CAS 7779-50-2"
+        "CAS 7779-50-2",
+        "Oxacycloheptadec-10-en-2-one",
+        "IFF",
+        "CAS 28645-51-4",
+        "CAS 63286-42-0",
+        "supplier SDS Ambrettolide",
+        "supplier product Ambrettolide"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Ambrettolide_SDS.pdf?v=1755820709"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/ambrettolide"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/ambrettolide/"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/ambrettolide"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1026271.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions.",
       "sourceRowNames": [
@@ -259,6 +367,13 @@
         "Ambroxide",
         "IFRA Ambroxan",
         "IFRA Ambroxide",
+        "Ambrofix",
+        "Dodecahydro-3a,6,6,9a-tetramethylnaphtho[2,1-b]furan",
+        "Givaudan",
+        "CAS 6790-58-5",
+        "CAS 3738-00-9",
+        "supplier SDS Ambroxan Crystals",
+        "supplier product Ambroxan Crystals",
         "IFRA Ambroxan Crystals"
       ],
       "sourceSearchTerms": [
@@ -267,9 +382,37 @@
         "Ambroxide",
         "IFRA Ambroxan",
         "IFRA Ambroxide",
+        "Ambrofix",
+        "Dodecahydro-3a,6,6,9a-tetramethylnaphtho[2,1-b]furan",
+        "Givaudan",
+        "CAS 6790-58-5",
+        "CAS 3738-00-9",
+        "supplier SDS Ambroxan Crystals",
+        "supplier product Ambroxan Crystals",
         "IFRA Ambroxan Crystals"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Ambrofix-SDS.pdf?v=1682821555"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/ambrofix"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/ambrofix"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1016071.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions.",
       "sourceRowNames": [
@@ -309,6 +452,10 @@
         "Calone 1951®",
         "IFRA Calone",
         "CAS 28940-11-6",
+        "2H-1,5-Benzodioxepin-3(4H)-one, 7- methyl-",
+        "Firmenich",
+        "supplier SDS Calone 1951",
+        "supplier product Calone 1951",
         "IFRA Calone 1951",
         "IFRA Calone 1951®"
       ],
@@ -318,10 +465,35 @@
         "Calone 1951®",
         "IFRA Calone",
         "CAS 28940-11-6",
+        "2H-1,5-Benzodioxepin-3(4H)-one, 7- methyl-",
+        "Firmenich",
+        "supplier SDS Calone 1951",
+        "supplier product Calone 1951",
         "IFRA Calone 1951",
         "IFRA Calone 1951®"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/CALONEPLUS_SDS.pdf?v=1709326375"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/calone-plus"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/caloner-pe-918970"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1002352.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
       "sourceRowNames": [
@@ -354,16 +526,47 @@
       "candidateSearchTerms": [
         "Caryophyllene Oxide",
         "Caryophyllene oxide",
+        "(1R,4R,6R,10S)-4,12,12-trimethyl-9-methylene-5-oxatricyclo[8.2.0.0^{4,6}]dodecane",
+        "Ventos",
+        "CAS 1139-30-6",
+        "supplier SDS Caryophyllene Oxide",
+        "supplier product Caryophyllene Oxide",
         "IFRA Caryophyllene Oxide",
         "IFRA Caryophyllene oxide"
       ],
       "sourceSearchTerms": [
         "Caryophyllene Oxide",
         "Caryophyllene oxide",
+        "(1R,4R,6R,10S)-4,12,12-trimethyl-9-methylene-5-oxatricyclo[8.2.0.0^{4,6}]dodecane",
+        "Ventos",
+        "CAS 1139-30-6",
+        "supplier SDS Caryophyllene Oxide",
+        "supplier product Caryophyllene Oxide",
         "IFRA Caryophyllene Oxide",
         "IFRA Caryophyllene oxide"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Caryophyllene_Oxide_SDS.pdf?v=1759781443"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/caryophyllene-oxide"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.ventos.com/index.php/en/producto/2659/CARYOPHYLLENE+OXIDE/223"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1023631.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -399,14 +602,45 @@
       "candidateSearchTerms": [
         "Dihydromyrcenol",
         "IFRA Dihydromyrcenol",
-        "CAS 18479-58-8"
+        "CAS 18479-58-8",
+        "Dihydro myrcenol",
+        "Dihydro Myrcenol",
+        "2,6-dimethyloct-7-ene-2-ol",
+        "supplier SDS Dihydromyrcenol",
+        "supplier product Dihydromyrcenol"
       ],
       "sourceSearchTerms": [
         "Dihydromyrcenol",
         "IFRA Dihydromyrcenol",
-        "CAS 18479-58-8"
+        "CAS 18479-58-8",
+        "Dihydro myrcenol",
+        "Dihydro Myrcenol",
+        "2,6-dimethyloct-7-ene-2-ol",
+        "supplier SDS Dihydromyrcenol",
+        "supplier product Dihydromyrcenol"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/SDS_DIHYDROMYRCENOL.pdf?v=1736960793"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-6051-dihydro-myrcenol.aspx"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/dihydromyrcenol-pe-938621"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1006052.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions. Known-restriction review is likely useful.",
       "sourceRowNames": [
@@ -439,16 +673,52 @@
       "candidateSearchTerms": [
         "Ethyl Linalool",
         "Ethyl linalool",
+        "(E/Z)-3,7-Dimethyl-1,6-nonadien-3-ol",
+        "Firmenich",
+        "CAS 10339-55-6",
+        "supplier SDS Ethyl Linalool",
+        "supplier product Ethyl Linalool",
         "IFRA Ethyl Linalool",
         "IFRA Ethyl linalool"
       ],
       "sourceSearchTerms": [
         "Ethyl Linalool",
         "Ethyl linalool",
+        "(E/Z)-3,7-Dimethyl-1,6-nonadien-3-ol",
+        "Firmenich",
+        "CAS 10339-55-6",
+        "supplier SDS Ethyl Linalool",
+        "supplier product Ethyl Linalool",
         "IFRA Ethyl Linalool",
         "IFRA Ethyl linalool"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/940888_ETHYL_LINALOL_SDS_NZ_EN.pdf?v=1726710589"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/ethyl-linalool"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/ethyl-linalool"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/ethyl-linalol-dsm-pe-940889#tab-technical-attributes-1506586633"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1015171.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 2 active hero formulas.",
       "sourceRowNames": [
@@ -481,16 +751,47 @@
       "candidateSearchTerms": [
         "Ethyl Linalyl Acetate",
         "Ethyl linalyl acetate",
+        "(E/Z)-3,7-Dimethyl-1,6-nonadien-3-yl acetate",
+        "Ventos",
+        "CAS 61931-80-4",
+        "supplier SDS Ethyl Linalyl Acetate",
+        "supplier product Ethyl Linalyl Acetate",
         "IFRA Ethyl Linalyl Acetate",
         "IFRA Ethyl linalyl acetate"
       ],
       "sourceSearchTerms": [
         "Ethyl Linalyl Acetate",
         "Ethyl linalyl acetate",
+        "(E/Z)-3,7-Dimethyl-1,6-nonadien-3-yl acetate",
+        "Ventos",
+        "CAS 61931-80-4",
+        "supplier SDS Ethyl Linalyl Acetate",
+        "supplier product Ethyl Linalyl Acetate",
         "IFRA Ethyl Linalyl Acetate",
         "IFRA Ethyl linalyl acetate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/6072.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/ethyl-linalyl-acetate"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.ventos.com/index.php/en/producto/1835/ETHYL+LINALYL+ACETATE/223"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1022781.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 2 active hero formulas.",
       "sourceRowNames": [
@@ -526,6 +827,9 @@
         "Ethylvanillin",
         "IFRA Ethylvanillin",
         "CAS 121-32-4",
+        "3-Ethoxy-4-hydroxybenzaldehyde",
+        "supplier SDS Ethyl Vanillin",
+        "supplier product Ethyl Vanillin",
         "IFRA Ethyl Vanillin"
       ],
       "sourceSearchTerms": [
@@ -533,9 +837,28 @@
         "Ethylvanillin",
         "IFRA Ethylvanillin",
         "CAS 121-32-4",
+        "3-Ethoxy-4-hydroxybenzaldehyde",
+        "supplier SDS Ethyl Vanillin",
+        "supplier product Ethyl Vanillin",
         "IFRA Ethyl Vanillin"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/6078.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-6078-ethyl-vanillin.aspx"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1002652.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
       "sourceRowNames": [
@@ -566,13 +889,39 @@
       "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
       "candidateSearchTerms": [
         "Geosmin",
+        ",8a-dimethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-4a-ol",
+        "IFF",
+        "CAS 23333-91-7",
+        "supplier SDS Geosmin",
+        "supplier product Geosmin",
         "IFRA Geosmin"
       ],
       "sourceSearchTerms": [
         "Geosmin",
+        ",8a-dimethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-4a-ol",
+        "IFF",
+        "CAS 23333-91-7",
+        "supplier SDS Geosmin",
+        "supplier product Geosmin",
         "IFRA Geosmin"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Geosmin-MSDS.pdf?v=1724142466"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/geosmin"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1019861.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -712,16 +1061,49 @@
       "candidateSearchTerms": [
         "Methyl Ionone Alpha Extra",
         "Methyl ionone alpha extra",
+        "1-(2,6,6-trimethylcyclohex-2-en-1-yl)pent-1-en-3-one (main isomer)",
+        "Takasago",
+        "CAS 7779-30-8",
+        "CAS 127-43-5",
+        "supplier SDS Methyl Ionone Alpha Extra",
+        "supplier product Methyl Ionone Alpha Extra",
         "IFRA Methyl Ionone Alpha Extra",
         "IFRA Methyl ionone alpha extra"
       ],
       "sourceSearchTerms": [
         "Methyl Ionone Alpha Extra",
         "Methyl ionone alpha extra",
+        "1-(2,6,6-trimethylcyclohex-2-en-1-yl)pent-1-en-3-one (main isomer)",
+        "Takasago",
+        "CAS 7779-30-8",
+        "CAS 127-43-5",
+        "supplier SDS Methyl Ionone Alpha Extra",
+        "supplier product Methyl Ionone Alpha Extra",
         "IFRA Methyl Ionone Alpha Extra",
         "IFRA Methyl ionone alpha extra"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/9479_3.pdf?v=1692998707"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/methyl-ionone-alpha-extra"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/meth-ionone-alpha-extra/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1052211.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas.",
       "sourceRowNames": [
@@ -756,6 +1138,11 @@
         "Phenyl Ethyl Acetate",
         "Phenethyl acetate",
         "Phenylethyl acetate",
+        "2-phenylethyl acetate",
+        "Ventos",
+        "CAS 103-45-7",
+        "supplier SDS Phenyl Ethyl Acetate",
+        "supplier product Phenyl Ethyl Acetate",
         "IFRA Phenyl Ethyl Acetate",
         "IFRA Phenethyl acetate",
         "IFRA Phenylethyl acetate"
@@ -764,11 +1151,37 @@
         "Phenyl Ethyl Acetate",
         "Phenethyl acetate",
         "Phenylethyl acetate",
+        "2-phenylethyl acetate",
+        "Ventos",
+        "CAS 103-45-7",
+        "supplier SDS Phenyl Ethyl Acetate",
+        "supplier product Phenyl Ethyl Acetate",
         "IFRA Phenyl Ethyl Acetate",
         "IFRA Phenethyl acetate",
         "IFRA Phenylethyl acetate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Phenyl_Ethyl_Acetate_SDS.pdf?v=1760558994"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/phenyl-ethyl-acetate"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.ventos.com/index.php/en/producto/1635/PHENYL+ETHYL+ACETATE/223"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1010031.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas.",
       "sourceRowNames": [
@@ -800,16 +1213,45 @@
       "candidateSearchTerms": [
         "Vetiveryl Acetate",
         "Vetiveryl acetate",
+        "MANE",
+        "CAS 68917-34-0",
+        "supplier SDS Vetiveryl Acetate",
+        "supplier product Vetiveryl Acetate",
         "IFRA Vetiveryl Acetate",
         "IFRA Vetiveryl acetate"
       ],
       "sourceSearchTerms": [
         "Vetiveryl Acetate",
         "Vetiveryl acetate",
+        "MANE",
+        "CAS 68917-34-0",
+        "supplier SDS Vetiveryl Acetate",
+        "supplier product Vetiveryl Acetate",
         "IFRA Vetiveryl Acetate",
         "IFRA Vetiveryl acetate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Vetiveryl_Acetate_SDS.pdf?v=1761164988"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/vetiveryl-acetate-20326"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://compendium.mane.com/wo.html#detail/molecules/mapping"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1006201.html"
+        }
+      ],
       "currentIfraCategory": "sourceUnavailable",
       "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -885,11 +1327,11 @@
         "Cedarwood Virginia EO"
       ],
       "status": "needed",
-      "reviewStatus": "not_started",
+      "reviewStatus": "needs_more_source",
       "sourceFile": "",
       "sourceNotes": "",
       "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
+      "lastUpdated": "2026-06-11T14:39:46.777Z"
     },
     {
       "id": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
@@ -912,6 +1354,10 @@
         "Cypriol oil",
         "Cypriol IFRA",
         "Cypriol SDS",
+        "Cyperus scariosus R.Br.",
+        "CAS 68916-60-9",
+        "supplier SDS Cypriol",
+        "supplier product Cypriol",
         "IFRA Cypriol",
         "IFRA Cypriol oil",
         "Cypriol IFRA certificate"
@@ -921,11 +1367,36 @@
         "Cypriol oil",
         "Cypriol IFRA",
         "Cypriol SDS",
+        "Cyperus scariosus R.Br.",
+        "CAS 68916-60-9",
+        "supplier SDS Cypriol",
+        "supplier product Cypriol",
         "IFRA Cypriol",
         "IFRA Cypriol oil",
         "Cypriol IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://docs.edenbotanicals.com/SDS/625_Nagarmotha_Cypriol_SDS.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://www.edenbotanicals.com/nagarmotha-cyperus.html"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://docs.edenbotanicals.com/TDS/625_Nagarmotha_Cypriol_TDS.pdf"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/es1385381.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -963,6 +1434,10 @@
         "Pink pepper oil",
         "Pink Peppercorn Oil IFRA",
         "Pink Peppercorn Oil SDS",
+        "Schinus molle L",
+        "CAS 68917-52-2",
+        "supplier SDS Pink Peppercorn Oil P&N",
+        "supplier product Pink Peppercorn Oil P&N",
         "IFRA Pink Peppercorn Oil P&N",
         "IFRA Pink Peppercorn Oil",
         "IFRA Pink pepper oil",
@@ -975,13 +1450,33 @@
         "Pink pepper oil",
         "Pink Peppercorn Oil IFRA",
         "Pink Peppercorn Oil SDS",
+        "Schinus molle L",
+        "CAS 68917-52-2",
+        "supplier SDS Pink Peppercorn Oil P&N",
+        "supplier product Pink Peppercorn Oil P&N",
         "IFRA Pink Peppercorn Oil P&N",
         "IFRA Pink Peppercorn Oil",
         "IFRA Pink pepper oil",
         "Pink Peppercorn Oil P&N SDS",
         "Pink Peppercorn Oil P&N IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/8016.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/es1034621.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -1018,6 +1513,10 @@
         "Seaweed",
         "Seaweed Absolute IFRA",
         "Seaweed Absolute SDS",
+        "Fucus vesiculosus",
+        "CAS 84696-13-9",
+        "CAS 68917-51-1",
+        "supplier product Seaweed Absolute",
         "IFRA Seaweed Absolute",
         "IFRA Seaweed",
         "Seaweed Absolute IFRA certificate"
@@ -1027,11 +1526,26 @@
         "Seaweed",
         "Seaweed Absolute IFRA",
         "Seaweed Absolute SDS",
+        "Fucus vesiculosus",
+        "CAS 84696-13-9",
+        "CAS 68917-51-1",
+        "supplier product Seaweed Absolute",
         "IFRA Seaweed Absolute",
         "IFRA Seaweed",
         "Seaweed Absolute IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://www.natureinbottle.com/product/seaweed_absolute"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.natureinbottle.com/product/seaweed_absolute"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -1067,6 +1581,11 @@
         "Algenone",
         "Algenone IFRA",
         "Algenone SDS",
+        "2-(4-methylphenoxy)acetaldehyde",
+        "Synarome",
+        "CAS 67845-46-9",
+        "supplier SDS Algenone",
+        "supplier product Algenone",
         "IFRA Algenone",
         "Algenone IFRA certificate"
       ],
@@ -1074,10 +1593,36 @@
         "Algenone",
         "Algenone IFRA",
         "Algenone SDS",
+        "2-(4-methylphenoxy)acetaldehyde",
+        "Synarome",
+        "CAS 67845-46-9",
+        "supplier SDS Algenone",
+        "supplier product Algenone",
         "IFRA Algenone",
         "Algenone IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/9357.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-9357-algenone-synarome.aspx"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://synarome.com/compendium/algenone-pb-sp/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1037861.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -1112,6 +1657,9 @@
         "Celestafleur®",
         "Celestafleur IFRA",
         "Celestafleur SDS",
+        "Fraterworks",
+        "supplier SDS Celestafleur",
+        "supplier product Celestafleur",
         "IFRA Celestafleur",
         "IFRA Celestafleur®",
         "Celestafleur IFRA certificate"
@@ -1121,11 +1669,30 @@
         "Celestafleur®",
         "Celestafleur IFRA",
         "Celestafleur SDS",
+        "Fraterworks",
+        "supplier SDS Celestafleur",
+        "supplier product Celestafleur",
         "IFRA Celestafleur",
         "IFRA Celestafleur®",
         "Celestafleur IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/CELESTAFLEUR_SDS.pdf?v=1713439720"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/celestafleur"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://fraterworks.com/products/celestafleur"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 2 active hero formulas.",
       "sourceRowNames": [
@@ -1162,6 +1729,11 @@
         "Cetalox®",
         "Cetalox IFRA",
         "Cetalox SDS",
+        "Naphtho[2,1-b]furan, dodecahydro-3a,6,6,9a-tetramethyl-",
+        "Firmenich",
+        "CAS 3738-00-9",
+        "supplier SDS Cetalox",
+        "supplier product Cetalox",
         "IFRA Cetalox",
         "IFRA Cetalox®",
         "Cetalox IFRA certificate"
@@ -1171,11 +1743,37 @@
         "Cetalox®",
         "Cetalox IFRA",
         "Cetalox SDS",
+        "Naphtho[2,1-b]furan, dodecahydro-3a,6,6,9a-tetramethyl-",
+        "Firmenich",
+        "CAS 3738-00-9",
+        "supplier SDS Cetalox",
+        "supplier product Cetalox",
         "IFRA Cetalox",
         "IFRA Cetalox®",
         "Cetalox IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/6027.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/cetalox"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/cetaloxr-pe-922560"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1005291.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula. Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas.",
       "sourceRowNames": [
@@ -1208,6 +1806,11 @@
       "candidateSearchTerms": [
         "Clearwood",
         "Clearwood®",
+        "Saccharum officinarum",
+        "Firmenich",
+        "CAS 1450625-49-6",
+        "supplier SDS Clearwood",
+        "supplier product Clearwood",
         "IFRA Clearwood",
         "IFRA Clearwood®",
         "Clearwood SDS",
@@ -1216,12 +1819,38 @@
       "sourceSearchTerms": [
         "Clearwood",
         "Clearwood®",
+        "Saccharum officinarum",
+        "Firmenich",
+        "CAS 1450625-49-6",
+        "supplier SDS Clearwood",
+        "supplier product Clearwood",
         "IFRA Clearwood",
         "IFRA Clearwood®",
         "Clearwood SDS",
         "Clearwood IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/CLEARWOOD__SDS_US_EN_1.pdf?v=1698630144"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/clearwood"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/clearwoodr-pe-970953"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1085861.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -1255,17 +1884,45 @@
       "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
       "candidateSearchTerms": [
         "Cyclogalbanate",
+        "Cyclogalbanate (Glycoflor)",
+        "prop-2-enyl 2-cyclohexyloxyacetate",
+        "IFF",
+        "CAS 68901-15-5",
+        "supplier SDS Cyclogalbanate",
+        "supplier product Cyclogalbanate",
         "IFRA Cyclogalbanate",
         "Cyclogalbanate SDS",
         "Cyclogalbanate IFRA certificate"
       ],
       "sourceSearchTerms": [
         "Cyclogalbanate",
+        "Cyclogalbanate (Glycoflor)",
+        "prop-2-enyl 2-cyclohexyloxyacetate",
+        "IFF",
+        "CAS 68901-15-5",
+        "supplier SDS Cyclogalbanate",
+        "supplier product Cyclogalbanate",
         "IFRA Cyclogalbanate",
         "Cyclogalbanate SDS",
         "Cyclogalbanate IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/6042.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-6042-cyclogalbanate-glycoflor.aspx"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1038701.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -1301,6 +1958,11 @@
         "Florol®",
         "Florol IFRA",
         "Florol SDS",
+        "2H-Pyran-4-ol, tetrahydro-4-methyl-2-(2- methylpropyl)-",
+        "Firmenich",
+        "CAS 63500-71-0",
+        "supplier SDS Florol",
+        "supplier product Florol",
         "IFRA Florol",
         "IFRA Florol®",
         "Florol IFRA certificate"
@@ -1310,11 +1972,37 @@
         "Florol®",
         "Florol IFRA",
         "Florol SDS",
+        "2H-Pyran-4-ol, tetrahydro-4-methyl-2-(2- methylpropyl)-",
+        "Firmenich",
+        "CAS 63500-71-0",
+        "supplier SDS Florol",
+        "supplier product Florol",
         "IFRA Florol",
         "IFRA Florol®",
         "Florol IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/966458_FLOROL__SDS_NZ_EN.pdf?v=1735603974"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/florol"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://studio.dsm-firmenich.com/product/florolr-pe-966458"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1045182.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas.",
       "sourceRowNames": [
@@ -1410,6 +2098,11 @@
         "Maritima®",
         "Maritima IFRA",
         "Maritima SDS",
+        "4-(4,8-Dimethylnona-3,7-dien-1-yl)pyridine",
+        "IFF",
+        "CAS 38462-23-6",
+        "supplier SDS Maritima",
+        "supplier product Maritima",
         "IFRA Maritima",
         "IFRA Maritima®",
         "Maritima IFRA certificate"
@@ -1419,11 +2112,37 @@
         "Maritima®",
         "Maritima IFRA",
         "Maritima SDS",
+        "4-(4,8-Dimethylnona-3,7-dien-1-yl)pyridine",
+        "IFF",
+        "CAS 38462-23-6",
+        "supplier SDS Maritima",
+        "supplier product Maritima",
         "IFRA Maritima",
         "IFRA Maritima®",
         "Maritima IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Maritima_SDS.pdf?v=1760558994"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/maritima"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/maritima/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1020441.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
       "sourceRowNames": [
@@ -1460,6 +2179,10 @@
         "Oceanol®",
         "Oceanol IFRA",
         "Oceanol SDS",
+        "Methyl 2,4-dihydroxy-3-methylbenzoate",
+        "IFF",
+        "CAS 33662-58-7",
+        "supplier product Oceanol",
         "IFRA Oceanol",
         "IFRA Oceanol®",
         "Oceanol IFRA certificate"
@@ -1469,11 +2192,31 @@
         "Oceanol®",
         "Oceanol IFRA",
         "Oceanol SDS",
+        "Methyl 2,4-dihydroxy-3-methylbenzoate",
+        "IFF",
+        "CAS 33662-58-7",
+        "supplier product Oceanol",
         "IFRA Oceanol",
         "IFRA Oceanol®",
         "Oceanol IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/oceanol"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/oceanol/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.iff.com/scent/ingredients-compendium/oceanol/"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
       "sourceRowNames": [
@@ -1505,6 +2248,13 @@
       "candidateSearchTerms": [
         "Orbitone T Neo",
         "Orbitone® T Neo",
+        "1-(2,3,8,8-tetramethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-2-yl)ethanone",
+        "Takasago",
+        "CAS 54464-57-2",
+        "CAS 68155-66-8",
+        "CAS 68155-67-9",
+        "supplier SDS Orbitone T Neo",
+        "supplier product Orbitone T Neo",
         "IFRA Orbitone T Neo",
         "IFRA Orbitone® T Neo",
         "Orbitone T Neo SDS",
@@ -1513,12 +2263,40 @@
       "sourceSearchTerms": [
         "Orbitone T Neo",
         "Orbitone® T Neo",
+        "1-(2,3,8,8-tetramethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-2-yl)ethanone",
+        "Takasago",
+        "CAS 54464-57-2",
+        "CAS 68155-66-8",
+        "CAS 68155-67-9",
+        "supplier SDS Orbitone T Neo",
+        "supplier product Orbitone T Neo",
         "IFRA Orbitone T Neo",
         "IFRA Orbitone® T Neo",
         "Orbitone T Neo SDS",
         "Orbitone T Neo IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/1DD002-EU-SDS-ORBITONE_T-v2-EN_1.PDF?v=1726206339"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/orbitone"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.takasago.com/en/node/700"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1020611.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -1550,6 +2328,13 @@
       "candidateSearchTerms": [
         "Timbersilk",
         "Timbersilk®",
+        "1-(2,3,8,8-tetramethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-2-yl)ethanone (main isomer)",
+        "IFF",
+        "CAS 54464-57-2",
+        "CAS 68155-66-8",
+        "CAS 68155-67-9",
+        "supplier SDS Timbersilk",
+        "supplier product Timbersilk",
         "IFRA Timbersilk",
         "IFRA Timbersilk®",
         "Timbersilk SDS",
@@ -1558,12 +2343,40 @@
       "sourceSearchTerms": [
         "Timbersilk",
         "Timbersilk®",
+        "1-(2,3,8,8-tetramethyl-1,2,3,4,5,6,7,8-octahydronaphthalen-2-yl)ethanone (main isomer)",
+        "IFF",
+        "CAS 54464-57-2",
+        "CAS 68155-66-8",
+        "CAS 68155-67-9",
+        "supplier SDS Timbersilk",
+        "supplier product Timbersilk",
         "IFRA Timbersilk",
         "IFRA Timbersilk®",
         "Timbersilk SDS",
         "Timbersilk IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/ISO-E-SUPER-GHS-SDS.pdf?v=1696191731"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/timbersilk"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/timbersilk/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1020611.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
       "sourceRowNames": [
@@ -1602,6 +2415,11 @@
         "Veramoss®",
         "Evernyl®",
         "IFRA methyl atrarate",
+        "Methyl 2,4-dihydroxy-3,6-dimethylbenzoate",
+        "IFF",
+        "CAS 4707-47-5",
+        "supplier SDS Veramoss",
+        "supplier product Veramoss",
         "IFRA Veramoss",
         "IFRA Evernyl",
         "IFRA Methyl atrarate",
@@ -1616,13 +2434,39 @@
         "Veramoss®",
         "Evernyl®",
         "IFRA methyl atrarate",
+        "Methyl 2,4-dihydroxy-3,6-dimethylbenzoate",
+        "IFF",
+        "CAS 4707-47-5",
+        "supplier SDS Veramoss",
+        "supplier product Veramoss",
         "IFRA Veramoss",
         "IFRA Evernyl",
         "IFRA Methyl atrarate",
         "Veramoss SDS",
         "Veramoss IFRA certificate"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/veramoss.pdf?v=1699820743"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/veramoss"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/veramoss/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1023372.html"
+        }
+      ],
       "currentIfraCategory": "supplierSdsNeeded",
       "reason": "Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
       "sourceRowNames": [
@@ -1694,7 +2538,28 @@
         "bergamot oil fcf, terpeneless",
         "bergamot superior oil fcf"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://shop.perfumersapprentice.com/MSDS/6401.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://shop.perfumersapprentice.com/p-6401-bergamot-essential-oil-bf-calabria-it.aspx"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://fraterworks.com/products/bergamot-oil-fcf"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/es1001871.html"
+        }
+      ],
       "currentIfraCategory": "fcfSpecialCase",
       "reason": "Current IFRA category is fcfSpecialCase. Appears in 4 active hero formulas. FCF/furocoumarin-free citrus must stay separate from regular expressed citrus.",
       "sourceRowNames": [
@@ -1734,6 +2599,10 @@
         "furocoumarin-free lemon",
         "lemon furocoumarin free",
         "CAS 84929-31-7",
+        "Lemon “Superior” Oil, FCF",
+        "CITRUS LIMON (LEMON) PEEL OIL",
+        "CAPUA",
+        "supplier product Lemon FCF",
         "IFRA Lemon FCF",
         "IFRA Lemon EO FCF",
         "IFRA Lemon Oil FCF"
@@ -1749,11 +2618,26 @@
         "furocoumarin-free lemon",
         "lemon furocoumarin free",
         "CAS 84929-31-7",
+        "Lemon “Superior” Oil, FCF",
+        "CITRUS LIMON (LEMON) PEEL OIL",
+        "CAPUA",
+        "supplier product Lemon FCF",
         "IFRA Lemon FCF",
         "IFRA Lemon EO FCF",
         "IFRA Lemon Oil FCF"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/lemon-oil-fcf"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/ex1390711.html"
+        }
+      ],
       "currentIfraCategory": "fcfSpecialCase",
       "reason": "Current IFRA category is fcfSpecialCase. Appears in 1 active hero formula. FCF/furocoumarin-free citrus must stay separate from regular expressed citrus.",
       "sourceRowNames": [
@@ -1945,7 +2829,11 @@
         "1,2,3,5,6,7-Hexahydro-1,1,2,3,3-pentamethyl-4H-inden-4-one",
         "4H-Inden-4-one, 1,2,3,5,6,7-hexahydro-1,1,2,3,3-pentamethyl1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
         "Cashmeran (commercial name)",
-        "CAS 33704-61-9"
+        "CAS 33704-61-9",
+        "1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
+        "IFF",
+        "supplier SDS Cashmeran",
+        "supplier product Cashmeran"
       ],
       "sourceSearchTerms": [
         "Cashmeran",
@@ -1954,9 +2842,34 @@
         "1,2,3,5,6,7-Hexahydro-1,1,2,3,3-pentamethyl-4H-inden-4-one",
         "4H-Inden-4-one, 1,2,3,5,6,7-hexahydro-1,1,2,3,3-pentamethyl1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
         "Cashmeran (commercial name)",
-        "CAS 33704-61-9"
+        "CAS 33704-61-9",
+        "1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
+        "IFF",
+        "supplier SDS Cashmeran",
+        "supplier product Cashmeran"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/CASHMERAN-EU-SDS.pdf?v=1705860449"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/cashmeran"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/cashmeran/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1024092.html"
+        }
+      ],
       "currentIfraCategory": "aliasIfraMatch",
       "reason": "Current IFRA category is aliasIfraMatch. Appears in 4 active hero formulas. Already has a structured runtime IFRA match.",
       "sourceRowNames": [
@@ -1996,7 +2909,11 @@
         "Cyclamal (commercial name)",
         "Cyclaviol (commercial name)",
         "Cyclosal (commercial name)",
-        "CAS 103-95-7"
+        "CAS 103-95-7",
+        "2-methyl-3-(4-propan-2-ylphenyl)propanal",
+        "Givaudan/Ventos",
+        "supplier SDS Cyclamen Aldehyde",
+        "supplier product Cyclamen Aldehyde"
       ],
       "sourceSearchTerms": [
         "Cyclamen Aldehyde",
@@ -2007,9 +2924,34 @@
         "Cyclamal (commercial name)",
         "Cyclaviol (commercial name)",
         "Cyclosal (commercial name)",
-        "CAS 103-95-7"
+        "CAS 103-95-7",
+        "2-methyl-3-(4-propan-2-ylphenyl)propanal",
+        "Givaudan/Ventos",
+        "supplier SDS Cyclamen Aldehyde",
+        "supplier product Cyclamen Aldehyde"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Cyclamen_Aldehyde_SDS.pdf?v=1755811891"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/cyclamen-aldehyde"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.ventos.com/index.php/en/producto/7463/CYCLAMEN+ALDEHYDE/223"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1004112.html"
+        }
+      ],
       "currentIfraCategory": "exactIfraMatch",
       "reason": "Current IFRA category is exactIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.",
       "sourceRowNames": [
@@ -2053,7 +2995,11 @@
         "Heliogan (commercial name)",
         "Helional (commercial name)",
         "Tropional (commercial name)",
-        "CAS 1205-17-0"
+        "CAS 1205-17-0",
+        "3-(1,3-Benzodioxol-5-yl)-2-methylpropanal",
+        "IFF",
+        "supplier SDS Helional®",
+        "supplier product Helional®"
       ],
       "sourceSearchTerms": [
         "Helional®",
@@ -2067,9 +3013,34 @@
         "Heliogan (commercial name)",
         "Helional (commercial name)",
         "Tropional (commercial name)",
-        "CAS 1205-17-0"
+        "CAS 1205-17-0",
+        "3-(1,3-Benzodioxol-5-yl)-2-methylpropanal",
+        "IFF",
+        "supplier SDS Helional®",
+        "supplier product Helional®"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/heilonalpdf.pdf?v=1715324858"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/helional"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://www.iff.com/scent/ingredients-compendium/helional/"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1007731.html"
+        }
+      ],
       "currentIfraCategory": "aliasIfraMatch",
       "reason": "Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.",
       "sourceRowNames": [
@@ -2112,7 +3083,8 @@
         "Evernia prunastri (Oakmoss) extract",
         "CAS 90028-68-5",
         "CAS 68917-10-2",
-        "CAS 9000-50-4"
+        "CAS 9000-50-4",
+        "supplier product Oakmoss Absolute"
       ],
       "sourceSearchTerms": [
         "Oakmoss Absolute",
@@ -2126,9 +3098,21 @@
         "Evernia prunastri (Oakmoss) extract",
         "CAS 90028-68-5",
         "CAS 68917-10-2",
-        "CAS 9000-50-4"
+        "CAS 9000-50-4",
+        "supplier product Oakmoss Absolute"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://www.natureinbottle.com/product/oakmoss_absolute"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/ab1009131.html"
+        }
+      ],
       "currentIfraCategory": "aliasIfraMatch",
       "reason": "Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.",
       "sourceRowNames": [
@@ -2199,7 +3183,23 @@
         "CAS 8006-81-3",
         "CAS 68606-83-7"
       ],
-      "knownReferenceLinks": [],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://docs.edenbotanicals.com/SDS/1040_Ylang_Ylang_Complete_Organic_SDS.pdf"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/es1012152.html"
+        }
+      ],
       "currentIfraCategory": "aliasIfraMatch",
       "reason": "Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.",
       "sourceRowNames": [

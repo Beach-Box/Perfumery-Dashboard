@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T14:23:40.045Z",
+    "generatedAt": "2026-06-11T14:43:33.704Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-11T14:23:10.802Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T12:58:50.387Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T14:23:34.146Z",
-    "ingredientSourceHarvestGeneratedAt": "2026-06-11T12:58:30.309Z",
+    "sourceQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "candidateExtractionGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-11T14:43:33.704Z",
+    "ingredientSourceHarvestGeneratedAt": "2026-06-11T14:43:33.704Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
       "Evidence resolver output is review triage only.",
@@ -23,8 +23,8 @@
       "review_ready": 24,
       "likely_fcf_evidence": 1,
       "needs_supplier_doc": 1,
-      "insufficient_evidence": 2,
-      "identity_only": 6,
+      "insufficient_evidence": 1,
+      "identity_only": 7,
       "already_reviewed": 1,
       "not_applicable": 5,
       "deferred": 4
@@ -49,14 +49,98 @@
     "alreadyReviewedCount": 1,
     "deferredCount": 4,
     "topReviewFirstMaterials": [
+      "Methyl Ionone Alpha Extra",
       "Calone 1951 20%",
       "Cetalox",
       "Clearwood",
-      "Geosmin 1% TEC",
-      "Iso E Super"
+      "Geosmin 1% TEC"
     ]
   },
   "items": [
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+      "materialName": "Methyl Ionone Alpha Extra",
+      "normalizedName": "Methyl Ionone Alpha Extra",
+      "formulaMaterialName": "Methyl Ionone Alpha Extra",
+      "sourceIdentityName": "Methyl Ionone Alpha Extra",
+      "activeMaterialName": "Methyl Ionone Alpha Extra",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 199,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 17,
+        "linked": 17,
+        "highValue": 9,
+        "identityOnly": 8,
+        "suppressedWeak": 16
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra-html-7-thyl-ionone-5-10-79-89-0-beta-isomethyl-ionone-3",
+          "materialName": "Methyl Ionone Alpha Extra",
+          "score": 199,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra.html",
+          "category": "4",
+          "candidateValue": "30",
+          "candidateUnit": "%",
+          "snippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Longevity: Lasts > 124 hours on a smelling strip. Odour Profile: Methyl Ionone Alpha Extra delivers a sophisticated powdery-flo",
+          "queueItemIds": [
+            "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "CAS term matches queue identity",
+            "high review priority",
+            "supplier_product_page source",
+            "ifra_category_limit candidate"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": true,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": false,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": false,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "thyl ionone 5 10 79 89 0 beta isomethyl ionone 3 5 127 43 5 beta methyl ionone 1 2 5 128 37 0 bht 0 1 0 25 aromachem best seller no reg ifra 51 30 in finished product cat 4 odour family floral appearance colourless liquid longevity lasts 124 hours on a smelling strip odour profile methyl ionone alpha extra delivers a sophisticated powdery flo"
+          }
+        }
+      ]
+    },
     {
       "id": "ifra-evidence-resolution-hero-ifra-source-calone-1951-global-ifra-standard-needed",
       "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
@@ -81,7 +165,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 185,
+      "score": 195,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -95,13 +179,13 @@
         "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-calone-1951-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-calone-1951-20-product-page-https-fraterworks-com-products-calone-plus-html-6-use-because-it-comes-in-a-liquid-form-making-it",
           "materialName": "Calone 1951 20%",
-          "score": 185,
+          "score": 195,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -121,7 +205,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -166,27 +250,27 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 185,
+      "score": 195,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 15,
-        "linked": 15,
-        "highValue": 6,
-        "identityOnly": 9,
-        "suppressedWeak": 14
+        "totalMatched": 33,
+        "linked": 33,
+        "highValue": 13,
+        "identityOnly": 20,
+        "suppressedWeak": 32
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-cetalox-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cetalox-product-page-https-fraterworks-com-products-cetalox-html-7-ox-shows-balanced-behavior-with-moderate-streng",
           "materialName": "Cetalox",
-          "score": 185,
+          "score": 195,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -197,7 +281,8 @@
           "candidateUnit": "",
           "snippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a smelling strip. Odour Profile: Ambrotech delivers a warm, creamy ambergris character with soft woody",
           "queueItemIds": [
-            "hero-ifra-source-cetalox-specialty_supplier_document_needed"
+            "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+            "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
@@ -206,7 +291,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -248,7 +333,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 185,
+      "score": 195,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -262,13 +347,13 @@
         "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-clearwood-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-clearwood-product-page-https-fraterworks-com-products-clearwood-html-6-clearwood-prisma-range-launched-by-firmenich-in",
           "materialName": "Clearwood",
-          "score": 185,
+          "score": 195,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -288,7 +373,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -330,7 +415,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 185,
+      "score": 195,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -344,13 +429,13 @@
         "suppressedWeak": 11
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-geosmin-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-geosmin-1-tec-product-page-https-fraterworks-com-products-geosmin-html-6-areful-overdose-gives-interesting-effects-geosm",
           "materialName": "Geosmin 1% TEC",
-          "score": 185,
+          "score": 195,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -370,7 +455,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -392,30 +477,27 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-iso-e-super-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
-      "materialName": "Iso E Super",
-      "normalizedName": "Iso E Super",
-      "formulaMaterialName": "Iso E Super",
-      "sourceIdentityName": "Iso E Super",
-      "activeMaterialName": "Iso E Super",
+      "id": "ifra-evidence-resolution-hero-ifra-source-orbitone-t-neo-specialty-supplier-document-needed",
+      "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+      "materialName": "Orbitone T Neo",
+      "normalizedName": "Orbitone T Neo",
+      "formulaMaterialName": "Orbitone T Neo",
+      "sourceIdentityName": "Orbitone T Neo",
+      "activeMaterialName": "Orbitone T Neo",
       "dilutionLabel": "",
       "carrierLabel": "",
       "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
         "Damp Shoreline v2"
       ],
       "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
       "queueStatus": "needed",
       "queueReviewStatus": "not_started",
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 169,
+      "score": 179,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -428,14 +510,14 @@
         "identityOnly": 15,
         "suppressedWeak": 31
       },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-iso-e-super-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-orbitone-t-neo-specialty-supplier-document-needed",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-www-takasago-com-en-node-700-html-0-compliance-enhancing-value-through-digitalizatio",
           "materialName": "Iso E Super",
-          "score": 169,
+          "score": 179,
           "candidateLimitType": "allergen_or_restriction",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -447,7 +529,8 @@
           "snippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5,6,7,8-Octahydro-2,3,8,8-tetramethyl-2-naphthyl)ethan-1-one (and isomers) Image C 16 H 26 O APPLICATION INFORMATION Widely",
           "queueItemIds": [
             "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
-            "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed"
+            "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+            "hero-ifra-source-timbersilk-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
@@ -499,7 +582,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 167,
+      "score": 177,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -513,13 +596,13 @@
         "suppressedWeak": 7
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-celestafleur-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-celestafleur-product-page-https-fraterworks-com-products-celestafleur-html-5-ith-celestafleur-tm-and-herbal-bases-such-as-sur",
           "materialName": "Celestafleur",
-          "score": 167,
+          "score": 177,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -539,7 +622,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -561,18 +644,106 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
-      "materialName": "Methyl Ionone Alpha Extra",
-      "normalizedName": "Methyl Ionone Alpha Extra",
-      "formulaMaterialName": "Methyl Ionone Alpha Extra",
-      "sourceIdentityName": "Methyl Ionone Alpha Extra",
-      "activeMaterialName": "Methyl Ionone Alpha Extra",
+      "id": "ifra-evidence-resolution-hero-ifra-source-iso-e-super-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+      "materialName": "Iso E Super",
+      "normalizedName": "Iso E Super",
+      "formulaMaterialName": "Iso E Super",
+      "sourceIdentityName": "Iso E Super",
+      "activeMaterialName": "Iso E Super",
       "dilutionLabel": "",
       "carrierLabel": "",
       "formulasUsedIn": [
+        "Random Concoction - Original",
         "Skin-Air Bridge",
         "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 169,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 32,
+        "linked": 32,
+        "highValue": 17,
+        "identityOnly": 15,
+        "suppressedWeak": 31
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-iso-e-super-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-www-takasago-com-en-node-700-html-0-compliance-enhancing-value-through-digitalizatio",
+          "materialName": "Iso E Super",
+          "score": 169,
+          "candidateLimitType": "allergen_or_restriction",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://www.takasago.com/en/node/700",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-www-takasago-com-en-node-700.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5,6,7,8-Octahydro-2,3,8,8-tetramethyl-2-naphthyl)ethan-1-one (and isomers) Image C 16 H 26 O APPLICATION INFORMATION Widely",
+          "queueItemIds": [
+            "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+            "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+            "hero-ifra-source-timbersilk-specialty_supplier_document_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "CAS term matches queue identity",
+            "high review priority",
+            "supplier_product_page source",
+            "allergen_or_restriction candidate"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": true,
+            "hasIfra": true,
+            "hasCategory4": false,
+            "hasMaxUse": false,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "compliance enhancing value through digitalization sustainability news careers news release ja compendium catalog orbitone t download image cas no 54464 57 2 orbitone t woody ambergris floral violet woody chemical structure 1 1 2 3 4 5 6 7 8 octahydro 2 3 8 8 tetramethyl 2 naphthyl ethan 1 one and isomers image c 16 h 26 o application information widely"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
+      "materialName": "Ambroxan Crystals",
+      "normalizedName": "Ambroxan Crystals",
+      "formulaMaterialName": "Ambroxan 50%",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "activeMaterialName": "Ambroxan Crystals",
+      "dilutionLabel": "50%",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
         "Damp Shoreline v2"
       ],
       "priority": "high",
@@ -590,56 +761,57 @@
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 17,
-        "linked": 17,
-        "highValue": 9,
-        "identityOnly": 8,
-        "suppressedWeak": 16
+        "totalMatched": 33,
+        "linked": 33,
+        "highValue": 13,
+        "identityOnly": 20,
+        "suppressedWeak": 32
       },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra-html-7-thyl-ionone-5-10-79-89-0-beta-isomethyl-ionone-3",
-          "materialName": "Methyl Ionone Alpha Extra",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cetalox-product-page-https-fraterworks-com-products-cetalox-html-7-ox-shows-balanced-behavior-with-moderate-streng",
+          "materialName": "Cetalox",
           "score": 167,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/methyl-ionone-alpha-extra-product-page-https-fraterworks-com-products-methyl-ionone-alpha-extra.html",
+          "sourceUrl": "https://fraterworks.com/products/cetalox",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/cetalox-product-page-https-fraterworks-com-products-cetalox.html",
           "category": "4",
-          "candidateValue": "30",
-          "candidateUnit": "%",
-          "snippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Longevity: Lasts > 124 hours on a smelling strip. Odour Profile: Methyl Ionone Alpha Extra delivers a sophisticated powdery-flo",
+          "candidateValue": "No restriction",
+          "candidateUnit": "",
+          "snippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a smelling strip. Odour Profile: Ambrotech delivers a warm, creamy ambergris character with soft woody",
           "queueItemIds": [
-            "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed"
+            "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+            "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
             "linked to this queue item",
-            "exact material-name match",
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "IFRA language present",
+            "Cat 4/fine-fragrance language present"
           ],
           "warnings": [],
           "generatedCommand": "",
           "signals": {
             "linked": true,
-            "exactName": true,
+            "exactName": false,
             "hasCasMatch": false,
             "hasIfra": true,
             "hasCategory4": true,
-            "hasMaxUse": false,
+            "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
-            "hasAllergen": false,
+            "hasAllergen": true,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "thyl ionone 5 10 79 89 0 beta isomethyl ionone 3 5 127 43 5 beta methyl ionone 1 2 5 128 37 0 bht 0 1 0 25 aromachem best seller no reg ifra 51 30 in finished product cat 4 odour family floral appearance colourless liquid longevity lasts 124 hours on a smelling strip odour profile methyl ionone alpha extra delivers a sophisticated powdery flo"
+            "normalizedSnippet": "ox shows balanced behavior with moderate strength 4 10 and proportional impact in blends 6 10 versatile and predictable to work with ifra 51 no restriction for category 4 odour family amber appearance white crystals longevity lasts 182 hours on a smelling strip odour profile ambrotech delivers a warm creamy ambergris character with soft woody"
           }
         }
       ]
@@ -665,7 +837,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 157,
+      "score": 167,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -679,13 +851,13 @@
         "suppressedWeak": 5
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-cypriol-natural-uvcb-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cypriol-product-page-https-www-edenbotanicals-com-nagarmotha-cyperus-html-html-1-es-and-uniformity-of-odor-throughout-the-drydown",
           "materialName": "Cypriol",
-          "score": 157,
+          "score": 167,
           "candidateLimitType": "allergen_or_restriction",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -705,7 +877,7 @@
             "high review priority",
             "supplier_product_page source",
             "allergen_or_restriction candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -750,7 +922,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 157,
+      "score": 167,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -764,13 +936,13 @@
         "suppressedWeak": 4
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-seaweed-absolute-natural-uvcb-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-seaweed-absolute-10-product-page-https-www-natureinbottle-com-product-seaweed-absolute-html-3-aweed-absolute-oil-is-compliant-with-the-europea",
           "materialName": "Seaweed Absolute 10%",
-          "score": 157,
+          "score": 167,
           "candidateLimitType": "allergen_or_restriction",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -790,7 +962,7 @@
             "high review priority",
             "supplier_product_page source",
             "allergen_or_restriction candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -834,7 +1006,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -848,13 +1020,13 @@
         "suppressedWeak": 16
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambrettolide-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide-html-6-floral-mildly-animal-or-ambre-like-type-aroma",
           "materialName": "Ambrettolide 50% TEC",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -874,7 +1046,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -893,93 +1065,6 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": true,
             "normalizedSnippet": "floral mildly animal or ambre like type aromachem best seller missing eu specs missing hs code origin missing ifra 51 missing info no reg ifra 51 no restriction for category 4 average use 0 5 in a perfume compound odour family musky appearance colourless liquid longevity lasts 172 hours on a smelling strip odour profile ambrettolide delivers a so"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
-      "materialName": "Ambroxan Crystals",
-      "normalizedName": "Ambroxan Crystals",
-      "formulaMaterialName": "Ambroxan 50%",
-      "sourceIdentityName": "Ambroxan Crystals",
-      "activeMaterialName": "Ambroxan Crystals",
-      "dilutionLabel": "50%",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Damp Shoreline v1",
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 155,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 18,
-        "linked": 18,
-        "highValue": 7,
-        "identityOnly": 11,
-        "suppressedWeak": 17
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ambroxan-crystals-product-page-https-fraterworks-com-products-ambrofix-html-7-an-shows-balanced-behavior-with-moderate-streng",
-          "materialName": "Ambroxan Crystals",
-          "score": 155,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/ambrofix",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/ambroxan-crystals-product-page-https-fraterworks-com-products-ambrofix.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "an) shows balanced behavior with moderate strength (6/10) and proportional impact in blends (7/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: 0.1% in a perfume compound Odour Family: Amber Appearance: White crystalline powder Longevity: Lasts > 1 month on a smelling strip. Odour Profile: Ambroxan delivers a s",
-          "queueItemIds": [
-            "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "IFRA language present"
-          ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "an shows balanced behavior with moderate strength 6 10 and proportional impact in blends 7 10 versatile and predictable to work with ifra 51 no restriction for category 4 average use 0 1 in a perfume compound odour family amber appearance white crystalline powder longevity lasts 1 month on a smelling strip odour profile ambroxan delivers a s"
           }
         }
       ]
@@ -1006,7 +1091,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1020,13 +1105,13 @@
         "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-caryophyllene-oxide-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-caryophyllene-oxide-product-page-https-fraterworks-com-products-caryophyllene-oxide-html-5-notes-its-unique-dry-sweet-character-prevents-f",
           "materialName": "Caryophyllene Oxide",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1046,7 +1131,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -1091,7 +1176,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1105,13 +1190,13 @@
         "suppressedWeak": 17
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ethyl-linalool-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ethyl-linalool-product-page-https-fraterworks-com-products-ethyl-linalool-html-7-muguet-lilac-lily-appleblossom-etc-as-well",
           "materialName": "Ethyl Linalool",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1131,7 +1216,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -1177,7 +1262,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1191,13 +1276,13 @@
         "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-florol-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-florol-product-page-https-fraterworks-com-products-florol-html-6-g-it-ideal-as-a-building-block-florol-is-effect",
           "materialName": "Florol",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1217,7 +1302,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -1264,7 +1349,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1278,13 +1363,13 @@
         "suppressedWeak": 11
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-maritima-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-maritima-product-page-https-fraterworks-com-products-maritima-html-6-ima-shows-balanced-behavior-with-moderate-streng",
           "materialName": "Maritima",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1304,7 +1389,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -1351,7 +1436,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1365,13 +1450,13 @@
         "suppressedWeak": 8
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-oceanol-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-oceanol-10-product-page-https-fraterworks-com-products-oceanol-html-6-nol-shows-balanced-behavior-with-moderate-streng",
           "materialName": "Oceanol 10%",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1391,7 +1476,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [
             "RIFM/average-use text is not an IFRA category limit"
@@ -1415,16 +1500,18 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-orbitone-t-neo-specialty-supplier-document-needed",
-      "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
-      "materialName": "Orbitone T Neo",
-      "normalizedName": "Orbitone T Neo",
-      "formulaMaterialName": "Orbitone T Neo",
-      "sourceIdentityName": "Orbitone T Neo",
-      "activeMaterialName": "Orbitone T Neo",
-      "dilutionLabel": "",
-      "carrierLabel": "",
+      "id": "ifra-evidence-resolution-hero-ifra-source-veramoss-specialty-supplier-document-needed",
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "normalizedName": "Veramoss",
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "activeMaterialName": "Veramoss",
+      "dilutionLabel": "20% TEC",
+      "carrierLabel": "TEC",
       "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
         "Damp Shoreline v2"
       ],
       "priority": "high",
@@ -1435,39 +1522,39 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 153,
+      "score": 165,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 15,
-        "linked": 15,
+        "totalMatched": 14,
+        "linked": 14,
         "highValue": 7,
-        "identityOnly": 8,
-        "suppressedWeak": 14
+        "identityOnly": 6,
+        "suppressedWeak": 13
       },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-orbitone-t-neo-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-veramoss-specialty-supplier-document-needed",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-fraterworks-com-products-orbitone-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
-          "materialName": "Iso E Super",
-          "score": 153,
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
+          "materialName": "Veramoss 20% TEC",
+          "score": 165,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/orbitone",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/iso-e-super-product-page-https-fraterworks-com-products-orbitone.html",
-          "category": "",
-          "candidateValue": "20",
-          "candidateUnit": "%",
-          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For T",
+          "sourceUrl": "https://fraterworks.com/products/veramoss",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
+          "category": "4",
+          "candidateValue": "No restriction",
+          "candidateUnit": "",
+          "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
           "queueItemIds": [
-            "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
-            "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed"
+            "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed",
+            "hero-ifra-source-veramoss-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
@@ -1476,23 +1563,25 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "RIFM/average-use text is not an IFRA category limit"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": false,
+            "hasCategory4": true,
+            "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
-            "hasAllergen": false,
+            "hasAllergen": true,
             "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 20 ifra 49 20 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer for t"
+            "hasRifmUsage": true,
+            "normalizedSnippet": "luated directly 3 10 strength but exerts a powerful influence in blends 9 10 impact use sparingly to avoid overwhelming compositions ifra 51 no restriction for category 4 average use 0 2 in a perfume compound odour family mossy appearance fine off white powder longevity lasts 360 hours on a smelling strip odour profile dry woody earthy arom"
           }
         }
       ]
@@ -1518,27 +1607,27 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 153,
+      "score": 163,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 12,
-        "linked": 12,
-        "highValue": 6,
-        "identityOnly": 6,
-        "suppressedWeak": 11
+        "totalMatched": 32,
+        "linked": 32,
+        "highValue": 17,
+        "identityOnly": 15,
+        "suppressedWeak": 31
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-timbersilk-specialty-supplier-document-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-iso-e-super-product-page-https-fraterworks-com-products-timbersilk-html-6-n-chilled-in-a-moderate-freezer-overnight-before",
           "materialName": "Iso E Super",
-          "score": 153,
+          "score": 163,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1550,7 +1639,8 @@
           "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer... For T",
           "queueItemIds": [
             "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
-            "hero-ifra-source-timbersilk-specialty_supplier_document_needed"
+            "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+            "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
@@ -1559,7 +1649,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -1601,7 +1691,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 153,
+      "score": 163,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1615,13 +1705,13 @@
         "suppressedWeak": 29
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before",
           "materialName": "Vetiveryl Acetate",
-          "score": 153,
+          "score": 163,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1641,7 +1731,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -1684,7 +1774,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 151,
+      "score": 161,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1698,13 +1788,13 @@
         "suppressedWeak": 13
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ethyl-linalyl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ethyl-linalyl-acetate-product-page-https-fraterworks-com-products-ethyl-linalyl-acetate-html-0-ss-green-absolute-orris-pallida-signature-resi",
           "materialName": "Ethyl Linalyl Acetate",
-          "score": 151,
+          "score": 161,
           "candidateLimitType": "phototoxic_note",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1724,7 +1814,7 @@
             "high review priority",
             "supplier_product_page source",
             "phototoxic_note candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -1768,7 +1858,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 151,
+      "score": 161,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1782,13 +1872,13 @@
         "suppressedWeak": 12
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-phenyl-ethyl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "not_started",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-phenyl-ethyl-acetate-product-page-https-fraterworks-com-products-phenyl-ethyl-acetate-html-0-ss-green-absolute-orris-pallida-signature-resi",
           "materialName": "Phenyl Ethyl Acetate",
-          "score": 151,
+          "score": 161,
           "candidateLimitType": "phototoxic_note",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1808,7 +1898,7 @@
             "high review priority",
             "supplier_product_page source",
             "phototoxic_note candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -1853,7 +1943,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 112,
+      "score": 155,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1861,19 +1951,19 @@
       ],
       "candidateCounts": {
         "totalMatched": 23,
-        "linked": 0,
+        "linked": 23,
         "highValue": 10,
         "identityOnly": 13,
         "suppressedWeak": 22
       },
-      "candidateReviewItemId": "",
-      "candidateReviewStatus": "",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-hedione-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
           "materialName": "Hedione",
-          "score": 112,
+          "score": 155,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1885,24 +1975,25 @@
           "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
           "queueItemIds": [
             "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
-            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
+            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed",
+            "hero-ifra-source-hedione-global_ifra_standard_needed",
+            "hero-ifra-source-hedione-hc-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
+            "linked to this queue item",
             "exact material-name match",
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present",
-            "Cat 4/fine-fragrance language present"
+            "IFRA language present"
           ],
           "warnings": [
-            "not directly linked to this queue item",
             "RIFM/average-use text is not an IFRA category limit"
           ],
           "generatedCommand": "",
           "signals": {
-            "linked": false,
+            "linked": true,
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
@@ -1941,7 +2032,7 @@
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 112,
+      "score": 155,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1949,19 +2040,19 @@
       ],
       "candidateCounts": {
         "totalMatched": 23,
-        "linked": 0,
+        "linked": 23,
         "highValue": 10,
         "identityOnly": 13,
         "suppressedWeak": 22
       },
-      "candidateReviewItemId": "",
-      "candidateReviewStatus": "",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-hedione-hc-specialty-supplier-document-needed",
+      "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-hedione-product-page-https-fraterworks-com-products-hedione-high-cis-html-6-glorious-check-out-our-paradise-molecule-the",
           "materialName": "Hedione",
-          "score": 112,
+          "score": 155,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -1973,24 +2064,25 @@
           "snippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourless liquid Longevity: Lasts > 70 hours on a smelling strip. Odour Profile: Hedione High Cis delivers a powerful, clean, fres",
           "queueItemIds": [
             "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
-            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed"
+            "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed",
+            "hero-ifra-source-hedione-global_ifra_standard_needed",
+            "hero-ifra-source-hedione-hc-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
+            "linked to this queue item",
             "exact material-name match",
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present",
-            "Cat 4/fine-fragrance language present"
+            "IFRA language present"
           ],
           "warnings": [
-            "not directly linked to this queue item",
             "RIFM/average-use text is not an IFRA category limit"
           ],
           "generatedCommand": "",
           "signals": {
-            "linked": false,
+            "linked": true,
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
@@ -2002,93 +2094,6 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": true,
             "normalizedSnippet": "glorious check out our paradise molecule the closest thing you can get to firmenich s captive paradisone aromachem best seller no reg ifra 51 no restriction for category 4 average use 4 in a perfume compound appearance colourless liquid longevity lasts 70 hours on a smelling strip odour profile hedione high cis delivers a powerful clean fres"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-veramoss-specialty-supplier-document-needed",
-      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
-      "materialName": "Veramoss 20% TEC",
-      "normalizedName": "Veramoss",
-      "formulaMaterialName": "Veramoss 20% TEC",
-      "sourceIdentityName": "Veramoss",
-      "activeMaterialName": "Veramoss",
-      "dilutionLabel": "20% TEC",
-      "carrierLabel": "TEC",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "specialty_supplier_document_needed",
-      "currentIfraCategory": "supplierSdsNeeded",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 112,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 14,
-        "linked": 0,
-        "highValue": 7,
-        "identityOnly": 6,
-        "suppressedWeak": 13
-      },
-      "candidateReviewItemId": "",
-      "candidateReviewStatus": "",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
-          "materialName": "Veramoss 20% TEC",
-          "score": 112,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/veramoss",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
-          "queueItemIds": [
-            "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "IFRA language present",
-            "Cat 4/fine-fragrance language present"
-          ],
-          "warnings": [
-            "not directly linked to this queue item",
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": false,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "luated directly 3 10 strength but exerts a powerful influence in blends 9 10 impact use sparingly to avoid overwhelming compositions ifra 51 no restriction for category 4 average use 0 2 in a perfume compound odour family mossy appearance fine off white powder longevity lasts 360 hours on a smelling strip odour profile dry woody earthy arom"
           }
         }
       ]
@@ -2117,7 +2122,7 @@
       "evidenceStatus": "likely_fcf_evidence",
       "suggestedAction": "promote_fcf_evidence_after_review",
       "confidence": "high",
-      "score": 177,
+      "score": 187,
       "whySelected": "Top evidence contains FCF, furocoumarin, bergapten, or phototoxic wording for an FCF citrus special case.",
       "limitations": [
         "FCF promotion supports special-case evidence only.",
@@ -2138,7 +2143,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-10-ily-citrus-appearance-pale-yellow-liquid-longe",
           "materialName": "Bergamot EO FCF",
-          "score": 177,
+          "score": 187,
           "candidateLimitType": "phototoxic_note",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -2158,7 +2163,7 @@
             "high review priority",
             "supplier_product_page source",
             "phototoxic_note candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "node scripts/promote_reviewed_ifra_candidates.mjs \\\n  --candidate-id \"candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-bergamot-eo-fcf-product-page-https-fraterworks-com-products-bergamot-oil-fcf-html-10-ily-citrus-appearance-pale-yellow-liquid-longe\" \\\n  --material \"Bergamot EO FCF\" \\\n  --record-type fcf_phototoxic_note \\\n  --finding furocoumarin_free_or_bergapten_free \\\n  --summary \"Reviewed source supports FCF/bergapten-free handling. Not launch clearance.\"",
@@ -2196,7 +2201,7 @@
       "requiredSourceType": "natural_uvcb_supplier_document_needed",
       "currentIfraCategory": "supplierSdsNeeded",
       "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
+      "queueReviewStatus": "needs_more_source",
       "evidenceStatus": "needs_supplier_doc",
       "suggestedAction": "request_supplier_ifra_or_sds",
       "confidence": "low",
@@ -2204,46 +2209,6 @@
       "whySelected": "No strong material-specific supplier IFRA/SDS candidate is available yet.",
       "limitations": [
         "Supplier documentation is still needed before launch confidence."
-      ],
-      "candidateCounts": {
-        "totalMatched": 0,
-        "linked": 0,
-        "highValue": 0,
-        "identityOnly": 0,
-        "suppressedWeak": 0
-      },
-      "candidateReviewItemId": "",
-      "candidateReviewStatus": "",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": []
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-aldehyde-c-18-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
-      "materialName": "Aldehyde C-18",
-      "normalizedName": "Aldehyde C-18",
-      "formulaMaterialName": "Aldehyde C-18",
-      "sourceIdentityName": "Aldehyde C-18",
-      "activeMaterialName": "Aldehyde C-18",
-      "dilutionLabel": "",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "insufficient_evidence",
-      "suggestedAction": "find_global_ifra_standard",
-      "confidence": "low",
-      "score": 0,
-      "whySelected": "No strong source-backed global IFRA standard candidate is available yet.",
-      "limitations": [
-        "Do not infer a limit from missing source data."
       ],
       "candidateCounts": {
         "totalMatched": 0,
@@ -2277,7 +2242,7 @@
       "requiredSourceType": "global_ifra_standard_needed",
       "currentIfraCategory": "sourceUnavailable",
       "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
+      "queueReviewStatus": "needs_more_source",
       "evidenceStatus": "insufficient_evidence",
       "suggestedAction": "find_global_ifra_standard",
       "confidence": "low",
@@ -2297,6 +2262,91 @@
       "candidateReviewStatus": "",
       "reviewedSourceRecordIds": [],
       "bestCandidates": []
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-aldehyde-c-18-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
+      "materialName": "Aldehyde C-18",
+      "normalizedName": "Aldehyde C-18",
+      "formulaMaterialName": "Aldehyde C-18",
+      "sourceIdentityName": "Aldehyde C-18",
+      "activeMaterialName": "Aldehyde C-18",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "identity_only",
+      "suggestedAction": "find_global_ifra_standard",
+      "confidence": "low",
+      "score": 50,
+      "whySelected": "Available candidates are useful for identity/CAS/source targeting but are not compliance evidence.",
+      "limitations": [
+        "Identity references do not prove IFRA compliance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 6,
+        "linked": 6,
+        "highValue": 0,
+        "identityOnly": 6,
+        "suppressedWeak": 5
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-aldehyde-c-18-global-ifra-standard-needed",
+      "candidateReviewStatus": "not_started",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
+          "materialName": "Ald C-18 (10%)",
+          "score": 50,
+          "candidateLimitType": "identity",
+          "reviewPriority": "low",
+          "sourceType": "identity_reference",
+          "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1000531.html",
+          "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes gamma-nonalactone (aldehyde C-18 (so-called)) nonano-1,4-lactone Supplier Sponsors ACS International GmbH Creativity Beyond Chemistry Production &#8226; Distribution &#8226; Sourcing &#8226; Logis",
+          "queueItemIds": [
+            "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "low review priority",
+            "identity_reference source",
+            "identity candidate",
+            "source URL came from matched ingredient reference"
+          ],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": false,
+            "hasMaxUse": false,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": false,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes gamma nonalactone aldehyde c 18 so called nonano 1 4 lactone supplier sponsors acs international gmbh creativity beyond chemistry production 8226 distribution 8226 sourcing 8226 logis"
+          }
+        }
+      ]
     },
     {
       "id": "ifra-evidence-resolution-hero-ifra-source-algenone-specialty-supplier-document-needed",
@@ -2339,7 +2389,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-algenone-identity-reference-https-www-thegoodscentscompany-com-data-rw-1037861-html-html-5-potential-uses-fr-floral-fr-hay-new-mown-hay-fr",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-algenone-identity-reference-https-www-thegoodscentscompany-com-data-rw-1037861-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Algenone",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2350,7 +2400,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "Potential Uses: FR floral FR hay new mown hay FR hyacinth FR lily FR melon ozone Occurrence (nature, food, other): note not found in nature Synonyms: acetaldehyde, (4-methylphenoxy)- acetaldehyde, 2-(4-methylphenoxy)- aldehyde XI algenone p- cresoxyacetaldehyde para- cresoxyacetaldehyde (4- methyl phenoxy) acetaldehyde 2-(4- methyl phenoxy) acetaldehyde meth",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes para-methyl phenoxyacetaldehyde acetaldehyde, 2-(4-methylphenoxy)- Supplier Sponsors Associate Allied Chemicals Quality, Service and Values Our aim is to become a reliable one-stop shop for our cu",
           "queueItemIds": [
             "hero-ifra-source-algenone-specialty_supplier_document_needed"
           ],
@@ -2361,9 +2411,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2377,7 +2429,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "potential uses fr floral fr hay new mown hay fr hyacinth fr lily fr melon ozone occurrence nature food other note not found in nature synonyms acetaldehyde 4 methylphenoxy acetaldehyde 2 4 methylphenoxy aldehyde xi algenone p cresoxyacetaldehyde para cresoxyacetaldehyde 4 methyl phenoxy acetaldehyde 2 4 methyl phenoxy acetaldehyde meth"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes para methyl phenoxyacetaldehyde acetaldehyde 2 4 methylphenoxy supplier sponsors associate allied chemicals quality service and values our aim is to become a reliable one stop shop for our cu"
           }
         }
       ]
@@ -2423,7 +2475,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-allyl-amyl-glycolate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1001841-html-html-1-x-49-0-5531-9906-199-operational-capabilities",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-allyl-amyl-glycolate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1001841-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Allyl Amyl Glycolate",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2434,7 +2486,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "x: +49 (0)5531 9906 199 Operational Capabilities CODE100184 CODE100184 Product(s): 75911 Allyl Amyl Glycolate Augustus Oils Ltd The Premier Supplier Augustus Oils Ltd, in harmony with nature - to present it at its best... A wealth of experience, expertise and knowledge has allowed Augustus to bridge the gulf in expectation and trust between growers and users",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes allyl amyl glycolate allyl (3-methylbutoxy)acetate Supplier Sponsors ACS International GmbH Creativity Beyond Chemistry Production &#8226; Distribution &#8226; Sourcing &#8226; Logistics &#8226; C",
           "queueItemIds": [
             "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
           ],
@@ -2445,9 +2497,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2461,7 +2515,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "x 49 0 5531 9906 199 operational capabilities code 100184 code 100184 product s 75911 allyl amyl glycolate augustus oils ltd the premier supplier augustus oils ltd in harmony with nature to present it at its best a wealth of experience expertise and knowledge has allowed augustus to bridge the gulf in expectation and trust between growers and users"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes allyl amyl glycolate allyl 3 methylbutoxy acetate supplier sponsors acs international gmbh creativity beyond chemistry production 8226 distribution 8226 sourcing 8226 logistics 8226 c"
           }
         }
       ]
@@ -2507,7 +2561,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cyclogalbanate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1038701-html-html-2-ion-of-a-pervasive-technology-and-total-control",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cyclogalbanate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1038701-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Cyclogalbanate",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2518,7 +2572,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "ion of a Pervasive technology and total control GSC103870102885 GSC103870102885 Product(s): 119010 ISOANANAT O&#39;Laughlin Industries Inc. Manufacturer of chemicals and ingredients used in flavors, fragrances, food, beverages and cosmetics Leading the Flavor and Fragrance Industry since 1980. O&#39;Laughlin was established in 1980 by its owner and chief exe",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes galbanum oxyacetate cyclogalbanate (Symrise) Supplier Sponsors Associate Allied Chemicals Quality, Service and Values Our aim is to become a reliable one-stop shop for our customers. Distributor a",
           "queueItemIds": [
             "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed"
           ],
@@ -2529,9 +2583,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2545,7 +2601,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "ion of a pervasive technology and total control gsc 103870102885 gsc 103870102885 product s 119010 isoananat o 39 laughlin industries inc manufacturer of chemicals and ingredients used in flavors fragrances food beverages and cosmetics leading the flavor and fragrance industry since 1980 o 39 laughlin was established in 1980 by its owner and chief exe"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes galbanum oxyacetate cyclogalbanate symrise supplier sponsors associate allied chemicals quality service and values our aim is to become a reliable one stop shop for our customers distributor a"
           }
         }
       ]
@@ -2591,7 +2647,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-dihydromyrcenol-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006052-html-html-1-gandhi-voice-91-22-2419-8800-fax-91-22-2413",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-dihydromyrcenol-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006052-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Dihydromyrcenol",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2602,7 +2658,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "Gandhi Voice: +91 22 2419 8800 Fax: +91 22 2413 5786 About CODE100605 CODE100605 Product(s): Dihydro Myrcenol Augustus Oils Ltd The Premier Supplier Augustus Oils Ltd, in harmony with nature - to present it at its best... A wealth of experience, expertise and knowledge has allowed Augustus to bridge the gulf in expectation and trust between growers and users",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes dihydromyrcenol 2,6-dimethyloct-7-en-2-ol Supplier Sponsors Associate Allied Chemicals Quality, Service and Values Our aim is to become a reliable one-stop shop for our customers. Distributor and",
           "queueItemIds": [
             "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed"
           ],
@@ -2613,9 +2669,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2629,7 +2687,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "gandhi voice 91 22 2419 8800 fax 91 22 2413 5786 about code 100605 code 100605 product s dihydro myrcenol augustus oils ltd the premier supplier augustus oils ltd in harmony with nature to present it at its best a wealth of experience expertise and knowledge has allowed augustus to bridge the gulf in expectation and trust between growers and users"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes dihydromyrcenol 2 6 dimethyloct 7 en 2 ol supplier sponsors associate allied chemicals quality service and values our aim is to become a reliable one stop shop for our customers distributor and"
           }
         }
       ]
@@ -2674,7 +2732,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-ethyl-vanillin-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1002652-html-html-2-n-gandhi-voice-91-22-2419-8800-fax-91-22-241",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-ethyl-vanillin-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1002652-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Ethyl Vanillin 10%",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2685,7 +2743,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "n Gandhi Voice: +91 22 2419 8800 Fax: +91 22 2413 5786 About CODE100265 CODE100265 Product(s): Ethyl Vanillin Augustus Oils Ltd The Premier Supplier Augustus Oils Ltd, in harmony with nature - to present it at its best... A wealth of experience, expertise and knowledge has allowed Augustus to bridge the gulf in expectation and trust between growers and users",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes ethyl vanillin 4-hydroxy-3-ethoxybenzaldehyde Supplier Sponsors Advanced Biotech. Inc. Inspired by Nature A diverse range of products, all meeting our stringent commitment to quality. Advanced Bio",
           "queueItemIds": [
             "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed"
           ],
@@ -2696,9 +2754,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2712,7 +2772,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "n gandhi voice 91 22 2419 8800 fax 91 22 2413 5786 about code 100265 code 100265 product s ethyl vanillin augustus oils ltd the premier supplier augustus oils ltd in harmony with nature to present it at its best a wealth of experience expertise and knowledge has allowed augustus to bridge the gulf in expectation and trust between growers and users"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes ethyl vanillin 4 hydroxy 3 ethoxybenzaldehyde supplier sponsors advanced biotech inc inspired by nature a diverse range of products all meeting our stringent commitment to quality advanced bio"
           }
         }
       ]
@@ -2758,7 +2818,7 @@
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-pink-peppercorn-oil-p-n-identity-reference-https-www-thegoodscentscompany-com-data-es-1034621-html-html-1-and-fragrance-industry-the-flavour-and-fragranc",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-pink-peppercorn-oil-p-n-identity-reference-https-www-thegoodscentscompany-com-data-es-1034621-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
           "materialName": "Pink Peppercorn Oil P&N",
           "score": 50,
           "candidateLimitType": "identity",
@@ -2769,7 +2829,7 @@
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "and fragrance industry. The flavour and fragrance industry&#39;s premier source for aroma chemicals and essential oils Zanos Ltd. is a B2B supplier of aroma chemicals, speciality chemicals, natural ingredients and vitamins to a diverse range of customers. In Autumn 2020, Stort Chemicals Limited completed their acquisition of Zanos Ltd. Combining our strengt",
+          "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes pepper tree berry oil schinus molle berry oil Supplier Sponsors Berje Inc. Where the world comes to its senses Where the world comes to its senses - Berj&#233; is a global distributor of Essential",
           "queueItemIds": [
             "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed"
           ],
@@ -2780,9 +2840,11 @@
             "low review priority",
             "identity_reference source",
             "identity candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
-          "warnings": [],
+          "warnings": [
+            "identity page contains navigation or supplier-directory noise"
+          ],
           "generatedCommand": "",
           "signals": {
             "linked": true,
@@ -2796,7 +2858,7 @@
             "hasAllergen": false,
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
-            "normalizedSnippet": "and fragrance industry the flavour and fragrance industry 39 s premier source for aroma chemicals and essential oils zanos ltd is a b 2 b supplier of aroma chemicals speciality chemicals natural ingredients and vitamins to a diverse range of customers in autumn 2020 stort chemicals limited completed their acquisition of zanos ltd combining our strengt"
+            "normalizedSnippet": "search eu us properties organoleptics cosmetics suppliers safety safety in use safety references references other blenders uses occurrence synonyms articles notes pepper tree berry oil schinus molle berry oil supplier sponsors berje inc where the world comes to its senses where the world comes to its senses berj 233 is a global distributor of essential"
           }
         }
       ]
@@ -2822,7 +2884,7 @@
       "evidenceStatus": "already_reviewed",
       "suggestedAction": "already_reviewed",
       "confidence": "high",
-      "score": 185,
+      "score": 195,
       "whySelected": "A reviewed source-evidence record already exists for this material.",
       "limitations": [
         "Reviewed evidence is not launch clearance."
@@ -2843,7 +2905,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-lemon-fcf-product-page-https-fraterworks-com-products-lemon-oil-fcf-html-7-e-with-a-heavy-hand-seriously-high-quality-stuf",
           "materialName": "Lemon FCF",
-          "score": 185,
+          "score": 195,
           "candidateLimitType": "phototoxic_note",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -2885,6 +2947,90 @@
       ]
     },
     {
+      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
+      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+      "materialName": "Ylang-Ylang Complete Oil",
+      "normalizedName": "Ylang-Ylang Complete Oil",
+      "formulaMaterialName": "Ylang Ylang 10%",
+      "sourceIdentityName": "Ylang-Ylang Complete Oil",
+      "activeMaterialName": "Ylang-Ylang Complete Oil",
+      "dilutionLabel": "10%",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "queueStatus": "not_applicable",
+      "queueReviewStatus": "reviewed_ok",
+      "evidenceStatus": "not_applicable",
+      "suggestedAction": "ignore_not_relevant",
+      "confidence": "high",
+      "score": 167,
+      "whySelected": "Current structured IFRA coverage already exists.",
+      "limitations": [
+        "Existing coverage is still not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 10,
+        "linked": 10,
+        "highValue": 6,
+        "identityOnly": 4,
+        "suppressedWeak": 9
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
+      "candidateReviewStatus": "not_started",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html-html-1-ith-a-light-green-woody-undertone-an-excellent",
+          "materialName": "Ylang Ylang Complete",
+          "score": 167,
+          "candidateLimitType": "allergen_or_restriction",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of",
+          "queueItemIds": [
+            "hero-ifra-source-ylang-ylang-complete-already_structured",
+            "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "supplier_product_page source",
+            "allergen_or_restriction candidate",
+            "source URL came from matched ingredient reference"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": false,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "ith a light green woody undertone an excellent fixative appearance colorless to pale yellow transparent slightly oily liquid shipping restriction 0 non hazardous safety considerations possible skin sensitization moderate risk use with caution on hypersensitive or damaged skin and on children under two years of age a maximum dermal use level of"
+          }
+        }
+      ]
+    },
+    {
       "id": "ifra-evidence-resolution-hero-ifra-source-oakmoss-absolute-already-structured",
       "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured",
       "materialName": "Oakmoss Absolute 10%",
@@ -2906,7 +3052,7 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 155,
+      "score": 165,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
@@ -2925,7 +3071,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-oakmoss-absolute-10-product-page-https-www-natureinbottle-com-product-oakmoss-absolute-html-2-deal-with-rage-productively-documents-technical",
           "materialName": "Oakmoss Absolute 10%",
-          "score": 155,
+          "score": 165,
           "candidateLimitType": "allergen_or_restriction",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -2945,7 +3091,7 @@
             "high review priority",
             "supplier_product_page source",
             "allergen_or_restriction candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -2990,7 +3136,7 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 153,
+      "score": 163,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
@@ -3009,7 +3155,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cashmeran-product-page-https-fraterworks-com-products-cashmeran-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
           "materialName": "Cashmeran",
-          "score": 153,
+          "score": 163,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -3029,7 +3175,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3073,7 +3219,7 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 153,
+      "score": 163,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
@@ -3092,7 +3238,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cyclamen-aldehyde-product-page-https-fraterworks-com-products-cyclamen-aldehyde-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
           "materialName": "Cyclamen Aldehyde",
-          "score": 153,
+          "score": 163,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -3112,7 +3258,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3157,7 +3303,7 @@
       "evidenceStatus": "not_applicable",
       "suggestedAction": "ignore_not_relevant",
       "confidence": "high",
-      "score": 153,
+      "score": 163,
       "whySelected": "Current structured IFRA coverage already exists.",
       "limitations": [
         "Existing coverage is still not launch clearance."
@@ -3176,7 +3322,7 @@
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-helional-product-page-https-fraterworks-com-products-helional-html-7-n-chilled-in-a-moderate-freezer-overnight-before",
           "materialName": "Helional",
-          "score": 153,
+          "score": 163,
           "candidateLimitType": "ifra_category_limit",
           "reviewPriority": "high",
           "sourceType": "supplier_product_page",
@@ -3196,7 +3342,7 @@
             "high review priority",
             "supplier_product_page source",
             "ifra_category_limit candidate",
-            "IFRA language present"
+            "source URL came from matched ingredient reference"
           ],
           "warnings": [],
           "generatedCommand": "",
@@ -3213,91 +3359,6 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
             "normalizedSnippet": "n chilled in a moderate freezer overnight before being filtered fine this will remove all cloudiness or detritus and is the industry norm ifra standards permitted amounts in finished product ifra 51 2 6 ifra 49 2 6 these are derived from calculated concentrations which do not replace chromatographic quantification on individual lots disclaimer for"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-ylang-ylang-complete-oil-already-structured",
-      "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
-      "materialName": "Ylang-Ylang Complete Oil",
-      "normalizedName": "Ylang-Ylang Complete Oil",
-      "formulaMaterialName": "Ylang Ylang 10%",
-      "sourceIdentityName": "Ylang-Ylang Complete Oil",
-      "activeMaterialName": "Ylang-Ylang Complete Oil",
-      "dilutionLabel": "10%",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Random Concoction - Original",
-        "Skin-Air Bridge",
-        "Damp Shoreline v1"
-      ],
-      "priority": "low",
-      "requiredSourceType": "already_structured",
-      "currentIfraCategory": "aliasIfraMatch",
-      "queueStatus": "not_applicable",
-      "queueReviewStatus": "reviewed_ok",
-      "evidenceStatus": "not_applicable",
-      "suggestedAction": "ignore_not_relevant",
-      "confidence": "high",
-      "score": 114,
-      "whySelected": "Current structured IFRA coverage already exists.",
-      "limitations": [
-        "Existing coverage is still not launch clearance."
-      ],
-      "candidateCounts": {
-        "totalMatched": 10,
-        "linked": 0,
-        "highValue": 6,
-        "identityOnly": 4,
-        "suppressedWeak": 9
-      },
-      "candidateReviewItemId": "",
-      "candidateReviewStatus": "",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html-html-1-ith-a-light-green-woody-undertone-an-excellent",
-          "materialName": "Ylang Ylang Complete",
-          "score": 114,
-          "candidateLimitType": "allergen_or_restriction",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://www.edenbotanicals.com/ylang-ylang-complete-organic-2080.html",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/ylang-ylang-complete-product-page-https-www-edenbotanicals-com-ylang-ylang-complete-organic-2080-html.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "ith a light green, woody undertone; an excellent fixative. Appearance Colorless to pale yellow, transparent, slightly oily liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations Possible skin sensitization (moderate risk); use with caution on hypersensitive or damaged skin, and on children under two years of age.* A maximum dermal use level of",
-          "queueItemIds": [
-            "hero-ifra-source-ylang-ylang-complete-already_structured"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "allergen_or_restriction candidate",
-            "IFRA language present",
-            "maximum-use/restriction wording present"
-          ],
-          "warnings": [
-            "not directly linked to this queue item"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": false,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": false,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "ith a light green woody undertone an excellent fixative appearance colorless to pale yellow transparent slightly oily liquid shipping restriction 0 non hazardous safety considerations possible skin sensitization moderate risk use with caution on hypersensitive or damaged skin and on children under two years of age a maximum dermal use level of"
           }
         }
       ]

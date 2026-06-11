@@ -18,6 +18,8 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
   assert.match(panel.candidateReview.regenerateCommand, /build_candidate_ifra_review_queue/);
   assert.equal(panel.evidenceResolver.isAvailable, false);
   assert.match(panel.evidenceResolver.regenerateCommand, /resolve_ifra_evidence_candidates/);
+  assert.equal(panel.autopilot.isAvailable, false);
+  assert.match(panel.autopilot.regenerateCommand, /run_ifra_evidence_autopilot/);
   assert.match(panel.guardrail, /Not launch clearance/i);
 });
 
@@ -170,6 +172,33 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
           whySelected: "FCF wording matched.",
         },
       ],
+    },
+    {
+      metadata: {
+        generatedAt: "2026-06-11T12:00:00.000Z",
+        regenerateCommand:
+          "node scripts/run_ifra_evidence_autopilot.mjs --markdown --write docs/ifra/ifra_evidence_autopilot_report.md",
+      },
+      summary: {
+        reviewReadyCount: 2,
+        likelyFcfEvidenceCount: 1,
+        unresolvedCount: 5,
+        autoUpdatedReviewStatusCount: 3,
+        alreadyReviewedCount: 1,
+        nextRecommendedAction:
+          "Review the top category-limit candidate before promotion.",
+      },
+      topReviewReadyMaterials: [
+        {
+          queueItemId: "iso-e",
+          materialName: "Iso E Super",
+          autopilotClass: "auto_review_ready",
+          suggestedAction: "review_top_candidate",
+          confidence: "high",
+          sourceUrl: "https://example.test/iso",
+          whySelected: "Strong source.",
+        },
+      ],
     }
   );
 
@@ -213,5 +242,16 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
   assert.deepEqual(
     panel.evidenceResolver.topReviewFirstMaterials.map((item) => item.materialName),
     ["Iso E Super", "Bergamot EO FCF"]
+  );
+  assert.equal(panel.autopilot.isAvailable, true);
+  assert.equal(panel.autopilot.counts.reviewReady, 2);
+  assert.equal(panel.autopilot.counts.likelyFcfEvidence, 1);
+  assert.equal(panel.autopilot.counts.unresolved, 5);
+  assert.equal(panel.autopilot.counts.autoUpdated, 3);
+  assert.equal(panel.autopilot.counts.alreadyReviewed, 1);
+  assert.match(panel.autopilot.regenerateCommand, /run_ifra_evidence_autopilot/);
+  assert.deepEqual(
+    panel.autopilot.topReviewFirstMaterials.map((item) => item.materialName),
+    ["Iso E Super"]
   );
 });

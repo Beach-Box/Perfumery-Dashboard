@@ -213,6 +213,61 @@ Recommended workflow:
 
 Resolver output does not add IFRA limits, update runtime IFRA data, mark a material compliant, or provide launch clearance.
 
+## IFRA Evidence Autopilot
+
+Autopilot runs the review-first source workflow in one command:
+
+```bash
+node scripts/run_ifra_evidence_autopilot.mjs \
+  --ingredient-reference "/Users/b.russmacbetch/Library/Mobile Documents/com~apple~CloudDocs/Ingredient data - Ingredient Data.csv"
+```
+
+To also download or reuse cached source pages/documents from known CSV links:
+
+```bash
+node scripts/run_ifra_evidence_autopilot.mjs \
+  --ingredient-reference "/Users/b.russmacbetch/Library/Mobile Documents/com~apple~CloudDocs/Ingredient data - Ingredient Data.csv" \
+  --download \
+  --markdown \
+  --write docs/ifra/ifra_evidence_autopilot_report.md
+```
+
+The JSON report is written to:
+
+```bash
+data/ifra_source_acquisition/ifra_evidence_autopilot_report.json
+```
+
+Autopilot orchestrates:
+
+- source acquisition queue regeneration,
+- ingredient CSV source-link harvesting,
+- optional source download/cache,
+- local IFRA/source document inventory,
+- candidate IFRA/SDS/product-page snippet extraction,
+- candidate review queue regeneration,
+- smart evidence resolution,
+- conservative review-status recommendations.
+
+Autopilot classifications include:
+
+- `auto_review_ready`: a top candidate is ready for human review.
+- `auto_likely_fcf_evidence`: a citrus FCF/phototoxic candidate may be suitable for the narrow FCF evidence pilot after review.
+- `auto_needs_supplier_doc`: supplier IFRA/SDS or product documentation is still needed.
+- `auto_needs_global_standard`: a global IFRA standard source is still needed.
+- `auto_identity_only`: identity/source hints exist, but not compliance evidence.
+- `auto_insufficient`: no useful source-backed evidence is available yet.
+- `auto_deferred`: intentionally deferred work, such as accord expansion.
+- `auto_already_reviewed`: reviewed source evidence or structured coverage already exists.
+
+Safe automatic updates are limited to review workflow metadata:
+
+- high-confidence `review_ready` candidates may move to candidate review `in_review`,
+- insufficient or supplier-document-needed queue items may move to `needs_more_source` when no manual review note/status is present,
+- already reviewed FCF source evidence may mark the matching non-limit FCF candidate `accepted`.
+
+Autopilot refuses to auto-accept category-limit candidates, promote category limits, write runtime IFRA standards, overwrite manual notes, or claim launch clearance. `review_ready` means “look here first,” not “approved.” `accepted` still means “suitable evidence for a later reviewed promotion task,” not runtime compliance.
+
 ## Reviewed Candidate Promotion Pilot
 
 The first promotion workflow is intentionally narrow: reviewed FCF/furocoumarin-free citrus evidence for `Bergamot EO FCF`, `Bergamot FCF`, and `Lemon FCF`.

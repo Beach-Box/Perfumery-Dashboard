@@ -10,6 +10,9 @@ export const CANDIDATE_IFRA_REVIEW_QUEUE_COMMAND =
 export const IFRA_EVIDENCE_RESOLVER_COMMAND =
   "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md";
 
+export const IFRA_EVIDENCE_AUTOPILOT_COMMAND =
+  'node scripts/run_ifra_evidence_autopilot.mjs --ingredient-reference "...Ingredient data - Ingredient Data.csv" --download --markdown --write docs/ifra/ifra_evidence_autopilot_report.md';
+
 export const IFRA_SOURCE_ACQUISITION_MISSING_MESSAGE =
   "Run the IFRA source acquisition queue script to generate the document checklist.";
 
@@ -280,11 +283,72 @@ function buildEvidenceResolverProgress(evidenceResolution) {
   };
 }
 
+function isAvailableAutopilotReport(autopilotReport) {
+  return Boolean(autopilotReport && autopilotReport.summary);
+}
+
+function buildTopAutopilotItems(autopilotReport) {
+  if (!isAvailableAutopilotReport(autopilotReport)) return [];
+  return (autopilotReport.topReviewReadyMaterials || [])
+    .slice(0, 5)
+    .map((item) => ({
+      queueItemId: item.queueItemId,
+      materialName: item.materialName,
+      autopilotClass: item.autopilotClass,
+      suggestedAction: item.suggestedAction,
+      confidence: item.confidence,
+      source: item.sourceUrl || item.sourceFile || "",
+      whySelected: item.whySelected || "",
+    }));
+}
+
+function buildAutopilotProgress(autopilotReport) {
+  if (!isAvailableAutopilotReport(autopilotReport)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Run IFRA Evidence Autopilot to refresh harvest, extraction, resolver, and review-status recommendations in one pass.",
+      regenerateCommand: IFRA_EVIDENCE_AUTOPILOT_COMMAND,
+      guardrail: "Autopilot output does not promote IFRA limits.",
+      lastRunAt: "",
+      nextRecommendedAction: "Run autopilot before starting manual evidence review.",
+      counts: {
+        reviewReady: 0,
+        likelyFcfEvidence: 0,
+        unresolved: 0,
+        autoUpdated: 0,
+        alreadyReviewed: 0,
+      },
+      topReviewFirstMaterials: [],
+    };
+  }
+  const summary = autopilotReport.summary || {};
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      autopilotReport.metadata?.regenerateCommand || IFRA_EVIDENCE_AUTOPILOT_COMMAND,
+    guardrail: "Autopilot ranks and updates review metadata only; it does not promote IFRA limits.",
+    lastRunAt: autopilotReport.metadata?.generatedAt || "",
+    nextRecommendedAction:
+      summary.nextRecommendedAction || "Review the top evidence candidates.",
+    counts: {
+      reviewReady: summary.reviewReadyCount || 0,
+      likelyFcfEvidence: summary.likelyFcfEvidenceCount || 0,
+      unresolved: summary.unresolvedCount || 0,
+      autoUpdated: summary.autoUpdatedReviewStatusCount || 0,
+      alreadyReviewed: summary.alreadyReviewedCount || 0,
+    },
+    topReviewFirstMaterials: buildTopAutopilotItems(autopilotReport),
+  };
+}
+
 export function buildIfraSourceAcquisitionPanel(
   queue,
   documentInventory = null,
   candidateReviewQueue = null,
-  evidenceResolution = null
+  evidenceResolution = null,
+  autopilotReport = null
 ) {
   if (!isAvailableQueue(queue)) {
     return {
@@ -322,6 +386,7 @@ export function buildIfraSourceAcquisitionPanel(
       },
       candidateReview: buildCandidateReviewProgress(candidateReviewQueue),
       evidenceResolver: buildEvidenceResolverProgress(evidenceResolution),
+      autopilot: buildAutopilotProgress(autopilotReport),
     };
   }
 
@@ -350,6 +415,7 @@ export function buildIfraSourceAcquisitionPanel(
   });
   const candidateReviewProgress = buildCandidateReviewProgress(candidateReviewQueue);
   const evidenceResolverProgress = buildEvidenceResolverProgress(evidenceResolution);
+  const autopilotProgress = buildAutopilotProgress(autopilotReport);
 
   return {
     isAvailable: true,
@@ -391,5 +457,6 @@ export function buildIfraSourceAcquisitionPanel(
     },
     candidateReview: candidateReviewProgress,
     evidenceResolver: evidenceResolverProgress,
+    autopilot: autopilotProgress,
   };
 }

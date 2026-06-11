@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T12:08:07.889Z",
+    "generatedAt": "2026-06-11T14:43:33.704Z",
     "reportName": "IFRA Source Document Inventory",
     "sourceDirectory": "downloads/source_documents/ifra",
     "queueItemCount": 44,
@@ -10,11 +10,1623 @@
     ]
   },
   "summary": {
-    "documentCount": 0,
-    "matchedDocumentCount": 0,
+    "documentCount": 86,
+    "matchedDocumentCount": 24,
     "possibleMatchDocumentCount": 0,
-    "unmatchedDocumentCount": 0,
-    "sourceTypeGuessCounts": {}
+    "unmatchedDocumentCount": 62,
+    "sourceTypeGuessCounts": {
+      "global_ifra_standard": 1,
+      "unknown": 6,
+      "supplier_sds": 79
+    }
   },
-  "documents": []
+  "documents": [
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-global-ifra-51-st-amendment-pdf",
+      "filename": "IFRA - 51st Amendment.pdf",
+      "relativePath": "downloads/source_documents/ifra/global/IFRA - 51st Amendment.pdf",
+      "sizeBytes": 11862799,
+      "modifiedAt": "2026-06-11T12:58:30.400Z",
+      "extension": "pdf",
+      "titleGuess": "Ifra 51 St Amendment",
+      "materialGuess": "51 St",
+      "sourceTypeGuess": "global_ifra_standard",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-cedar-wood-atlas-product-page-https-docs-edenbotanicals-com-tds-176-cedarwood-atlas-organic-tds-pdf-pdf",
+      "filename": "cedar-wood-atlas-product-page-https-docs-edenbotanicals-com-tds-176-cedarwood-atlas-organic-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/cedar-wood-atlas-product-page-https-docs-edenbotanicals-com-tds-176-cedarwood-atlas-organic-tds-pdf.pdf",
+      "sizeBytes": 168570,
+      "modifiedAt": "2026-06-11T12:47:06.618Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Atlas Product Page Https Docs Edenbotanicals Com Tds 176 Cedarwood Atlas Organic Tds Pdf",
+      "materialGuess": "Cedar Wood Atlas Page Https Docs Edenbotanicals Com Tds 176 Cedarwood Atlas Organic Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-cedar-wood-himalayan-product-page-https-docs-edenbotanicals-com-tds-180-cedarwood-himalayan-tds-pdf-pdf",
+      "filename": "cedar-wood-himalayan-product-page-https-docs-edenbotanicals-com-tds-180-cedarwood-himalayan-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/cedar-wood-himalayan-product-page-https-docs-edenbotanicals-com-tds-180-cedarwood-himalayan-tds-pdf.pdf",
+      "sizeBytes": 164104,
+      "modifiedAt": "2026-06-11T12:47:09.357Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Himalayan Product Page Https Docs Edenbotanicals Com Tds 180 Cedarwood Himalayan Tds Pdf",
+      "materialGuess": "Cedar Wood Himalayan Page Https Docs Edenbotanicals Com Tds 180 Cedarwood Himalayan Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-cedar-wood-texas-product-page-https-docs-edenbotanicals-com-tds-185-cedarwood-texas-tds-pdf-pdf",
+      "filename": "cedar-wood-texas-product-page-https-docs-edenbotanicals-com-tds-185-cedarwood-texas-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/cedar-wood-texas-product-page-https-docs-edenbotanicals-com-tds-185-cedarwood-texas-tds-pdf.pdf",
+      "sizeBytes": 167386,
+      "modifiedAt": "2026-06-11T12:47:11.858Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Texas Product Page Https Docs Edenbotanicals Com Tds 185 Cedarwood Texas Tds Pdf",
+      "materialGuess": "Cedar Wood Texas Page Https Docs Edenbotanicals Com Tds 185 Cedarwood Texas Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-cedar-wood-virginia-product-page-https-docs-edenbotanicals-com-tds-190-cedarwood-virginia-tds-pdf-pdf",
+      "filename": "cedar-wood-virginia-product-page-https-docs-edenbotanicals-com-tds-190-cedarwood-virginia-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/cedar-wood-virginia-product-page-https-docs-edenbotanicals-com-tds-190-cedarwood-virginia-tds-pdf.pdf",
+      "sizeBytes": 166159,
+      "modifiedAt": "2026-06-11T12:47:14.080Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Virginia Product Page Https Docs Edenbotanicals Com Tds 190 Cedarwood Virginia Tds Pdf",
+      "materialGuess": "Cedar Wood Virginia Page Https Docs Edenbotanicals Com Tds 190 Cedarwood Virginia Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
+          "materialName": "Cedarwood Virginia EO",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 2,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "cedarwood virginia"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-cypriol-product-page-https-docs-edenbotanicals-com-tds-625-nagarmotha-cypriol-tds-pdf-pdf",
+      "filename": "cypriol-product-page-https-docs-edenbotanicals-com-tds-625-nagarmotha-cypriol-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/cypriol-product-page-https-docs-edenbotanicals-com-tds-625-nagarmotha-cypriol-tds-pdf.pdf",
+      "sizeBytes": 162807,
+      "modifiedAt": "2026-06-11T12:47:31.219Z",
+      "extension": "pdf",
+      "titleGuess": "Cypriol Product Page Https Docs Edenbotanicals Com Tds 625 Nagarmotha Cypriol Tds Pdf",
+      "materialGuess": "Cypriol Page Https Docs Edenbotanicals Com Tds 625 Nagarmotha Cypriol Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-product-pages-fir-balsam-product-page-https-docs-edenbotanicals-com-tds-320-fir-balsam-tds-pdf-pdf",
+      "filename": "fir-balsam-product-page-https-docs-edenbotanicals-com-tds-320-fir-balsam-tds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/product_pages/fir-balsam-product-page-https-docs-edenbotanicals-com-tds-320-fir-balsam-tds-pdf.pdf",
+      "sizeBytes": 167047,
+      "modifiedAt": "2026-06-11T12:48:07.203Z",
+      "extension": "pdf",
+      "titleGuess": "Fir Balsam Product Page Https Docs Edenbotanicals Com Tds 320 Fir Balsam Tds Pdf",
+      "materialGuess": "Fir Balsam Page Https Docs Edenbotanicals Com Tds 320 Fir Balsam Tds Pdf",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-alcohol-c-8-octanol-supplier-sds-https-shop-perfumersapprentice-com-msds-7663-pdf-pdf",
+      "filename": "alcohol-c-8-octanol-supplier-sds-https-shop-perfumersapprentice-com-msds-7663-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/alcohol-c-8-octanol-supplier-sds-https-shop-perfumersapprentice-com-msds-7663-pdf.pdf",
+      "sizeBytes": 114658,
+      "modifiedAt": "2026-06-11T12:34:34.228Z",
+      "extension": "pdf",
+      "titleGuess": "Alcohol C 8 Octanol Supplier Sds Https Shop Perfumersapprentice Com Msds 7663 Pdf",
+      "materialGuess": "Alcohol C 8 Octanol Https Shop Perfumersapprentice Com Msds 7663 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ald-c-11-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-11-undecylicfccsds-pdf-v-1717637560-pdf",
+      "filename": "ald-c-11-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-11-undecylicfccsds-pdf-v-1717637560.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ald-c-11-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-11-undecylicfccsds-pdf-v-1717637560.pdf",
+      "sizeBytes": 131134,
+      "modifiedAt": "2026-06-11T12:34:37.192Z",
+      "extension": "pdf",
+      "titleGuess": "Ald C 11 10 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehydec 11 Undecylicfccsds Pdf V 1717637560",
+      "materialGuess": "Ald C 11 10 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehydec 11 Undecylicfccsds Pdf V 1717637560",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ald-c-12-mna-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-12-mnasds-pdf-v-1736807600-pdf",
+      "filename": "ald-c-12-mna-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-12-mnasds-pdf-v-1736807600.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ald-c-12-mna-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-aldehydec-12-mnasds-pdf-v-1736807600.pdf",
+      "sizeBytes": 221359,
+      "modifiedAt": "2026-06-11T12:34:40.554Z",
+      "extension": "pdf",
+      "titleGuess": "Ald C 12 Mna 10 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehydec 12 Mnasds Pdf V 1736807600",
+      "materialGuess": "Ald C 12 Mna 10 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehydec 12 Mnasds Pdf V 1736807600",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ald-c-18-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-18-gamma-nonalactone-pdf-v-1713563617-pdf",
+      "filename": "ald-c-18-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-18-gamma-nonalactone-pdf-v-1713563617.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ald-c-18-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-18-gamma-nonalactone-pdf-v-1713563617.pdf",
+      "sizeBytes": 173440,
+      "modifiedAt": "2026-06-11T12:34:45.877Z",
+      "extension": "pdf",
+      "titleGuess": "Ald C 18 10 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Aldehyde C 18 Gamma Nonalactone Pdf V 1713563617",
+      "materialGuess": "Ald C 18 10 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehyde C 18 Gamma Nonalactone Pdf V 1713563617",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
+          "materialName": "Aldehyde C-18",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "aldehyde c 18",
+            "gamma nonalactone",
+            "ald c 18"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ald-c-18-10-supplier-sds-https-shop-perfumersapprentice-com-msds-5996-pdf-pdf",
+      "filename": "ald-c-18-10-supplier-sds-https-shop-perfumersapprentice-com-msds-5996-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ald-c-18-10-supplier-sds-https-shop-perfumersapprentice-com-msds-5996-pdf.pdf",
+      "sizeBytes": 101678,
+      "modifiedAt": "2026-06-11T12:34:42.781Z",
+      "extension": "pdf",
+      "titleGuess": "Ald C 18 10 Supplier Sds Https Shop Perfumersapprentice Com Msds 5996 Pdf",
+      "materialGuess": "Ald C 18 10 Https Shop Perfumersapprentice Com Msds 5996 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
+          "materialName": "Aldehyde C-18",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ald c 18"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-algenone-supplier-sds-https-shop-perfumersapprentice-com-msds-9357-pdf-pdf",
+      "filename": "algenone-supplier-sds-https-shop-perfumersapprentice-com-msds-9357-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/algenone-supplier-sds-https-shop-perfumersapprentice-com-msds-9357-pdf.pdf",
+      "sizeBytes": 118233,
+      "modifiedAt": "2026-06-11T12:34:47.279Z",
+      "extension": "pdf",
+      "titleGuess": "Algenone Supplier Sds Https Shop Perfumersapprentice Com Msds 9357 Pdf",
+      "materialGuess": "Algenone Https Shop Perfumersapprentice Com Msds 9357 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-allyl-amyl-glycolate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-allyl-amyl-glycolate-ghs-sds-pdf-v-17174920-pdf",
+      "filename": "allyl-amyl-glycolate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-allyl-amyl-glycolate-ghs-sds-pdf-v-17174920.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/allyl-amyl-glycolate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-allyl-amyl-glycolate-ghs-sds-pdf-v-17174920.pdf",
+      "sizeBytes": 85663,
+      "modifiedAt": "2026-06-11T12:34:51.346Z",
+      "extension": "pdf",
+      "titleGuess": "Allyl Amyl Glycolate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Allyl Amyl Glycolate Ghs Sds Pdf V 17174920",
+      "materialGuess": "Allyl Amyl Glycolate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Allyl Amyl Glycolate Ghs Pdf V 17174920",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
+          "materialName": "Allyl Amyl Glycolate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "allyl amyl glycolate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-amber-xtreme-supplier-sds-https-shop-perfumersapprentice-com-msds-8055-pdf-pdf",
+      "filename": "amber-xtreme-supplier-sds-https-shop-perfumersapprentice-com-msds-8055-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/amber-xtreme-supplier-sds-https-shop-perfumersapprentice-com-msds-8055-pdf.pdf",
+      "sizeBytes": 129806,
+      "modifiedAt": "2026-06-11T12:34:53.515Z",
+      "extension": "pdf",
+      "titleGuess": "Amber Xtreme Supplier Sds Https Shop Perfumersapprentice Com Msds 8055 Pdf",
+      "materialGuess": "Amber Xtreme Https Shop Perfumersapprentice Com Msds 8055 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ambrette-seed-co-2-10-supplier-sds-https-docs-edenbotanicals-com-sds-65-ambrette-20-seed-co-2-fine-sds-pdf-pdf",
+      "filename": "ambrette-seed-co-2-10-supplier-sds-https-docs-edenbotanicals-com-sds-65-ambrette-20-seed-co-2-fine-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ambrette-seed-co-2-10-supplier-sds-https-docs-edenbotanicals-com-sds-65-ambrette-20-seed-co-2-fine-sds-pdf.pdf",
+      "sizeBytes": 294033,
+      "modifiedAt": "2026-06-11T12:34:56.642Z",
+      "extension": "pdf",
+      "titleGuess": "Ambrette Seed Co 2 10 Supplier Sds Https Docs Edenbotanicals Com Sds 65 Ambrette 20 Seed Co 2 Fine Sds Pdf",
+      "materialGuess": "Ambrette Seed Co 2 10 Https Docs Edenbotanicals Com 65 Ambrette 20 Seed Co 2 Fine Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ambrettolide-50-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrettolide-sds-pdf-v-1755820709-pdf",
+      "filename": "ambrettolide-50-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrettolide-sds-pdf-v-1755820709.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ambrettolide-50-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrettolide-sds-pdf-v-1755820709.pdf",
+      "sizeBytes": 264388,
+      "modifiedAt": "2026-06-11T12:34:58.866Z",
+      "extension": "pdf",
+      "titleGuess": "Ambrettolide 50 Tec Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Ambrettolide Sds Pdf V 1755820709",
+      "materialGuess": "Ambrettolide 50 Tec Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Ambrettolide Pdf V 1755820709",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+          "materialName": "Ambrettolide 50% TEC",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ambrettolide 50 tec"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ambroxan-crystals-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrofix-sds-pdf-v-1682821555-pdf",
+      "filename": "ambroxan-crystals-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrofix-sds-pdf-v-1682821555.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ambroxan-crystals-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-ambrofix-sds-pdf-v-1682821555.pdf",
+      "sizeBytes": 73281,
+      "modifiedAt": "2026-06-11T12:35:01.479Z",
+      "extension": "pdf",
+      "titleGuess": "Ambroxan Crystals Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Ambrofix Sds Pdf V 1682821555",
+      "materialGuess": "Ambroxan Crystals Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Ambrofix Pdf V 1682821555",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
+          "materialName": "Ambroxan Crystals",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 2,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ambroxan crystals"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-amyris-supplier-sds-https-docs-edenbotanicals-com-sds-70-amyris-sds-pdf-pdf",
+      "filename": "amyris-supplier-sds-https-docs-edenbotanicals-com-sds-70-amyris-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/amyris-supplier-sds-https-docs-edenbotanicals-com-sds-70-amyris-sds-pdf.pdf",
+      "sizeBytes": 290698,
+      "modifiedAt": "2026-06-11T12:46:32.305Z",
+      "extension": "pdf",
+      "titleGuess": "Amyris Supplier Sds Https Docs Edenbotanicals Com Sds 70 Amyris Sds Pdf",
+      "materialGuess": "Amyris Https Docs Edenbotanicals Com 70 Amyris Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-amyris-supplier-sds-https-shop-perfumersapprentice-com-msds-9173-pdf-pdf",
+      "filename": "amyris-supplier-sds-https-shop-perfumersapprentice-com-msds-9173-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/amyris-supplier-sds-https-shop-perfumersapprentice-com-msds-9173-pdf.pdf",
+      "sizeBytes": 113707,
+      "modifiedAt": "2026-06-11T12:35:03.989Z",
+      "extension": "pdf",
+      "titleGuess": "Amyris Supplier Sds Https Shop Perfumersapprentice Com Msds 9173 Pdf",
+      "materialGuess": "Amyris Https Shop Perfumersapprentice Com Msds 9173 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-bacdanol-supplier-sds-https-shop-perfumersapprentice-com-msds-9237-pdf-pdf",
+      "filename": "bacdanol-supplier-sds-https-shop-perfumersapprentice-com-msds-9237-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/bacdanol-supplier-sds-https-shop-perfumersapprentice-com-msds-9237-pdf.pdf",
+      "sizeBytes": 73356,
+      "modifiedAt": "2026-06-11T12:46:33.939Z",
+      "extension": "pdf",
+      "titleGuess": "Bacdanol Supplier Sds Https Shop Perfumersapprentice Com Msds 9237 Pdf",
+      "materialGuess": "Bacdanol Https Shop Perfumersapprentice Com Msds 9237 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-balsam-of-peru-supplier-sds-https-docs-edenbotanicals-com-sds-80-balsam-of-peru-oil-sds-pdf-pdf",
+      "filename": "balsam-of-peru-supplier-sds-https-docs-edenbotanicals-com-sds-80-balsam-of-peru-oil-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/balsam-of-peru-supplier-sds-https-docs-edenbotanicals-com-sds-80-balsam-of-peru-oil-sds-pdf.pdf",
+      "sizeBytes": 325737,
+      "modifiedAt": "2026-06-11T12:46:37.025Z",
+      "extension": "pdf",
+      "titleGuess": "Balsam Of Peru Supplier Sds Https Docs Edenbotanicals Com Sds 80 Balsam Of Peru Oil Sds Pdf",
+      "materialGuess": "Balsam Of Peru Https Docs Edenbotanicals Com 80 Balsam Of Peru Oil Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-benzoin-resin-pure-supplier-sds-https-shop-perfumersapprentice-com-msds-6399-pdf-pdf",
+      "filename": "benzoin-resin-pure-supplier-sds-https-shop-perfumersapprentice-com-msds-6399-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/benzoin-resin-pure-supplier-sds-https-shop-perfumersapprentice-com-msds-6399-pdf.pdf",
+      "sizeBytes": 131157,
+      "modifiedAt": "2026-06-11T12:46:39.182Z",
+      "extension": "pdf",
+      "titleGuess": "Benzoin Resin Pure Supplier Sds Https Shop Perfumersapprentice Com Msds 6399 Pdf",
+      "materialGuess": "Benzoin Resin Pure Https Shop Perfumersapprentice Com Msds 6399 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-benzyl-benzoate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-benzyl-benzoate-pdf-v-1737309074-pdf",
+      "filename": "benzyl-benzoate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-benzyl-benzoate-pdf-v-1737309074.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/benzyl-benzoate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-benzyl-benzoate-pdf-v-1737309074.pdf",
+      "sizeBytes": 97064,
+      "modifiedAt": "2026-06-11T12:46:41.751Z",
+      "extension": "pdf",
+      "titleGuess": "Benzyl Benzoate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Benzyl Benzoate Pdf V 1737309074",
+      "materialGuess": "Benzyl Benzoate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Benzyl Benzoate Pdf V 1737309074",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-bergamot-eo-fcf-supplier-sds-https-shop-perfumersapprentice-com-msds-6401-pdf-pdf",
+      "filename": "bergamot-eo-fcf-supplier-sds-https-shop-perfumersapprentice-com-msds-6401-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/bergamot-eo-fcf-supplier-sds-https-shop-perfumersapprentice-com-msds-6401-pdf.pdf",
+      "sizeBytes": 335447,
+      "modifiedAt": "2026-06-11T12:46:47.577Z",
+      "extension": "pdf",
+      "titleGuess": "Bergamot Eo Fcf Supplier Sds Https Shop Perfumersapprentice Com Msds 6401 Pdf",
+      "materialGuess": "Bergamot Eo Fcf Https Shop Perfumersapprentice Com Msds 6401 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-bergamot-eo-fcf-fcf_special_case"
+      ],
+      "matchConfidence": "high",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+          "materialName": "Bergamot EO FCF",
+          "requiredSourceType": "fcf_special_case",
+          "score": 4,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "bergamot eo fcf"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-birch-tar-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-birch-tar-oil-rectified-payan-bertrand-0-pdf",
+      "filename": "birch-tar-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-birch-tar-oil-rectified-payan-bertrand-0.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/birch-tar-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-birch-tar-oil-rectified-payan-bertrand-0.pdf",
+      "sizeBytes": 1450057,
+      "modifiedAt": "2026-06-11T12:46:50.696Z",
+      "extension": "pdf",
+      "titleGuess": "Birch Tar Oil Rectified Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Birch Tar Oil Rectified Payan Bertrand 0",
+      "materialGuess": "Birch Tar Oil Rectified Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Birch Tar Oil Rectified Payan Bertrand 0",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cade-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-cade-oil-rectified-extra-e-0925-pdf-v-172-pdf",
+      "filename": "cade-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-cade-oil-rectified-extra-e-0925-pdf-v-172.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cade-oil-rectified-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-cade-oil-rectified-extra-e-0925-pdf-v-172.pdf",
+      "sizeBytes": 1465277,
+      "modifiedAt": "2026-06-11T12:46:53.295Z",
+      "extension": "pdf",
+      "titleGuess": "Cade Oil Rectified Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Cade Oil Rectified Extra E 0925 Pdf V 172",
+      "materialGuess": "Cade Oil Rectified Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Cade Oil Rectified Extra E 0925 Pdf V 172",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-calone-1951-20-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caloneplus-sds-pdf-v-1709326375-pdf",
+      "filename": "calone-1951-20-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caloneplus-sds-pdf-v-1709326375.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/calone-1951-20-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caloneplus-sds-pdf-v-1709326375.pdf",
+      "sizeBytes": 196449,
+      "modifiedAt": "2026-06-11T12:46:55.533Z",
+      "extension": "pdf",
+      "titleGuess": "Calone 1951 20 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Caloneplus Sds Pdf V 1709326375",
+      "materialGuess": "Calone 1951 20 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Caloneplus Pdf V 1709326375",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-calone-1951-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+          "materialName": "Calone 1951 20%",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "calone 1951 20",
+            "calone 1951"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-caryophyllene-oxide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caryophyllene-oxide-sds-pdf-v-1759781443-pdf",
+      "filename": "caryophyllene-oxide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caryophyllene-oxide-sds-pdf-v-1759781443.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/caryophyllene-oxide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-caryophyllene-oxide-sds-pdf-v-1759781443.pdf",
+      "sizeBytes": 106285,
+      "modifiedAt": "2026-06-11T12:46:59.289Z",
+      "extension": "pdf",
+      "titleGuess": "Caryophyllene Oxide Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Caryophyllene Oxide Sds Pdf V 1759781443",
+      "materialGuess": "Caryophyllene Oxide Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Caryophyllene Oxide Pdf V 1759781443",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed",
+          "materialName": "Caryophyllene Oxide",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 2,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "caryophyllene oxide"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cashmeran-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cashmeran-eu-sds-pdf-v-1705860449-pdf",
+      "filename": "cashmeran-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cashmeran-eu-sds-pdf-v-1705860449.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cashmeran-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cashmeran-eu-sds-pdf-v-1705860449.pdf",
+      "sizeBytes": 492782,
+      "modifiedAt": "2026-06-11T12:47:02.420Z",
+      "extension": "pdf",
+      "titleGuess": "Cashmeran Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Cashmeran Eu Sds Pdf V 1705860449",
+      "materialGuess": "Cashmeran Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Cashmeran Eu Pdf V 1705860449",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cedar-wood-atlas-supplier-sds-https-docs-edenbotanicals-com-sds-176-cedarwood-atlas-organic-sds-pdf-pdf",
+      "filename": "cedar-wood-atlas-supplier-sds-https-docs-edenbotanicals-com-sds-176-cedarwood-atlas-organic-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cedar-wood-atlas-supplier-sds-https-docs-edenbotanicals-com-sds-176-cedarwood-atlas-organic-sds-pdf.pdf",
+      "sizeBytes": 326425,
+      "modifiedAt": "2026-06-11T12:47:04.812Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Atlas Supplier Sds Https Docs Edenbotanicals Com Sds 176 Cedarwood Atlas Organic Sds Pdf",
+      "materialGuess": "Cedar Wood Atlas Https Docs Edenbotanicals Com 176 Cedarwood Atlas Organic Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cedar-wood-himalayan-supplier-sds-https-docs-edenbotanicals-com-sds-180-cedarwood-himalayan-sds-pdf-pdf",
+      "filename": "cedar-wood-himalayan-supplier-sds-https-docs-edenbotanicals-com-sds-180-cedarwood-himalayan-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cedar-wood-himalayan-supplier-sds-https-docs-edenbotanicals-com-sds-180-cedarwood-himalayan-sds-pdf.pdf",
+      "sizeBytes": 304855,
+      "modifiedAt": "2026-06-11T12:47:08.250Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Himalayan Supplier Sds Https Docs Edenbotanicals Com Sds 180 Cedarwood Himalayan Sds Pdf",
+      "materialGuess": "Cedar Wood Himalayan Https Docs Edenbotanicals Com 180 Cedarwood Himalayan Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cedar-wood-texas-supplier-sds-https-docs-edenbotanicals-com-sds-185-cedarwood-texas-sds-pdf-pdf",
+      "filename": "cedar-wood-texas-supplier-sds-https-docs-edenbotanicals-com-sds-185-cedarwood-texas-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cedar-wood-texas-supplier-sds-https-docs-edenbotanicals-com-sds-185-cedarwood-texas-sds-pdf.pdf",
+      "sizeBytes": 303887,
+      "modifiedAt": "2026-06-11T12:47:10.579Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Texas Supplier Sds Https Docs Edenbotanicals Com Sds 185 Cedarwood Texas Sds Pdf",
+      "materialGuess": "Cedar Wood Texas Https Docs Edenbotanicals Com 185 Cedarwood Texas Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cedar-wood-virginia-supplier-sds-https-docs-edenbotanicals-com-sds-190-cedarwood-virginia-sds-pdf-pdf",
+      "filename": "cedar-wood-virginia-supplier-sds-https-docs-edenbotanicals-com-sds-190-cedarwood-virginia-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cedar-wood-virginia-supplier-sds-https-docs-edenbotanicals-com-sds-190-cedarwood-virginia-sds-pdf.pdf",
+      "sizeBytes": 290613,
+      "modifiedAt": "2026-06-11T12:47:12.995Z",
+      "extension": "pdf",
+      "titleGuess": "Cedar Wood Virginia Supplier Sds Https Docs Edenbotanicals Com Sds 190 Cedarwood Virginia Sds Pdf",
+      "materialGuess": "Cedar Wood Virginia Https Docs Edenbotanicals Com 190 Cedarwood Virginia Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
+          "materialName": "Cedarwood Virginia EO",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "cedarwood virginia"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-celestafleur-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-celestafleur-sds-pdf-v-1713439720-pdf",
+      "filename": "celestafleur-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-celestafleur-sds-pdf-v-1713439720.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/celestafleur-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-celestafleur-sds-pdf-v-1713439720.pdf",
+      "sizeBytes": 254603,
+      "modifiedAt": "2026-06-11T12:47:15.298Z",
+      "extension": "pdf",
+      "titleGuess": "Celestafleur Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Celestafleur Sds Pdf V 1713439720",
+      "materialGuess": "Celestafleur Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Celestafleur Pdf V 1713439720",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cetalox-supplier-sds-https-shop-perfumersapprentice-com-msds-6027-pdf-pdf",
+      "filename": "cetalox-supplier-sds-https-shop-perfumersapprentice-com-msds-6027-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cetalox-supplier-sds-https-shop-perfumersapprentice-com-msds-6027-pdf.pdf",
+      "sizeBytes": 114343,
+      "modifiedAt": "2026-06-11T12:47:17.133Z",
+      "extension": "pdf",
+      "titleGuess": "Cetalox Supplier Sds Https Shop Perfumersapprentice Com Msds 6027 Pdf",
+      "materialGuess": "Cetalox Https Shop Perfumersapprentice Com Msds 6027 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-clearwood-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-clearwood-sds-us-en-1-pdf-v-1698630144-pdf",
+      "filename": "clearwood-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-clearwood-sds-us-en-1-pdf-v-1698630144.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/clearwood-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-clearwood-sds-us-en-1-pdf-v-1698630144.pdf",
+      "sizeBytes": 78268,
+      "modifiedAt": "2026-06-11T12:47:20.266Z",
+      "extension": "pdf",
+      "titleGuess": "Clearwood Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Clearwood Sds Us En 1 Pdf V 1698630144",
+      "materialGuess": "Clearwood Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Clearwood Us En 1 Pdf V 1698630144",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cyclamen-aldehyde-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cyclamen-aldehyde-sds-pdf-v-1755811891-pdf",
+      "filename": "cyclamen-aldehyde-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cyclamen-aldehyde-sds-pdf-v-1755811891.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cyclamen-aldehyde-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-cyclamen-aldehyde-sds-pdf-v-1755811891.pdf",
+      "sizeBytes": 114679,
+      "modifiedAt": "2026-06-11T12:47:22.920Z",
+      "extension": "pdf",
+      "titleGuess": "Cyclamen Aldehyde Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Cyclamen Aldehyde Sds Pdf V 1755811891",
+      "materialGuess": "Cyclamen Aldehyde Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Cyclamen Aldehyde Pdf V 1755811891",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-cyclamen-aldehyde-already_structured"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+          "materialName": "Cyclamen Aldehyde",
+          "requiredSourceType": "already_structured",
+          "score": 2,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "cyclamen aldehyde"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cyclogalbanate-supplier-sds-https-shop-perfumersapprentice-com-msds-6042-pdf-pdf",
+      "filename": "cyclogalbanate-supplier-sds-https-shop-perfumersapprentice-com-msds-6042-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cyclogalbanate-supplier-sds-https-shop-perfumersapprentice-com-msds-6042-pdf.pdf",
+      "sizeBytes": 71440,
+      "modifiedAt": "2026-06-11T12:47:26.653Z",
+      "extension": "pdf",
+      "titleGuess": "Cyclogalbanate Supplier Sds Https Shop Perfumersapprentice Com Msds 6042 Pdf",
+      "materialGuess": "Cyclogalbanate Https Shop Perfumersapprentice Com Msds 6042 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-cypriol-supplier-sds-https-docs-edenbotanicals-com-sds-625-nagarmotha-cypriol-sds-pdf-pdf",
+      "filename": "cypriol-supplier-sds-https-docs-edenbotanicals-com-sds-625-nagarmotha-cypriol-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/cypriol-supplier-sds-https-docs-edenbotanicals-com-sds-625-nagarmotha-cypriol-sds-pdf.pdf",
+      "sizeBytes": 303282,
+      "modifiedAt": "2026-06-11T12:47:29.515Z",
+      "extension": "pdf",
+      "titleGuess": "Cypriol Supplier Sds Https Docs Edenbotanicals Com Sds 625 Nagarmotha Cypriol Sds Pdf",
+      "materialGuess": "Cypriol Https Docs Edenbotanicals Com 625 Nagarmotha Cypriol Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-dartanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-937490-dartanol-sds-nz-en-pdf-v-1721693403-pdf",
+      "filename": "dartanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-937490-dartanol-sds-nz-en-pdf-v-1721693403.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/dartanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-937490-dartanol-sds-nz-en-pdf-v-1721693403.pdf",
+      "sizeBytes": 75591,
+      "modifiedAt": "2026-06-11T12:47:32.301Z",
+      "extension": "pdf",
+      "titleGuess": "Dartanol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 937490 Dartanol Sds Nz En Pdf V 1721693403",
+      "materialGuess": "Dartanol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 937490 Dartanol Nz En Pdf V 1721693403",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-dihydromyrcenol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-dihydromyrcenol-pdf-v-1736960793-pdf",
+      "filename": "dihydromyrcenol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-dihydromyrcenol-pdf-v-1736960793.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/dihydromyrcenol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-dihydromyrcenol-pdf-v-1736960793.pdf",
+      "sizeBytes": 96388,
+      "modifiedAt": "2026-06-11T12:47:35.510Z",
+      "extension": "pdf",
+      "titleGuess": "Dihydromyrcenol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Dihydromyrcenol Pdf V 1736960793",
+      "materialGuess": "Dihydromyrcenol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Dihydromyrcenol Pdf V 1736960793",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-dimethyl-benzyl-carbinol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimethyl-benzyl-carbinol-sds-pdf-v-1755-pdf",
+      "filename": "dimethyl-benzyl-carbinol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimethyl-benzyl-carbinol-sds-pdf-v-1755.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/dimethyl-benzyl-carbinol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimethyl-benzyl-carbinol-sds-pdf-v-1755.pdf",
+      "sizeBytes": 105555,
+      "modifiedAt": "2026-06-11T12:47:39.670Z",
+      "extension": "pdf",
+      "titleGuess": "Dimethyl Benzyl Carbinol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Dimethyl Benzyl Carbinol Sds Pdf V 1755",
+      "materialGuess": "Dimethyl Benzyl Carbinol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Dimethyl Benzyl Carbinol Pdf V 1755",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-dimetol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimetoldimethyl-26-heptanolsds-pdf-v-1737330184-pdf",
+      "filename": "dimetol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimetoldimethyl-26-heptanolsds-pdf-v-1737330184.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/dimetol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-dimetoldimethyl-26-heptanolsds-pdf-v-1737330184.pdf",
+      "sizeBytes": 125525,
+      "modifiedAt": "2026-06-11T12:47:42.781Z",
+      "extension": "pdf",
+      "titleGuess": "Dimetol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Dimetoldimethyl 26 Heptanolsds Pdf V 1737330184",
+      "materialGuess": "Dimetol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Dimetoldimethyl 26 Heptanolsds Pdf V 1737330184",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ebanol-supplier-sds-https-shop-perfumersapprentice-com-msds-6064-pdf-pdf",
+      "filename": "ebanol-supplier-sds-https-shop-perfumersapprentice-com-msds-6064-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ebanol-supplier-sds-https-shop-perfumersapprentice-com-msds-6064-pdf.pdf",
+      "sizeBytes": 111903,
+      "modifiedAt": "2026-06-11T12:47:46.754Z",
+      "extension": "pdf",
+      "titleGuess": "Ebanol Supplier Sds Https Shop Perfumersapprentice Com Msds 6064 Pdf",
+      "materialGuess": "Ebanol Https Shop Perfumersapprentice Com Msds 6064 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ethyl-linalool-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-940888-ethyl-linalol-sds-nz-en-pdf-v-1726710589-pdf",
+      "filename": "ethyl-linalool-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-940888-ethyl-linalol-sds-nz-en-pdf-v-1726710589.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ethyl-linalool-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-940888-ethyl-linalol-sds-nz-en-pdf-v-1726710589.pdf",
+      "sizeBytes": 58393,
+      "modifiedAt": "2026-06-11T12:47:49.692Z",
+      "extension": "pdf",
+      "titleGuess": "Ethyl Linalool Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 940888 Ethyl Linalol Sds Nz En Pdf V 1726710589",
+      "materialGuess": "Ethyl Linalool Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 940888 Ethyl Linalol Nz En Pdf V 1726710589",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed",
+          "materialName": "Ethyl Linalool",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 2,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ethyl linalool"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ethyl-linalyl-acetate-supplier-sds-https-shop-perfumersapprentice-com-msds-6072-pdf-pdf",
+      "filename": "ethyl-linalyl-acetate-supplier-sds-https-shop-perfumersapprentice-com-msds-6072-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ethyl-linalyl-acetate-supplier-sds-https-shop-perfumersapprentice-com-msds-6072-pdf.pdf",
+      "sizeBytes": 113814,
+      "modifiedAt": "2026-06-11T12:47:54.091Z",
+      "extension": "pdf",
+      "titleGuess": "Ethyl Linalyl Acetate Supplier Sds Https Shop Perfumersapprentice Com Msds 6072 Pdf",
+      "materialGuess": "Ethyl Linalyl Acetate Https Shop Perfumersapprentice Com Msds 6072 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
+          "materialName": "Ethyl Linalyl Acetate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ethyl linalyl acetate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ethyl-vanillin-10-supplier-sds-https-shop-perfumersapprentice-com-msds-6078-pdf-pdf",
+      "filename": "ethyl-vanillin-10-supplier-sds-https-shop-perfumersapprentice-com-msds-6078-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ethyl-vanillin-10-supplier-sds-https-shop-perfumersapprentice-com-msds-6078-pdf.pdf",
+      "sizeBytes": 101746,
+      "modifiedAt": "2026-06-11T12:47:57.238Z",
+      "extension": "pdf",
+      "titleGuess": "Ethyl Vanillin 10 Supplier Sds Https Shop Perfumersapprentice Com Msds 6078 Pdf",
+      "materialGuess": "Ethyl Vanillin 10 Https Shop Perfumersapprentice Com Msds 6078 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
+          "materialName": "Ethyl Vanillin 10%",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ethyl vanillin 10",
+            "ethyl vanillin"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ethylene-brassylate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-ethylene-brassylate-pdf-v-1745961388-pdf",
+      "filename": "ethylene-brassylate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-ethylene-brassylate-pdf-v-1745961388.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ethylene-brassylate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-ethylene-brassylate-pdf-v-1745961388.pdf",
+      "sizeBytes": 93185,
+      "modifiedAt": "2026-06-11T12:47:59.530Z",
+      "extension": "pdf",
+      "titleGuess": "Ethylene Brassylate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Ethylene Brassylate Pdf V 1745961388",
+      "materialGuess": "Ethylene Brassylate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Ethylene Brassylate Pdf V 1745961388",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-exaltolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-941962-exaltolide-sds-nz-en-pdf-v-1703044138-pdf",
+      "filename": "exaltolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-941962-exaltolide-sds-nz-en-pdf-v-1703044138.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/exaltolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-941962-exaltolide-sds-nz-en-pdf-v-1703044138.pdf",
+      "sizeBytes": 75517,
+      "modifiedAt": "2026-06-11T12:48:02.645Z",
+      "extension": "pdf",
+      "titleGuess": "Exaltolide Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 941962 Exaltolide Sds Nz En Pdf V 1703044138",
+      "materialGuess": "Exaltolide Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 941962 Exaltolide Nz En Pdf V 1703044138",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-fir-balsam-supplier-sds-https-docs-edenbotanicals-com-sds-320-fir-balsam-sds-pdf-pdf",
+      "filename": "fir-balsam-supplier-sds-https-docs-edenbotanicals-com-sds-320-fir-balsam-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/fir-balsam-supplier-sds-https-docs-edenbotanicals-com-sds-320-fir-balsam-sds-pdf.pdf",
+      "sizeBytes": 315300,
+      "modifiedAt": "2026-06-11T12:48:05.628Z",
+      "extension": "pdf",
+      "titleGuess": "Fir Balsam Supplier Sds Https Docs Edenbotanicals Com Sds 320 Fir Balsam Sds Pdf",
+      "materialGuess": "Fir Balsam Https Docs Edenbotanicals Com 320 Fir Balsam Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-floralozone-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-floralozone-eu-sds-pdf-v-1713684908-pdf",
+      "filename": "floralozone-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-floralozone-eu-sds-pdf-v-1713684908.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/floralozone-10-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-floralozone-eu-sds-pdf-v-1713684908.pdf",
+      "sizeBytes": 173286,
+      "modifiedAt": "2026-06-11T12:48:08.621Z",
+      "extension": "pdf",
+      "titleGuess": "Floralozone 10 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Floralozone Eu Sds Pdf V 1713684908",
+      "materialGuess": "Floralozone 10 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Floralozone Eu Pdf V 1713684908",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-florol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-966458-florol-sds-nz-en-pdf-v-1735603974-pdf",
+      "filename": "florol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-966458-florol-sds-nz-en-pdf-v-1735603974.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/florol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-966458-florol-sds-nz-en-pdf-v-1735603974.pdf",
+      "sizeBytes": 58024,
+      "modifiedAt": "2026-06-11T12:48:11.151Z",
+      "extension": "pdf",
+      "titleGuess": "Florol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 966458 Florol Sds Nz En Pdf V 1735603974",
+      "materialGuess": "Florol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 966458 Florol Nz En Pdf V 1735603974",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-galaxolide-50-ipm-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-galaxolide-50-ipm-ghs-sds-pdf-v-1724954516-pdf",
+      "filename": "galaxolide-50-ipm-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-galaxolide-50-ipm-ghs-sds-pdf-v-1724954516.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/galaxolide-50-ipm-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-galaxolide-50-ipm-ghs-sds-pdf-v-1724954516.pdf",
+      "sizeBytes": 180874,
+      "modifiedAt": "2026-06-11T12:48:17.173Z",
+      "extension": "pdf",
+      "titleGuess": "Galaxolide 50 Ipm Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Galaxolide 50 Ipm Ghs Sds Pdf V 1724954516",
+      "materialGuess": "Galaxolide 50 Ipm Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Galaxolide 50 Ipm Ghs Pdf V 1724954516",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-gamma-undecalactone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-14-gamma-undecalactone-pdf-v-pdf",
+      "filename": "gamma-undecalactone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-14-gamma-undecalactone-pdf-v-.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/gamma-undecalactone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sds-aldehyde-c-14-gamma-undecalactone-pdf-v-.pdf",
+      "sizeBytes": 174231,
+      "modifiedAt": "2026-06-11T12:48:20.614Z",
+      "extension": "pdf",
+      "titleGuess": "Gamma Undecalactone Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sds Aldehyde C 14 Gamma Undecalactone Pdf V",
+      "materialGuess": "Gamma Undecalactone Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Aldehyde C 14 Gamma Undecalactone Pdf V",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-geosmin-1-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-geosmin-msds-pdf-v-1724142466-pdf",
+      "filename": "geosmin-1-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-geosmin-msds-pdf-v-1724142466.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/geosmin-1-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-geosmin-msds-pdf-v-1724142466.pdf",
+      "sizeBytes": 123627,
+      "modifiedAt": "2026-06-11T12:48:24.271Z",
+      "extension": "pdf",
+      "titleGuess": "Geosmin 1 Tec Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Geosmin Msds Pdf V 1724142466",
+      "materialGuess": "Geosmin 1 Tec Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Geosmin Msds Pdf V 1724142466",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-geosmin-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed",
+          "materialName": "Geosmin 1% TEC",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "geosmin 1 tec"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-gurjun-balsam-supplier-sds-https-shop-perfumersapprentice-com-msds-8976-pdf-pdf",
+      "filename": "gurjun-balsam-supplier-sds-https-shop-perfumersapprentice-com-msds-8976-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/gurjun-balsam-supplier-sds-https-shop-perfumersapprentice-com-msds-8976-pdf.pdf",
+      "sizeBytes": 122963,
+      "modifiedAt": "2026-06-11T12:48:27.497Z",
+      "extension": "pdf",
+      "titleGuess": "Gurjun Balsam Supplier Sds Https Shop Perfumersapprentice Com Msds 8976 Pdf",
+      "materialGuess": "Gurjun Balsam Https Shop Perfumersapprentice Com Msds 8976 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-habanolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947303-habanolide-sds-nz-en-pdf-v-1710754454-pdf",
+      "filename": "habanolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947303-habanolide-sds-nz-en-pdf-v-1710754454.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/habanolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947303-habanolide-sds-nz-en-pdf-v-1710754454.pdf",
+      "sizeBytes": 61640,
+      "modifiedAt": "2026-06-11T12:48:30.271Z",
+      "extension": "pdf",
+      "titleGuess": "Habanolide Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 947303 Habanolide Sds Nz En Pdf V 1710754454",
+      "materialGuess": "Habanolide Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 947303 Habanolide Nz En Pdf V 1710754454",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-964898-sds-us-en-1-pdf-v-1692861400-pdf",
+      "filename": "hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-964898-sds-us-en-1-pdf-v-1692861400.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-964898-sds-us-en-1-pdf-v-1692861400.pdf",
+      "sizeBytes": 41249,
+      "modifiedAt": "2026-06-11T12:48:33.154Z",
+      "extension": "pdf",
+      "titleGuess": "Hedione Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Hedione 964898 Sds Us En 1 Pdf V 1692861400",
+      "materialGuess": "Hedione Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Hedione 964898 Us En 1 Pdf V 1692861400",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-hc-sds-es-en-20220127-4460344-pdf-v-1703877521-pdf",
+      "filename": "hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-hc-sds-es-en-20220127-4460344-pdf-v-1703877521.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/hedione-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-hedione-hc-sds-es-en-20220127-4460344-pdf-v-1703877521.pdf",
+      "sizeBytes": 44683,
+      "modifiedAt": "2026-06-11T12:48:35.690Z",
+      "extension": "pdf",
+      "titleGuess": "Hedione Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Hedione Hc Sds Es En 20220127 4460344 Pdf V 1703877521",
+      "materialGuess": "Hedione Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Hedione Hc Es En 20220127 4460344 Pdf V 1703877521",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-hedione-hc-specialty_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed",
+          "materialName": "Hedione HC",
+          "requiredSourceType": "specialty_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "hedione hc"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-helional-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-heilonalpdf-pdf-v-1715324858-pdf",
+      "filename": "helional-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-heilonalpdf-pdf-v-1715324858.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/helional-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-heilonalpdf-pdf-v-1715324858.pdf",
+      "sizeBytes": 114431,
+      "modifiedAt": "2026-06-11T12:48:38.312Z",
+      "extension": "pdf",
+      "titleGuess": "Helional Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Heilonalpdf Pdf V 1715324858",
+      "materialGuess": "Helional Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Heilonalpdf Pdf V 1715324858",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-helvetolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947650-helvetolide-sds-nz-en-pdf-v-1713741159-pdf",
+      "filename": "helvetolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947650-helvetolide-sds-nz-en-pdf-v-1713741159.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/helvetolide-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-947650-helvetolide-sds-nz-en-pdf-v-1713741159.pdf",
+      "sizeBytes": 59886,
+      "modifiedAt": "2026-06-11T12:48:40.464Z",
+      "extension": "pdf",
+      "titleGuess": "Helvetolide Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 947650 Helvetolide Sds Nz En Pdf V 1713741159",
+      "materialGuess": "Helvetolide Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 947650 Helvetolide Nz En Pdf V 1713741159",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-1-dd-002-eu-sds-orbitone-t-v-2-en-1-pdf-v-1726206339-pdf",
+      "filename": "iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-1-dd-002-eu-sds-orbitone-t-v-2-en-1-pdf-v-1726206339.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-1-dd-002-eu-sds-orbitone-t-v-2-en-1-pdf-v-1726206339.pdf",
+      "sizeBytes": 58540,
+      "modifiedAt": "2026-06-11T12:49:14.548Z",
+      "extension": "pdf",
+      "titleGuess": "Iso E Super Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 1 Dd 002 Eu Sds Orbitone T V 2 En 1 Pdf V 1726206339",
+      "materialGuess": "Iso E Super Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 1 Dd 002 Eu Orbitone T V 2 En 1 Pdf V 1726206339",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-iso-e-super-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+          "materialName": "Iso E Super",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "iso e super"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-iso-e-super-ghs-sds-pdf-v-1696191731-pdf",
+      "filename": "iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-iso-e-super-ghs-sds-pdf-v-1696191731.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/iso-e-super-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-iso-e-super-ghs-sds-pdf-v-1696191731.pdf",
+      "sizeBytes": 104179,
+      "modifiedAt": "2026-06-11T12:48:42.947Z",
+      "extension": "pdf",
+      "titleGuess": "Iso E Super Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Iso E Super Ghs Sds Pdf V 1696191731",
+      "materialGuess": "Iso E Super Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Iso E Super Ghs Pdf V 1696191731",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-iso-e-super-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+          "materialName": "Iso E Super",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "iso e super"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-isobutyl-quinoline-0-19-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-isobutyl-quinoline-sds-1433048-e-32-dc-4-pdf",
+      "filename": "isobutyl-quinoline-0-19-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-isobutyl-quinoline-sds-1433048-e-32-dc-4.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/isobutyl-quinoline-0-19-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-isobutyl-quinoline-sds-1433048-e-32-dc-4.pdf",
+      "sizeBytes": 106964,
+      "modifiedAt": "2026-06-11T12:48:45.109Z",
+      "extension": "pdf",
+      "titleGuess": "Isobutyl Quinoline 0 19 Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Isobutyl Quinoline Sds 1433048 E 32 Dc 4",
+      "materialGuess": "Isobutyl Quinoline 0 19 Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Isobutyl Quinoline 1433048 E 32 Dc 4",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-jasmine-sambac-absolute-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-jasmine-sambac-absolute-v-78-1-en-sds-03-pdf",
+      "filename": "jasmine-sambac-absolute-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-jasmine-sambac-absolute-v-78-1-en-sds-03.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/jasmine-sambac-absolute-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-jasmine-sambac-absolute-v-78-1-en-sds-03.pdf",
+      "sizeBytes": 385837,
+      "modifiedAt": "2026-06-11T12:48:47.724Z",
+      "extension": "pdf",
+      "titleGuess": "Jasmine Sambac Absolute Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Jasmine Sambac Absolute V 78 1 En Sds 03",
+      "materialGuess": "Jasmine Sambac Absolute Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Jasmine Sambac Absolute V 78 1 En 03",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-javanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandalcyclo-pdf-v-1739160423-pdf",
+      "filename": "javanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandalcyclo-pdf-v-1739160423.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/javanol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandalcyclo-pdf-v-1739160423.pdf",
+      "sizeBytes": 164242,
+      "modifiedAt": "2026-06-11T12:48:49.220Z",
+      "extension": "pdf",
+      "titleGuess": "Javanol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sandalcyclo Pdf V 1739160423",
+      "materialGuess": "Javanol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sandalcyclo Pdf V 1739160423",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-kephalis-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-kephalis-en-pdf-v-1699957584-pdf",
+      "filename": "kephalis-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-kephalis-en-pdf-v-1699957584.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/kephalis-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-kephalis-en-pdf-v-1699957584.pdf",
+      "sizeBytes": 83238,
+      "modifiedAt": "2026-06-11T12:48:52.014Z",
+      "extension": "pdf",
+      "titleGuess": "Kephalis Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Kephalis En Pdf V 1699957584",
+      "materialGuess": "Kephalis Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Kephalis En Pdf V 1699957584",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-linalyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-linalyl-acetate-30034993-sds-gen-00-en-3-0-pdf-v-pdf",
+      "filename": "linalyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-linalyl-acetate-30034993-sds-gen-00-en-3-0-pdf-v.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/linalyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-linalyl-acetate-30034993-sds-gen-00-en-3-0-pdf-v.pdf",
+      "sizeBytes": 197444,
+      "modifiedAt": "2026-06-11T12:48:55.740Z",
+      "extension": "pdf",
+      "titleGuess": "Linalyl Acetate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Linalyl Acetate 30034993 Sds Gen 00 En 3 0 Pdf V",
+      "materialGuess": "Linalyl Acetate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Linalyl Acetate 30034993 Gen 00 En 3 0 Pdf V",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-maritima-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-maritima-sds-pdf-v-1760558994-pdf",
+      "filename": "maritima-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-maritima-sds-pdf-v-1760558994.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/maritima-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-maritima-sds-pdf-v-1760558994.pdf",
+      "sizeBytes": 101637,
+      "modifiedAt": "2026-06-11T12:48:57.269Z",
+      "extension": "pdf",
+      "titleGuess": "Maritima Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Maritima Sds Pdf V 1760558994",
+      "materialGuess": "Maritima Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Maritima Pdf V 1760558994",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-methyl-anthranilate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-anthranilate-sds-pdf-v-1755746963-pdf",
+      "filename": "methyl-anthranilate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-anthranilate-sds-pdf-v-1755746963.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/methyl-anthranilate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-anthranilate-sds-pdf-v-1755746963.pdf",
+      "sizeBytes": 107109,
+      "modifiedAt": "2026-06-11T12:48:59.765Z",
+      "extension": "pdf",
+      "titleGuess": "Methyl Anthranilate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methyl Anthranilate Sds Pdf V 1755746963",
+      "materialGuess": "Methyl Anthranilate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methyl Anthranilate Pdf V 1755746963",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-methyl-ionone-alpha-extra-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-9479-3-pdf-v-1692998707-pdf",
+      "filename": "methyl-ionone-alpha-extra-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-9479-3-pdf-v-1692998707.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/methyl-ionone-alpha-extra-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-9479-3-pdf-v-1692998707.pdf",
+      "sizeBytes": 5131934,
+      "modifiedAt": "2026-06-11T12:49:02.082Z",
+      "extension": "pdf",
+      "titleGuess": "Methyl Ionone Alpha Extra Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 9479 3 Pdf V 1692998707",
+      "materialGuess": "Methyl Ionone Alpha Extra Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 9479 3 Pdf V 1692998707",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "high",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+          "materialName": "Methyl Ionone Alpha Extra",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 4,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "methyl ionone alpha extra"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-methyl-pamplemousse-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methylpamplemoussesds-pdf-v-1713518848-pdf",
+      "filename": "methyl-pamplemousse-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methylpamplemoussesds-pdf-v-1713518848.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/methyl-pamplemousse-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methylpamplemoussesds-pdf-v-1713518848.pdf",
+      "sizeBytes": 132981,
+      "modifiedAt": "2026-06-11T12:49:04.618Z",
+      "extension": "pdf",
+      "titleGuess": "Methyl Pamplemousse Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methylpamplemoussesds Pdf V 1713518848",
+      "materialGuess": "Methyl Pamplemousse Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methylpamplemoussesds Pdf V 1713518848",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-muscenone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-962191-muscenone-delta-sds-nz-en-pdf-v-1721262686-pdf",
+      "filename": "muscenone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-962191-muscenone-delta-sds-nz-en-pdf-v-1721262686.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/muscenone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-962191-muscenone-delta-sds-nz-en-pdf-v-1721262686.pdf",
+      "sizeBytes": 74167,
+      "modifiedAt": "2026-06-11T12:49:07.314Z",
+      "extension": "pdf",
+      "titleGuess": "Muscenone Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 962191 Muscenone Delta Sds Nz En Pdf V 1721262686",
+      "materialGuess": "Muscenone Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 962191 Muscenone Delta Nz En Pdf V 1721262686",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-phenyl-ethyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-phenyl-ethyl-acetate-sds-pdf-v-1760558994-pdf",
+      "filename": "phenyl-ethyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-phenyl-ethyl-acetate-sds-pdf-v-1760558994.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/phenyl-ethyl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-phenyl-ethyl-acetate-sds-pdf-v-1760558994.pdf",
+      "sizeBytes": 110243,
+      "modifiedAt": "2026-06-11T12:49:19.724Z",
+      "extension": "pdf",
+      "titleGuess": "Phenyl Ethyl Acetate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Phenyl Ethyl Acetate Sds Pdf V 1760558994",
+      "materialGuess": "Phenyl Ethyl Acetate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Phenyl Ethyl Acetate Pdf V 1760558994",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed",
+          "materialName": "Phenyl Ethyl Acetate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "phenyl ethyl acetate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-pink-peppercorn-oil-p-n-supplier-sds-https-shop-perfumersapprentice-com-msds-8016-pdf-pdf",
+      "filename": "pink-peppercorn-oil-p-n-supplier-sds-https-shop-perfumersapprentice-com-msds-8016-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/pink-peppercorn-oil-p-n-supplier-sds-https-shop-perfumersapprentice-com-msds-8016-pdf.pdf",
+      "sizeBytes": 134780,
+      "modifiedAt": "2026-06-11T12:49:25.381Z",
+      "extension": "pdf",
+      "titleGuess": "Pink Peppercorn Oil P N Supplier Sds Https Shop Perfumersapprentice Com Msds 8016 Pdf",
+      "materialGuess": "Pink Peppercorn Oil P N Https Shop Perfumersapprentice Com Msds 8016 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "high",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
+          "materialName": "Pink Peppercorn Oil P&N",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 5,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "pink peppercorn oil p n",
+            "pink peppercorn oil"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-pino-acetaldehyde-supplier-sds-https-shop-perfumersapprentice-com-msds-8974-pdf-pdf",
+      "filename": "pino-acetaldehyde-supplier-sds-https-shop-perfumersapprentice-com-msds-8974-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/pino-acetaldehyde-supplier-sds-https-shop-perfumersapprentice-com-msds-8974-pdf.pdf",
+      "sizeBytes": 62813,
+      "modifiedAt": "2026-06-11T12:49:27.488Z",
+      "extension": "pdf",
+      "titleGuess": "Pino Acetaldehyde Supplier Sds Https Shop Perfumersapprentice Com Msds 8974 Pdf",
+      "materialGuess": "Pino Acetaldehyde Https Shop Perfumersapprentice Com Msds 8974 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-polysantol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-974656-polysantol-974656-sds-us-en-1-pdf-v-1717015560-pdf",
+      "filename": "polysantol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-974656-polysantol-974656-sds-us-en-1-pdf-v-1717015560.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/polysantol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-974656-polysantol-974656-sds-us-en-1-pdf-v-1717015560.pdf",
+      "sizeBytes": 73823,
+      "modifiedAt": "2026-06-11T12:49:30.211Z",
+      "extension": "pdf",
+      "titleGuess": "Polysantol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 974656 Polysantol 974656 Sds Us En 1 Pdf V 1717015560",
+      "materialGuess": "Polysantol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files 974656 Polysantol 974656 Us En 1 Pdf V 1717015560",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-precyclemone-b-supplier-sds-https-shop-perfumersapprentice-com-msds-6208-pdf-pdf",
+      "filename": "precyclemone-b-supplier-sds-https-shop-perfumersapprentice-com-msds-6208-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/precyclemone-b-supplier-sds-https-shop-perfumersapprentice-com-msds-6208-pdf.pdf",
+      "sizeBytes": 63358,
+      "modifiedAt": "2026-06-11T12:49:35.866Z",
+      "extension": "pdf",
+      "titleGuess": "Precyclemone B Supplier Sds Https Shop Perfumersapprentice Com Msds 6208 Pdf",
+      "materialGuess": "Precyclemone B Https Shop Perfumersapprentice Com Msds 6208 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-sandalore-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandaloresds-pdf-v-1728490451-pdf",
+      "filename": "sandalore-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandaloresds-pdf-v-1728490451.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/sandalore-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-sandaloresds-pdf-v-1728490451.pdf",
+      "sizeBytes": 192893,
+      "modifiedAt": "2026-06-11T12:49:38.989Z",
+      "extension": "pdf",
+      "titleGuess": "Sandalore Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sandaloresds Pdf V 1728490451",
+      "materialGuess": "Sandalore Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Sandaloresds Pdf V 1728490451",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-stemone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-53-heptanoneoximestemonesds-pdf-v-1725328360-pdf",
+      "filename": "stemone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-53-heptanoneoximestemonesds-pdf-v-1725328360.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/stemone-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-methyl-53-heptanoneoximestemonesds-pdf-v-1725328360.pdf",
+      "sizeBytes": 104364,
+      "modifiedAt": "2026-06-11T12:49:41.736Z",
+      "extension": "pdf",
+      "titleGuess": "Stemone Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methyl 53 Heptanoneoximestemonesds Pdf V 1725328360",
+      "materialGuess": "Stemone Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Methyl 53 Heptanoneoximestemonesds Pdf V 1725328360",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-undecavertol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-undecavertolsds-pdf-v-1699609318-pdf",
+      "filename": "undecavertol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-undecavertolsds-pdf-v-1699609318.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/undecavertol-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-undecavertolsds-pdf-v-1699609318.pdf",
+      "sizeBytes": 190843,
+      "modifiedAt": "2026-06-11T12:49:45.549Z",
+      "extension": "pdf",
+      "titleGuess": "Undecavertol Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Undecavertolsds Pdf V 1699609318",
+      "materialGuess": "Undecavertol Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Undecavertolsds Pdf V 1699609318",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-veramoss-20-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-veramoss-pdf-v-1699820743-pdf",
+      "filename": "veramoss-20-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-veramoss-pdf-v-1699820743.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/veramoss-20-tec-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-veramoss-pdf-v-1699820743.pdf",
+      "sizeBytes": 79150,
+      "modifiedAt": "2026-06-11T12:49:51.355Z",
+      "extension": "pdf",
+      "titleGuess": "Veramoss 20 Tec Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Veramoss Pdf V 1699820743",
+      "materialGuess": "Veramoss 20 Tec Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Veramoss Pdf V 1699820743",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "matchConfidence": "high",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+          "materialName": "Veramoss 20% TEC",
+          "requiredSourceType": "specialty_supplier_document_needed",
+          "score": 4,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "veramoss 20 tec"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-veraspice-supplier-sds-https-shop-perfumersapprentice-com-msds-10917-pdf-pdf",
+      "filename": "veraspice-supplier-sds-https-shop-perfumersapprentice-com-msds-10917-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/veraspice-supplier-sds-https-shop-perfumersapprentice-com-msds-10917-pdf.pdf",
+      "sizeBytes": 304599,
+      "modifiedAt": "2026-06-11T12:49:54.228Z",
+      "extension": "pdf",
+      "titleGuess": "Veraspice Supplier Sds Https Shop Perfumersapprentice Com Msds 10917 Pdf",
+      "materialGuess": "Veraspice Https Shop Perfumersapprentice Com Msds 10917 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-vetiveryl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-vetiveryl-acetate-sds-pdf-v-1761164988-pdf",
+      "filename": "vetiveryl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-vetiveryl-acetate-sds-pdf-v-1761164988.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/vetiveryl-acetate-supplier-sds-https-cdn-shopify-com-s-files-1-0682-1448-9400-files-vetiveryl-acetate-sds-pdf-v-1761164988.pdf",
+      "sizeBytes": 37871,
+      "modifiedAt": "2026-06-11T12:50:05.842Z",
+      "extension": "pdf",
+      "titleGuess": "Vetiveryl Acetate Supplier Sds Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Vetiveryl Acetate Sds Pdf V 1761164988",
+      "materialGuess": "Vetiveryl Acetate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Vetiveryl Acetate Pdf V 1761164988",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+          "materialName": "Vetiveryl Acetate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 2,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "vetiveryl acetate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-sds-ylang-ylang-complete-supplier-sds-https-docs-edenbotanicals-com-sds-1040-ylang-ylang-complete-organic-sds-pdf-pdf",
+      "filename": "ylang-ylang-complete-supplier-sds-https-docs-edenbotanicals-com-sds-1040-ylang-ylang-complete-organic-sds-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/sds/ylang-ylang-complete-supplier-sds-https-docs-edenbotanicals-com-sds-1040-ylang-ylang-complete-organic-sds-pdf.pdf",
+      "sizeBytes": 345238,
+      "modifiedAt": "2026-06-11T12:49:57.148Z",
+      "extension": "pdf",
+      "titleGuess": "Ylang Ylang Complete Supplier Sds Https Docs Edenbotanicals Com Sds 1040 Ylang Ylang Complete Organic Sds Pdf",
+      "materialGuess": "Ylang Ylang Complete Https Docs Edenbotanicals Com 1040 Ylang Ylang Complete Organic Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",
+          "materialName": "Ylang-Ylang Complete Oil",
+          "requiredSourceType": "already_structured",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ylang ylang complete"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    }
+  ]
 }
