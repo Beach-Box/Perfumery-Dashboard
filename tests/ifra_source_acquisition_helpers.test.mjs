@@ -16,6 +16,8 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
   assert.equal(panel.documentInventory.isAvailable, false);
   assert.equal(panel.candidateReview.isAvailable, false);
   assert.match(panel.candidateReview.regenerateCommand, /build_candidate_ifra_review_queue/);
+  assert.equal(panel.evidenceResolver.isAvailable, false);
+  assert.match(panel.evidenceResolver.regenerateCommand, /resolve_ifra_evidence_candidates/);
   assert.match(panel.guardrail, /Not launch clearance/i);
 });
 
@@ -136,6 +138,38 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
           requiredSourceType: "already_structured",
         },
       ],
+    },
+    {
+      summary: {
+        reviewReadyCount: 2,
+        likelyFcfEvidenceCount: 1,
+        insufficientEvidenceCount: 4,
+        needsSupplierDocCount: 3,
+      },
+      items: [
+        {
+          id: "resolution-iso",
+          queueItemId: "iso-e",
+          materialName: "Iso E Super",
+          evidenceStatus: "review_ready",
+          suggestedAction: "review_top_candidate",
+          confidence: "high",
+          score: 102,
+          bestCandidates: [{ id: "candidate-iso", sourceUrl: "https://example.test/iso" }],
+          whySelected: "Supplier evidence matched.",
+        },
+        {
+          id: "resolution-bergamot",
+          queueItemId: "bergamot-fcf",
+          materialName: "Bergamot EO FCF",
+          evidenceStatus: "likely_fcf_evidence",
+          suggestedAction: "promote_fcf_evidence_after_review",
+          confidence: "medium",
+          score: 88,
+          bestCandidates: [{ id: "candidate-bergamot" }],
+          whySelected: "FCF wording matched.",
+        },
+      ],
     }
   );
 
@@ -171,5 +205,13 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
   assert.deepEqual(
     panel.candidateReview.topMaterialsAwaitingReview.map((item) => item.materialName),
     ["Iso E Super", "Seaweed Absolute 10%"]
+  );
+  assert.equal(panel.evidenceResolver.isAvailable, true);
+  assert.equal(panel.evidenceResolver.counts.reviewReady, 2);
+  assert.equal(panel.evidenceResolver.counts.likelyFcfEvidence, 1);
+  assert.equal(panel.evidenceResolver.counts.insufficientEvidence, 4);
+  assert.deepEqual(
+    panel.evidenceResolver.topReviewFirstMaterials.map((item) => item.materialName),
+    ["Iso E Super", "Bergamot EO FCF"]
   );
 });

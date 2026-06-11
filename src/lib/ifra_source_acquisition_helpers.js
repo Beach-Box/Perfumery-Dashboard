@@ -7,6 +7,9 @@ export const IFRA_SOURCE_DOCUMENT_INVENTORY_COMMAND =
 export const CANDIDATE_IFRA_REVIEW_QUEUE_COMMAND =
   "node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/candidate_ifra_review_queue.md";
 
+export const IFRA_EVIDENCE_RESOLVER_COMMAND =
+  "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md";
+
 export const IFRA_SOURCE_ACQUISITION_MISSING_MESSAGE =
   "Run the IFRA source acquisition queue script to generate the document checklist.";
 
@@ -206,10 +209,82 @@ function buildCandidateReviewProgress(candidateReviewQueue) {
   };
 }
 
+function isAvailableEvidenceResolution(evidenceResolution) {
+  return Boolean(evidenceResolution && Array.isArray(evidenceResolution.items));
+}
+
+function compareResolverItems(left, right) {
+  const scoreDelta = (right.score || 0) - (left.score || 0);
+  if (scoreDelta) return scoreDelta;
+  return String(left.materialName || "").localeCompare(String(right.materialName || ""));
+}
+
+function buildTopResolverItems(evidenceResolution) {
+  if (!isAvailableEvidenceResolution(evidenceResolution)) return [];
+  return (evidenceResolution.items || [])
+    .filter((item) =>
+      [
+        "review_ready",
+        "candidate_found_needs_review",
+        "likely_fcf_evidence",
+      ].includes(item.evidenceStatus)
+    )
+    .sort(compareResolverItems)
+    .slice(0, 5)
+    .map((item) => ({
+      id: item.id,
+      queueItemId: item.queueItemId,
+      materialName: item.materialName,
+      evidenceStatus: item.evidenceStatus,
+      suggestedAction: item.suggestedAction,
+      confidence: item.confidence,
+      score: item.score || 0,
+      bestCandidateId: item.bestCandidates?.[0]?.id || "",
+      source: item.bestCandidates?.[0]?.sourceUrl || item.bestCandidates?.[0]?.sourceFile || "",
+      whySelected: item.whySelected || "",
+    }));
+}
+
+function buildEvidenceResolverProgress(evidenceResolution) {
+  if (!isAvailableEvidenceResolution(evidenceResolution)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Run the IFRA evidence resolver to rank extracted candidates into a short review list.",
+      regenerateCommand: IFRA_EVIDENCE_RESOLVER_COMMAND,
+      guardrail: "Evidence resolver output does not promote IFRA limits.",
+      counts: {
+        reviewReady: 0,
+        likelyFcfEvidence: 0,
+        insufficientEvidence: 0,
+        needsSupplierDoc: 0,
+      },
+      topReviewFirstMaterials: [],
+    };
+  }
+  const summary = evidenceResolution.summary || {};
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      evidenceResolution.metadata?.regenerateCommand ||
+      IFRA_EVIDENCE_RESOLVER_COMMAND,
+    guardrail: "Evidence resolver output does not promote IFRA limits.",
+    counts: {
+      reviewReady: summary.reviewReadyCount || 0,
+      likelyFcfEvidence: summary.likelyFcfEvidenceCount || 0,
+      insufficientEvidence: summary.insufficientEvidenceCount || 0,
+      needsSupplierDoc: summary.needsSupplierDocCount || 0,
+    },
+    topReviewFirstMaterials: buildTopResolverItems(evidenceResolution),
+  };
+}
+
 export function buildIfraSourceAcquisitionPanel(
   queue,
   documentInventory = null,
-  candidateReviewQueue = null
+  candidateReviewQueue = null,
+  evidenceResolution = null
 ) {
   if (!isAvailableQueue(queue)) {
     return {
@@ -246,6 +321,7 @@ export function buildIfraSourceAcquisitionPanel(
         topQueueItemsNeedingDocuments: [],
       },
       candidateReview: buildCandidateReviewProgress(candidateReviewQueue),
+      evidenceResolver: buildEvidenceResolverProgress(evidenceResolution),
     };
   }
 
@@ -273,6 +349,7 @@ export function buildIfraSourceAcquisitionPanel(
     reviewStatusCounts,
   });
   const candidateReviewProgress = buildCandidateReviewProgress(candidateReviewQueue);
+  const evidenceResolverProgress = buildEvidenceResolverProgress(evidenceResolution);
 
   return {
     isAvailable: true,
@@ -313,5 +390,6 @@ export function buildIfraSourceAcquisitionPanel(
         documentReviewProgress.topQueueItemsNeedingDocuments,
     },
     candidateReview: candidateReviewProgress,
+    evidenceResolver: evidenceResolverProgress,
   };
 }

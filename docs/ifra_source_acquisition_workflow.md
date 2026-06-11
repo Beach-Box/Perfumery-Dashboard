@@ -158,6 +158,45 @@ Review statuses mean:
 
 Accepted candidate review is not runtime promotion. It does not add an IFRA limit, does not mark a material compliant, and does not change launch readiness. Promotion to structured IFRA data remains a separate implementation task with source references and tests.
 
+## Smart IFRA Evidence Resolver
+
+The candidate queue can contain hundreds of retained snippets. Use the resolver to turn those snippets into a short material-by-material decision list:
+
+```bash
+node scripts/resolve_ifra_evidence_candidates.mjs
+node scripts/resolve_ifra_evidence_candidates.mjs --json
+node scripts/resolve_ifra_evidence_candidates.mjs --markdown
+node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md
+node scripts/resolve_ifra_evidence_candidates.mjs --markdown --top 3
+```
+
+The resolver reads the existing source acquisition queue, candidate extractions, candidate review queue, reviewed FCF records, and ingredient harvest report. It does not scrape new pages.
+
+Resolver statuses mean:
+
+- `review_ready`: a linked, material-specific candidate has strong source/SDS/product-page IFRA or restriction language. Review the top candidate and mark it accepted if it checks out.
+- `likely_fcf_evidence`: an FCF citrus candidate appears to support furocoumarin-free, bergapten-free, or phototoxic special-case evidence. Review it, then use the FCF promotion pilot only if the source is suitable.
+- `candidate_found_needs_review`: useful evidence exists, but identity/source confidence needs human review.
+- `identity_only`: candidates can help with CAS/name/source targeting, but are not compliance evidence.
+- `insufficient_evidence`: no strong candidate exists yet.
+- `needs_supplier_doc`: request or locate supplier IFRA/SDS documentation.
+- `already_reviewed`, `not_applicable`, and `deferred`: no immediate candidate review is recommended.
+
+The scoring is transparent: linked queue items, exact material names, CAS terms, supplier SDS/product sources, IFRA/Cat 4/fine-fragrance/max-use language, and FCF/phototoxic wording increase priority. Identity-reference pages, Good Scents navigation/supplier-directory text, GHS hazard Category 4, RIFM average-use percentages, and unlinked snippets are penalized or treated as weak evidence.
+
+The Markdown report intentionally shows only the best candidate per material by default. Use `--top 3` only when you want a little more context. Do not paste every candidate into review docs.
+
+Recommended workflow:
+
+1. Run candidate extraction after harvesting/caching sources.
+2. Run the evidence resolver.
+3. Review the `Review first` and `Likely FCF evidence` groups before reading raw candidate queues.
+4. Mark candidates accepted or rejected in the candidate review queue.
+5. Use the FCF promotion pilot only for reviewed FCF evidence.
+6. Keep category-limit promotion as a later, separate reviewed implementation task.
+
+Resolver output does not add IFRA limits, update runtime IFRA data, mark a material compliant, or provide launch clearance.
+
 ## Reviewed Candidate Promotion Pilot
 
 The first promotion workflow is intentionally narrow: reviewed FCF/furocoumarin-free citrus evidence for `Bergamot EO FCF`, `Bergamot FCF`, and `Lemon FCF`.

@@ -307,6 +307,12 @@ const reviewedIfraSourceRecordsModules = import.meta.glob(
 );
 const reviewedIfraSourceRecordsData =
   Object.values(reviewedIfraSourceRecordsModules)[0]?.default || null;
+const ifraEvidenceResolutionModules = import.meta.glob(
+  "../data/ifra_source_acquisition/ifra_evidence_resolution.json",
+  { eager: true }
+);
+const ifraEvidenceResolutionData =
+  Object.values(ifraEvidenceResolutionModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81511,7 +81517,8 @@ export default function App() {
     const ifraSourceAcquisitionPanel = buildIfraSourceAcquisitionPanel(
       ifraSourceAcquisitionQueueData,
       ifraSourceDocumentInventoryData,
-      candidateIfraReviewQueueData
+      candidateIfraReviewQueueData,
+      ifraEvidenceResolutionData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82535,6 +82542,192 @@ export default function App() {
                         )}
                       </div>
                     </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#C4B5FD",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                    }}
+                  >
+                    Evidence Resolver
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: 8.1,
+                      color: "#94A3B8",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.evidenceResolver.isAvailable
+                      ? "Ranks extracted evidence into a short review-first list so you do not have to read every candidate line."
+                      : ifraSourceAcquisitionPanel.evidenceResolver.missingMessage}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 7.5,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                    overflowWrap: "anywhere",
+                    maxWidth: 420,
+                  }}
+                >
+                  {ifraSourceAcquisitionPanel.evidenceResolver.regenerateCommand}
+                </div>
+              </div>
+              {ifraSourceAcquisitionPanel.evidenceResolver.isAvailable && (
+                <>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                      gap: 7,
+                    }}
+                  >
+                    {[
+                      [
+                        "Review ready",
+                        ifraSourceAcquisitionPanel.evidenceResolver.counts
+                          .reviewReady,
+                        "#A7F3D0",
+                      ],
+                      [
+                        "Likely FCF",
+                        ifraSourceAcquisitionPanel.evidenceResolver.counts
+                          .likelyFcfEvidence,
+                        "#7DD3FC",
+                      ],
+                      [
+                        "Insufficient",
+                        ifraSourceAcquisitionPanel.evidenceResolver.counts
+                          .insufficientEvidence,
+                        "#FCA5A5",
+                      ],
+                      [
+                        "Supplier doc",
+                        ifraSourceAcquisitionPanel.evidenceResolver.counts
+                          .needsSupplierDoc,
+                        "#FDE68A",
+                      ],
+                    ].map(([label, value, color]) => (
+                      <div
+                        key={label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "6px 8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color,
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {Number(value).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            fontSize: 7,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 7.4,
+                        color: "#C4B5FD",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 800,
+                        marginBottom: 5,
+                      }}
+                    >
+                      Top review-first materials
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 5,
+                        fontSize: 8.1,
+                        color: "#94A3B8",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {ifraSourceAcquisitionPanel.evidenceResolver
+                        .topReviewFirstMaterials.length ? (
+                        ifraSourceAcquisitionPanel.evidenceResolver.topReviewFirstMaterials.map(
+                          (item) => (
+                            <div key={item.id}>
+                              <span
+                                style={{ color: "#E2E8F0", fontWeight: 800 }}
+                              >
+                                {item.materialName}
+                              </span>{" "}
+                              - {item.evidenceStatus}, {item.suggestedAction},{" "}
+                              {item.confidence} confidence
+                            </div>
+                          )
+                        )
+                      ) : (
+                        <div>No resolver-prioritized evidence candidates yet.</div>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      color: "#FDE68A",
+                      fontSize: 8.1,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.evidenceResolver.guardrail}
                   </div>
                 </>
               )}
