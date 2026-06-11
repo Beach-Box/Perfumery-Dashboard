@@ -479,3 +479,26 @@ node scripts/update_ifra_source_queue_status.mjs --review-report --write docs/if
 Reviewed source documents should not be copied into structured IFRA data automatically. Promotion into `src/data/ifra_master_standards.json`, alias wiring, or supplier IFRA support should happen in a separate reviewed implementation task with source references and tests.
 
 Do not use this workflow to invent limits, infer launch clearance, or treat missing data as safe.
+
+## Reviewed Structured IFRA Promotion
+
+The reviewed structured promotion pilot promotes one reviewed proposed IFRA record at a time into the runtime overlay:
+
+```bash
+node scripts/promote_reviewed_ifra_structured_record.mjs \
+  --proposed-record-id "<id>" \
+  --review-status reviewed_ok \
+  --notes "Reviewed official IFRA source PDF; promote one source-backed standard record with provenance."
+```
+
+Promotion layers:
+
+- Candidate snippets are extraction evidence only.
+- Proposed records are review recommendations only and are not runtime-active.
+- Reviewed/promoted records live in `src/data/reviewed_ifra_structured_overrides.json` and are runtime structured IFRA data.
+- The pilot requires an official IFRA Standards Library/PDF source and source provenance.
+- Promotion is intentionally one record per run.
+
+Official IFRA records are preferred over supplier/product-page candidates for runtime structured promotion. Supplier-only records should stay in review until a separate promotion workflow is designed for that source type.
+
+Promoted runtime records still do not prove launch clearance. Complete structured coverage, supplier IFRA/SDS review where needed, finished-product context, and final compliance review remain separate requirements.

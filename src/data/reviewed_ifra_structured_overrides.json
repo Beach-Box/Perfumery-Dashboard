@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T15:39:27.005Z",
+    "reportName": "Reviewed IFRA Structured Overrides",
+    "guardrails": [
+      "Reviewed records are runtime structured IFRA data, but not launch clearance.",
+      "Promotion is one record at a time after source review.",
+      "Do not commit downloaded PDFs or HTML source documents."
+    ]
+  },
+  "summary": {
+    "recordCount": 1,
+    "recordTypeCounts": {
+      "structured_ifra_standard": 1
+    },
+    "sourceTypeCounts": {
+      "official_ifra_standard_pdf": 1
+    },
+    "reviewStatusCounts": {
+      "reviewed_ok": 1
+    }
+  },
+  "records": [
+    {
+      "id": "reviewed-ifra-structured-vetiveryl-acetate-acetylated-vetiver-oil",
+      "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
+      "standardName": "Acetylated Vetiver oil",
+      "materialNames": [
+        "Vetiveryl Acetate",
+        "Acetylated Vetiver oil"
+      ],
+      "cas": [
+        "84082-84-8",
+        "68917-34-0",
+        "73246-97-6",
+        "62563-80-8"
+      ],
+      "sourceType": "official_ifra_standard_pdf",
+      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
+      "sourceCandidateFile": "src/data/ifra_master_standards.json",
+      "sourceCandidateIds": [
+        "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil"
+      ],
+      "ifraAmendment": "49",
+      "standardType": "Restriction",
+      "categoryLimits": {
+        "4": 0.9
+      },
+      "rawCandidateValue": "0.9",
+      "rawCandidateUnit": "%",
+      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "reviewedAt": "2026-06-11T15:39:27.005Z",
+      "reviewedBy": "local_user",
+      "reviewStatus": "reviewed_ok",
+      "reviewNotes": "Reviewed official IFRA source PDF for acetylated vetiver oil. Promote one source-backed standard record with provenance. Not launch clearance.",
+      "runtimeUse": "structured_ifra_standard",
+      "limitations": [
+        "Source-backed structured IFRA record",
+        "Not launch clearance",
+        "Applies only to matched material identity and active load assumptions"
+      ]
+    }
+  ]
+}

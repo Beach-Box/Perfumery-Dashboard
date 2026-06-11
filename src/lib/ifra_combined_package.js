@@ -1,4 +1,5 @@
 import ifraMasterDataset from "../data/ifra_master_standards.json" with { type: "json" };
+import reviewedIfraStructuredOverrides from "../data/reviewed_ifra_structured_overrides.json" with { type: "json" };
 import materialNormalization from "../data/material_normalization.json" with { type: "json" };
 import evidenceCandidateRegistry from "../data/evidence_candidate_registry.json" with { type: "json" };
 import sourceDocumentRegistry from "../data/source_document_registry.json" with { type: "json" };
@@ -1735,6 +1736,51 @@ function buildRuntimeLimitKinds(categoryLimits = {}) {
   );
 }
 
+function normalizeReviewedIfraLookupKey(value) {
+  return String(value || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/([a-z])([0-9])/g, "$1 $2")
+    .replace(/([0-9])([a-z])/g, "$1 $2")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function reviewedIfraCategoryKey(category = "") {
+  const text = String(category || "").trim().toLowerCase();
+  if (!text) return "";
+  if (text.startsWith("cat")) return text.replace(/[^a-z0-9]+/g, "");
+  return `cat${text.replace(/[^0-9a-z]+/g, "")}`;
+}
+
+function buildReviewedRuntimeLimits(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits)
+      .map(([category, value]) => {
+        const key = reviewedIfraCategoryKey(category);
+        if (!key) return null;
+        const numeric = Number(value);
+        return [key, Number.isFinite(numeric) ? numeric : null];
+      })
+      .filter(Boolean)
+  );
+}
+
+function buildReviewedRuntimeLimitKinds(categoryLimits = {}) {
+  return Object.fromEntries(
+    Object.entries(categoryLimits)
+      .map(([category, value]) => {
+        const key = reviewedIfraCategoryKey(category);
+        if (!key) return null;
+        const numeric = Number(value);
+        return [key, Number.isFinite(numeric) ? "limit" : null];
+      })
+      .filter(Boolean)
+  );
+}
+
 function buildRuntimeMaterialRecord(standard) {
   return {
     canonicalName: standard.canonical_name,
@@ -1764,6 +1810,47 @@ function buildRuntimeMaterialRecord(standard) {
       pages: buildStandardPageList(standard.page_reference),
     },
     notes: standard.cas_notes || [],
+  };
+}
+
+function buildRuntimeMaterialRecordFromReviewedOverride(record = {}) {
+  return {
+    canonicalName: record.standardName || record.materialNames?.[0] || "",
+    cas: record.cas || [],
+    synonyms: (record.materialNames || []).filter(
+      (name) => name && name !== record.standardName
+    ),
+    recommendationType: record.standardType
+      ? String(record.standardType).toLowerCase()
+      : "restriction",
+    recommendationTypes: record.standardType ? [record.standardType] : [],
+    status: record.reviewStatus === "reviewed_ok" ? "active" : "pending_review",
+    publicationYear: null,
+    amendment: record.ifraAmendment || null,
+    implementationDates: {
+      newCreation: null,
+      existingCreation: null,
+    },
+    limits: buildReviewedRuntimeLimits(record.categoryLimits),
+    limitKinds: buildReviewedRuntimeLimitKinds(record.categoryLimits),
+    limitUnit: record.rawCandidateUnit || "%",
+    source: {
+      document: record.sourceFile || record.sourceUrl || "Reviewed IFRA source",
+      sourceUrl: record.sourceUrl || "",
+      sourceType: record.sourceType || "",
+      proposedRecordId: record.proposedRecordId || "",
+      sourceCandidateIds: record.sourceCandidateIds || [],
+      reviewedAt: record.reviewedAt || "",
+      reviewStatus: record.reviewStatus || "",
+      runtimeUse: record.runtimeUse || "",
+      sourceSnippet: record.sourceSnippet || "",
+    },
+    notes: [
+      record.reviewNotes,
+      ...(record.limitations || []),
+      "Reviewed official IFRA standard. Not launch clearance.",
+    ].filter(Boolean),
+    reviewedStructuredSource: true,
   };
 }
 
@@ -1803,11 +1890,65 @@ const IFRA_MASTER_DATASET_ALIAS_MATERIALS = Object.fromEntries(
     .filter(Boolean)
 );
 
+const REVIEWED_IFRA_STRUCTURED_RECORDS = (
+  reviewedIfraStructuredOverrides.records || []
+).filter(
+  (record) =>
+    record?.reviewStatus === "reviewed_ok" &&
+    record?.runtimeUse === "structured_ifra_standard"
+);
+
+const IFRA_REVIEWED_STRUCTURED_MATERIALS = Object.fromEntries(
+  REVIEWED_IFRA_STRUCTURED_RECORDS.map((record) => [
+    normalizeReviewedIfraLookupKey(record.standardName || record.id),
+    buildRuntimeMaterialRecordFromReviewedOverride(record),
+  ])
+);
+
 export const IFRA_MASTER_MATERIALS = {
   ...IFRA_SUPPLEMENTAL_MATERIALS,
   ...IFRA_MASTER_DATASET_MATERIALS,
   ...IFRA_MASTER_DATASET_ALIAS_MATERIALS,
+  ...IFRA_REVIEWED_STRUCTURED_MATERIALS,
 };
+
+const IFRA_REVIEWED_STRUCTURED_ALIAS_IDENTITIES = REVIEWED_IFRA_STRUCTURED_RECORDS.flatMap(
+  (record) => {
+    const resolvedIfraMaterial = normalizeReviewedIfraLookupKey(
+      record.standardName || record.id
+    );
+    return (record.materialNames || [])
+      .filter(Boolean)
+      .map((alias) => ({
+        alias,
+        normalizedAlias: normalizeReviewedIfraLookupKey(alias),
+        identity: {
+          canonicalAppName: record.materialNames?.[0] || record.standardName,
+          normalizedName: record.materialNames?.[0] || record.standardName,
+          matchStrategy: "reviewed_structured_ifra_override",
+          resolvedIfraMaterial,
+          materialClass: "reviewed_structured_standard",
+          aliases: record.materialNames || [record.standardName],
+          stock: null,
+          currentAppIfraFlag: true,
+          currentAppIfraText:
+            "Reviewed official IFRA standard. Not launch clearance.",
+          pdfMatchStatus: "reviewed_source",
+          pdfMatchedAlias: record.standardName || null,
+          pdfMatchedPage: null,
+          reviewNote:
+            "Runtime structured IFRA record promoted from reviewed official source evidence.",
+          reviewedStructuredSource: {
+            id: record.id,
+            sourceType: record.sourceType,
+            sourceUrl: record.sourceUrl,
+            sourceFile: record.sourceFile,
+            reviewedAt: record.reviewedAt,
+          },
+        },
+      }));
+  }
+);
 
 export const INGREDIENT_IDENTITY_MAP = {
   "Benzyl Salicylate": {
@@ -3939,6 +4080,11 @@ function resolveIngredientIdentityDirect(name) {
     )
       return record;
   }
+  const reviewedStructured = IFRA_REVIEWED_STRUCTURED_ALIAS_IDENTITIES.find(
+    (entry) => entry.normalizedAlias === normalized
+  );
+  if (reviewedStructured) return reviewedStructured.identity;
+
   const heroTracked = resolveHeroIfraUnresolvedIdentity(name);
   if (heroTracked) return heroTracked;
   return null;
@@ -4020,6 +4166,13 @@ function getIfraAuditMatchKind(name, material = {}) {
     return "exact";
   }
   return "alias";
+}
+
+function isReviewedStructuredIfraMaterial(material = {}) {
+  return (
+    material?.reviewedStructuredSource === true ||
+    material?.source?.runtimeUse === "structured_ifra_standard"
+  );
 }
 
 const SUPPLIER_IFRA_SDS_MATERIAL_TYPES = new Set([
@@ -4208,16 +4361,23 @@ export function auditFormulaIfraCoverage(
 
     if (material && material.status === "active" && hasDefinedIfraLimit(material)) {
       const matchKind = getIfraAuditMatchKind(name, material);
+      const reviewedStructuredSource = isReviewedStructuredIfraMaterial(material);
       if (matchKind === "exact") counts.exactIfraMatch += 1;
       else counts.aliasIfraMatch += 1;
       counts.knownRestrictionRows += 1;
       return {
         name,
         category: matchKind === "exact" ? "exactIfraMatch" : "aliasIfraMatch",
-        label: matchKind === "exact" ? "Exact matched" : "Alias matched",
+        label: reviewedStructuredSource
+          ? "Reviewed official IFRA standard"
+          : matchKind === "exact"
+          ? "Exact matched"
+          : "Alias matched",
         matchedMaterial: material.canonicalName,
         resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
         limitSummary: material.limits || {},
+        reviewedStructuredSource,
+        source: material.source || null,
       };
     }
 

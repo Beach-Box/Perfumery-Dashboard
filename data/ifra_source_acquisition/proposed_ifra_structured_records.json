@@ -6,7 +6,8 @@
       "Proposed records are not runtime-active.",
       "They require final review before promotion.",
       "They do not prove compliance or launch clearance."
-    ]
+    ],
+    "lastPromotionAt": "2026-06-11T15:39:27.005Z"
   },
   "summary": {
     "recordCount": 15,
@@ -17,8 +18,13 @@
       "phototoxic_note": 2
     },
     "promotionStatusCounts": {
-      "proposed": 13,
+      "promoted": 1,
+      "proposed": 12,
       "reviewed_ok": 2
+    },
+    "reviewStatusCounts": {
+      "reviewed_ok": 1,
+      "unknown": 14
     }
   },
   "records": [
@@ -43,16 +49,20 @@
       "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
       "evidenceConfidence": "high",
       "autopilotRecommendation": "propose_for_review",
-      "promotionStatus": "proposed",
+      "promotionStatus": "promoted",
       "limitations": [
-        "Not runtime-active",
-        "Requires review before promotion",
-        "Not launch clearance"
+        "Not launch clearance",
+        "Promoted as one reviewed runtime structured IFRA record"
       ],
       "notes": [
         "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
         "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
-      ]
+      ],
+      "promotedRecordId": "reviewed-ifra-structured-vetiveryl-acetate-acetylated-vetiver-oil",
+      "promotedAt": "2026-06-11T15:39:27.005Z",
+      "reviewStatus": "reviewed_ok",
+      "reviewNotes": "Reviewed official IFRA source PDF for acetylated vetiver oil. Promote one source-backed standard record with provenance. Not launch clearance.",
+      "runtimeUse": "structured_ifra_standard"
     },
     {
       "id": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",

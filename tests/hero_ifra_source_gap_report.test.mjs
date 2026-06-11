@@ -84,6 +84,11 @@ test("hero IFRA source gap report keeps structured, FCF, supplier, and accord st
   assert.equal(cashmeran.requiredSourceType, "already_structured");
   assert.equal(cashmeran.safeToMapNow, true);
 
+  const vetiveryl = findMaterial(report, "Vetiveryl Acetate");
+  assert.equal(vetiveryl.currentIfraCategory, "aliasIfraMatch");
+  assert.equal(vetiveryl.requiredSourceType, "already_structured");
+  assert.equal(vetiveryl.safeToMapNow, true);
+
   const bergamotFcf = findMaterial(report, "Bergamot EO FCF");
   assert.equal(bergamotFcf.currentIfraCategory, "fcfSpecialCase");
   assert.equal(bergamotFcf.requiredSourceType, "fcf_special_case");
@@ -141,7 +146,7 @@ test("hero IFRA source gap report formats text and markdown output", () => {
   const markdown = formatMarkdownReport(report);
 
   assert.match(text, /Hero IFRA Source Gap Report/);
-  assert.match(text, /High-priority source gaps: 37/);
+  assert.match(text, /High-priority source gaps: 36/);
   assert.match(markdown, /^# Hero IFRA Source Gap Report/);
   assert.match(markdown, /\| Priority \| Formula material \| Source identity \| Dilution \|/);
   assert.match(markdown, /Natural\/UVCB supplier docs needed/);
