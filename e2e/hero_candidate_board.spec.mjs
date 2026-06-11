@@ -63,6 +63,17 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(criticalGaps).toContainText("Accord-level IFRA expansion deferred");
   await expect(criticalGaps).toContainText("Production costing deferred");
 
+  const ifraSourceAcquisition = page.getByTestId("ifra-source-acquisition-card");
+  await expect(ifraSourceAcquisition).toBeVisible();
+  await expect(ifraSourceAcquisition).toContainText("IFRA Source Acquisition");
+  await expect(ifraSourceAcquisition).toContainText("High-priority remaining");
+  await expect(ifraSourceAcquisition).toContainText("Top Remaining Source Gaps");
+  await expect(ifraSourceAcquisition).toContainText("Aldehyde C-8");
+  await expect(ifraSourceAcquisition).toContainText("Not launch clearance");
+  await expect(ifraSourceAcquisition).toContainText(
+    "build_hero_ifra_source_acquisition_queue"
+  );
+
   let comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");
   await expect(comparisonInterpreter).toBeVisible();
   await expect(comparisonInterpreter.getByText("Hero Comparison Interpreter")).toBeVisible();

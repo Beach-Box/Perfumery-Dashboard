@@ -134,6 +134,7 @@ import {
   buildGcmsPatternInsightsPanel,
   getGcmsPatternStatusLabel,
 } from "./lib/gcms_pattern_insights_helpers";
+import { buildIfraSourceAcquisitionPanel } from "./lib/ifra_source_acquisition_helpers";
 import {
   HERO_SENSORY_TEST_SURFACES,
   buildHeroSensorySummary,
@@ -282,6 +283,12 @@ const beachBoxPatternTranslationModules = import.meta.glob(
 );
 const beachBoxPatternTranslationData =
   Object.values(beachBoxPatternTranslationModules)[0]?.default || null;
+const ifraSourceAcquisitionQueueModules = import.meta.glob(
+  "../data/ifra_source_acquisition/hero_ifra_source_queue.json",
+  { eager: true }
+);
+const ifraSourceAcquisitionQueueData =
+  Object.values(ifraSourceAcquisitionQueueModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81476,6 +81483,9 @@ export default function App() {
     const gcmsPatternInsights = buildGcmsPatternInsightsPanel(
       beachBoxPatternTranslationData
     );
+    const ifraSourceAcquisitionPanel = buildIfraSourceAcquisitionPanel(
+      ifraSourceAcquisitionQueueData
+    );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
       comparisonInterpreter: heroComparisonInterpreter,
@@ -82130,6 +82140,252 @@ export default function App() {
         </div>
       </div>
     );
+    const renderIfraSourceAcquisitionCard = () => (
+      <div
+        data-testid="ifra-source-acquisition-card"
+        style={{
+          background: "#060E1E",
+          border: "1px solid #1E3A52",
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 12,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            alignItems: "flex-start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: 9,
+                color: "#FDE68A",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 800,
+                marginBottom: 4,
+              }}
+            >
+              IFRA Source Acquisition
+            </div>
+            <div
+              style={{
+                fontSize: 8.8,
+                color: "#94A3B8",
+                lineHeight: 1.55,
+                maxWidth: 760,
+              }}
+            >
+              Track which IFRA standards, supplier IFRA/SDS files, specialty
+              documents, and natural/UVCB documents still block launch
+              confidence.
+            </div>
+          </div>
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 10,
+              padding: "8px 10px",
+              minWidth: 230,
+              maxWidth: 380,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 7.8,
+                color: "#64748B",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                fontWeight: 800,
+                marginBottom: 5,
+              }}
+            >
+              Regenerate
+            </div>
+            <div
+              style={{
+                fontFamily: "monospace",
+                fontSize: 7.8,
+                color: "#CBD5E1",
+                lineHeight: 1.45,
+                overflowWrap: "anywhere",
+              }}
+            >
+              {ifraSourceAcquisitionPanel.regenerateCommand}
+            </div>
+          </div>
+        </div>
+        {!ifraSourceAcquisitionPanel.isAvailable ? (
+          <div
+            style={{
+              background: "#071826",
+              border: "1px solid #1E3A52",
+              borderRadius: 9,
+              padding: "10px 11px",
+              color: "#FCD34D",
+              fontSize: 9,
+              lineHeight: 1.5,
+            }}
+          >
+            {ifraSourceAcquisitionPanel.missingMessage}
+          </div>
+        ) : (
+          <>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))",
+                gap: 7,
+              }}
+            >
+              {[
+                [
+                  "High-priority remaining",
+                  ifraSourceAcquisitionPanel.counts.highPriorityRemaining,
+                  "#FDE68A",
+                ],
+                ["Acquired", ifraSourceAcquisitionPanel.counts.acquired, "#7DD3FC"],
+                ["Reviewed", ifraSourceAcquisitionPanel.counts.reviewed, "#86EFAC"],
+                ["Promoted", ifraSourceAcquisitionPanel.counts.promoted, "#A7F3D0"],
+                ["Deferred", ifraSourceAcquisitionPanel.counts.deferred, "#C4B5FD"],
+              ].map(([label, value, color]) => (
+                <div
+                  key={label}
+                  style={{
+                    background: "#071826",
+                    border: "1px solid #1E3A52",
+                    borderRadius: 8,
+                    padding: "7px 8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {Number(value).toLocaleString()}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 2,
+                      fontSize: 7.4,
+                      color: "#64748B",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 7,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 7.8,
+                  color: "#FDE68A",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  fontWeight: 800,
+                }}
+              >
+                Top Remaining Source Gaps
+              </div>
+              {ifraSourceAcquisitionPanel.topRemainingGaps.length ? (
+                <div style={{ display: "grid", gap: 6 }}>
+                  {ifraSourceAcquisitionPanel.topRemainingGaps.map((gap) => (
+                    <div
+                      key={gap.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "minmax(0,1fr) auto",
+                        gap: 8,
+                        alignItems: "start",
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontSize: 8.8,
+                            color: "#E2E8F0",
+                            fontWeight: 800,
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {gap.materialName}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 8.1,
+                            color: "#94A3B8",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {gap.sourceTypeLabel}. Used in{" "}
+                          {gap.formulasUsedIn.join(", ") || "active hero formulas"}.
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          color: gap.status === "acquired" ? "#7DD3FC" : "#FDE68A",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 999,
+                          padding: "1px 6px",
+                          fontSize: 7,
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {gap.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ fontSize: 8.6, color: "#86EFAC", lineHeight: 1.5 }}>
+                  No remaining source gaps are currently marked as action-needed.
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        <div
+          style={{
+            background: "#071826",
+            border: "1px solid #1E3A52",
+            borderRadius: 9,
+            padding: "8px 10px",
+            color: "#FDE68A",
+            fontSize: 8.6,
+            lineHeight: 1.5,
+          }}
+        >
+          {ifraSourceAcquisitionPanel.guardrail}
+        </div>
+      </div>
+    );
 
     return (
       <section
@@ -82681,6 +82937,7 @@ export default function App() {
                 {criticalLaunchReadinessGaps.map(renderCriticalGap)}
               </div>
             </div>
+            {renderIfraSourceAcquisitionCard()}
           </>
         )}
         {isDecisionFocusMode ? renderFocusComparisonSummary() : (

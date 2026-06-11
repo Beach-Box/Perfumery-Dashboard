@@ -1,0 +1,1624 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-11T11:53:39.602Z",
+    "reportName": "Hero IFRA Source Acquisition Queue",
+    "sourceGapReportGeneratedAt": "2026-06-11T11:53:39.336Z",
+    "sourceGapReportName": "Hero IFRA Source Gap Report",
+    "regenerateCommand": "node scripts/build_hero_ifra_source_acquisition_queue.mjs --markdown --write docs/ifra/hero_ifra_source_acquisition_queue.md",
+    "guardrails": [
+      "This queue tracks source acquisition and review progress only.",
+      "It does not add IFRA limits, parse PDFs, promote structured IFRA data, or prove launch clearance.",
+      "Promotion of reviewed source documents into structured IFRA records is a separate reviewed task."
+    ]
+  },
+  "summary": {
+    "itemCount": 44,
+    "statusCounts": {
+      "needed": 35,
+      "deferred": 4,
+      "not_applicable": 5
+    },
+    "reviewStatusCounts": {
+      "not_started": 39,
+      "reviewed_ok": 5
+    },
+    "priorityCounts": {
+      "high": 33,
+      "medium": 2,
+      "low": 9
+    },
+    "requiredSourceTypeCounts": {
+      "global_ifra_standard_needed": 17,
+      "natural_uvcb_supplier_document_needed": 4,
+      "specialty_supplier_document_needed": 12,
+      "fcf_special_case": 2,
+      "accord_component_expansion_deferred": 4,
+      "already_structured": 5
+    },
+    "highPriorityCount": 33,
+    "mediumPriorityCount": 2,
+    "lowPriorityCount": 9,
+    "highPriorityRemainingCount": 33,
+    "neededCount": 35,
+    "searchingCount": 0,
+    "acquiredCount": 0,
+    "reviewedCount": 0,
+    "promotedCount": 0,
+    "deferredCount": 4,
+    "supplierDocsNeededCount": 12,
+    "globalStandardsNeededCount": 17,
+    "naturalUvcbDocsNeededCount": 4
+  },
+  "items": [
+    {
+      "id": "hero-ifra-source-gamma-nonalactone-global_ifra_standard_needed",
+      "materialName": "Aldehyde C-18",
+      "normalizedName": "Gamma Nonalactone",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Gamma Nonalactone",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Aldehyde C-18",
+        "Gamma Nonalactone",
+        "IFRA Gamma Nonalactone",
+        "IFRA Aldehyde C-18"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
+      "sourceRowNames": [
+        "Aldehyde C-18"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-octanal-aldehyde-c-8-global_ifra_standard_needed",
+      "materialName": "Aldehyde C-8",
+      "normalizedName": "Octanal / Aldehyde C-8",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Octanal / Aldehyde C-8",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Aldehyde C-8",
+        "Octanal / Aldehyde C-8",
+        "Ald C-8",
+        "Aldehyde C8",
+        "Octanal",
+        "IFRA Octanal",
+        "CAS 124-13-0",
+        "IFRA Aldehyde C-8",
+        "IFRA Octanal / Aldehyde C-8",
+        "IFRA Ald C-8"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions. Known-restriction review is likely useful.",
+      "sourceRowNames": [
+        "Aldehyde C-8"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
+      "materialName": "Allyl Amyl Glycolate",
+      "normalizedName": "Allyl Amyl Glycolate",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Allyl Amyl Glycolate",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Allyl Amyl Glycolate",
+        "Allyl amyl glycolate",
+        "IFRA Allyl Amyl Glycolate",
+        "IFRA Allyl amyl glycolate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Allyl Amyl Glycolate"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+      "materialName": "Ambrettolide 50% TEC",
+      "normalizedName": "Ambrettolide",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Ambrettolide",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Ambrettolide 50% TEC",
+        "Ambrettolide",
+        "IFRA Ambrettolide",
+        "CAS 7779-50-2",
+        "IFRA Ambrettolide 50% TEC"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed",
+      "materialName": "Ambroxan Crystals",
+      "normalizedName": "Ambroxan Crystals",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Ambroxan Crystals",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Ambroxan 50%",
+        "Ambroxan Crystals",
+        "Ambroxan",
+        "Ambroxide",
+        "IFRA Ambroxan",
+        "IFRA Ambroxide",
+        "IFRA Ambroxan 50%",
+        "IFRA Ambroxan Crystals",
+        "Ambroxan 50% TEC",
+        "IFRA Ambroxan 50% TEC"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. High-impact material for odor/model decisions. Current IFRA category is sourceUnavailable. Appears in 1 active hero formula. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Ambroxan 50%",
+        "Ambroxan 50% TEC",
+        "Ambroxan Crystals"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-calone-1951-global_ifra_standard_needed",
+      "materialName": "Calone 1951 20%",
+      "normalizedName": "Calone 1951",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Calone 1951",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Calone 1951 20%",
+        "Calone 1951",
+        "Calone",
+        "Calone 1951®",
+        "IFRA Calone",
+        "CAS 28940-11-6",
+        "IFRA Calone 1951 20%",
+        "IFRA Calone 1951"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Calone 1951 20%"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed",
+      "materialName": "Caryophyllene Oxide",
+      "normalizedName": "Caryophyllene Oxide",
+      "formulasUsedIn": [
+        "Damp Shoreline v2",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Caryophyllene Oxide",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Caryophyllene Oxide",
+        "Caryophyllene oxide",
+        "IFRA Caryophyllene Oxide",
+        "IFRA Caryophyllene oxide",
+        "Caryophyllene Oxide 10%",
+        "IFRA Caryophyllene Oxide 10%"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Caryophyllene Oxide",
+        "Caryophyllene Oxide 10%"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed",
+      "materialName": "Dihydromyrcenol",
+      "normalizedName": "Dihydromyrcenol",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Dihydromyrcenol",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Dihydromyrcenol",
+        "IFRA Dihydromyrcenol",
+        "CAS 18479-58-8"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions. Known-restriction review is likely useful.",
+      "sourceRowNames": [
+        "Dihydromyrcenol"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed",
+      "materialName": "Ethyl Linalool",
+      "normalizedName": "Ethyl Linalool",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Linalool",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Ethyl Linalool",
+        "Ethyl linalool",
+        "IFRA Ethyl Linalool",
+        "IFRA Ethyl linalool"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 2 active hero formulas.",
+      "sourceRowNames": [
+        "Ethyl Linalool"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed",
+      "materialName": "Ethyl Linalyl Acetate",
+      "normalizedName": "Ethyl Linalyl Acetate",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Linalyl Acetate",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Ethyl Linalyl Acetate",
+        "Ethyl linalyl acetate",
+        "IFRA Ethyl Linalyl Acetate",
+        "IFRA Ethyl linalyl acetate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 2 active hero formulas.",
+      "sourceRowNames": [
+        "Ethyl Linalyl Acetate"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
+      "materialName": "Ethyl Vanillin 10%",
+      "normalizedName": "Ethyl Vanillin",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Ethyl Vanillin",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Ethyl Vanillin 10%",
+        "Ethyl Vanillin",
+        "Ethylvanillin",
+        "IFRA Ethylvanillin",
+        "CAS 121-32-4",
+        "IFRA Ethyl Vanillin 10%",
+        "IFRA Ethyl Vanillin"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
+      "sourceRowNames": [
+        "Ethyl Vanillin 10%"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-geosmin-global_ifra_standard_needed",
+      "materialName": "Geosmin 1% TEC",
+      "normalizedName": "Geosmin",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Geosmin",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Geosmin 1% TEC",
+        "Geosmin",
+        "IFRA Geosmin 1% TEC",
+        "IFRA Geosmin"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Geosmin 1% TEC"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-methyl-dihydrojasmonate-hedione-global_ifra_standard_needed",
+      "materialName": "Hedione",
+      "normalizedName": "Methyl dihydrojasmonate / Hedione",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Methyl dihydrojasmonate / Hedione",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Hedione",
+        "Methyl dihydrojasmonate / Hedione",
+        "Hedione®",
+        "Methyl dihydrojasmonate",
+        "MDJ",
+        "IFRA methyl dihydrojasmonate",
+        "CAS 24851-98-7",
+        "IFRA Hedione",
+        "IFRA Methyl dihydrojasmonate / Hedione",
+        "IFRA Hedione®"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Hedione"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
+      "materialName": "Iso E Super",
+      "normalizedName": "Iso E Super",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Iso E Super",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Iso E Super",
+        "OTNE",
+        "Tetramethyl acetyloctahydronaphthalenes",
+        "IFRA OTNE",
+        "CAS 54464-57-2",
+        "IFRA Iso E Super",
+        "IFRA Tetramethyl acetyloctahydronaphthalenes"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Iso E Super"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
+      "materialName": "Methyl Ionone Alpha Extra",
+      "normalizedName": "Methyl Ionone Alpha Extra",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Methyl Ionone Alpha Extra",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Methyl Ionone Alpha Extra",
+        "Methyl ionone alpha extra",
+        "IFRA Methyl Ionone Alpha Extra",
+        "IFRA Methyl ionone alpha extra"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas.",
+      "sourceRowNames": [
+        "Methyl Ionone Alpha Extra"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed",
+      "materialName": "Phenyl Ethyl Acetate",
+      "normalizedName": "Phenyl Ethyl Acetate",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Phenyl Ethyl Acetate",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Phenyl Ethyl Acetate",
+        "Phenethyl acetate",
+        "Phenylethyl acetate",
+        "IFRA Phenyl Ethyl Acetate",
+        "IFRA Phenethyl acetate",
+        "IFRA Phenylethyl acetate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas.",
+      "sourceRowNames": [
+        "Phenyl Ethyl Acetate"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "materialName": "Vetiveryl Acetate",
+      "normalizedName": "Vetiveryl Acetate",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "suggestedDocumentName": "IFRA 51st Amendment standard for Vetiveryl Acetate",
+      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
+      "candidateSearchTerms": [
+        "Vetiveryl Acetate",
+        "Vetiveryl acetate",
+        "IFRA Vetiveryl Acetate",
+        "IFRA Vetiveryl acetate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "sourceUnavailable",
+      "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Vetiveryl Acetate"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed",
+      "materialName": "Cedarwood Virginia EO",
+      "normalizedName": "Cedarwood Virginia EO",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "suggestedDocumentName": "Cedarwood Virginia EO supplier IFRA certificate, SDS, and product identity/spec document",
+      "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
+      "candidateSearchTerms": [
+        "Cedarwood Virginia EO",
+        "Cedarwood virginia",
+        "Cedarwood Virginia",
+        "Virginia cedarwood",
+        "Cedarwood oil",
+        "Juniperus Virginiana Wood Oil",
+        "cedarwood virginia eo",
+        "cedarwood virginia",
+        "virginia cedarwood",
+        "cedarwood oil",
+        "juniperus virginiana wood oil",
+        "Juniperus virginiana wood oil",
+        "Cedarwood Virginia IFRA",
+        "Cedarwood Virginia SDS",
+        "CAS 8000-27-9",
+        "IFRA Cedarwood Virginia EO",
+        "IFRA Cedarwood virginia",
+        "IFRA Cedarwood Virginia"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Cedarwood Virginia EO"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
+      "materialName": "Cypriol",
+      "normalizedName": "Cypriol",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "suggestedDocumentName": "Cypriol supplier IFRA certificate, SDS, and product identity/spec document",
+      "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
+      "candidateSearchTerms": [
+        "Cypriol",
+        "Cypriol oil",
+        "Cypriol IFRA",
+        "Cypriol SDS",
+        "IFRA Cypriol",
+        "IFRA Cypriol oil",
+        "Cypriol IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Cypriol"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
+      "materialName": "Pink Peppercorn Oil P&N",
+      "normalizedName": "Pink Peppercorn Oil P&N",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "suggestedDocumentName": "Pink Peppercorn Oil P&N supplier IFRA certificate, SDS, and product identity/spec document",
+      "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
+      "candidateSearchTerms": [
+        "Pink Peppercorn Oil P&N",
+        "Pink Peppercorn Oil",
+        "Pink pepper oil",
+        "Pink Peppercorn Oil IFRA",
+        "Pink Peppercorn Oil SDS",
+        "IFRA Pink Peppercorn Oil P&N",
+        "IFRA Pink Peppercorn Oil",
+        "IFRA Pink pepper oil",
+        "Pink Peppercorn Oil P&N SDS",
+        "Pink Peppercorn Oil P&N IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Pink Peppercorn Oil P&N"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+      "materialName": "Seaweed Absolute 10%",
+      "normalizedName": "Seaweed Absolute",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "suggestedDocumentName": "Seaweed Absolute 10% supplier IFRA certificate, SDS, and product identity/spec document",
+      "suggestedSource": "Supplier IFRA certificate, SDS, allergen declaration, and product identity/spec",
+      "candidateSearchTerms": [
+        "Seaweed Absolute 10%",
+        "Seaweed Absolute",
+        "Seaweed",
+        "Seaweed Absolute IFRA",
+        "Seaweed Absolute SDS",
+        "IFRA Seaweed Absolute 10%",
+        "IFRA Seaweed Absolute",
+        "IFRA Seaweed",
+        "Seaweed Absolute 10% SDS",
+        "Seaweed Absolute 10% IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Seaweed Absolute 10%"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-algenone-specialty_supplier_document_needed",
+      "materialName": "Algenone",
+      "normalizedName": "Algenone",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Algenone supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Algenone",
+        "Algenone IFRA",
+        "Algenone SDS",
+        "IFRA Algenone",
+        "Algenone IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Algenone"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-celestafleur-specialty_supplier_document_needed",
+      "materialName": "Celestafleur",
+      "normalizedName": "Celestafleur",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Celestafleur supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Celestafleur",
+        "Celestafleur®",
+        "Celestafleur IFRA",
+        "Celestafleur SDS",
+        "IFRA Celestafleur",
+        "IFRA Celestafleur®",
+        "Celestafleur IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 2 active hero formulas.",
+      "sourceRowNames": [
+        "Celestafleur"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cetalox-specialty_supplier_document_needed",
+      "materialName": "Cetalox",
+      "normalizedName": "Cetalox",
+      "formulasUsedIn": [
+        "Damp Shoreline v2",
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Cetalox supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Cetalox",
+        "Cetalox®",
+        "Cetalox IFRA",
+        "Cetalox SDS",
+        "IFRA Cetalox",
+        "IFRA Cetalox®",
+        "Cetalox IFRA certificate",
+        "Cetalox 50% TEC",
+        "IFRA Cetalox 50% TEC",
+        "Cetalox 50% TEC SDS",
+        "Cetalox 50% TEC IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula. Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas.",
+      "sourceRowNames": [
+        "Cetalox",
+        "Cetalox 50% TEC"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-clearwood-specialty_supplier_document_needed",
+      "materialName": "Clearwood",
+      "normalizedName": "Clearwood",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Clearwood supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Clearwood",
+        "Clearwood®",
+        "IFRA Clearwood",
+        "IFRA Clearwood®",
+        "Clearwood SDS",
+        "Clearwood IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Clearwood"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed",
+      "materialName": "Cyclogalbanate",
+      "normalizedName": "Cyclogalbanate",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Cyclogalbanate supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Cyclogalbanate",
+        "IFRA Cyclogalbanate",
+        "Cyclogalbanate SDS",
+        "Cyclogalbanate IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Cyclogalbanate"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-florol-specialty_supplier_document_needed",
+      "materialName": "Florol",
+      "normalizedName": "Florol",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Florol supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Florol",
+        "Florol®",
+        "Florol IFRA",
+        "Florol SDS",
+        "IFRA Florol",
+        "IFRA Florol®",
+        "Florol IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas.",
+      "sourceRowNames": [
+        "Florol"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-hedione-high-cis-specialty_supplier_document_needed",
+      "materialName": "Hedione HC",
+      "normalizedName": "Hedione High Cis",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Hedione HC supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Hedione HC",
+        "Hedione High Cis",
+        "Hedione® High Cis",
+        "Hedione",
+        "Methyl dihydrojasmonate",
+        "MDJ",
+        "IFRA methyl dihydrojasmonate",
+        "IFRA Hedione HC",
+        "IFRA Hedione High Cis",
+        "IFRA Hedione® High Cis",
+        "Hedione HC SDS",
+        "Hedione HC IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Hedione HC"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-maritima-specialty_supplier_document_needed",
+      "materialName": "Maritima",
+      "normalizedName": "Maritima",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Maritima supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Maritima",
+        "Maritima®",
+        "Maritima IFRA",
+        "Maritima SDS",
+        "IFRA Maritima",
+        "IFRA Maritima®",
+        "Maritima IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas.",
+      "sourceRowNames": [
+        "Maritima"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-oceanol-specialty_supplier_document_needed",
+      "materialName": "Oceanol 10%",
+      "normalizedName": "Oceanol",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Oceanol 10% supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Oceanol 10%",
+        "Oceanol",
+        "Oceanol®",
+        "Oceanol IFRA",
+        "Oceanol SDS",
+        "IFRA Oceanol 10%",
+        "IFRA Oceanol",
+        "IFRA Oceanol®",
+        "Oceanol 10% SDS",
+        "Oceanol 10% IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 4 active hero formulas. High-impact material for odor/model decisions.",
+      "sourceRowNames": [
+        "Oceanol 10%"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed",
+      "materialName": "Orbitone T Neo",
+      "normalizedName": "Orbitone T Neo",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Orbitone T Neo supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Orbitone T Neo",
+        "Orbitone® T Neo",
+        "IFRA Orbitone T Neo",
+        "IFRA Orbitone® T Neo",
+        "Orbitone T Neo SDS",
+        "Orbitone T Neo IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Orbitone T Neo"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-timbersilk-specialty_supplier_document_needed",
+      "materialName": "Timbersilk",
+      "normalizedName": "Timbersilk",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Timbersilk supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Timbersilk",
+        "Timbersilk®",
+        "IFRA Timbersilk",
+        "IFRA Timbersilk®",
+        "Timbersilk SDS",
+        "Timbersilk IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 1 active hero formula.",
+      "sourceRowNames": [
+        "Timbersilk"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "normalizedName": "Methyl atrarate / Veramoss",
+      "formulasUsedIn": [
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "high",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "suggestedDocumentName": "Veramoss 20% TEC supplier or manufacturer IFRA certificate and SDS",
+      "suggestedSource": "Supplier or manufacturer specialty-material IFRA certificate and SDS",
+      "candidateSearchTerms": [
+        "Veramoss 20% TEC",
+        "Veramoss",
+        "Methyl atrarate / Veramoss",
+        "Veramoss®",
+        "Evernyl",
+        "Evernyl®",
+        "Methyl atrarate",
+        "IFRA methyl atrarate",
+        "IFRA Veramoss 20% TEC",
+        "IFRA Veramoss",
+        "IFRA Methyl atrarate / Veramoss",
+        "Veramoss 20% TEC SDS",
+        "Veramoss 20% TEC IFRA certificate"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "supplierSdsNeeded",
+      "reason": "Current IFRA category is supplierSdsNeeded. Appears in 3 active hero formulas. Known-restriction review is likely useful.",
+      "sourceRowNames": [
+        "Veramoss 20% TEC"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case",
+      "materialName": "Bergamot EO FCF",
+      "normalizedName": "Bergamot EO FCF",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "medium",
+      "requiredSourceType": "fcf_special_case",
+      "suggestedDocumentName": "Bergamot EO FCF supplier IFRA certificate confirming FCF/furocoumarin-free identity",
+      "suggestedSource": "Supplier certificate confirming FCF/furocoumarin-free identity",
+      "candidateSearchTerms": [
+        "Bergamot EO FCF",
+        "Bergamot FCF",
+        "Bergamot Oil FCF",
+        "Bergamot Oil FCF, Cote d'Ivoire",
+        "Bergamot Oil FCF, Côte d'Ivoire",
+        "Bergamot Oil FCF, Organic",
+        "Bergamot Oil FCF, Terpeneless",
+        "Bergamot “Superior” Oil, FCF",
+        "bergamot eo fcf",
+        "bergamot fcf",
+        "bergamot oil fcf",
+        "bergamot oil fcf, cote d'ivoire",
+        "bergamot oil fcf, côte d'ivoire",
+        "bergamot oil fcf organic",
+        "bergamot oil fcf, organic",
+        "bergamot oil fcf terpeneless",
+        "bergamot oil fcf, terpeneless",
+        "bergamot superior oil fcf"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "fcfSpecialCase",
+      "reason": "Current IFRA category is fcfSpecialCase. Appears in 4 active hero formulas. FCF/furocoumarin-free citrus must stay separate from regular expressed citrus.",
+      "sourceRowNames": [
+        "Bergamot EO FCF"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-lemon-fcf-fcf_special_case",
+      "materialName": "Lemon FCF",
+      "normalizedName": "Lemon FCF",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "medium",
+      "requiredSourceType": "fcf_special_case",
+      "suggestedDocumentName": "Lemon FCF supplier IFRA certificate confirming FCF/furocoumarin-free identity",
+      "suggestedSource": "Supplier certificate confirming FCF/furocoumarin-free identity",
+      "candidateSearchTerms": [
+        "Lemon FCF",
+        "Lemon EO FCF",
+        "Lemon Oil FCF",
+        "Furocoumarin-Free Lemon",
+        "lemon fcf",
+        "lemon eo fcf",
+        "lemon oil fcf",
+        "furocoumarin-free lemon",
+        "lemon furocoumarin free",
+        "CAS 84929-31-7",
+        "IFRA Lemon FCF",
+        "IFRA Lemon EO FCF",
+        "IFRA Lemon Oil FCF"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "fcfSpecialCase",
+      "reason": "Current IFRA category is fcfSpecialCase. Appears in 1 active hero formula. FCF/furocoumarin-free citrus must stay separate from regular expressed citrus.",
+      "sourceRowNames": [
+        "Lemon FCF"
+      ],
+      "status": "needed",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-botanical-musk-accord-accord_component_expansion_deferred",
+      "materialName": "Botanical Musk Accord",
+      "normalizedName": "Botanical Musk Accord",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "suggestedDocumentName": "Botanical Musk Accord component IFRA expansion worksheet",
+      "suggestedSource": "Internal accord recipe expansion review",
+      "candidateSearchTerms": [
+        "Botanical Musk Accord",
+        "IFRA Botanical Musk Accord"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "accordLevelOnly",
+      "reason": "Current IFRA category is accordLevelOnly. Appears in 4 active hero formulas. Formula row is an accord; component IFRA expansion is deferred.",
+      "sourceRowNames": [
+        "Botanical Musk Accord"
+      ],
+      "status": "deferred",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-driftwood-accord-accord_component_expansion_deferred",
+      "materialName": "Driftwood Accord",
+      "normalizedName": "Driftwood Accord",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "suggestedDocumentName": "Driftwood Accord component IFRA expansion worksheet",
+      "suggestedSource": "Internal accord recipe expansion review",
+      "candidateSearchTerms": [
+        "Driftwood Accord",
+        "IFRA Driftwood Accord"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "accordLevelOnly",
+      "reason": "Current IFRA category is accordLevelOnly. Appears in 3 active hero formulas. Formula row is an accord; component IFRA expansion is deferred.",
+      "sourceRowNames": [
+        "Driftwood Accord"
+      ],
+      "status": "deferred",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-driftwood-accord-v2-accord_component_expansion_deferred",
+      "materialName": "Driftwood Accord v2",
+      "normalizedName": "Driftwood Accord v2",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "suggestedDocumentName": "Driftwood Accord v2 component IFRA expansion worksheet",
+      "suggestedSource": "Internal accord recipe expansion review",
+      "candidateSearchTerms": [
+        "Driftwood Accord v2",
+        "IFRA Driftwood Accord v2"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "accordLevelOnly",
+      "reason": "Current IFRA category is accordLevelOnly. Appears in 1 active hero formula. Formula row is an accord; component IFRA expansion is deferred.",
+      "sourceRowNames": [
+        "Driftwood Accord v2"
+      ],
+      "status": "deferred",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-iso-e-amberxtreme-1-accord_component_expansion_deferred",
+      "materialName": "Iso E + AmberXtreme 1%",
+      "normalizedName": "Iso E + AmberXtreme 1%",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "accord_component_expansion_deferred",
+      "suggestedDocumentName": "Iso E + AmberXtreme 1% component IFRA expansion worksheet",
+      "suggestedSource": "Internal accord recipe expansion review",
+      "candidateSearchTerms": [
+        "Iso E + AmberXtreme 1%",
+        "IFRA Iso E + AmberXtreme 1%"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "accordLevelOnly",
+      "reason": "Current IFRA category is accordLevelOnly. Appears in 1 active hero formula. Formula row is an accord; component IFRA expansion is deferred.",
+      "sourceRowNames": [
+        "Iso E + AmberXtreme 1%"
+      ],
+      "status": "deferred",
+      "reviewStatus": "not_started",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cashmeran-already_structured",
+      "materialName": "Cashmeran",
+      "normalizedName": "Cashmeran",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for 6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Cashmeran",
+        "Cashmeran®",
+        "6,7-Dihydro-1,1,2,3,3-pentamethyl-4(5H)-indanone (DPMI)",
+        "1,2,3,5,6,7-Hexahydro-1,1,2,3,3-pentamethyl-4H-inden-4-one",
+        "4H-Inden-4-one, 1,2,3,5,6,7-hexahydro-1,1,2,3,3-pentamethyl1,1,2,3,3-Pentamethyl-1,2,3,5,6,7-hexahydro-4H-inden-4-one",
+        "Cashmeran (commercial name)",
+        "CAS 33704-61-9"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "aliasIfraMatch",
+      "reason": "Current IFRA category is aliasIfraMatch. Appears in 4 active hero formulas. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Cashmeran"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-cyclamen-aldehyde-already_structured",
+      "materialName": "Cyclamen Aldehyde",
+      "normalizedName": "Cyclamen Aldehyde",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for Cyclamen aldehyde",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Cyclamen Aldehyde",
+        "Cyclamen aldehyde",
+        "Benzenepropanal, α-methyl-4-(1-methylethyl)Benzenepropanol, .α.-methyl-4-(1-methylethyl)3-p-Cumenyl-2-methylpropionaldehyde p-Isopropyl-α-methylhydrocinnamaldehyde",
+        "3-(4-Isopropylphenyl)-2-methylpropanal",
+        "2-Methyl-3-(p-isopropylphenyl)propionaldehyde α-Methyl-p-isopropylphenylpropylaldehyde α-Methyl-4-(1-methylethyl)benzenepropanal",
+        "Cyclamal (commercial name)",
+        "Cyclaviol (commercial name)",
+        "Cyclosal (commercial name)",
+        "CAS 103-95-7"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "exactIfraMatch",
+      "reason": "Current IFRA category is exactIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Cyclamen Aldehyde"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-helional-already_structured",
+      "materialName": "Helional",
+      "normalizedName": "Helional",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Helional 25%",
+        "Helional",
+        "Helional 25",
+        "alpha-Methyl-1,3-benzodioxole-5-propionaldehyde (MMDHCA)",
+        "1,3-Benzodioxole-5-propanal, α-methyl3-(1,3-Benzodioxol-5-yl)-2-methylpropanal",
+        "2-Methyl-3-(3,4-methylenedioxyphenyl)- propionaldehyde",
+        "2-Methyl-3-(3,4-methylenedioxyphenyl)propanal α-Methyl-3,4-(methylenedioxy)-hydrocinnamaldehyde α-Methyl-1,3-benzodioxole-5-propanal α-Methyl-1,3-benzodioxole-5-propionaldehyde",
+        "3-(3,4-Methylenedioxyphenyl)-2-methylpropanal α-Methyl-3,4-methylene-dioxyhydrocinnamic aldehyde",
+        "Heliofolal (commercial name)",
+        "Heliogan (commercial name)",
+        "Helional (commercial name)",
+        "Tropional (commercial name)",
+        "CAS 1205-17-0",
+        "Helional®"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "aliasIfraMatch",
+      "reason": "Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 3 active hero formulas. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Helional 25%",
+        "Helional®"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-oakmoss-absolute-already_structured",
+      "materialName": "Oakmoss Absolute 10%",
+      "normalizedName": "Oakmoss Absolute",
+      "formulasUsedIn": [
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for Oakmoss extracts",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Oakmoss Absolute 10%",
+        "Oakmoss Absolute",
+        "Oakmoss absolute",
+        "Oakmoss",
+        "Oakmoss extracts",
+        "Evernia absolute",
+        "Evernia prunastri, ext.",
+        "Mousse de Chêne absolute",
+        "Oakmoss absolute (Evernia prunastri)",
+        "Evernia prunastri (Oakmoss) extract",
+        "CAS 90028-68-5",
+        "CAS 68917-10-2",
+        "CAS 9000-50-4"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "aliasIfraMatch",
+      "reason": "Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Oakmoss Absolute 10%"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-ylang-ylang-complete-already_structured",
+      "materialName": "Ylang Ylang Complete",
+      "normalizedName": "Ylang Ylang Complete",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for Ylang ylang extracts",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Ylang Ylang 10%",
+        "Ylang Ylang Complete 10%",
+        "Ylang Ylang Complete",
+        "Ylang-Ylang Complete 10%",
+        "Ylang-Ylang Complete Oil 10%",
+        "Ylang ylang extracts",
+        "Cananga odorata (Lamark) (Hooker et Thompson) (Anonaceae)",
+        "Cananga odorata extract",
+        "Cananga odorata flower oil",
+        "Cananga odorata oil",
+        "Cananga oil",
+        "Ylang ylang oil (Cananga odorata Hook. f. and Thomas)",
+        "Ylang ylang oil extra",
+        "Ylang ylang oil I",
+        "Ylang ylang oil II",
+        "Ylang ylang oil III",
+        "Ylang ylang, Cananga odorata, ext.",
+        "CAS 8006-81-3"
+      ],
+      "knownReferenceLinks": [],
+      "currentIfraCategory": "aliasIfraMatch",
+      "reason": "Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match. Current IFRA category is aliasIfraMatch. Appears in 2 active hero formulas. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Ylang Ylang 10%",
+        "Ylang Ylang Complete 10%"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-11T11:50:06.162Z"
+    }
+  ]
+}
