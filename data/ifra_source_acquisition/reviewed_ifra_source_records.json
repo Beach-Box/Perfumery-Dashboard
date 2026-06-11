@@ -1,0 +1,13 @@
+{
+  "metadata": {
+    "generatedAt": null,
+    "reportName": "Reviewed IFRA Source Records",
+    "scope": "Reviewed source-evidence metadata for narrow promotion pilots.",
+    "guardrails": [
+      "Reviewed source records are evidence metadata only.",
+      "They do not add or modify IFRA category limits.",
+      "They are not launch clearance."
+    ]
+  },
+  "records": []
+}

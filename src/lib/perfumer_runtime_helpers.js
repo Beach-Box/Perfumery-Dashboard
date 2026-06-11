@@ -1755,6 +1755,8 @@ export function buildAiCritiqueGroundTruth({
       supplierSdsNeededCount: normalizedIfraStatus.supplierSdsNeededCount,
       accordLevelCount: normalizedIfraStatus.accordLevelCount,
       fcfSpecialCaseCount: normalizedIfraStatus.fcfSpecialCaseCount,
+      fcfSourceReviewedCount: normalizedIfraStatus.fcfSourceReviewedCount || 0,
+      fcfSourcePendingCount: normalizedIfraStatus.fcfSourcePendingCount || 0,
       noKnownStructuredStandardCount:
         normalizedIfraStatus.noKnownStructuredStandardCount,
       structuredCoverageGapCount:
@@ -1773,7 +1775,9 @@ export function buildAiCritiqueGroundTruth({
         (row) => row.name
       ),
       fcfCitrusNote: hasFcfCitrus || normalizedIfraStatus.fcfSpecialCaseCount > 0
-        ? "FCF citrus rows are not treated as regular expressed citrus phototoxic limits; verify supplier IFRA/SDS for final compliance."
+        ? normalizedIfraStatus.fcfSourceReviewedCount > 0
+          ? "Reviewed FCF source note available. FCF citrus rows are not treated as regular expressed citrus phototoxic limits; verify supplier IFRA/SDS for final compliance."
+          : "FCF citrus rows are not treated as regular expressed citrus phototoxic limits; verify supplier IFRA/SDS for final compliance."
         : null,
     },
     accords: {
@@ -4532,6 +4536,8 @@ export function buildLaunchReadinessSummary({
       supplierSdsNeededCount: normalizedIfraStatus.supplierSdsNeededCount,
       accordLevelCount: normalizedIfraStatus.accordLevelCount,
       fcfSpecialCaseCount: normalizedIfraStatus.fcfSpecialCaseCount,
+      fcfSourceReviewedCount: normalizedIfraStatus.fcfSourceReviewedCount || 0,
+      fcfSourcePendingCount: normalizedIfraStatus.fcfSourcePendingCount || 0,
       noKnownStructuredStandardCount:
         normalizedIfraStatus.noKnownStructuredStandardCount,
       hasLaunchClearance: normalizedIfraStatus.hasLaunchClearance,

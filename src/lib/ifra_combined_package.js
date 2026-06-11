@@ -4064,6 +4064,95 @@ function hasFcfSignal({ name, material, identity } = {}) {
   });
 }
 
+function getFcfCitrusFamily(value) {
+  const normalized = normalizeText(value);
+  const hasFcf =
+    normalized.includes("fcf") ||
+    normalized.includes("furocoumarin-free") ||
+    normalized.includes("furocoumarin free") ||
+    normalized.includes("bergapten-free") ||
+    normalized.includes("bergapten free");
+  if (!hasFcf) return null;
+  if (normalized.includes("bergamot")) return "bergamot-fcf";
+  if (normalized.includes("lemon")) return "lemon-fcf";
+  return null;
+}
+
+function getFcfCitrusFamilyForMaterial({ name, material, identity } = {}) {
+  const values = [
+    name,
+    material?.canonicalName,
+    material?.missingLimitReason,
+    identity?.canonicalAppName,
+    identity?.resolvedIfraMaterial,
+    identity?.reviewNote,
+    ...(material?.synonyms || []),
+    ...(identity?.aliases || []),
+  ];
+  for (const value of values) {
+    const family = getFcfCitrusFamily(value);
+    if (family) return family;
+  }
+  return null;
+}
+
+function normalizeReviewedIfraSourceRecords(reviewedSourceRecords = []) {
+  if (Array.isArray(reviewedSourceRecords)) return reviewedSourceRecords;
+  if (Array.isArray(reviewedSourceRecords?.records)) {
+    return reviewedSourceRecords.records;
+  }
+  return [];
+}
+
+function isReviewedFcfSourceRecord(record = {}) {
+  return (
+    record?.recordType === "fcf_phototoxic_note" &&
+    record?.finding === "furocoumarin_free_or_bergapten_free" &&
+    record?.reviewStatus === "reviewed_ok" &&
+    record?.runtimeUse === "support_special_case_only"
+  );
+}
+
+export function getReviewedFcfSourceStatus({
+  name = "",
+  material = null,
+  identity = null,
+  reviewedSourceRecords = [],
+} = {}) {
+  const family = getFcfCitrusFamilyForMaterial({ name, material, identity });
+  if (!family) {
+    return {
+      state: "not_applicable",
+      label: "",
+      summary: "",
+      recordCount: 0,
+      records: [],
+    };
+  }
+  const records = normalizeReviewedIfraSourceRecords(reviewedSourceRecords).filter(
+    (record) =>
+      isReviewedFcfSourceRecord(record) &&
+      getFcfCitrusFamily(record.materialName || record.normalizedName) === family
+  );
+  if (records.length > 0) {
+    return {
+      state: "reviewed",
+      label: "FCF source reviewed",
+      summary:
+        "Reviewed FCF source note available. Regular expressed citrus phototoxic limit is not applied as if furocoumarins are present. Not launch clearance; verify supplier IFRA/SDS for final use.",
+      recordCount: records.length,
+      records,
+    };
+  }
+  return {
+    state: "pending",
+    label: "FCF source pending review",
+    summary: "FCF/furocoumarin-free support — verify supplier IFRA/SDS.",
+    recordCount: 0,
+    records: [],
+  };
+}
+
 function needsSupplierIfraSds({ name, record, material, identity } = {}) {
   if (hasFcfSignal({ name, material, identity })) return false;
   if (identity?.requiresSupplierIfraSds || material?.requiresSupplierIfraSds)
@@ -4079,7 +4168,10 @@ function needsSupplierIfraSds({ name, record, material, identity } = {}) {
   );
 }
 
-export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
+export function auditFormulaIfraCoverage(
+  items = [],
+  { db = {}, reviewedSourceRecords = [] } = {}
+) {
   const counts = {
     exactIfraMatch: 0,
     aliasIfraMatch: 0,
@@ -4090,6 +4182,8 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
     sourceUnavailable: 0,
     supplierSdsNeeded: 0,
     fcfSpecialCase: 0,
+    fcfSourceReviewed: 0,
+    fcfSourcePending: 0,
     knownRestrictionRows: 0,
   };
 
@@ -4154,7 +4248,15 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
 
     if (material && material.status === "active" && !hasDefinedIfraLimit(material)) {
       if (hasFcfSignal({ name, material, identity })) {
+        const fcfSourceStatus = getReviewedFcfSourceStatus({
+          name,
+          material,
+          identity,
+          reviewedSourceRecords,
+        });
         counts.fcfSpecialCase += 1;
+        if (fcfSourceStatus.state === "reviewed") counts.fcfSourceReviewed += 1;
+        else counts.fcfSourcePending += 1;
         return {
           name,
           category: "fcfSpecialCase",
@@ -4162,6 +4264,7 @@ export function auditFormulaIfraCoverage(items = [], { db = {} } = {}) {
           matchedMaterial: material.canonicalName,
           resolvedIfraMaterial: identity?.resolvedIfraMaterial || null,
           missingLimitReason: material.missingLimitReason || null,
+          fcfSourceStatus,
         };
       }
       if (needsSupplierIfraSds({ name, record, material, identity })) {
@@ -5394,6 +5497,7 @@ export function buildFormulaIfraStatus({
   items = [],
   db = {},
   coverageAudit = null,
+  reviewedSourceRecords = [],
   finishedProductGuidance = null,
   concentrateRows = [],
   category = "cat4",
@@ -5403,7 +5507,7 @@ export function buildFormulaIfraStatus({
   const categoryKey = IFRA_CATEGORY_LABELS[category] ? category : "cat4";
   const categoryLabel = IFRA_CATEGORY_LABELS[categoryKey];
   const safeCoverageAudit =
-    coverageAudit || auditFormulaIfraCoverage(safeItems, { db });
+    coverageAudit || auditFormulaIfraCoverage(safeItems, { db, reviewedSourceRecords });
   const safeFinishedProductGuidance =
     finishedProductGuidance ||
     buildFinishedProductIfraGuidance({
@@ -5437,6 +5541,11 @@ export function buildFormulaIfraStatus({
   const supplierSdsNeededCount = Number(coverageCounts.supplierSdsNeeded) || 0;
   const accordLevelCount = Number(coverageCounts.accordLevelOnly) || 0;
   const fcfSpecialCaseCount = Number(coverageCounts.fcfSpecialCase) || 0;
+  const fcfSourceReviewedCount = Number(coverageCounts.fcfSourceReviewed) || 0;
+  const fcfSourcePendingCount =
+    coverageCounts.fcfSourcePending != null
+      ? Number(coverageCounts.fcfSourcePending) || 0
+      : Math.max(0, fcfSpecialCaseCount - fcfSourceReviewedCount);
   const noKnownStructuredStandardCount =
     Number(
       coverageCounts.noKnownRestriction ??
@@ -5557,7 +5666,15 @@ export function buildFormulaIfraStatus({
       `${formatIfraStatusCount(
         fcfSpecialCaseCount,
         "FCF/furocoumarin-free citrus row"
-      )} are tracked separately from regular expressed citrus limits.`
+      )} are tracked separately from regular expressed citrus limits; verify supplier IFRA/SDS before final use.`
+    );
+  }
+  if (fcfSourceReviewedCount > 0) {
+    caveats.push(
+      `Reviewed FCF source note available for ${formatIfraStatusCount(
+        fcfSourceReviewedCount,
+        "row"
+      )}; regular expressed citrus phototoxic limit is not applied as if furocoumarins are present. Not launch clearance.`
     );
   }
   if (accordLevelCount > 0) {
@@ -5609,6 +5726,8 @@ export function buildFormulaIfraStatus({
     supplierSdsNeededCount,
     accordLevelCount,
     fcfSpecialCaseCount,
+    fcfSourceReviewedCount,
+    fcfSourcePendingCount,
     noKnownStructuredStandardCount,
     structuredCoverageGapCount,
     dataReviewCount,

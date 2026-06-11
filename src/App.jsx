@@ -301,6 +301,12 @@ const candidateIfraReviewQueueModules = import.meta.glob(
 );
 const candidateIfraReviewQueueData =
   Object.values(candidateIfraReviewQueueModules)[0]?.default || null;
+const reviewedIfraSourceRecordsModules = import.meta.glob(
+  "../data/ifra_source_acquisition/reviewed_ifra_source_records.json",
+  { eager: true }
+);
+const reviewedIfraSourceRecordsData =
+  Object.values(reviewedIfraSourceRecordsModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -62784,6 +62790,7 @@ export default function App() {
         });
         const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
           db: DB,
+          reviewedSourceRecords: reviewedIfraSourceRecordsData,
         });
         const ifraStatus = buildFormulaIfraStatus({
           items: entry.ingredients || [],
@@ -63281,6 +63288,7 @@ export default function App() {
         });
         const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
           db: DB,
+          reviewedSourceRecords: reviewedIfraSourceRecordsData,
         });
         const ifraStatus = buildFormulaIfraStatus({
           items: entry.ingredients || [],
@@ -67096,7 +67104,11 @@ export default function App() {
     [chem]
   );
   const formulaIfraCoverageAudit = useMemo(
-    () => auditFormulaIfraCoverage(formulaUsageRows, { db: DB }),
+    () =>
+      auditFormulaIfraCoverage(formulaUsageRows, {
+        db: DB,
+        reviewedSourceRecords: reviewedIfraSourceRecordsData,
+      }),
     [formulaUsageRows]
   );
   const formulaIfraCoverageByName = useMemo(
@@ -67898,6 +67910,7 @@ export default function App() {
         });
         const ifraCoverageAudit = auditFormulaIfraCoverage(entry.ingredients || [], {
           db: DB,
+          reviewedSourceRecords: reviewedIfraSourceRecordsData,
         });
         const ifraStatus = buildFormulaIfraStatus({
           items: entry.ingredients || [],
@@ -69193,7 +69206,7 @@ export default function App() {
       });
       const targetIfraCoverageAudit = auditFormulaIfraCoverage(
         targetFormula.ingredients,
-        { db: DB }
+        { db: DB, reviewedSourceRecords: reviewedIfraSourceRecordsData }
       );
       const targetIfraStatus = buildFormulaIfraStatus({
         items: targetFormula.ingredients,
@@ -86174,34 +86187,52 @@ export default function App() {
                                     }
                                   />
                                   {ifraAuditRow ? (
-                                    <div
-                                      style={{
-                                        marginTop: 3,
-                                        fontSize: 7.8,
-                                        color:
-                                          ifraAuditRow.category === "missingAlias" ||
-                                          ifraAuditRow.category ===
-                                            "sourceUnavailable" ||
-                                          ifraAuditRow.category ===
-                                            "supplierSdsNeeded"
-                                            ? "#FCD34D"
-                                            : ifraAuditRow.category ===
-                                              "fcfSpecialCase"
-                                            ? "#7DD3FC"
-                                            : ifraAuditRow.category ===
-                                              "accordLevelOnly"
-                                            ? "#7DD3FC"
-                                            : ifraAuditRow.category ===
-                                                "exactIfraMatch" ||
-                                              ifraAuditRow.category ===
-                                                "aliasIfraMatch"
-                                            ? "#86EFAC"
-                                            : "#94A3B8",
-                                        lineHeight: 1.25,
-                                      }}
-                                    >
-                                      {ifraAuditRow.label}
-                                    </div>
+                                    <>
+                                      <div
+                                        style={{
+                                          marginTop: 3,
+                                          fontSize: 7.8,
+                                          color:
+                                            ifraAuditRow.category === "missingAlias" ||
+                                            ifraAuditRow.category ===
+                                              "sourceUnavailable" ||
+                                            ifraAuditRow.category ===
+                                              "supplierSdsNeeded"
+                                              ? "#FCD34D"
+                                              : ifraAuditRow.category ===
+                                                "fcfSpecialCase"
+                                              ? "#7DD3FC"
+                                              : ifraAuditRow.category ===
+                                                "accordLevelOnly"
+                                              ? "#7DD3FC"
+                                              : ifraAuditRow.category ===
+                                                  "exactIfraMatch" ||
+                                                ifraAuditRow.category ===
+                                                  "aliasIfraMatch"
+                                              ? "#86EFAC"
+                                              : "#94A3B8",
+                                          lineHeight: 1.25,
+                                        }}
+                                      >
+                                        {ifraAuditRow.label}
+                                      </div>
+                                      {ifraAuditRow.fcfSourceStatus?.label ? (
+                                        <div
+                                          style={{
+                                            marginTop: 2,
+                                            fontSize: 7.5,
+                                            color:
+                                              ifraAuditRow.fcfSourceStatus.state ===
+                                              "reviewed"
+                                                ? "#86EFAC"
+                                                : "#FCD34D",
+                                            lineHeight: 1.25,
+                                          }}
+                                        >
+                                          {ifraAuditRow.fcfSourceStatus.label}
+                                        </div>
+                                      ) : null}
+                                    </>
                                   ) : null}
                                 </td>
                                 <td

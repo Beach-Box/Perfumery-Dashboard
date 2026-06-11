@@ -158,6 +158,33 @@ Review statuses mean:
 
 Accepted candidate review is not runtime promotion. It does not add an IFRA limit, does not mark a material compliant, and does not change launch readiness. Promotion to structured IFRA data remains a separate implementation task with source references and tests.
 
+## Reviewed Candidate Promotion Pilot
+
+The first promotion workflow is intentionally narrow: reviewed FCF/furocoumarin-free citrus evidence for `Bergamot EO FCF`, `Bergamot FCF`, and `Lemon FCF`.
+
+Reviewed records live in:
+
+```text
+data/ifra_source_acquisition/reviewed_ifra_source_records.json
+```
+
+To promote a reviewed FCF candidate into source-evidence metadata:
+
+```bash
+node scripts/promote_reviewed_ifra_candidates.mjs \
+  --candidate-id "<candidate-id>" \
+  --material "Bergamot EO FCF" \
+  --record-type fcf_phototoxic_note \
+  --finding furocoumarin_free_or_bergapten_free \
+  --summary "Reviewed source text supports FCF/bergapten-free handling; regular expressed bergamot phototoxic limit should not be applied as if furocoumarins are present."
+```
+
+This pilot only creates a reviewed source record with `runtimeUse: support_special_case_only`. It does not add a Cat 4 limit, does not change `src/data/ifra_master_standards.json`, does not mark the material compliant, and does not claim launch clearance.
+
+When a reviewed FCF source record exists, the app can display “FCF source reviewed” beside the existing FCF special-case IFRA row. That means source evidence supports keeping FCF citrus separate from regular expressed citrus phototoxic restrictions. It still means supplier IFRA/SDS must be verified before final use.
+
+Broad promotion of IFRA category limits, supplier IFRA certificates, or global IFRA standards is a later reviewed task. Do not use this pilot to bulk-promote unrelated candidates.
+
 ## Inventory Acquired Documents
 
 After placing documents in the local folder, run:
