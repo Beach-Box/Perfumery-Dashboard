@@ -73,6 +73,14 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   await expect(ifraSourceAcquisition).toContainText(
     "Top queue items still needing documents"
   );
+  await expect(ifraSourceAcquisition).toContainText("Candidate Review Progress");
+  await expect(ifraSourceAcquisition).toContainText("High-priority review");
+  await expect(ifraSourceAcquisition).toContainText(
+    "Top materials awaiting candidate review"
+  );
+  await expect(ifraSourceAcquisition).toContainText(
+    "Accepted candidate does not equal promoted IFRA data"
+  );
   await expect(ifraSourceAcquisition).toContainText("Aldehyde C-8");
   await expect(ifraSourceAcquisition).toContainText("Not launch clearance");
   await expect(ifraSourceAcquisition).toContainText(
@@ -80,6 +88,9 @@ test("hero candidate board renders, saves sensory tests, and preserves status co
   );
   await expect(ifraSourceAcquisition).toContainText(
     "inventory_ifra_source_documents"
+  );
+  await expect(ifraSourceAcquisition).toContainText(
+    "build_candidate_ifra_review_queue"
   );
 
   let comparisonInterpreter = page.getByTestId("hero-comparison-interpreter");

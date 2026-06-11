@@ -295,6 +295,12 @@ const ifraSourceDocumentInventoryModules = import.meta.glob(
 );
 const ifraSourceDocumentInventoryData =
   Object.values(ifraSourceDocumentInventoryModules)[0]?.default || null;
+const candidateIfraReviewQueueModules = import.meta.glob(
+  "../data/ifra_source_acquisition/candidate_ifra_review_queue.json",
+  { eager: true }
+);
+const candidateIfraReviewQueueData =
+  Object.values(candidateIfraReviewQueueModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81491,7 +81497,8 @@ export default function App() {
     );
     const ifraSourceAcquisitionPanel = buildIfraSourceAcquisitionPanel(
       ifraSourceAcquisitionQueueData,
-      ifraSourceDocumentInventoryData
+      ifraSourceDocumentInventoryData,
+      candidateIfraReviewQueueData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82515,6 +82522,192 @@ export default function App() {
                         )}
                       </div>
                     </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#A7F3D0",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                    }}
+                  >
+                    Candidate Review Progress
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: 8.1,
+                      color: "#94A3B8",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.candidateReview.isAvailable
+                      ? "Extracted snippets are grouped by queue item so high-priority evidence can be reviewed first."
+                      : ifraSourceAcquisitionPanel.candidateReview.missingMessage}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 7.5,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                    overflowWrap: "anywhere",
+                    maxWidth: 420,
+                  }}
+                >
+                  {ifraSourceAcquisitionPanel.candidateReview.regenerateCommand}
+                </div>
+              </div>
+              {ifraSourceAcquisitionPanel.candidateReview.isAvailable && (
+                <>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                      gap: 7,
+                    }}
+                  >
+                    {[
+                      [
+                        "High-priority review",
+                        ifraSourceAcquisitionPanel.candidateReview.counts
+                          .highPriorityReviewItems,
+                        "#FDE68A",
+                      ],
+                      [
+                        "Not started",
+                        ifraSourceAcquisitionPanel.candidateReview.counts
+                          .notStarted,
+                        "#FCA5A5",
+                      ],
+                      [
+                        "Accepted",
+                        ifraSourceAcquisitionPanel.candidateReview.counts
+                          .accepted,
+                        "#86EFAC",
+                      ],
+                      [
+                        "Needs more source",
+                        ifraSourceAcquisitionPanel.candidateReview.counts
+                          .needsMoreSource,
+                        "#FCD34D",
+                      ],
+                    ].map(([label, value, color]) => (
+                      <div
+                        key={label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "6px 8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color,
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {Number(value).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            fontSize: 7,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 7.4,
+                        color: "#FDE68A",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        fontWeight: 800,
+                        marginBottom: 5,
+                      }}
+                    >
+                      Top materials awaiting candidate review
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gap: 5,
+                        fontSize: 8.1,
+                        color: "#94A3B8",
+                        lineHeight: 1.45,
+                      }}
+                    >
+                      {ifraSourceAcquisitionPanel.candidateReview
+                        .topMaterialsAwaitingReview.length ? (
+                        ifraSourceAcquisitionPanel.candidateReview.topMaterialsAwaitingReview.map(
+                          (item) => (
+                            <div key={item.id}>
+                              <span
+                                style={{ color: "#E2E8F0", fontWeight: 800 }}
+                              >
+                                {item.materialName}
+                              </span>{" "}
+                              - {item.candidateCount} candidates,{" "}
+                              {item.highestPriority} priority
+                            </div>
+                          )
+                        )
+                      ) : (
+                        <div>No candidate review items are currently waiting.</div>
+                      )}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      color: "#FDE68A",
+                      fontSize: 8.1,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    Accepted candidate does not equal promoted IFRA data.
                   </div>
                 </>
               )}

@@ -119,6 +119,45 @@ High-priority candidates should be reviewed before identity-only references. Ide
 
 Candidate extraction does not update `src/data/ifra_master_standards.json`, runtime IFRA aliases, formula IFRA classification, or launch-readiness state.
 
+## Candidate IFRA Review Queue
+
+Candidate snippets are intentionally review-first. To avoid reviewing hundreds of loose snippets, build a grouped review queue:
+
+```bash
+node scripts/build_candidate_ifra_review_queue.mjs
+node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/candidate_ifra_review_queue.md
+node scripts/build_candidate_ifra_review_queue.mjs --json
+```
+
+The queue reads `data/ifra_source_acquisition/candidate_ifra_source_extractions.json` and `data/ifra_source_acquisition/hero_ifra_source_queue.json`, then groups candidates by queue item/material. High-priority `ifra_category_limit`, `phototoxic_note`, and SDS/restriction candidates are shown before identity-only snippets. Markdown output shows only the top few snippets per item so the report stays reviewable.
+
+Manual review state is preserved in:
+
+```text
+data/ifra_source_acquisition/candidate_ifra_review_queue.json
+```
+
+Use the updater to mark review progress:
+
+```bash
+node scripts/update_candidate_ifra_review_status.mjs \
+  --id "candidate-ifra-review-hero-ifra-source-octanal-global-ifra-standard-needed" \
+  --review-status accepted \
+  --accept-candidate "candidate-id" \
+  --notes "Candidate appears source-backed; ready for a later promotion review."
+```
+
+Review statuses mean:
+
+- `not_started`: no human review yet.
+- `in_review`: actively being checked against source identity and context.
+- `accepted`: suitable evidence for a later controlled promotion task.
+- `rejected`: not suitable, wrong identity, weak source, or misleading context.
+- `needs_more_source`: potentially useful, but missing stronger source support.
+- `deferred`: intentionally not in scope yet.
+
+Accepted candidate review is not runtime promotion. It does not add an IFRA limit, does not mark a material compliant, and does not change launch readiness. Promotion to structured IFRA data remains a separate implementation task with source references and tests.
+
 ## Inventory Acquired Documents
 
 After placing documents in the local folder, run:

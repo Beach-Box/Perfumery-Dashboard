@@ -4,11 +4,14 @@ export const IFRA_SOURCE_ACQUISITION_REGENERATE_COMMAND =
 export const IFRA_SOURCE_DOCUMENT_INVENTORY_COMMAND =
   "node scripts/inventory_ifra_source_documents.mjs --markdown --write docs/ifra/ifra_source_document_inventory.md";
 
+export const CANDIDATE_IFRA_REVIEW_QUEUE_COMMAND =
+  "node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/candidate_ifra_review_queue.md";
+
 export const IFRA_SOURCE_ACQUISITION_MISSING_MESSAGE =
   "Run the IFRA source acquisition queue script to generate the document checklist.";
 
 export const IFRA_SOURCE_ACQUISITION_GUARDRAIL =
-  "Not launch clearance - acquisition tracking only. Reviewed source documents still require a separate structured IFRA promotion task.";
+  "Not launch clearance - acquisition tracking only. Reviewed source documents and accepted candidates still require a separate structured IFRA promotion task.";
 
 const PRIORITY_RANK = { high: 0, medium: 1, low: 2 };
 
@@ -85,6 +88,10 @@ function isAvailableInventory(inventory) {
   return Boolean(inventory && Array.isArray(inventory.documents));
 }
 
+function isAvailableCandidateReviewQueue(candidateReviewQueue) {
+  return Boolean(candidateReviewQueue && Array.isArray(candidateReviewQueue.items));
+}
+
 function buildTopUnmatchedDocuments(inventory) {
   if (!isAvailableInventory(inventory)) return [];
   return (inventory.documents || [])
@@ -127,7 +134,83 @@ function buildDocumentReviewProgress({ queue, items, reviewStatusCounts }) {
   };
 }
 
-export function buildIfraSourceAcquisitionPanel(queue, documentInventory = null) {
+function compareCandidateReviewItems(left, right) {
+  const priorityDelta =
+    (PRIORITY_RANK[left.highestPriority] ?? 99) -
+    (PRIORITY_RANK[right.highestPriority] ?? 99);
+  if (priorityDelta) return priorityDelta;
+  return String(left.materialName || "").localeCompare(String(right.materialName || ""));
+}
+
+function buildTopCandidateReviewItems(candidateReviewQueue) {
+  if (!isAvailableCandidateReviewQueue(candidateReviewQueue)) return [];
+  return (candidateReviewQueue.items || [])
+    .filter(
+      (item) =>
+        item.queueItemId &&
+        !["accepted", "rejected", "deferred"].includes(item.reviewStatus)
+    )
+    .sort(compareCandidateReviewItems)
+    .slice(0, 3)
+    .map((item) => ({
+      id: item.id,
+      queueItemId: item.queueItemId,
+      materialName: item.materialName,
+      highestPriority: item.highestPriority || "low",
+      candidateCount: item.candidateCount || 0,
+      reviewStatus: item.reviewStatus || "not_started",
+      requiredSourceType: item.requiredSourceType || "",
+      suggestedReviewAction: item.suggestedReviewAction || "",
+    }));
+}
+
+function buildCandidateReviewProgress(candidateReviewQueue) {
+  if (!isAvailableCandidateReviewQueue(candidateReviewQueue)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Run the candidate IFRA review queue script to group extracted snippets for review.",
+      regenerateCommand: CANDIDATE_IFRA_REVIEW_QUEUE_COMMAND,
+      counts: {
+        reviewItems: 0,
+        highPriorityReviewItems: 0,
+        notStarted: 0,
+        inReview: 0,
+        accepted: 0,
+        rejected: 0,
+        needsMoreSource: 0,
+      },
+      topMaterialsAwaitingReview: [],
+    };
+  }
+  const summary = candidateReviewQueue.summary || {};
+  const reviewStatusCounts =
+    summary.reviewStatusCounts || countBy(candidateReviewQueue.items, "reviewStatus");
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      candidateReviewQueue.metadata?.regenerateCommand ||
+      CANDIDATE_IFRA_REVIEW_QUEUE_COMMAND,
+    counts: {
+      reviewItems: summary.itemCount || candidateReviewQueue.items.length || 0,
+      highPriorityReviewItems: summary.highPriorityItemCount || 0,
+      notStarted: summary.notStartedCount ?? reviewStatusCounts.not_started ?? 0,
+      inReview: summary.inReviewCount ?? reviewStatusCounts.in_review ?? 0,
+      accepted: summary.acceptedCount ?? reviewStatusCounts.accepted ?? 0,
+      rejected: summary.rejectedCount ?? reviewStatusCounts.rejected ?? 0,
+      needsMoreSource:
+        summary.needsMoreSourceCount ?? reviewStatusCounts.needs_more_source ?? 0,
+    },
+    topMaterialsAwaitingReview: buildTopCandidateReviewItems(candidateReviewQueue),
+  };
+}
+
+export function buildIfraSourceAcquisitionPanel(
+  queue,
+  documentInventory = null,
+  candidateReviewQueue = null
+) {
   if (!isAvailableQueue(queue)) {
     return {
       isAvailable: false,
@@ -162,6 +245,7 @@ export function buildIfraSourceAcquisitionPanel(queue, documentInventory = null)
         topUnmatchedDocuments: [],
         topQueueItemsNeedingDocuments: [],
       },
+      candidateReview: buildCandidateReviewProgress(candidateReviewQueue),
     };
   }
 
@@ -188,6 +272,7 @@ export function buildIfraSourceAcquisitionPanel(queue, documentInventory = null)
     items,
     reviewStatusCounts,
   });
+  const candidateReviewProgress = buildCandidateReviewProgress(candidateReviewQueue);
 
   return {
     isAvailable: true,
@@ -227,5 +312,6 @@ export function buildIfraSourceAcquisitionPanel(queue, documentInventory = null)
       topQueueItemsNeedingDocuments:
         documentReviewProgress.topQueueItemsNeedingDocuments,
     },
+    candidateReview: candidateReviewProgress,
   };
 }
