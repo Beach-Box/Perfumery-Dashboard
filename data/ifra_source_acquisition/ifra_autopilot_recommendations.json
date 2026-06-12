@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "IFRA Autopilot Recommendations",
     "regenerateCommand": "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md",
-    "autopilotGeneratedAt": "2026-06-12T12:44:21.932Z",
-    "evidenceResolutionGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "autopilotGeneratedAt": "2026-06-12T12:56:57.009Z",
+    "evidenceResolutionGeneratedAt": "2026-06-12T12:56:57.009Z",
     "guardrails": [
       "Recommendations are review workflow output only.",
       "Proposed structured records are not runtime IFRA standards.",
@@ -20,7 +20,7 @@
     "noUsefulEvidenceCount": 1,
     "alreadyHandledCount": 1,
     "deferredCount": 4,
-    "rejectedNoiseCount": 232,
+    "rejectedNoiseCount": 245,
     "recommendationStatusCounts": {
       "proposed_structured_record_ready_for_final_review": 13,
       "needs_better_source": 24,
@@ -214,6 +214,32 @@
       ]
     },
     {
+      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "evidenceStatus": "review_ready",
+      "recommendationStatus": "needs_better_source",
+      "suggestedAction": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+      "confidence": "high",
+      "proposedRecordId": "",
+      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-7-to-do-these-calculations-u-003-c-p-u-003-e-n-u-00",
+      "bestCandidateType": "allergen_or_restriction",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "snippet": "\" to do these calculations.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIFRA standards apply to finished products only and in the case of perfume, that is category 4. To calculate the amount of a material you can use, you simply need to know the IFRA limit, the total amount of your formula (by weight, not volume) and the final dilution of your fragrance (including all non-",
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ]
+    },
+    {
       "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
       "materialName": "Iso E Super",
       "sourceIdentityName": "Iso E Super",
@@ -319,25 +345,25 @@
       ]
     },
     {
-      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
-      "materialName": "Ambrettolide 50% TEC",
-      "sourceIdentityName": "Ambrettolide",
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
       "formulasUsedIn": [
-        "Random Concoction - Original",
         "Skin-Air Bridge",
-        "Damp Shoreline v1"
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
       ],
       "evidenceStatus": "review_ready",
       "recommendationStatus": "needs_better_source",
-      "suggestedAction": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+      "suggestedAction": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
       "confidence": "high",
       "proposedRecordId": "",
-      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide-html-6-floral-mildly-animal-or-ambre-like-type-aroma",
-      "bestCandidateType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/ambrettolide",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide.html",
-      "snippet": "floral, mildly animal or Ambre-like type.” aromachem Best Seller Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 0.5% in a perfume compound Odour Family: Musky Appearance: Colourless liquid Longevity: Lasts > 172 hours on a smelling strip. Odour Profile: Ambrettolide delivers a so",
+      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-1-meta-name-description-content-one-of-the-tra",
+      "bestCandidateType": "allergen_or_restriction",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "snippet": "<meta name=\"description\" content=\"One of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low-atranol versions of the same. Thankfully we have wonderful synthetics available to us such as evernyl, but those alone can not convey the true beauty of oakmoss. That&#39;s where this rich and intense\"",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -468,32 +494,6 @@
       "sourceUrl": "https://fraterworks.com/products/oceanol",
       "sourceFile": "downloads/source_documents/ifra/product_pages/oceanol-10-product-page-https-fraterworks-com-products-oceanol.html",
       "snippet": "nol shows balanced behavior with moderate strength (6/10) and proportional impact in blends (7/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: Traces – 2% in a perfume compound Odour Family: Marine Appearance: White powder Longevity: Lasts > 400 hours on a smelling strip. Odour Profile: Oceanol has a fresh, br",
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ]
-    },
-    {
-      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
-      "materialName": "Veramoss 20% TEC",
-      "sourceIdentityName": "Veramoss",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "evidenceStatus": "review_ready",
-      "recommendationStatus": "needs_better_source",
-      "suggestedAction": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
-      "confidence": "high",
-      "proposedRecordId": "",
-      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
-      "bestCandidateType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/veramoss",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
-      "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1666,6 +1666,32 @@
       ]
     },
     {
+      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "evidenceStatus": "review_ready",
+      "recommendationStatus": "needs_better_source",
+      "suggestedAction": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+      "confidence": "high",
+      "proposedRecordId": "",
+      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-7-to-do-these-calculations-u-003-c-p-u-003-e-n-u-00",
+      "bestCandidateType": "allergen_or_restriction",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "snippet": "\" to do these calculations.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIFRA standards apply to finished products only and in the case of perfume, that is category 4. To calculate the amount of a material you can use, you simply need to know the IFRA limit, the total amount of your formula (by weight, not volume) and the final dilution of your fragrance (including all non-",
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ]
+    },
+    {
       "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
       "materialName": "Iso E Super",
       "sourceIdentityName": "Iso E Super",
@@ -1771,25 +1797,25 @@
       ]
     },
     {
-      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
-      "materialName": "Ambrettolide 50% TEC",
-      "sourceIdentityName": "Ambrettolide",
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
       "formulasUsedIn": [
-        "Random Concoction - Original",
         "Skin-Air Bridge",
-        "Damp Shoreline v1"
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
       ],
       "evidenceStatus": "review_ready",
       "recommendationStatus": "needs_better_source",
-      "suggestedAction": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+      "suggestedAction": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
       "confidence": "high",
       "proposedRecordId": "",
-      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide-html-6-floral-mildly-animal-or-ambre-like-type-aroma",
-      "bestCandidateType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/ambrettolide",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide.html",
-      "snippet": "floral, mildly animal or Ambre-like type.” aromachem Best Seller Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 0.5% in a perfume compound Odour Family: Musky Appearance: Colourless liquid Longevity: Lasts > 172 hours on a smelling strip. Odour Profile: Ambrettolide delivers a so",
+      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-1-meta-name-description-content-one-of-the-tra",
+      "bestCandidateType": "allergen_or_restriction",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "snippet": "<meta name=\"description\" content=\"One of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low-atranol versions of the same. Thankfully we have wonderful synthetics available to us such as evernyl, but those alone can not convey the true beauty of oakmoss. That&#39;s where this rich and intense\"",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -1920,32 +1946,6 @@
       "sourceUrl": "https://fraterworks.com/products/oceanol",
       "sourceFile": "downloads/source_documents/ifra/product_pages/oceanol-10-product-page-https-fraterworks-com-products-oceanol.html",
       "snippet": "nol shows balanced behavior with moderate strength (6/10) and proportional impact in blends (7/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: Traces – 2% in a perfume compound Odour Family: Marine Appearance: White powder Longevity: Lasts > 400 hours on a smelling strip. Odour Profile: Oceanol has a fresh, br",
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ]
-    },
-    {
-      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
-      "materialName": "Veramoss 20% TEC",
-      "sourceIdentityName": "Veramoss",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "evidenceStatus": "review_ready",
-      "recommendationStatus": "needs_better_source",
-      "suggestedAction": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
-      "confidence": "high",
-      "proposedRecordId": "",
-      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
-      "bestCandidateType": "ifra_category_limit",
-      "sourceType": "supplier_product_page",
-      "sourceUrl": "https://fraterworks.com/products/veramoss",
-      "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
-      "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
@@ -2287,6 +2287,123 @@
     }
   ],
   "rejectedNoisyEvidence": [
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-15-height-resultpage-product-image-width",
+      "materialName": "Ambroxan Crystals",
+      "sourceType": "supplier_sds",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "reason": "retained_candidate_noise",
+      "snippet": "_height\":\"\",\"resultpage_product_image_width\":\"\",\"resultpage_snapshot_alignment\":\"left\",\"resultpage_snapshot_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"resultpage_url\":\"pages\\/rapid-search-results\",\"show_child_data\"..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-16-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "sourceType": "supplier_sds",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-17-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "sourceType": "supplier_sds",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-18-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "sourceType": "supplier_sds",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-19-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "sourceType": "supplier_sds",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-12-height-resultpage-product-image-width",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "_height\":\"\",\"resultpage_product_image_width\":\"\",\"resultpage_snapshot_alignment\":\"left\",\"resultpage_snapshot_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"resultpage_url\":\"pages\\/rapid-search-results\",\"show_child_data\"..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-13-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-14-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-15-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-16-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-17-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-18-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-19-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "sourceType": "supplier_specification",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "reason": "retained_candidate_noise",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sec..."
+    },
     {
       "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-alcohol-c-8-octanol-identity-reference-https-www-thegoodscentscompany-com-data-rw-1021071-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
       "materialName": "Alcohol C8 (Octanol)",
@@ -2709,123 +2826,6 @@
       "sourceUrl": "https://www.thegoodscentscompany.com/data/es1028531.html",
       "reason": "retained_candidate_noise",
       "snippet": "FR sweet grass timber FR tobacco FR violet wet fields FR woody Occurrence (nature, food, other): note cedrus atlantica Search Trop Picture Synonyms: cedar atlantica oil morocco cedar atlas heart cedar atlas heart morocc..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
-      "materialName": "Cedar Wood Himalayan",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1031791.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes cedarwood oil himalaya cedrus deodara oil himalaya Suppl..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html-html-2-inhalation-toxicity-not-determined-safety-in-us",
-      "materialName": "Cedar Wood Himalayan",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1031791.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Inhalation Toxicity: Not determined Safety in Use Information: Category: fragrance agents RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Notification of the 49th Amendment to the IFRA Code of Pr..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html-html-4-l-uses-fr-cedar-fr-cedarwood-atlas-fr-patchouli",
-      "materialName": "Cedar Wood Himalayan",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-himalayan-identity-reference-https-www-thegoodscentscompany-com-data-es-1031791-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1031791.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "l Uses: FR cedar FR cedarwood atlas FR patchouli FR pine FR woody Occurrence (nature, food, other): note cedrus deodara Search Trop Picture Synonyms: cedar wood oil himalaya cedarwood oil himalaya cedrus deodara oil him..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-texas-identity-reference-https-www-thegoodscentscompany-com-data-es-1002952-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
-      "materialName": "Cedar Wood Texas",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-texas-identity-reference-https-www-thegoodscentscompany-com-data-es-1002952-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1002952.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes cedarwood oil texas juniperus mexicana wood oil america..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-texas-identity-reference-https-www-thegoodscentscompany-com-data-es-1002952-html-html-10-inhalation-toxicity-not-determined-safety-in-us",
-      "materialName": "Cedar Wood Texas",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-texas-identity-reference-https-www-thegoodscentscompany-com-data-es-1002952-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1002952.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Inhalation Toxicity: Not determined Safety in Use Information: Category: fragrance agents RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Notification of the 49th Amendment to the IFRA Code of Pr..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-virginia-identity-reference-https-www-thegoodscentscompany-com-data-es-1002992-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
-      "materialName": "Cedar Wood Virginia",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-virginia-identity-reference-https-www-thegoodscentscompany-com-data-es-1002992-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1002992.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes cedarwood oil virginia juniperus virginiana wood oil ame..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cedar-wood-virginia-identity-reference-https-www-thegoodscentscompany-com-data-es-1002992-html-html-18-inhalation-toxicity-not-determined-safety-in-us",
-      "materialName": "Cedar Wood Virginia",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cedar-wood-virginia-identity-reference-https-www-thegoodscentscompany-com-data-es-1002992-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/es1002992.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Inhalation Toxicity: Not determined Safety in Use Information: Category: fragrance agents RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Notification of the 49th Amendment to the IFRA Code of Pr..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cetalox-identity-reference-https-www-thegoodscentscompany-com-data-rw-1005291-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
-      "materialName": "Cetalox",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cetalox-identity-reference-https-www-thegoodscentscompany-com-data-rw-1005291-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1005291.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes amber naphthofuran 1,5,5,9-tetramethyl-13-oxatricyclo(8...."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-cetalox-identity-reference-https-www-thegoodscentscompany-com-data-rw-1005291-html-html-5-toxicity-not-determined-safety-in-use-informati",
-      "materialName": "Cetalox",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/cetalox-identity-reference-https-www-thegoodscentscompany-com-data-rw-1005291-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1005291.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Toxicity: Not determined Safety in Use Information: Category: flavor and fragrance agents RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Notification of the 49th Amendment to the IFRA Code of Pr..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
-      "materialName": "Clearwood",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1085861.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Search EU/US Properties Organoleptics Cosmetics Suppliers Safety Safety in use Safety references References Other Blenders Uses Occurrence Synonyms Articles Notes clearwood (Firmenich) Supplier Sponsors Firmenich Inc. W..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html-html-1-uct-s-970953-clearwood-reg-for-fragrance-cle",
-      "materialName": "Clearwood",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1085861.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "uct(s): 970953 CLEARWOOD &reg; for fragrance CLEARWOOD &reg; can be used like patchouli or as a new woody building block at higher dosages. CAS Number: 1450625-49-6 FDA UNII : Search Category: fragrance agents US / EU /..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html-html-2-inhalation-toxicity-not-determined-safety-in-us",
-      "materialName": "Clearwood",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1085861.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "Inhalation Toxicity: Not determined Safety in Use Information: Category: fragrance agents RIFM Fragrance Material Safety Assessment: Search IFRA Code of Practice Notification of the 49th Amendment to the IFRA Code of Pr..."
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html-html-3-ology-data-epa-substance-registry-services-srs",
-      "materialName": "Clearwood",
-      "sourceType": "identity_reference",
-      "sourceFile": "downloads/source_documents/ifra/from_csv/clearwood-identity-reference-https-www-thegoodscentscompany-com-data-rw-1085861-html.html",
-      "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1085861.html",
-      "reason": "retained_candidate_noise",
-      "snippet": "ology Data EPA Substance Registry Services (SRS): Registry National Institute of Allergy and Infectious Diseases: Data References: Pubchem (cas): 1450625-49-6 Other Information: HMDB (The Human Metabolome Database): Sea..."
     }
   ],
   "alreadyHandled": [

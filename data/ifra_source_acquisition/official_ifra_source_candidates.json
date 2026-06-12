@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "Official IFRA Source Candidates",
     "sourceReport": "official_ifra_harvest_report",
     "guardrails": [
@@ -18,9 +18,9 @@
     "noOfficialMatchCount": 38,
     "needsSupplierDocumentInsteadCount": 18,
     "weakAmbiguousMatchCount": 10,
-    "officialDownloadAttemptCount": 0,
+    "officialDownloadAttemptCount": 3,
     "officialDownloadSuccessCount": 0,
-    "officialDownloadFailureCount": 0,
+    "officialDownloadFailureCount": 3,
     "officialPageCacheCount": 0,
     "officialPdfDownloadAttemptCount": 0,
     "officialPdfDownloadFailureCount": 0,

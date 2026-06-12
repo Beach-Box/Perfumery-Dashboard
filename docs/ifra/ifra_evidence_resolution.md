@@ -1,6 +1,6 @@
 # IFRA Evidence Resolution
 
-Generated: 2026-06-11T15:28:05.100Z
+Generated: 2026-06-12T12:48:08.585Z
 
 This report ranks already harvested IFRA/SDS/product-page candidates for review. It does not scrape new pages, promote IFRA limits, or prove launch clearance.
 
@@ -9,46 +9,33 @@ This report ranks already harvested IFRA/SDS/product-page candidates for review.
 - Queue items: 44
 - Retained candidates considered: 1,088
 - Official IFRA source candidates considered: 6
-- Review-ready or candidate-found items: 24
+- Review-ready or candidate-found items: 23
 - Likely FCF evidence items: 1
 - Needs supplier document items: 1
 - Identity-only or insufficient items: 8
 - Already reviewed items: 1
 
 Evidence status counts:
-- review_ready: 24
+- review_ready: 23
 - likely_fcf_evidence: 1
 - needs_supplier_doc: 1
 - insufficient_evidence: 1
 - identity_only: 7
 - already_reviewed: 1
-- not_applicable: 5
+- not_applicable: 6
 - deferred: 4
 
 Suggested action counts:
-- review_top_candidate: 24
+- review_top_candidate: 23
 - promote_fcf_evidence_after_review: 1
 - request_supplier_ifra_or_sds: 4
 - find_global_ifra_standard: 5
 - defer: 4
 - already_reviewed: 1
-- ignore_not_relevant: 5
+- ignore_not_relevant: 6
 
 ## Review first
 
-### Vetiveryl Acetate
-- Queue item: hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed
-- Formulas used in: Damp Shoreline v1
-- Evidence status: review_ready
-- Suggested action: review_top_candidate
-- Confidence: high
-- Why: A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.
-- Limitations: Review candidate and mark accepted only.; Structured limit promotion is a later task.
-- Best candidate: ifra_category_limit (official_ifra_standard_library, score 211)
-- Candidate ID: official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil
-- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
-- Snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
-- Why selected: linked to this queue item; exact material-name match; high review priority; official_ifra_standard_library source; ifra_category_limit candidate; IFRA language present
 ### Methyl Ionone Alpha Extra
 - Queue item: hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed
 - Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
@@ -588,6 +575,19 @@ node scripts/promote_reviewed_ifra_candidates.mjs \
 - Candidate ID: official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-limit-cas-oakmoss-extracts
 - Source: https://ifrafragrance.org/standards-library
 - Snippet: Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.
+- Why selected: linked to this queue item; exact material-name match; high review priority; official_ifra_standard_library source; ifra_category_limit candidate; IFRA language present
+### Vetiveryl Acetate
+- Queue item: hero-ifra-source-vetiveryl-acetate-already_structured
+- Formulas used in: Damp Shoreline v1
+- Evidence status: not_applicable
+- Suggested action: ignore_not_relevant
+- Confidence: high
+- Why: Current structured IFRA coverage already exists.
+- Limitations: Existing coverage is still not launch clearance.
+- Best candidate: ifra_category_limit (official_ifra_standard_library, score 211)
+- Candidate ID: official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil
+- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
+- Snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
 - Why selected: linked to this queue item; exact material-name match; high review priority; official_ifra_standard_library source; ifra_category_limit candidate; IFRA language present
 ### Ylang-Ylang Complete Oil
 - Dilution: 10%

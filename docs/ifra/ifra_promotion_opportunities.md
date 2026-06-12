@@ -6,10 +6,10 @@ Review-only ranking for proposed structured IFRA records. This report does not p
 
 - Proposed records audited: 15
 - Recommended next promotions: 0
-- Good candidates after review: 5
+- Good candidates after review: 6
 - Needs better source: 7
 - Do not promote yet: 0
-- Already promoted: 1
+- Already promoted: 0
 - Special cases: 2
 
 ## Recommended Next Promotions
@@ -17,6 +17,31 @@ Review-only ranking for proposed structured IFRA records. This report does not p
 _None._
 
 ## Good Candidates After Review
+
+### Vetiveryl Acetate
+
+- Source identity: Vetiveryl Acetate
+- Proposed record ID: `proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-li`
+- Source type: official_ifra_standard_pdf
+- Source URL/file: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf | downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf
+- Proposed category/value: Cat 4 0.9%
+- Confidence: high (129)
+- Recommended action: Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.
+- Why it ranks here:
+- official IFRA source candidate
+- official IFRA PDF/source file present
+- exact high-confidence CAS match
+- exact source identity match
+- category value is parseable or explicitly no restriction
+- Cat 4 / fine-fragrance context is explicit
+- source snippet contains IFRA category/max-use language
+- source artifact is cached locally or committed
+- material appears in an active hero formula
+- autopilot confidence is high
+- Risk/caveat:
+- material already has structured IFRA coverage; overlay promotion may be redundant
+- Best source snippet:
+  > Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
 
 ### Cashmeran
 
@@ -310,32 +335,7 @@ _None._
 
 ## Already Promoted
 
-### Vetiveryl Acetate
-
-- Source identity: Vetiveryl Acetate
-- Proposed record ID: `proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca`
-- Source type: official_ifra_standard_pdf
-- Source URL/file: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf | downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf
-- Proposed category/value: Cat 4 0.9%
-- Confidence: low (0)
-- Recommended action: No action. This record is already represented in the reviewed runtime overlay.
-- Why it ranks here:
-- official IFRA source candidate
-- official IFRA PDF/source file present
-- exact high-confidence CAS match
-- exact source identity match
-- category value is parseable or explicitly no restriction
-- Cat 4 / fine-fragrance context is explicit
-- source snippet contains IFRA category/max-use language
-- source artifact is cached locally or committed
-- material appears in an active hero formula
-- high-priority hero IFRA queue item
-- autopilot confidence is high
-- record has already been promoted into runtime structured overlay
-- Risk/caveat:
-- No major ranking risk detected, but source review is still required.
-- Best source snippet:
-  > Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
+_None._
 
 ## Special Cases
 

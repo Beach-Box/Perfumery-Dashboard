@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "Official IFRA Source Harvest",
     "regenerateCommand": "node scripts/harvest_official_ifra_sources.mjs --markdown --write docs/ifra/official_ifra_harvest_report.md",
     "officialSources": {
@@ -28,9 +28,9 @@
     "noOfficialMatchCount": 38,
     "needsSupplierDocumentInsteadCount": 18,
     "weakAmbiguousMatchCount": 10,
-    "officialDownloadAttemptCount": 0,
+    "officialDownloadAttemptCount": 3,
     "officialDownloadSuccessCount": 0,
-    "officialDownloadFailureCount": 0,
+    "officialDownloadFailureCount": 3,
     "officialPageCacheCount": 0,
     "officialPdfDownloadAttemptCount": 0,
     "officialPdfDownloadFailureCount": 0,
@@ -922,8 +922,70 @@
       ]
     }
   ],
-  "downloadedStandardPdfs": [],
-  "officialDownloadRecords": [],
+  "downloadedStandardPdfs": [
+    {
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceType": "official_ifra_standards_library",
+      "materialOrQuery": "IFRA Standards Library",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    },
+    {
+      "sourceUrl": "https://ifrafragrance.org/transparency-list",
+      "sourceType": "official_ifra_transparency_list",
+      "materialOrQuery": "IFRA Transparency List",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    },
+    {
+      "sourceUrl": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
+      "sourceType": "official_ifra_standards_documentation",
+      "materialOrQuery": "IFRA Standards Documentation",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    }
+  ],
+  "officialDownloadRecords": [
+    {
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceType": "official_ifra_standards_library",
+      "materialOrQuery": "IFRA Standards Library",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    },
+    {
+      "sourceUrl": "https://ifrafragrance.org/transparency-list",
+      "sourceType": "official_ifra_transparency_list",
+      "materialOrQuery": "IFRA Transparency List",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    },
+    {
+      "sourceUrl": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
+      "sourceType": "official_ifra_standards_documentation",
+      "materialOrQuery": "IFRA Standards Documentation",
+      "status": "failed",
+      "httpStatus": null,
+      "reason": "fetch failed",
+      "localPath": "",
+      "metadataPath": ""
+    }
+  ],
   "candidates": [
     {
       "id": "official-ifra-hero-ifra-source-cashmeran-already-structured-ifra-category-limit-cas-6-7-dihydro-1-1-2-3-3-pentamethyl-4-5-h-indanone-dpmi",

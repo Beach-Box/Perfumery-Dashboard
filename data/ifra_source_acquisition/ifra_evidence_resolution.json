@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
-    "candidateExtractionGeneratedAt": "2026-06-12T12:44:21.932Z",
-    "officialIfraSourceCandidateGeneratedAt": "2026-06-12T12:44:21.932Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
-    "ingredientSourceHarvestGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "sourceQueueGeneratedAt": "2026-06-12T12:56:57.009Z",
+    "candidateExtractionGeneratedAt": "2026-06-12T12:56:57.009Z",
+    "officialIfraSourceCandidateGeneratedAt": "2026-06-12T12:56:57.009Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-12T12:56:57.009Z",
+    "ingredientSourceHarvestGeneratedAt": "2026-06-12T12:56:57.009Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
       "Evidence resolver output is review triage only.",
@@ -17,8 +17,8 @@
   },
   "summary": {
     "queueItemCount": 44,
-    "candidateCount": 1072,
-    "retainedCandidateCount": 1072,
+    "candidateCount": 1142,
+    "retainedCandidateCount": 1142,
     "reviewedSourceRecordCount": 1,
     "evidenceStatusCounts": {
       "review_ready": 23,
@@ -646,6 +646,90 @@
       ]
     },
     {
+      "id": "ifra-evidence-resolution-hero-ifra-source-ambrettolide-global-ifra-standard-needed",
+      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+      "materialName": "Ambrettolide 50% TEC",
+      "normalizedName": "Ambrettolide",
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "activeMaterialName": "Ambrettolide",
+      "dilutionLabel": "50% TEC",
+      "carrierLabel": "TEC",
+      "formulasUsedIn": [
+        "Random Concoction - Original",
+        "Skin-Air Bridge",
+        "Damp Shoreline v1"
+      ],
+      "priority": "high",
+      "requiredSourceType": "global_ifra_standard_needed",
+      "currentIfraCategory": "sourceUnavailable",
+      "queueStatus": "needed",
+      "queueReviewStatus": "not_started",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "confidence": "high",
+      "score": 173,
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "candidateCounts": {
+        "totalMatched": 50,
+        "linked": 50,
+        "highValue": 24,
+        "identityOnly": 19,
+        "suppressedWeak": 49
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambrettolide-global-ifra-standard-needed",
+      "candidateReviewStatus": "in_review",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-7-to-do-these-calculations-u-003-c-p-u-003-e-n-u-00",
+          "materialName": "Ambrettolide 50% TEC",
+          "score": 173,
+          "candidateLimitType": "allergen_or_restriction",
+          "reviewPriority": "high",
+          "sourceType": "supplier_ifra",
+          "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+          "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "\" to do these calculations.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIFRA standards apply to finished products only and in the case of perfume, that is category 4. To calculate the amount of a material you can use, you simply need to know the IFRA limit, the total amount of your formula (by weight, not volume) and the final dilution of your fragrance (including all non-",
+          "queueItemIds": [
+            "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+          ],
+          "queueLinkConfidence": "source_metadata",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "supplier_ifra source",
+            "allergen_or_restriction candidate",
+            "IFRA language present"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": false,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "to do these calculations u 003 c p u 003 e n u 003 cp u 003 eifra standards apply to finished products only and in the case of perfume that is category 4 to calculate the amount of a material you can use you simply need to know the ifra limit the total amount of your formula by weight not volume and the final dilution of your fragrance including all non"
+          }
+        }
+      ]
+    },
+    {
       "id": "ifra-evidence-resolution-hero-ifra-source-iso-e-super-global-ifra-standard-needed",
       "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed",
       "materialName": "Iso E Super",
@@ -763,11 +847,11 @@
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 33,
-        "linked": 33,
-        "highValue": 13,
-        "identityOnly": 20,
-        "suppressedWeak": 32
+        "totalMatched": 50,
+        "linked": 50,
+        "highValue": 25,
+        "identityOnly": 25,
+        "suppressedWeak": 49
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambroxan-crystals-global-ifra-standard-needed",
       "candidateReviewStatus": "in_review",
@@ -931,11 +1015,11 @@
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 5,
-        "linked": 5,
+        "totalMatched": 6,
+        "linked": 6,
         "highValue": 2,
-        "identityOnly": 3,
-        "suppressedWeak": 4
+        "identityOnly": 4,
+        "suppressedWeak": 5
       },
       "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-seaweed-absolute-natural-uvcb-supplier-document-needed",
       "candidateReviewStatus": "in_review",
@@ -986,87 +1070,85 @@
       ]
     },
     {
-      "id": "ifra-evidence-resolution-hero-ifra-source-ambrettolide-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
-      "materialName": "Ambrettolide 50% TEC",
-      "normalizedName": "Ambrettolide",
-      "formulaMaterialName": "Ambrettolide 50% TEC",
-      "sourceIdentityName": "Ambrettolide",
-      "activeMaterialName": "Ambrettolide",
-      "dilutionLabel": "50% TEC",
+      "id": "ifra-evidence-resolution-hero-ifra-source-veramoss-specialty-supplier-document-needed",
+      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
+      "materialName": "Veramoss 20% TEC",
+      "normalizedName": "Veramoss",
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "activeMaterialName": "Veramoss",
+      "dilutionLabel": "20% TEC",
       "carrierLabel": "TEC",
       "formulasUsedIn": [
-        "Random Concoction - Original",
         "Skin-Air Bridge",
-        "Damp Shoreline v1"
+        "Damp Shoreline v1",
+        "Damp Shoreline v2"
       ],
       "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
+      "requiredSourceType": "specialty_supplier_document_needed",
+      "currentIfraCategory": "supplierSdsNeeded",
       "queueStatus": "needed",
       "queueReviewStatus": "not_started",
       "evidenceStatus": "review_ready",
       "suggestedAction": "review_top_candidate",
       "confidence": "high",
-      "score": 165,
+      "score": 167,
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",
         "Structured limit promotion is a later task."
       ],
       "candidateCounts": {
-        "totalMatched": 17,
-        "linked": 17,
-        "highValue": 7,
-        "identityOnly": 10,
-        "suppressedWeak": 16
+        "totalMatched": 33,
+        "linked": 33,
+        "highValue": 8,
+        "identityOnly": 19,
+        "suppressedWeak": 32
       },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-ambrettolide-global-ifra-standard-needed",
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-veramoss-specialty-supplier-document-needed",
       "candidateReviewStatus": "in_review",
       "reviewedSourceRecordIds": [],
       "bestCandidates": [
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide-html-6-floral-mildly-animal-or-ambre-like-type-aroma",
-          "materialName": "Ambrettolide 50% TEC",
-          "score": 165,
-          "candidateLimitType": "ifra_category_limit",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-1-meta-name-description-content-one-of-the-tra",
+          "materialName": "Veramoss 20% TEC",
+          "score": 167,
+          "candidateLimitType": "allergen_or_restriction",
           "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/ambrettolide",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/ambrettolide-50-tec-product-page-https-fraterworks-com-products-ambrettolide.html",
-          "category": "4",
-          "candidateValue": "No restriction",
+          "sourceType": "supplier_ifra",
+          "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+          "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+          "category": "",
+          "candidateValue": "",
           "candidateUnit": "",
-          "snippet": "floral, mildly animal or Ambre-like type.” aromachem Best Seller Missing_EU/Specs MISSING_HS_CODE_ORIGIN missing_IFRA51 missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 0.5% in a perfume compound Odour Family: Musky Appearance: Colourless liquid Longevity: Lasts > 172 hours on a smelling strip. Odour Profile: Ambrettolide delivers a so",
+          "snippet": "<meta name=\"description\" content=\"One of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low-atranol versions of the same. Thankfully we have wonderful synthetics available to us such as evernyl, but those alone can not convey the true beauty of oakmoss. That&#39;s where this rich and intense\"",
           "queueItemIds": [
-            "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+            "hero-ifra-source-veramoss-specialty_supplier_document_needed"
           ],
           "queueLinkConfidence": "source_metadata",
           "reasons": [
             "linked to this queue item",
             "exact material-name match",
             "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
+            "supplier_ifra source",
+            "allergen_or_restriction candidate",
+            "IFRA language present"
           ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
+          "warnings": [],
           "generatedCommand": "",
           "signals": {
             "linked": true,
             "exactName": true,
             "hasCasMatch": false,
             "hasIfra": true,
-            "hasCategory4": true,
+            "hasCategory4": false,
             "hasMaxUse": true,
             "hasFcf": false,
             "hasSds": false,
             "hasAllergen": true,
             "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "floral mildly animal or ambre like type aromachem best seller missing eu specs missing hs code origin missing ifra 51 missing info no reg ifra 51 no restriction for category 4 average use 0 5 in a perfume compound odour family musky appearance colourless liquid longevity lasts 172 hours on a smelling strip odour profile ambrettolide delivers a so"
+            "hasRifmUsage": false,
+            "normalizedSnippet": "meta name description content one of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low atranol versions of the same thankfully we have wonderful synthetics available to us such as evernyl but those alone can not convey the true beauty of oakmoss that 39 s where this rich and intense"
           }
         }
       ]
@@ -1497,93 +1579,6 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": true,
             "normalizedSnippet": "nol shows balanced behavior with moderate strength 6 10 and proportional impact in blends 7 10 versatile and predictable to work with ifra 51 no restriction for category 4 average use traces 2 in a perfume compound odour family marine appearance white powder longevity lasts 400 hours on a smelling strip odour profile oceanol has a fresh br"
-          }
-        }
-      ]
-    },
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-veramoss-specialty-supplier-document-needed",
-      "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed",
-      "materialName": "Veramoss 20% TEC",
-      "normalizedName": "Veramoss",
-      "formulaMaterialName": "Veramoss 20% TEC",
-      "sourceIdentityName": "Veramoss",
-      "activeMaterialName": "Veramoss",
-      "dilutionLabel": "20% TEC",
-      "carrierLabel": "TEC",
-      "formulasUsedIn": [
-        "Skin-Air Bridge",
-        "Damp Shoreline v1",
-        "Damp Shoreline v2"
-      ],
-      "priority": "high",
-      "requiredSourceType": "specialty_supplier_document_needed",
-      "currentIfraCategory": "supplierSdsNeeded",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 165,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 14,
-        "linked": 14,
-        "highValue": 7,
-        "identityOnly": 6,
-        "suppressedWeak": 13
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-veramoss-specialty-supplier-document-needed",
-      "candidateReviewStatus": "in_review",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss-html-7-luated-directly-3-10-strength-but-exerts-a-po",
-          "materialName": "Veramoss 20% TEC",
-          "score": 165,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "supplier_product_page",
-          "sourceUrl": "https://fraterworks.com/products/veramoss",
-          "sourceFile": "downloads/source_documents/ifra/product_pages/veramoss-20-tec-product-page-https-fraterworks-com-products-veramoss.html",
-          "category": "4",
-          "candidateValue": "No restriction",
-          "candidateUnit": "",
-          "snippet": "luated directly (3/10 strength), but exerts a powerful influence in blends (9/10 impact). Use sparingly to avoid overwhelming compositions. IFRA 51: No restriction for category 4 Average Use: 0.2% in a perfume compound Odour Family: Mossy Appearance: Fine off white powder Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Dry, woody-earthy arom",
-          "queueItemIds": [
-            "hero-ifra-source-methyl-atrarate-veramoss-specialty_supplier_document_needed",
-            "hero-ifra-source-veramoss-specialty_supplier_document_needed"
-          ],
-          "queueLinkConfidence": "source_metadata",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "supplier_product_page source",
-            "ifra_category_limit candidate",
-            "source URL came from matched ingredient reference"
-          ],
-          "warnings": [
-            "RIFM/average-use text is not an IFRA category limit"
-          ],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": true,
-            "normalizedSnippet": "luated directly 3 10 strength but exerts a powerful influence in blends 9 10 impact use sparingly to avoid overwhelming compositions ifra 51 no restriction for category 4 average use 0 2 in a perfume compound odour family mossy appearance fine off white powder longevity lasts 360 hours on a smelling strip odour profile dry woody earthy arom"
           }
         }
       ]

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "Candidate IFRA Source Extractions",
     "sourceDirectory": "downloads/source_documents/ifra",
     "guardrails": [
@@ -9,27 +9,27 @@
     ]
   },
   "summary": {
-    "sourceFileCount": 295,
-    "candidateCount": 1072,
+    "sourceFileCount": 335,
+    "candidateCount": 1142,
     "candidateTypeCounts": {
-      "identity": 577,
-      "allergen_or_restriction": 197,
-      "ifra_category_limit": 123,
-      "phototoxic_note": 155,
-      "unknown": 20
+      "unknown": 32,
+      "allergen_or_restriction": 220,
+      "ifra_category_limit": 124,
+      "phototoxic_note": 161,
+      "identity": 605
     },
     "reviewPriorityCounts": {
-      "low": 350,
-      "high": 318,
-      "medium": 404
+      "low": 385,
+      "high": 342,
+      "medium": 415
     },
     "queueItemIdsWithCandidates": 43,
-    "linkedCandidateCount": 483,
+    "linkedCandidateCount": 553,
     "unlinkedCandidateCount": 589,
     "ambiguousCandidateCount": 0,
-    "suppressedSnippetCount": 876,
+    "suppressedSnippetCount": 887,
     "suppressedReasonCounts": {
-      "navigation_or_directory_noise": 383,
+      "navigation_or_directory_noise": 394,
       "identity_reference_identity_cap": 297,
       "identity_reference_unresolved_safety_context": 93,
       "identity_reference_sds_directory_noise": 97,
@@ -37,6 +37,2176 @@
     }
   },
   "candidates": [
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-0-l-scale-1-meta-name-theme-color-content",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "l-scale=1\"> <meta name=\"theme-color\" content=\"\"> <link rel=\"canonical\" href=\"https://fraterworks.com/blogs/information/working-with-ifra-limits\"> <link rel=\"preconnect\" href=\"https://cdn.shopify.com\" crossorigin> <link rel=\"icon\" type=\"image/png\" href=\"//fraterworks.com/cdn/shop/files/android-chrome-512x512_darker.png?crop=center&height=32&v=172",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-1-vigating-ifra-limits-ndash-fraterworks-title",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "vigating IFRA Limits &ndash; Fraterworks</title> <meta name=\"description\" content=\"A brief guide to understanding how to apply IFRA limits to your finished products.\"> <meta property=\"og:site_name\" content=\"Fraterworks\"> <meta property=\"og:url\" content=\"https://fraterworks.com/blogs/information/working-with-ifra-limits\"> <meta proper",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-2-a-limits-meta-property-og-type-content-art",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "A Limits\"> <meta property=\"og:type\" content=\"article\"> <meta property=\"og:description\" content=\"A brief guide to understanding how to apply IFRA limits to your finished products.\"><meta property=\"og:image\" content=\"http://fraterworks.com/cdn/shop/articles/tingey-injury-law-firm-yCdPU73kGSc-unsplash.jpg?v=1676828513\"> <meta property=\"og:image:secure_url\" co",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-4-89400-offset-43200-reqid-238-d-96-a-4-3-ae-1-43-c-2",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "89400,\"offset\":43200,\"reqid\":\"238d96a4-3ae1-43c2-a29e-a2c37a26df69-1781261231\",\"pageurl\":\"fraterworks.com\\/blogs\\/information\\/working-with-ifra-limits?srsltid=AfmBOoovi2Dd1wfH7ODQ3mBCICbaaTBewIlxjopgqAd4tDJcCD8EA-DZ\",\"s\":\"articles-604641788216\",\"u\":\"73c83244eda7\",\"p\":\"article\",\"rtyp\":\"article\",\"rid\":604641788216};</script> <script>window.ShopifyPaypalV4Visi",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-6-untary-and-does-not-require-compliance-by-hobbyi",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "untary and does not require compliance by hobbyists or even commercial perfumers unless they are domiciled in nations which have placed the IFRA standards into actual law.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIFRA standards can be confusing and this is compounded by the fact that popular websites like The Good Scents Company often list arbitrary safety limits. The o",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-7-to-do-these-calculations-u-003-c-p-u-003-e-n-u-00",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "\" to do these calculations.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIFRA standards apply to finished products only and in the case of perfume, that is category 4. To calculate the amount of a material you can use, you simply need to know the IFRA limit, the total amount of your formula (by weight, not volume) and the final dilution of your fragrance (including all non-",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-8-p-u-003-e-n-u-003-cp-u-003-e-30-1000-20-0-6-u-00",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "ifra_category_limit",
+      "category": "",
+      "candidateValue": "0.73",
+      "candidateUnit": "%",
+      "snippet": "/p\\u003e\\n\\u003cp\\u003e30 \\/ 1000 * 20 = 0.6\\u003c\\/p\\u003e\\n\\u003cp\\u003eThat means you have 0.6% Ylang Ylang in your finished product and IFRA allows up 0.73% so you are well within limits.\\u003c\\/p\\u003e\\n\\u003cp\\u003eIt should be noted that IFRA creates restrictions on natural materials based on the chemicals typically contained within, so ylang ylang is",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-9-e-endpoint-materials-contained-are-significantly",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "e endpoint materials contained are significantly lower, you can increase the amount you use of that material. In short, this means that the restriction on ylang ylang is really a default implementation of the restrictions on materials like isoeugenol, benzyl benzoate, etc.\\u003c\\/p\\u003e\\n\\u003ch2\\u003eMaterials from Mulitple Sources\\u003c\\/h2\\u003e\\n\\u003cp",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-10-u-003-eso-x-0-7-u-003-c-span-u-003-e-u-003-c-p-u-00",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "\\u003eso X = 0.7.\\u003c\\/span\\u003e\\u003c\\/p\\u003e\\n\\u003cp\\u003e\\u003cspan\\u003eWhat does that mean? It means we are still under the 0.73% IFRA limit on ylang ylang.\\u003c\\/span\\u003e\\u003c\\/p\\u003e\\n\\u003cp\\u003eWhen you had more bases with more materials, just add an extra C step for each one and add them all together as in the example above. \\u003c\\/p\\u0",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-11-lished-at-2023-02-20-t-06-41-52-13-00-updated",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "lished_at\":\"2023-02-20T06:41:52+13:00\",\"updated_at\":\"2023-02-20T23:15:15+13:00\",\"summary_html\":\"A brief guide to understanding how to apply IFRA limits to your finished products.\",\"template_suffix\":\"\",\"handle\":\"working-with-ifra-limits\",\"tags\":\"\",\"image\":{\"created_at\":\"2023-02-20T06:41:52+13:00\",\"alt\":\"\",\"width\":2063,\"height\":1500,\"src\":\"\\/\\/fraterworks.com\\",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-12-text-didn-t-get-the-email-check-your-spam-fo",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_text\":\"Didn't get the email? Check your spam folder or [resend the email].\",\"verification_email_rate_limit_error_text\":\"You've reached the limit for review attempts on this product. Please check your inbox or try again later.\",\"review_submitted_request_store_review_text\":\"Would you like to share your experience of shopping with us?\",\"review_submitted_review",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-13-nu-drawer-menu-list-menu-role-list-tabindex",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "nu-drawer__menu list-menu\" role=\"list\" tabindex=\"-1\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset\"> Bergamot “Superior” Oil, FCF </a>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-15-a-ul-class-list-unstyled-role-list-li",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "</a><ul class=\"list-unstyled\" role=\"list\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"mega-menu__link link\"> Bergamot “Superior” Oil, FCF </a> </li><li>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-18-s-field-input-id-url-value-https-fraterw",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "s=\"field__input\" id=\"url\" value=\"https://fraterworks.com/blogs/information/working-with-ifra-limits\" placeholder=\"Link\" onclick=\"this.select();\" readonly > <label class=\"field__label\" for=\"u",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits-txt-19-cript-div-div-class-article-template-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "cript> </div><div class=\"article-template__content page-width page-width--narrow rte\" itemprop=\"articleBody\" > <p>IFRA is a voluntary body created by the perfume giants in Europe to set self-regulating standards. It was created in order to limit government interference in the fragrance market. IFRA is voluntary and does not require",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-0-e-width-initial-scale-1-meta-name-theme-colo",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "e-width,initial-scale=1\"> <meta name=\"theme-color\" content=\"\"> <link rel=\"canonical\" href=\"https://fraterworks.com/products/oakmoss-ifra-43-abs\"> <link rel=\"preconnect\" href=\"https://cdn.shopify.com\" crossorigin> <link rel=\"icon\" type=\"image/png\" href=\"//fraterworks.com/cdn/shop/files/android-chrome-512x512_darker.png?crop=center&height=32&v=172",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-1-meta-name-description-content-one-of-the-tra",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "<meta name=\"description\" content=\"One of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low-atranol versions of the same. Thankfully we have wonderful synthetics available to us such as evernyl, but those alone can not convey the true beauty of oakmoss. That&#39;s where this rich and intense\"",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-2-meta-property-og-site-name-content-fraterwor",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "<meta property=\"og:site_name\" content=\"Fraterworks\"> <meta property=\"og:url\" content=\"https://fraterworks.com/products/oakmoss-ifra-43-abs\"> <meta property=\"og:title\" content=\"Oakmoss “IFRA 43” Absolute\"> <meta property=\"og:type\" content=\"product\"> <meta property=\"og:description\" content=\"One of the tragedies of modern perfume legislation is the",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-4-a-paypal-v-4-true-data-currency-usd-link-re",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "a-paypal-v4=\"true\" data-currency=\"USD\"> <link rel=\"alternate\" type=\"application/json+oembed\" href=\"https://fraterworks.com/products/oakmoss-ifra-43-abs.oembed\"> <script async=\"async\" src=\"/checkouts/internal/preloads.js?locale=en-US&default_configuration_id=234651960\"></script> <link rel=\"preconnect\" href=\"https://shop.app\" crossorigin=\"anonymous\"> <script a",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-5-st-a-68214489400-offset-43200-reqid-145",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_st={\"a\":68214489400,\"offset\":43200,\"reqid\":\"145c8612-ce03-4dcd-b177-f1780bee28c9-1781267677\",\"pageurl\":\"fraterworks.com\\/products\\/oakmoss-ifra-43-abs?srsltid=AfmBOopFAwNerlfmIsA9eb_2xsSXRFLKSOf6NAG0wnbudgFAbN6H5AE6\",\"u\":\"1136348ff067\",\"p\":\"product\",\"rtyp\":\"product\",\"rid\":8301658767672};</script> <script>window.ShopifyPaypalV4VisibilityTracking = true;</scr",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-6-ndow-igproductdata-function-const-data",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ndow.igProductData = (function() { const data = {};data[\"8301658767672\"] = { productId: 8301658767672, handle: \"oakmoss-ifra-43-abs\", tags: [\"absolute\",\"Best Seller\",\"green\",\"Missing_EU\\/Specs\",\"MISSING_HS_CODE_ORIGIN\",\"missing_IFRA51\",\"missing_info\",\"natural\",\"no_reg\"], collectionIds: [443260600632,486068191544,4305145367",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-7-selector-html-classlist-add-smt-loadding",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "Selector('html').classList.add('smt-loadding'); Samita.SamitaLocksAccessParams.product ={\"id\":8301658767672,\"title\":\"Oakmoss “IFRA 43” Absolute\",\"handle\":\"oakmoss-ifra-43-abs\",\"description\":\"\\u003cp\\u003eOne of the tragedies of modern perfume legislation is the ban on \\u003ca href=\\\"https:\\/\\/fraterworks.com\\/products\\/oakmoss-green-yugoslavia-",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-8-l-synthetics-available-to-us-such-as-evernyl-bu",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "l synthetics available to us such as evernyl, but those alone can not convey the true beauty of oakmoss. That's where this rich and intense IFRA compliant oakmoss absolute from LMR comes in. This is the ultimate IFRA-safe oakmoss absolute, tweaked to remove the banned material atranol.\\u003c\\/p\\u003e\\n\\u003cp\\u003eThis oakmoss is earthy, green, sweet and the",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-9-with-this-product-for-a-less-allergenic-version",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "with this product for a less allergenic version, but do bear in mind that this material is still restricted to a low 0.1% of your finished fine fragrance if you intend to commercialise it.\\u003c\\/p\\u003e\\n\\u003cp\\u003eOakmoss absolute is extremely viscous so in addition to this 100% pure version, we are also offering it at a 10% and 50% dilution in natural",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-10-the-former-yugoslavia-and-the-most-wonderful-u-0",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "the former Yugoslavia and the most wonderful \\u003ca href=\\\"https:\\/\\/fraterworks.com\\/products\\/oakmoss-abs-md-55-tec\\\"\\u003edecolourised IFRA compliant oakmoss\\u003c\\/a\\u003e also from LMR.\\u003c\\/p\\u003e\\n\\u003cp\\u003eOrigin: Macedonia\\u003cbr\\u003ePart: Moss\\u003cbr\\u003eMethod of production: Extraction in Grasse\\u003c\\/p\\u003e\",\"published_at\":\"2023-05-",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-11-tec-option-3-null-sku-6891710-10-1-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "% TEC\",\"option3\":null,\"sku\":\"6891710-10-1g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 1g \\/ 10% TEC\",\"public_title\":\"1g \\/ 10% TEC\",\"options\":[\"1g\",\"10% TEC\"],\"price\":625,\"weight\":23,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_plan\"",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-12-tec-option-3-null-sku-6891710-50-1-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "% TEC\",\"option3\":null,\"sku\":\"6891710-50-1g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 1g \\/ 50% TEC\",\"public_title\":\"1g \\/ 50% TEC\",\"options\":[\"1g\",\"50% TEC\"],\"price\":1125,\"weight\":23,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_plan",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-13-pure-option-3-null-sku-6891710-100-1-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "Pure\",\"option3\":null,\"sku\":\"6891710-100-1g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 1g \\/ 100% Pure\",\"public_title\":\"1g \\/ 100% Pure\",\"options\":[\"1g\",\"100% Pure\"],\"price\":1500,\"weight\":23,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_sellin",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-14-tec-option-3-null-sku-6891710-10-4-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "% TEC\",\"option3\":null,\"sku\":\"6891710-10-4g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 4g \\/ 10% TEC\",\"public_title\":\"4g \\/ 10% TEC\",\"options\":[\"4g\",\"10% TEC\"],\"price\":1000,\"weight\":26,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_plan",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-15-tec-option-3-null-sku-6891710-50-4-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "% TEC\",\"option3\":null,\"sku\":\"6891710-50-4g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 4g \\/ 50% TEC\",\"public_title\":\"4g \\/ 50% TEC\",\"options\":[\"4g\",\"50% TEC\"],\"price\":2500,\"weight\":26,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_plan",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-16-pure-option-3-null-sku-6891710-100-4-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "Pure\",\"option3\":null,\"sku\":\"6891710-100-4g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 4g \\/ 100% Pure\",\"public_title\":\"4g \\/ 100% Pure\",\"options\":[\"4g\",\"100% Pure\"],\"price\":3750,\"weight\":26,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_sellin",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-17-tec-option-3-null-sku-6891710-10-15-g-requ",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "TEC\",\"option3\":null,\"sku\":\"6891710-10-15g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 15g \\/ 10% TEC\",\"public_title\":\"15g \\/ 10% TEC\",\"options\":[\"15g\",\"10% TEC\"],\"price\":2625,\"weight\":26,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_p",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-18-tec-option-3-null-sku-6891710-50-15-g-requ",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "TEC\",\"option3\":null,\"sku\":\"6891710-50-15g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 15g \\/ 50% TEC\",\"public_title\":\"15g \\/ 50% TEC\",\"options\":[\"15g\",\"50% TEC\"],\"price\":7250,\"weight\":25,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_selling_p",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-ifra-veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss-txt-19-ure-option-3-null-sku-6891710-100-15-g-req",
+      "materialName": "Veramoss 20% TEC",
+      "materialNames": [
+        "Veramoss 20% TEC"
+      ],
+      "formulaMaterialName": "Veramoss 20% TEC",
+      "sourceIdentityName": "Veramoss",
+      "sourceIdentityNames": [
+        "Veramoss"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_ifra",
+      "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ure\",\"option3\":null,\"sku\":\"6891710-100-15g\",\"requires_shipping\":true,\"taxable\":true,\"featured_image\":null,\"available\":true,\"name\":\"Oakmoss “IFRA 43” Absolute - 15g \\/ 100% Pure\",\"public_title\":\"15g \\/ 100% Pure\",\"options\":[\"15g\",\"100% Pure\"],\"price\":11125,\"weight\":25,\"compare_at_price\":null,\"inventory_management\":\"shopify\",\"barcode\":\"68917-10-2\",\"requires_se",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-0-width-device-width-initial-scale-1-meta-name",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "width=device-width,initial-scale=1\"> <meta name=\"theme-color\" content=\"\"> <link rel=\"canonical\" href=\"https://fraterworks.com/pages/sds-request\"> <link rel=\"preconnect\" href=\"https://cdn.shopify.com\" crossorigin> <link rel=\"icon\" type=\"image/png\" href=\"//fraterworks.com/cdn/shop/files/android-chrome-512x512_darker.png?crop=center&height=32&v=172",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-1-sorigin-title-sds-request-ndash-fraterworks",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "sorigin><title> SDS Request &ndash; Fraterworks</title> <meta name=\"description\" content=\"While we endeavour to have all SDS, Allergens and IFRA paperwork available on all our products, sometimes our suppliers are a little slow to supply them. If you find the paperwork missing on an item, simply send an email to regulatory@fraterworks.com",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-2-require-meta-property-og-site-name-content",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "require.\"> <meta property=\"og:site_name\" content=\"Fraterworks\"> <meta property=\"og:url\" content=\"https://fraterworks.com/pages/sds-request\"> <meta property=\"og:title\" content=\"SDS Request\"> <meta property=\"og:type\" content=\"website\"> <meta property=\"og:description\" content=\"While we endeavour to have all SDS, Allergens and IFRA paperwork availab",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-4-st-var-st-a-68214489400-offset-43200",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "__st\">var __st={\"a\":68214489400,\"offset\":43200,\"reqid\":\"c32859ae-06ee-4483-8d25-25a9f5e6ba9b-1781268526\",\"pageurl\":\"fraterworks.com\\/pages\\/sds-request\",\"s\":\"pages-138536124728\",\"u\":\"562ac6f7c5cc\",\"p\":\"page\",\"rtyp\":\"page\",\"rid\":138536124728};</script> <script>window.ShopifyPaypalV4VisibilityTracking = true;</script> <script id=\"captcha-bootstrap\">!function()",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-5-text-didn-t-get-the-email-check-your-spam-fo",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_text\":\"Didn't get the email? Check your spam folder or [resend the email].\",\"verification_email_rate_limit_error_text\":\"You've reached the limit for review attempts on this product. Please check your inbox or try again later.\",\"review_submitted_request_store_review_text\":\"Would you like to share your experience of shopping with us?\",\"review_submitted_review",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-6-d-smt-loadding-samita-samitalocksaccessparam",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "d('smt-loadding'); Samita.SamitaLocksAccessParams.pageId = \"138536124728\";Samita.SamitaLocksAccessParams.page = \"/pages/sds-request\"; Samita.SamitaLocksAccessParams.pageType = \"page\"; Samita.SamitaLockTranslation = null; </script> <style>html .lock__notificationTemplateWrapper{background:#fff !important",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-7-nu-drawer-menu-list-menu-role-list-tabindex",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "nu-drawer__menu list-menu\" role=\"list\" tabindex=\"-1\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset\"> Bergamot “Superior” Oil, FCF </a>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-9-a-ul-class-list-unstyled-role-list-li",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "</a><ul class=\"list-unstyled\" role=\"list\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"mega-menu__link link\"> Bergamot “Superior” Oil, FCF </a> </li><li>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-11-url-ht",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "\"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\" ], \"url\": \"https:\\/\\/fraterworks.com\\/pages\\/sds-request\" } </script> </div> <main id=\"MainContent\" class=\"content-for-layout focus-none\" role=\"main\" tabindex=\"-1\"> <input type=\"hidden\" name =\"risingSigma-template-name\" id=\"risingSigma-template-name\" value",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-12-div-class-page-width-page-width-narrow-sectio",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "<div class=\"page-width page-width--narrow section-template--16926191288632__main-padding\"> <h1 class=\"main-page-title page-title h0\"> SDS Request </h1> <div class=\"rte\"> <p>While we endeavour to have all SDS, Allergens and IFRA paperwork available on all our products, sometimes our suppliers are a little slow to supply them. If you find the pap",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-13-type-hidden-name-utf-8-value-input-typ",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "type=\"hidden\" name=\"utf8\" value=\"✓\" /><input type=\"hidden\" name=\"_method\" value=\"put\" /><input type=\"hidden\" name=\"return_to\" value=\"/pages/sds-request\" /><div class=\"localization-form__select\"> <h2 class=\"visually-hidden\" id=\"FooterCountryLabelNoScript\">Country/region</h2> <select class=\"localization-selector link\" name=\"coun",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-14-type-hidden-name-utf-8-value-input-typ",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "type=\"hidden\" name=\"utf8\" value=\"✓\" /><input type=\"hidden\" name=\"_method\" value=\"put\" /><input type=\"hidden\" name=\"return_to\" value=\"/pages/sds-request\" /><div class=\"no-js-hidden\"> <h2 class=\"caption-large text-body\" id=\"FooterCountryLabel\">Country/region</h2> <div class=\"disclosure\"> <button type=\"button\" c",
+      "confidence": "medium",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-15-height-resultpage-product-image-width",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_height\":\"\",\"resultpage_product_image_width\":\"\",\"resultpage_snapshot_alignment\":\"left\",\"resultpage_snapshot_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"resultpage_url\":\"pages\\/rapid-search-results\",\"show_child_data\":true,\"search_subcategory\":false,\"shopify_public_settings\":{\"csb_migrated\":true,\"csb_selectors_metafield_id\":31440276947256,\"markets_enabled\"",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-16-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1380676734",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-17-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1729004833",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-18-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1748771474",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-sds-ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request-txt-19-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambroxan Crystals",
+      "materialNames": [
+        "Ambroxan Crystals"
+      ],
+      "formulaMaterialName": "Ambroxan Crystals",
+      "sourceIdentityName": "Ambroxan Crystals",
+      "sourceIdentityNames": [
+        "Ambroxan Crystals"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_sds",
+      "sourceUrl": "https://fraterworks.com/pages/sds-request",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1749500562",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-0-tion-content-our-products-come-with-multiple-s",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "tion\" content=\"Our products come with multiple sets of documentation. This page explains the meaning of each. NOTE: We usually present the SDS and other paperwork for the pure form of the products we sell. When buying diluted materials (such as 10% or 50%) the safety information will be slightly different as dilution usually removes\"> <meta prop",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-1-tion-content-our-products-come-with-multiple-s",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "tion\" content=\"Our products come with multiple sets of documentation. This page explains the meaning of each. NOTE: We usually present the SDS and other paperwork for the pure form of the products we sell. When buying diluted materials (such as 10% or 50%) the safety information will be slightly different as dilution usually removes\"><meta property=\"og:imag",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-2-tion-content-our-products-come-with-multiple-s",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "tion\" content=\"Our products come with multiple sets of documentation. This page explains the meaning of each. NOTE: We usually present the SDS and other paperwork for the pure form of the products we sell. When buying diluted materials (such as 10% or 50%) the safety information will be slightly different as dilution usually removes\"> <script src=\"//f",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-3-text-didn-t-get-the-email-check-your-spam-fo",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_text\":\"Didn't get the email? Check your spam folder or [resend the email].\",\"verification_email_rate_limit_error_text\":\"You've reached the limit for review attempts on this product. Please check your inbox or try again later.\",\"review_submitted_request_store_review_text\":\"Would you like to share your experience of shopping with us?\",\"review_submitted_review",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-4-nu-drawer-menu-list-menu-role-list-tabindex",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "nu-drawer__menu list-menu\" role=\"list\" tabindex=\"-1\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset\"> Bergamot “Superior” Oil, FCF </a>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-6-a-ul-class-list-unstyled-role-list-li",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "phototoxic_note",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "</a><ul class=\"list-unstyled\" role=\"list\"><li> <a href=\"/products/bergamot-oil-fcf\" class=\"mega-menu__link link\"> Bergamot “Superior” Oil, FCF </a> </li><li>",
+      "confidence": "high",
+      "reviewPriority": "high",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-8-p-our-products-come-with-multiple-sets-of-docum",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "<p>Our products come with multiple sets of documentation. This page explains the meaning of each. </p> <p>NOTE: We usually present the SDS and other paperwork for the pure form of the products we sell. When buying diluted materials (such as 10% or 50%) the safety information will be slightly different as dilution usually removes risks associated with lo",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-9-it-is-the-first-reference-when-encountering-spil",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "It is the first reference when encountering spills or when the material comes into contact with a human. These are also sometimes known as MSDS (Material Safety Data Sheet) or PSDS (Product Safety Data Sheet).</p> <p><strong>IFRA 49 or IFRA 51</strong></p> <p>IFRA is the voluntary body that produces recommendations for the safe use of fragrance materials. T",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-10-meta-charset-utf-8-note-on-some-lmr-products",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "unknown",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "meta charset=\"utf-8\">Note: on some LMR products that company undertakes internal testing and they use that testing when they produce their “IFRA” documents. Consequently LMR IFRA certificates may list extremely limited quantities which do not accurately reflect IFRA limitations. This is a quirk of LMR and we supply their IFRA document as a matter of referenc",
+      "confidence": "low",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-11-ets-are-specifications-that-give-a-summary-of-th",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "allergen_or_restriction",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ets are specifications that give a summary of the technical characterises of a thing.</p> <p><strong>NZ CCI</strong></p> <p>Addendum to the SDS from the NZ Chemical Classification and Information Database as provided by the New Zealand EPA. This only applies to customers purchasing and using our products in New Zealand.</p> <p><strong>Disclaimer</strong></p>",
+      "confidence": "medium",
+      "reviewPriority": "medium",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-12-height-resultpage-product-image-width",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "_height\":\"\",\"resultpage_product_image_width\":\"\",\"resultpage_snapshot_alignment\":\"left\",\"resultpage_snapshot_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"resultpage_url\":\"pages\\/rapid-search-results\",\"show_child_data\":true,\"search_subcategory\":false,\"shopify_public_settings\":{\"csb_migrated\":true,\"csb_selectors_metafield_id\":31440276947256,\"markets_enabled\"",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-13-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1380676734",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-14-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1729004833",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-15-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1748771474",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-16-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1749500562",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-17-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1749500890",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-18-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1775189691",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation-txt-19-ion-type-infinite-loading-product-card-conte",
+      "materialName": "Ambrettolide 50% TEC",
+      "materialNames": [
+        "Ambrettolide 50% TEC"
+      ],
+      "formulaMaterialName": "Ambrettolide 50% TEC",
+      "sourceIdentityName": "Ambrettolide",
+      "sourceIdentityNames": [
+        "Ambrettolide"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://fraterworks.com/pages/documentation",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "ion_type\":\"infinite_loading\",\"product_card_content_alignment\":\"left\",\"product_card_design\":\"\",\"product_card_order\":[\"image\",\"name\",\"price\",\"manufacturer\"],\"products_per_row\":4,\"rows_per_page\":4,\"search_liquid_file\":\"sections\\/main-search.liquid\",\"search_results_page_enabled\":true,\"search_results_page_search_bar_visibility\":\"show_always\",\"theme_id\":1775402028",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
+    {
+      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-6-html-0-u-x-e-u-gs-g-1-mp-w",
+      "materialName": "Seaweed Absolute 10%",
+      "materialNames": [
+        "Seaweed Absolute 10%"
+      ],
+      "formulaMaterialName": "Seaweed Absolute 10%",
+      "sourceIdentityName": "Seaweed Absolute",
+      "sourceIdentityNames": [
+        "Seaweed Absolute"
+      ],
+      "queueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "ambiguousQueueItemIds": [],
+      "queueLinkConfidence": "source_metadata",
+      "sourceType": "supplier_specification",
+      "sourceUrl": "https://www.natureinbottle.com/download-logo/p6",
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-6.html",
+      "candidateLimitType": "identity",
+      "category": "",
+      "candidateValue": "",
+      "candidateUnit": "",
+      "snippet": "��#�\u0000\u0004u�\u0000��x�{E��uԼ?gs*G.���\u001a|:��\u00161��\\]��\u001e-Mp�\u001fWK=\"���v�x�\u001f\u0014��\u0016�K\u0005�����p���\u0012�[ޕ\\&\u00122v�����3͗�\u0017荑K�M��� &�\u00165_\u0012|J�|L|Kq�\u001e-&?�7�\u001a׭���_ �i?a�]�0�cas���q \u0015��n\u0000%a�����@�F_�V��u1�yQ_S��� �?�U3��\u0015K5� ~7\u0007��U\u0017(`#���'�i)F�\u001dNyҩ��֛���R���|\u0004�px���]�W�g\u0018�\u001c#��#\u001b�t(p\u000f T���]I�_\u0013O\u0001��L�\u0015\u0015�q&/ ����R����xLE5[\u0003�¬a���\u001f�m�g�_�b�x��[�Z7�G��_� 3?�m��\u0000�#��_O\u0015|%?�֑���\u0000����Q�g���?�}��o",
+      "confidence": "medium",
+      "reviewPriority": "low",
+      "reviewStatus": "needs_review",
+      "notes": [
+        "Candidate extraction only. Requires human review before any structured IFRA promotion."
+      ]
+    },
     {
       "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-alcohol-c-8-octanol-identity-reference-https-www-thegoodscentscompany-com-data-rw-1021071-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
       "materialName": "Alcohol C8 (Octanol)",
@@ -29030,6 +31200,83 @@
   ],
   "suppressedSnippets": [
     {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "ty=\"og:image:height\" content=\"1500\"><meta name=\"twitter:card\" content=\"summary_large_image\"> <meta name=\"twitter:title\" content=\"Navigating IFRA Limits\"> <meta name=\"twitter:description\" content=\"A brief guide to understanding how to apply IFRA limits to your finished products.\"> <script src=\"//fraterworks.com/cdn/shop/t/1/assets/global.js?v=1494969440"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "ment.querySelector('html').classList.add('smt-loadding'); Samita.SamitaLocksAccessParams.article = {\"id\":604641788216,\"title\":\"Navigating IFRA Limits\",\"created_at\":\"2023-02-20T06:37:05+13:00\",\"body_html\":\"\\u003cp\\u003eIFRA is a voluntary body created by the perfume giants in Europe to set self-regulating standards. It was created in order to limit governme"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset menu-drawer__menu-item--active\" aria-current=\"page\"> Navigating IFRA Limits"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</a> </li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"mega-menu__link link mega-menu__link--active\" aria-current=\"page\"> Navigating IFRA Limits </a>"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "8513&width=1100\" loading=\"eager\" width=\"2063\" height=\"1500\" alt=\"Navigating IFRA Limits\"> </div> </div><header class=\"page-width page-width--narrow\" > <h1 class=\"article-template__title\" itemprop=\"headline\">Navigating IFRA Limits</h1><span class=\"circle-divider"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+      "sourceType": "supplier_ifra",
+      "materialName": "Veramoss 20% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "rty=\"og:price:currency\" content=\"USD\"><meta name=\"twitter:card\" content=\"summary_large_image\"> <meta name=\"twitter:title\" content=\"Oakmoss “IFRA 43” Absolute\"> <meta name=\"twitter:description\" content=\"One of the tragedies of modern perfume legislation is the ban on pure and natural oakmoss and the severe restriction on low-atranol versions of the same. Than"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceType": "supplier_sds",
+      "materialName": "Ambroxan Crystals",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "<meta property=\"og:image:height\" content=\"628\"><meta name=\"twitter:card\" content=\"summary_large_image\"> <meta name=\"twitter:title\" content=\"SDS Request\"> <meta name=\"twitter:description\" content=\"While we endeavour to have all SDS, Allergens and IFRA paperwork available on all our products, sometimes our suppliers are a little slow to supply them. If you fin"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceType": "supplier_sds",
+      "materialName": "Ambroxan Crystals",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset\"> Navigating IFRA Limits </a>"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+      "sourceType": "supplier_sds",
+      "materialName": "Ambroxan Crystals",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</a> </li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"mega-menu__link link\"> Navigating IFRA Limits </a> </li><li>"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceType": "supplier_specification",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"menu-drawer__menu-item link link--text list-menu__item focus-inset\"> Navigating IFRA Limits </a>"
+    },
+    {
+      "sourceFile": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+      "sourceType": "supplier_specification",
+      "materialName": "Ambrettolide 50% TEC",
+      "reason": "navigation_or_directory_noise",
+      "snippet": "</a> </li><li> <a href=\"/blogs/information/working-with-ifra-limits\" class=\"mega-menu__link link\"> Navigating IFRA Limits </a> </li><li>"
+    },
+    {
       "sourceFile": "downloads/source_documents/ifra/from_csv/alcohol-c-8-octanol-identity-reference-https-www-thegoodscentscompany-com-data-rw-1021071-html.html",
       "sourceType": "identity_reference",
       "materialName": "Alcohol C8 (Octanol)",
@@ -29301,83 +31548,6 @@
       "materialName": "Ald C-12 MNA (10%)",
       "reason": "identity_reference_sds_directory_noise",
       "snippet": "r and seek medical advice. S 36 - Wear suitable protective clothing. S 61 - Avoid release to the environment. Refer to special instructions/safety data sheet. &#160; Hazards identification &#160; Classification of the substance or mixture GHS Classification in accordance with 29 CFR 1910 (OSHA HCS) Skin irritation (Category 2), H315 Skin sensitisation (Categ"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-12-mna-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000411-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-12 MNA (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "31 National Institute of Allergy and Infectious Diseases: Data WGK Germany: 1 2-methylundecanal Chemidplus: 0000110418 RTECS: YQ1509000 for cas# 110-41-8 References: Leffingwell: Chirality or Article 2-methylundecanal NIST Chemistry WebBook: Search Inchi Canada Domestic Sub. List: 110-41-8 Pubchem (cid): 61031 Pubchem (sid): 135018442 Other Information: (IUP"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-12-mna-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000411-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-12 MNA (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "e FR violet white linen FR woody FR zibeline Occurrence (nature, food, other): note kumquat oil Search Trop Picture rue Search Trop Picture Synonyms: aldehyde C 12 MNA pure aldehyde C-12 M.N.A. aldehyde C-12 mna aldehyde C-12 MNA FCC aldehyde C12 MNA aldehyde M.N.A. aldehyde MNA 2- methyl hendecanal methyl N-nonyl acetaldehyde methyl N-nonyl acetic aldehyde"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "navigation_or_directory_noise",
-      "snippet": "k Twitter Instagram Linkedin Pinterest Upcoming Events Blog Vimeo CODE100053 CODE100053 Product(s): 1305 GAMMA NONALACTONE NATURAL 97% min. SDS 1560 ALDEHYDE C-18 NATURAL CHIRAL SDS Associate Allied Chemicals Quality, Service and Values Our aim is to become a reliable one-stop shop for our customers. Distributor and Agents of high quality raw materials for t"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "redients Media Products List: View CODE100053 CODE100053 Product(s): Aldehyde C-18 Gamma Nonalactone Natural BOC Sciences Best of Chemicals Supplier Quality supplier of research chemicals and biochemicals including inhibitors, building blocks, GMP Products, impurities and metabolites, APIs for Veterinary, Natural Compounds, ADCs, Stem Cell Molecule and chira"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "do Brazil: 55 13 3261 6084 Elan do Brazil Fax: 55 13 3261 3726 Custom Solutions CODE100053 CODE100053 Product(s): ALDEHYDE C-18 FCC, Kosher SDS Excellentia International Ingredients by Nature Exceptional quality and excellence in meeting our customers requirements. Excellentia International was founded in 2010 through the merger of Excellentia Flavors LLC an"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "ervices CODE100053 CODE100053 Product(s): gamma-Nonalactone Natural gamma-Nonalactone Fleurchem, Inc. Have A Flavorful Day A leading global manufacturer and supplier of ingredients for Flavors, Fragrances, AromaTherapy, Foods, Beverages, Personal Care Products, and other uses. Operating out of the 200,000 sq. ft., former Hercules/PFW facility in Middletown,"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "DE100053 CODE100053 Product(s): ALDEHYDE C-18 ALDEHYDE C-18 NATURAL Jiangyin Healthway International Trade Co., Ltd Independent Ingredients Supplier We provide custom synthesis and contract manufacturing from milligrams to metric tonnes. Jiangyin Healthway International Trade Co., Ltd is a professional company, main engaged in manufacturing and exporting aro"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "ls ,food additives , cosmetic ingredient ,pharmaceutical intermediates & other fine chemicals; especially on aroma chemicals , as the major manufacturer of heterocyclic and sulphur aroma compounds , we are the leading independent ingredients supplier to the flavour and fragrance industries in China, can offer hundreds of different high quality aroma chemical"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "rofessional services to exceed our client&#39;s expectations. For over 2 decades, Primechem has proven to be a professional and outstanding supplier, offering a diverse range of superior quality products, services and solutions for use in Flavor & Fragrances industries worldwide. Email: Info Email: Sales Voice: +86-551-628 355 29 Fax: :+86-551-628 330 59 New"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "t(s): Gamma-Nonalactone Gamma-Nonalactone natural Riverside Aromatics Ltd. Speciality Aroma Chemicals, Naturals and Synthetics A specialist supplier of raw materials to the flavour industry. Peter Cannon & David Rowe established Riverside Aromatics in 2006 in Poole, UK, to offer a new type of specialist raw material supplier to the Flavour & Fragrance Indust"
-    },
-    {
-      "sourceFile": "downloads/source_documents/ifra/from_csv/ald-c-18-10-identity-reference-https-www-thegoodscentscompany-com-data-rw-1000531-html.html",
-      "sourceType": "identity_reference",
-      "materialName": "Ald C-18 (10%)",
-      "reason": "identity_reference_identity_cap",
-      "snippet": "d Fragrances Learning Center Certified Food Grade Products CODE100053 CODE100053 Product(s): W278106 gamma-Nonalactone, &#8805;98%, FCC, FG SDS W278140 g-Nonanoic lactone natural, 98%, FG SDS Soda Aromatic Co., Ltd. Depth of Experience We guarantees product safety and quality. Our international sales department is happy to design the most suitable flavor & f"
     }
   ]
 }

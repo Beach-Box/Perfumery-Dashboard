@@ -10,6 +10,7 @@ import {
   cacheDiscoveredSupplierLinks,
   classifyDiscoveredSourceLink,
   discoverSupplierDocumentLinksFromHtml,
+  formatIfraSourceAcquisitionAutopilotMarkdown,
   isSafeSupplierDocumentFollow,
   runIfraSourceAcquisitionAutopilot,
 } from "../scripts/lib/ifra_source_acquisition_autopilot.mjs";
@@ -266,6 +267,165 @@ test("blocked and failed downloads are recorded without aborting acquisition", a
   );
   assert.match(downloads[0].error, /supplier domain/i);
   assert.equal(downloads[1].httpStatus, 403);
+});
+
+test("cached discovered supplier documents are counted as cached hits without refetching", async () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ifra-source-acq-cache-"));
+  const sourceDir = path.join(tempDir, "source");
+  const cachedFile = path.join(sourceDir, "autopilot", "sds", "calone-sds.pdf");
+  const metadataPath = `${cachedFile}.metadata.json`;
+  fs.mkdirSync(path.dirname(cachedFile), { recursive: true });
+  fs.writeFileSync(cachedFile, "cached pdf");
+  writeJson(metadataPath, {
+    sourceUrl: "https://supplier.test/calone-sds.pdf",
+    sourceType: "supplier_sds",
+    materialName: "Calone 1951",
+    httpStatus: 200,
+    contentType: "application/pdf",
+    localPath: cachedFile,
+  });
+
+  const downloads = await cacheDiscoveredSupplierLinks({
+    download: true,
+    sourceDir,
+    cacheDir: path.join(sourceDir, "autopilot"),
+    rateLimitMs: 0,
+    discoveredLinks: [
+      {
+        sourceUrl: "https://supplier.test/calone-sds.pdf",
+        sourceType: "supplier_sds",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone",
+        queueItemIds: ["calone"],
+        safeFollow: true,
+      },
+    ],
+    fetchImpl: async (url) => {
+      throw new Error(`Unexpected refetch for cached source: ${url}`);
+    },
+  });
+
+  assert.equal(downloads.length, 1);
+  assert.equal(downloads[0].downloadStatus, "skipped_cached");
+  assert.equal(downloads[0].httpStatus, 200);
+  assert.match(downloads[0].localPath, /calone-sds\.pdf$/);
+});
+
+test("download report ledger includes discovered downloads, cached hits, failures, and download mode", () => {
+  const target = makeQueueItem();
+  const report = buildIfraSourceAcquisitionAutopilotReport({
+    downloadRequested: true,
+    targets: [
+      {
+        queueItemId: target.id,
+        materialName: target.materialName,
+        sourceIdentityName: target.sourceIdentityName,
+        formulasUsedIn: target.formulasUsedIn,
+        priorStatus: { queueStatus: "needed", reviewStatus: "not_started" },
+      },
+    ],
+    harvestReport: {
+      sourceLinks: [
+        {
+          materialName: "Calone 1951",
+          sourceType: "supplier_product_page",
+          sourceUrl: "https://supplier.test/products/calone",
+          downloadStatus: "downloaded",
+          localPath: "downloads/source_documents/ifra/products/calone.html",
+          httpStatus: 200,
+        },
+      ],
+    },
+    officialAcquisition: {
+      officialSearchesAttempted: 1,
+      newOfficialMatches: [],
+      officialDownloadRecords: [],
+    },
+    discoveredDownloads: [
+      {
+        sourceUrl: "https://supplier.test/docs/calone-sds.pdf",
+        sourceType: "supplier_sds",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone",
+        queueItemIds: [target.id],
+        safeFollow: true,
+        downloadStatus: "downloaded",
+        localPath: "downloads/source_documents/ifra/autopilot/sds/calone-sds.pdf",
+        httpStatus: 200,
+      },
+      {
+        sourceUrl: "https://supplier.test/docs/calone-spec.pdf",
+        sourceType: "supplier_specification",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone",
+        queueItemIds: [target.id],
+        safeFollow: true,
+        downloadStatus: "skipped_cached",
+        localPath: "downloads/source_documents/ifra/autopilot/specs/calone-spec.pdf",
+        httpStatus: 200,
+      },
+      {
+        sourceUrl: "https://supplier.test/docs/calone-ifra.pdf",
+        sourceType: "supplier_ifra",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone",
+        queueItemIds: [target.id],
+        safeFollow: true,
+        downloadStatus: "failed",
+        httpStatus: 503,
+        error: "HTTP 503",
+      },
+      {
+        sourceUrl: "https://other.test/docs/calone-ifra.pdf",
+        sourceType: "supplier_ifra",
+        materialName: "Calone 1951",
+        sourceIdentityName: "Calone",
+        queueItemIds: [target.id],
+        safeFollow: false,
+        downloadStatus: "blocked",
+        blockedReason: "Blocked because the discovered link leaves the known supplier domain.",
+      },
+    ],
+    pipelineResult: {
+      candidateExtractions: { candidates: [] },
+      evidenceResolution: { items: [] },
+      recommendations: { items: [], needsBetterSource: [] },
+      proposedRecordsFile: { records: [] },
+    },
+    beforeInputs: {
+      candidateExtractions: { candidates: [] },
+      proposedRecords: { records: [] },
+      evidenceResolution: { items: [] },
+    },
+  });
+  const markdown = formatIfraSourceAcquisitionAutopilotMarkdown(report);
+
+  assert.equal(report.metadata.mode, "download");
+  assert.equal(report.summary.downloadsAttempted, 3);
+  assert.equal(report.summary.downloadsSucceeded, 2);
+  assert.equal(report.summary.downloadsFailed, 1);
+  assert.equal(report.summary.downloadSkippedExisting, 1);
+  assert.equal(report.summary.cachedHits, 1);
+  assert.equal(report.summary.downloadBlocked, 1);
+  assert.deepEqual(report.summary.downloadedByType, {
+    supplier_product_page: 1,
+    supplier_sds: 1,
+    supplier_specification: 1,
+  });
+  assert.deepEqual(report.summary.downloadedFetchedByType, {
+    supplier_product_page: 1,
+    supplier_sds: 1,
+  });
+  assert.deepEqual(report.summary.cachedHitsByType, {
+    supplier_specification: 1,
+  });
+  assert.equal(report.summary.downloadFailures.length, 1);
+  assert.equal(report.summary.downloadFailures[0].sourceUrl, "https://supplier.test/docs/calone-ifra.pdf");
+  assert.match(report.summary.nextAutomatedAction, /^Downloaded\/cached discovered source files/);
+  assert.match(markdown, /Run mode: download/);
+  assert.match(markdown, /Cached hits: 1/);
+  assert.match(markdown, /supplier_sds: 1/);
+  assert.match(markdown, /https:\/\/supplier\.test\/docs\/calone-ifra\.pdf/);
 });
 
 test("run source acquisition autopilot reruns the pipeline summary without broad search or runtime IFRA mutation", async () => {

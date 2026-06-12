@@ -1,6 +1,6 @@
 # Official IFRA Source Harvest
 
-Generated: 2026-06-12T12:44:21.932Z
+Generated: 2026-06-12T12:56:57.009Z
 
 This report uses official IFRA source roles conservatively: the Standards Library can produce standard candidates for review, while the Transparency List is identity/CAS support only. It does not promote runtime IFRA limits or prove launch clearance.
 
@@ -12,9 +12,9 @@ This report uses official IFRA source roles conservatively: the Standards Librar
 - No official match found: 38
 - Needs supplier document instead: 18
 - Weak/ambiguous matches: 10
-- Official download attempts: 0
+- Official download attempts: 3
 - Official download successes: 0
-- Official download failures: 0
+- Official download failures: 3
 - Official HTML/pages cached: 0
 - Official PDF download attempts: 0
 - Downloaded standard PDFs: 0
@@ -161,7 +161,9 @@ _No official standard PDFs downloaded in this run._
 
 ## Official Download Failures
 
-_No official download failures recorded._
+- https://ifrafragrance.org/standards-library: fetch failed (official_ifra_standards_library)
+- https://ifrafragrance.org/transparency-list: fetch failed (official_ifra_transparency_list)
+- https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation: fetch failed (official_ifra_standards_documentation)
 
 ## Weak/Ambiguous Matches
 

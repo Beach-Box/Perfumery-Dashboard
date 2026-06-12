@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "IFRA Source Document Inventory",
     "sourceDirectory": "downloads/source_documents/ifra",
     "queueItemCount": 44,
@@ -10,23 +10,703 @@
     ]
   },
   "summary": {
-    "documentCount": 87,
-    "matchedDocumentCount": 25,
+    "documentCount": 112,
+    "matchedDocumentCount": 47,
     "possibleMatchDocumentCount": 0,
-    "unmatchedDocumentCount": 62,
+    "unmatchedDocumentCount": 65,
     "sourceTypeGuessCounts": {
-      "global_ifra_standard": 1,
-      "unknown": 7,
-      "supplier_sds": 79
+      "supplier_ifra": 6,
+      "supplier_sds": 81,
+      "unknown": 24,
+      "global_ifra_standard": 1
     }
   },
   "documents": [
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-aldehyde-c-18-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5996-pdf-pdf",
+      "filename": "aldehyde-c-18-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5996-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/aldehyde-c-18-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5996-pdf.pdf",
+      "sizeBytes": 92379,
+      "modifiedAt": "2026-06-12T12:47:51.837Z",
+      "extension": "pdf",
+      "titleGuess": "Aldehyde C 18 Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 5996 Pdf",
+      "materialGuess": "Aldehyde C 18 Https Shop Perfumersapprentice Com 51 5996 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed",
+          "materialName": "Aldehyde C-18",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "aldehyde c 18"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-algenone-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-9357-pdf-pdf",
+      "filename": "algenone-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-9357-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/algenone-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-9357-pdf.pdf",
+      "sizeBytes": 95033,
+      "modifiedAt": "2026-06-12T12:48:41.239Z",
+      "extension": "pdf",
+      "titleGuess": "Algenone Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 9357 Pdf",
+      "materialGuess": "Algenone Https Shop Perfumersapprentice Com 51 9357 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-allyl-amyl-glycolate-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5999-pdf-pdf",
+      "filename": "allyl-amyl-glycolate-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5999-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/allyl-amyl-glycolate-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5999-pdf.pdf",
+      "sizeBytes": 92763,
+      "modifiedAt": "2026-06-12T12:48:42.228Z",
+      "extension": "pdf",
+      "titleGuess": "Allyl Amyl Glycolate Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 5999 Pdf",
+      "materialGuess": "Allyl Amyl Glycolate Https Shop Perfumersapprentice Com 51 5999 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
+          "materialName": "Allyl Amyl Glycolate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "allyl amyl glycolate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-dihydromyrcenol-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6051-pdf-pdf",
+      "filename": "dihydromyrcenol-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6051-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/dihydromyrcenol-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6051-pdf.pdf",
+      "sizeBytes": 93986,
+      "modifiedAt": "2026-06-12T12:48:48.578Z",
+      "extension": "pdf",
+      "titleGuess": "Dihydromyrcenol Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 6051 Pdf",
+      "materialGuess": "Dihydromyrcenol Https Shop Perfumersapprentice Com 51 6051 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-ethyl-vanillin-10-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6078-pdf-pdf",
+      "filename": "ethyl-vanillin-10-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6078-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/ethyl-vanillin-10-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6078-pdf.pdf",
+      "sizeBytes": 92496,
+      "modifiedAt": "2026-06-12T12:48:49.045Z",
+      "extension": "pdf",
+      "titleGuess": "Ethyl Vanillin 10 Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 6078 Pdf",
+      "materialGuess": "Ethyl Vanillin 10 Https Shop Perfumersapprentice Com 51 6078 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed",
+          "materialName": "Ethyl Vanillin 10%",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "ethyl vanillin 10",
+            "ethyl vanillin"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-ifra-pink-peppercorn-oil-p-n-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-8016-pdf-pdf",
+      "filename": "pink-peppercorn-oil-p-n-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-8016-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/ifra/pink-peppercorn-oil-p-n-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-8016-pdf.pdf",
+      "sizeBytes": 94839,
+      "modifiedAt": "2026-06-12T12:48:49.571Z",
+      "extension": "pdf",
+      "titleGuess": "Pink Peppercorn Oil P N Supplier Ifra Https Shop Perfumersapprentice Com Documents Ifra 51 8016 Pdf",
+      "materialGuess": "Pink Peppercorn Oil P N Https Shop Perfumersapprentice Com 51 8016 Pdf",
+      "sourceTypeGuess": "supplier_ifra",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "high",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed",
+          "materialName": "Pink Peppercorn Oil P&N",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 5,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "pink peppercorn oil p n",
+            "pink peppercorn oil"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-sds-allyl-amyl-glycolate-supplier-sds-https-shop-perfumersapprentice-com-msds-5999-pdf-pdf",
+      "filename": "allyl-amyl-glycolate-supplier-sds-https-shop-perfumersapprentice-com-msds-5999-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/sds/allyl-amyl-glycolate-supplier-sds-https-shop-perfumersapprentice-com-msds-5999-pdf.pdf",
+      "sizeBytes": 109267,
+      "modifiedAt": "2026-06-12T12:48:41.763Z",
+      "extension": "pdf",
+      "titleGuess": "Allyl Amyl Glycolate Supplier Sds Https Shop Perfumersapprentice Com Msds 5999 Pdf",
+      "materialGuess": "Allyl Amyl Glycolate Https Shop Perfumersapprentice Com Msds 5999 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed",
+          "materialName": "Allyl Amyl Glycolate",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": false,
+          "matchedTerms": [
+            "allyl amyl glycolate"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-sds-dihydromyrcenol-supplier-sds-https-shop-perfumersapprentice-com-msds-6051-pdf-pdf",
+      "filename": "dihydromyrcenol-supplier-sds-https-shop-perfumersapprentice-com-msds-6051-pdf.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/sds/dihydromyrcenol-supplier-sds-https-shop-perfumersapprentice-com-msds-6051-pdf.pdf",
+      "sizeBytes": 109454,
+      "modifiedAt": "2026-06-12T12:48:48.054Z",
+      "extension": "pdf",
+      "titleGuess": "Dihydromyrcenol Supplier Sds Https Shop Perfumersapprentice Com Msds 6051 Pdf",
+      "materialGuess": "Dihydromyrcenol Https Shop Perfumersapprentice Com Msds 6051 Pdf",
+      "sourceTypeGuess": "supplier_sds",
+      "matchedQueueItemIds": [],
+      "matchConfidence": "none",
+      "possibleMatches": [],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-ambrettolide-50-tec-supplier-specification-https-www-givaudan-com-files-giv-fb-fragrance-ingredients-sustainability-profile-catalo-pdf",
+      "filename": "ambrettolide-50-tec-supplier-specification-https-www-givaudan-com-files-giv-fb-fragrance-ingredients-sustainability-profile-catalo.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-www-givaudan-com-files-giv-fb-fragrance-ingredients-sustainability-profile-catalo.pdf",
+      "sizeBytes": 9282607,
+      "modifiedAt": "2026-06-12T12:48:46.383Z",
+      "extension": "pdf",
+      "titleGuess": "Ambrettolide 50 Tec Supplier Specification Https Www Givaudan Com Files Giv Fb Fragrance Ingredients Sustainability Profile Catalo",
+      "materialGuess": "Ambrettolide 50 Tec Specification Https Www Givaudan Com Files Giv Fb Fragrance Ingredients Sustainability Profile Catalo",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed",
+          "materialName": "Ambrettolide 50% TEC",
+          "requiredSourceType": "global_ifra_standard_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "ambrettolide 50 tec"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-1-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-1.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-1.pdf",
+      "sizeBytes": 117245,
+      "modifiedAt": "2026-06-12T12:48:56.046Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 1",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 1",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-10-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-10.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-10.pdf",
+      "sizeBytes": 117156,
+      "modifiedAt": "2026-06-12T12:48:59.305Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 10",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 10",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-11-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-11.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-11.pdf",
+      "sizeBytes": 116416,
+      "modifiedAt": "2026-06-12T12:49:00.361Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 11",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 11",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-13-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-13.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-13.pdf",
+      "sizeBytes": 117306,
+      "modifiedAt": "2026-06-12T12:49:04.752Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 13",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 13",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-14-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-14.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-14.pdf",
+      "sizeBytes": 116891,
+      "modifiedAt": "2026-06-12T12:49:01.562Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 14",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 14",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-15-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-15.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-15.pdf",
+      "sizeBytes": 117027,
+      "modifiedAt": "2026-06-12T12:49:05.929Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 15",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 15",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-16-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-16.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-16.pdf",
+      "sizeBytes": 116448,
+      "modifiedAt": "2026-06-12T12:49:02.620Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 16",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 16",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-3-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-3.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-3.pdf",
+      "sizeBytes": 116443,
+      "modifiedAt": "2026-06-12T12:48:57.126Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 3",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 3",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-40-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-40.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-40.pdf",
+      "sizeBytes": 117579,
+      "modifiedAt": "2026-06-12T12:49:10.131Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 40",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 40",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-41-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-41.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-41.pdf",
+      "sizeBytes": 116600,
+      "modifiedAt": "2026-06-12T12:49:09.030Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 41",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 41",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-5-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-5.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-5.pdf",
+      "sizeBytes": 116480,
+      "modifiedAt": "2026-06-12T12:49:07.994Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 5",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 5",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-6-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-6.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-6.pdf",
+      "sizeBytes": 117028,
+      "modifiedAt": "2026-06-12T12:48:55.019Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 6",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 6",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-62-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-62.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-62.pdf",
+      "sizeBytes": 116333,
+      "modifiedAt": "2026-06-12T12:48:53.712Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 62",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 62",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-7-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-7.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-7.pdf",
+      "sizeBytes": 116409,
+      "modifiedAt": "2026-06-12T12:49:06.974Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 7",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 7",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-8-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-8.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-8.pdf",
+      "sizeBytes": 117712,
+      "modifiedAt": "2026-06-12T12:49:03.663Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 8",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 8",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
+    {
+      "id": "ifra-source-document-downloads-source-documents-ifra-autopilot-specs-seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-9-pdf",
+      "filename": "seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-9.pdf",
+      "relativePath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-9.pdf",
+      "sizeBytes": 116417,
+      "modifiedAt": "2026-06-12T12:48:58.114Z",
+      "extension": "pdf",
+      "titleGuess": "Seaweed Absolute 10 Supplier Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 9",
+      "materialGuess": "Seaweed Absolute 10 Specification Https Www Natureinbottle Com Home Downloaddeclarationpdf 330 9",
+      "sourceTypeGuess": "unknown",
+      "matchedQueueItemIds": [
+        "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed",
+          "materialName": "Seaweed Absolute 10%",
+          "requiredSourceType": "natural_uvcb_supplier_document_needed",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "seaweed absolute 10",
+            "seaweed absolute"
+          ]
+        }
+      ],
+      "status": "available_for_review"
+    },
     {
       "id": "ifra-source-document-downloads-source-documents-ifra-global-ifra-51-st-amendment-pdf",
       "filename": "IFRA - 51st Amendment.pdf",
       "relativePath": "downloads/source_documents/ifra/global/IFRA - 51st Amendment.pdf",
       "sizeBytes": 11862799,
-      "modifiedAt": "2026-06-11T12:58:30.400Z",
+      "modifiedAt": "2026-06-12T12:57:05.737Z",
       "extension": "pdf",
       "titleGuess": "Ifra 51 St Amendment",
       "materialGuess": "51 St",

@@ -117,6 +117,12 @@ const PRODUCT_PAGE_TYPES = new Set([
   "safety_page",
   "unknown",
 ]);
+const DOWNLOAD_FETCHED_STATUS = "downloaded";
+const DOWNLOAD_CACHED_STATUS = "skipped_cached";
+const DOWNLOAD_FAILED_STATUS = "failed";
+const DOWNLOAD_BLOCKED_STATUS = "blocked";
+const DOWNLOAD_DUPLICATE_STATUS = "skipped_duplicate";
+const DOWNLOAD_NOT_REQUESTED_STATUS = "not_requested";
 
 const LINK_DISCOVERY_RE =
   /\b(IFRA|Certificate|SDS|MSDS|Safety Data Sheet|GHS|Downloads?|Documentation|Specification|Spec Sheet|Allergen)\b/i;
@@ -921,29 +927,93 @@ async function runOfficialAcquisition({
   };
 }
 
+function normalizeDownloadStatus(value = "") {
+  if (value === DOWNLOAD_FETCHED_STATUS) return DOWNLOAD_FETCHED_STATUS;
+  if (value === DOWNLOAD_CACHED_STATUS) return DOWNLOAD_CACHED_STATUS;
+  if (value === DOWNLOAD_FAILED_STATUS) return DOWNLOAD_FAILED_STATUS;
+  if (value === DOWNLOAD_BLOCKED_STATUS) return DOWNLOAD_BLOCKED_STATUS;
+  if (value === DOWNLOAD_DUPLICATE_STATUS) return DOWNLOAD_DUPLICATE_STATUS;
+  return value || DOWNLOAD_NOT_REQUESTED_STATUS;
+}
+
+function buildDownloadLedger({
+  harvestReport = {},
+  officialRecords = [],
+  discoveredDownloads = [],
+} = {}) {
+  const harvestRecords = (harvestReport.sourceLinks || [])
+    .filter((link) => link.downloadStatus && link.downloadStatus !== DOWNLOAD_NOT_REQUESTED_STATUS)
+    .map((link) => ({
+      scope: "known_csv_link",
+      material: link.materialNames?.[0] || link.materialName || link.ingredients?.[0] || "",
+      sourceType: link.sourceType || "unknown",
+      sourceUrl: link.sourceUrl || "",
+      localPath: link.localPath || "",
+      metadataPath: link.metadataPath || "",
+      status: normalizeDownloadStatus(link.downloadStatus),
+      httpStatus: link.httpStatus ?? null,
+      reason: link.error || "",
+    }));
+  const officialDownloadRecords = (officialRecords || []).map((record) => ({
+    scope: "official_ifra",
+    material: record.materialName || record.materialOrQuery || "",
+    sourceType: record.sourceType || "unknown",
+    sourceUrl: record.sourceUrl || "",
+    localPath: record.localPath || "",
+    metadataPath: record.metadataPath || "",
+    status: normalizeDownloadStatus(record.status),
+    httpStatus: record.httpStatus ?? null,
+    reason: record.reason || "",
+  }));
+  const discoveredRecords = (discoveredDownloads || []).map((link) => ({
+    scope: "discovered_supplier_document",
+    material: link.materialName || "",
+    sourceType: link.sourceType || "unknown",
+    sourceUrl: link.sourceUrl || "",
+    localPath: link.localPath || "",
+    metadataPath: link.metadataPath || "",
+    status: normalizeDownloadStatus(link.downloadStatus),
+    httpStatus: link.httpStatus ?? null,
+    reason: link.error || link.blockedReason || "",
+    discoveredFromUrl: link.discoveredFromUrl || "",
+  }));
+  return [...harvestRecords, ...officialDownloadRecords, ...discoveredRecords];
+}
+
 function summarizeDownloads({ harvestReport = {}, officialRecords = [], discoveredDownloads = [] } = {}) {
-  const harvestSummary = harvestReport.summary || {};
-  const officialAttempted = officialRecords.length;
-  const officialSucceeded = officialRecords.filter((record) =>
-    ["downloaded", "skipped_cached"].includes(record.status)
-  ).length;
-  const officialFailed = officialRecords.filter((record) => record.status === "failed").length;
-  const discoveredAttempted = discoveredDownloads.filter((record) =>
-    ["downloaded", "skipped_cached", "failed"].includes(record.downloadStatus)
-  ).length;
-  const discoveredSucceeded = discoveredDownloads.filter((record) =>
-    ["downloaded", "skipped_cached"].includes(record.downloadStatus)
-  ).length;
-  const discoveredFailed = discoveredDownloads.filter(
-    (record) => record.downloadStatus === "failed"
-  ).length;
+  const ledger = buildDownloadLedger({
+    harvestReport,
+    officialRecords,
+    discoveredDownloads,
+  });
+  const fetched = ledger.filter((record) => record.status === DOWNLOAD_FETCHED_STATUS);
+  const cached = ledger.filter((record) => record.status === DOWNLOAD_CACHED_STATUS);
+  const failed = ledger.filter((record) => record.status === DOWNLOAD_FAILED_STATUS);
+  const blocked = ledger.filter((record) => record.status === DOWNLOAD_BLOCKED_STATUS);
+  const duplicate = ledger.filter((record) => record.status === DOWNLOAD_DUPLICATE_STATUS);
+  const attempted = [...fetched, ...failed];
+  const successfulOrCached = [...fetched, ...cached];
   return {
-    downloadsAttempted:
-      (harvestSummary.downloadAttemptCount || 0) + officialAttempted + discoveredAttempted,
-    downloadsSucceeded:
-      (harvestSummary.downloadSuccessCount || 0) + officialSucceeded + discoveredSucceeded,
-    downloadsFailed:
-      (harvestSummary.downloadFailureCount || 0) + officialFailed + discoveredFailed,
+    downloadsAttempted: attempted.length,
+    downloadsSucceeded: fetched.length,
+    downloadsFailed: failed.length,
+    downloadSkippedExisting: cached.length,
+    cachedHits: cached.length,
+    downloadBlocked: blocked.length,
+    downloadSkippedDuplicate: duplicate.length,
+    downloadedOrCachedCount: successfulOrCached.length,
+    downloadedByType: countBy(successfulOrCached, "sourceType"),
+    downloadedFetchedByType: countBy(fetched, "sourceType"),
+    cachedHitsByType: countBy(cached, "sourceType"),
+    downloadFailures: failed.map((record) => ({
+      material: record.material,
+      sourceType: record.sourceType,
+      sourceUrl: record.sourceUrl,
+      status: record.status,
+      httpStatus: record.httpStatus,
+      reason: record.reason || "Download failed.",
+      scope: record.scope,
+    })),
   };
 }
 
@@ -1201,12 +1271,19 @@ function buildGroupedReportSections({ indexes, materialResults, discoveredDownlo
 }
 
 function nextAction(summary = {}) {
+  if ((summary.downloadsSucceeded || 0) + (summary.cachedHits || 0) > 0) {
+    return "Downloaded/cached discovered source files and reran candidate extraction, resolver, autopilot recommendations, and promotion ranking. Next: review the refreshed evidence outputs.";
+  }
   if (
     summary.newLinksDiscovered > 0 &&
-    summary.downloadsSucceeded === 0 &&
+    (summary.downloadsSucceeded || 0) === 0 &&
+    (summary.cachedHits || 0) === 0 &&
     summary.newSupplierIfraSdsSpecDocsFound > 0
   ) {
     return "Run with --download to cache the discovered same-domain supplier documents, then rerun review.";
+  }
+  if (summary.downloadsFailed > 0) {
+    return "Review failed download URLs and retry only allowed public same-domain source links.";
   }
   if (summary.remainingNeedsBetterSource > 0) {
     return "Inspect newly cached supplier documents and rerun review before any separate promotion task.";
@@ -1322,6 +1399,14 @@ function formatCountLine(label, value) {
   return `- ${label}: ${Number(value || 0).toLocaleString()}`;
 }
 
+function formatCountMap(counts = {}) {
+  const entries = Object.entries(counts || {}).sort(([left], [right]) =>
+    left.localeCompare(right)
+  );
+  if (!entries.length) return ["- None"];
+  return entries.map(([key, value]) => `- ${key}: ${Number(value || 0).toLocaleString()}`);
+}
+
 function formatMaterialResult(item = {}) {
   const evidence = item.bestNewEvidence || {};
   return [
@@ -1364,13 +1449,17 @@ export function formatIfraSourceAcquisitionAutopilotMarkdown(report = {}) {
     "",
     "## Summary",
     "",
+    `- Run mode: ${report.metadata?.mode || "unknown"}`,
     formatCountLine("Materials targeted", summary.materialsTargeted),
     formatCountLine("Official searches attempted", summary.officialSearchesAttempted),
     formatCountLine("Supplier pages inspected", summary.supplierPagesInspected),
     formatCountLine("New links discovered", summary.newLinksDiscovered),
     formatCountLine("Downloads attempted", summary.downloadsAttempted),
     formatCountLine("Downloads succeeded", summary.downloadsSucceeded),
+    formatCountLine("Cached hits", summary.cachedHits || summary.downloadSkippedExisting),
     formatCountLine("Downloads failed", summary.downloadsFailed),
+    formatCountLine("Downloads blocked", summary.downloadBlocked),
+    formatCountLine("Duplicate downloads skipped", summary.downloadSkippedDuplicate),
     formatCountLine("New official matches found", summary.newOfficialMatchesFound),
     formatCountLine("New supplier IFRA/SDS/spec docs found", summary.newSupplierIfraSdsSpecDocsFound),
     formatCountLine("New candidate snippets", summary.newCandidateSnippets),
@@ -1379,6 +1468,33 @@ export function formatIfraSourceAcquisitionAutopilotMarkdown(report = {}) {
     formatCountLine("Remaining needs-better-source", summary.remainingNeedsBetterSource),
     "",
     `Next automated action: ${summary.nextAutomatedAction || ""}`,
+    "",
+    "Downloaded/cached files by type:",
+    ...formatCountMap(summary.downloadedByType || {}),
+    "",
+    "Freshly downloaded files by type:",
+    ...formatCountMap(summary.downloadedFetchedByType || {}),
+    "",
+    "Cached hits by type:",
+    ...formatCountMap(summary.cachedHitsByType || {}),
+    "",
+    "Download failures:",
+    ...((summary.downloadFailures || []).length
+      ? [
+          "| Material | Type | HTTP | Scope | Reason | URL |",
+          "| --- | --- | --- | --- | --- | --- |",
+          ...(summary.downloadFailures || []).map((failure) =>
+            `| ${[
+              failure.material,
+              failure.sourceType,
+              failure.httpStatus ?? "",
+              failure.scope,
+              failure.reason,
+              failure.sourceUrl,
+            ].map(escapeMarkdown).join(" | ")} |`
+          ),
+        ]
+      : ["- None"]),
     "",
     "## New Official Matches Found",
     "",
@@ -1435,12 +1551,14 @@ export function formatIfraSourceAcquisitionAutopilotText(report = {}) {
     "",
     "Source acquisition and review refresh only. No runtime IFRA limits are promoted.",
     "",
+    `Mode: ${report.metadata?.mode || "unknown"}`,
     `Materials targeted: ${summary.materialsTargeted || 0}`,
     `Official searches attempted: ${summary.officialSearchesAttempted || 0}`,
     `Supplier pages inspected: ${summary.supplierPagesInspected || 0}`,
     `New links discovered: ${summary.newLinksDiscovered || 0}`,
     `Downloads attempted: ${summary.downloadsAttempted || 0}`,
     `Downloads succeeded: ${summary.downloadsSucceeded || 0}`,
+    `Cached hits: ${summary.cachedHits || summary.downloadSkippedExisting || 0}`,
     `Downloads failed: ${summary.downloadsFailed || 0}`,
     `New official matches found: ${summary.newOfficialMatchesFound || 0}`,
     `New supplier IFRA/SDS/spec docs found: ${summary.newSupplierIfraSdsSpecDocsFound || 0}`,

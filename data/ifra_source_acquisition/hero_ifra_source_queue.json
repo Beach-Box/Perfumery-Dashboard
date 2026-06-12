@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "Hero IFRA Source Acquisition Queue",
-    "sourceGapReportGeneratedAt": "2026-06-12T12:44:23.028Z",
+    "sourceGapReportGeneratedAt": "2026-06-12T12:57:05.367Z",
     "sourceGapReportName": "Hero IFRA Source Gap Report",
     "regenerateCommand": "node scripts/build_hero_ifra_source_acquisition_queue.mjs --markdown --write docs/ifra/hero_ifra_source_acquisition_queue.md",
     "guardrails": [

@@ -1,6 +1,6 @@
 # IFRA Autopilot Recommendations
 
-Generated: 2026-06-11T15:28:22.389Z
+Generated: 2026-06-12T12:48:14.834Z
 
 Autopilot did the first-pass evidence review. Proposed structured records are staged for final review only; no runtime IFRA limits have been changed and this is not launch clearance.
 
@@ -18,24 +18,6 @@ Autopilot did the first-pass evidence review. Proposed structured records are st
 Recommended next action: 13 proposed records can be reviewed for promotion. No runtime IFRA limits have been changed.
 
 ## Proposed Structured Records Ready For Final Review
-
-### Vetiveryl Acetate
-
-- Source identity: Vetiveryl Acetate
-- Proposed record: ifra_category_limit
-- Proposed category/value: 4 0.9 %
-- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
-- Evidence confidence: high
-- Promotion status: proposed
-- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
-- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
-- Source snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
-
-Final review command suggestion (future workflow; do not run until that script exists):
-
-```bash
-node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca" --status reviewed_ok
-```
 
 ### Methyl Ionone Alpha Extra
 
@@ -233,6 +215,24 @@ Final review command suggestion (future workflow; do not run until that script e
 
 ```bash
 node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-oakmoss-absolute-10-ifra-category-limit-official-ifra-hero-ifra-source-oakmoss-absolute-already-structured-ifra-category-lim" --status reviewed_ok
+```
+
+### Vetiveryl Acetate
+
+- Source identity: Vetiveryl Acetate
+- Proposed record: ifra_category_limit
+- Proposed category/value: 4 0.9 %
+- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
+- Evidence confidence: high
+- Promotion status: proposed
+- Why autopilot trusts it: Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language. Final review must confirm source identity, category context, amendment/source date, and supplier wording.
+- Limitations: Not runtime-active; Requires review before promotion; Not launch clearance
+- Source snippet: Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.
+
+Final review command suggestion (future workflow; do not run until that script exists):
+
+```bash
+node scripts/review_proposed_ifra_record.mjs --id "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-li" --status reviewed_ok
 ```
 
 ### Ylang-Ylang Complete Oil

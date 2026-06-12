@@ -1,18 +1,22 @@
 # IFRA Source Acquisition Autopilot Report
 
-Generated: 2026-06-12T12:44:21.932Z
+Generated: 2026-06-12T12:56:57.009Z
 
 This is source acquisition and review-pipeline refresh only. It does not promote runtime IFRA limits, change formulas, or claim launch clearance.
 
 ## Summary
 
+- Run mode: download
 - Materials targeted: 32
 - Official searches attempted: 32
 - Supplier pages inspected: 63
 - New links discovered: 156
-- Downloads attempted: 0
+- Downloads attempted: 22
 - Downloads succeeded: 0
-- Downloads failed: 0
+- Cached hits: 335
+- Downloads failed: 22
+- Downloads blocked: 40
+- Duplicate downloads skipped: 71
 - New official matches found: 0
 - New supplier IFRA/SDS/spec docs found: 45
 - New candidate snippets: 0
@@ -20,7 +24,50 @@ This is source acquisition and review-pipeline refresh only. It does not promote
 - New proposed structured records: 0
 - Remaining needs-better-source: 25
 
-Next automated action: Run with --download to cache the discovered same-domain supplier documents, then rerun review.
+Next automated action: Downloaded/cached discovered source files and reran candidate extraction, resolver, autopilot recommendations, and promotion ranking. Next: review the refreshed evidence outputs.
+
+Downloaded/cached files by type:
+- identity_reference: 79
+- product_page: 132
+- supplier_ifra: 8
+- supplier_sds: 87
+- supplier_specification: 29
+
+Freshly downloaded files by type:
+- None
+
+Cached hits by type:
+- identity_reference: 79
+- product_page: 132
+- supplier_ifra: 8
+- supplier_sds: 87
+- supplier_specification: 29
+
+Download failures:
+| Material | Type | HTTP | Scope | Reason | URL |
+| --- | --- | --- | --- | --- | --- |
+| Bacdanol | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/bacdanol/ |
+| Cashmeran | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/cashmeran/ |
+| Dimetol | product_page |  | known_csv_link | fetch failed | https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/dimetoltm |
+| Ethyl Linalool | product_page |  | known_csv_link | fetch failed | https://studio.dsm-firmenich.com/product/ethyl-linalol-dsm-pe-940889#tab-technical-attributes-1506586633 |
+| Floralozone (10%) | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/floralozone/ |
+| Galaxolide 50% IPM | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/galaxolide-50-ipm/ |
+| Helional® | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/helional/ |
+| Iso E Super | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/iso-e-super/ |
+| Isobutyl Quinoline (0.19%) | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/iso-butyl-quinoline/ |
+| Maritima | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/maritima/ |
+| Methyl Ionone Alpha Extra | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/meth-ionone-alpha-extra/ |
+| Oceanol 10% | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/oceanol/ |
+| Pink Peppercorn CO2 | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/lmr-compendium/pepper-pink-co2/ |
+| Pino Acetaldehyde | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/pino-acetaldehyde/ |
+| Precyclemone B | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/precyclemone-b/ |
+| Iso E Super | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/timbersilk/ |
+| Veramoss 20% TEC | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/veramoss/ |
+| Veraspice | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/veraspice/ |
+| Hedione | product_page |  | known_csv_link | fetch failed | https://www.iff.com/scent/ingredients-compendium/kharismal-super/ |
+| IFRA Standards Library | official_ifra_standards_library |  | official_ifra | fetch failed | https://ifrafragrance.org/standards-library |
+| IFRA Transparency List | official_ifra_transparency_list |  | official_ifra | fetch failed | https://ifrafragrance.org/transparency-list |
+| IFRA Standards Documentation | official_ifra_standards_documentation |  | official_ifra | fetch failed | https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation |
 
 ## New Official Matches Found
 
@@ -72,8 +119,8 @@ _None._
 - Formulas used in: Damp Shoreline v1, Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v2
 - Prior status: needed / not_started / review_ready / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://fraterworks.com/pages/sds-request
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://fraterworks.com/pages/sds-request
 - Evidence snippet: Request SDS
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Ambroxan Crystals.
 ### Cypriol
@@ -89,8 +136,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / review_ready / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62
 - Evidence snippet: (Download Declaration)
 - Next automated recommendation: Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Seaweed Absolute.
 ### Aldehyde C-18
@@ -98,8 +145,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/5996.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/5996.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-18.
 ### Allyl Amyl Glycolate
@@ -107,8 +154,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/5999.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/5999.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Allyl Amyl Glycolate.
 ### Ambrettolide 50% TEC
@@ -116,8 +163,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Prior status: needed / not_started / review_ready / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://fraterworks.com/blogs/information/working-with-ifra-limits
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://fraterworks.com/blogs/information/working-with-ifra-limits
 - Evidence snippet: Navigating IFRA Limits
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.
 ### Caryophyllene Oxide
@@ -133,8 +180,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/6051.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/6051.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Dihydromyrcenol.
 ### Ethyl Linalool
@@ -158,8 +205,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/6078.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/6078.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Vanillin.
 ### Hedione
@@ -183,8 +230,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/8016.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/8016.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Pink Peppercorn Oil P&N.
 ### Algenone
@@ -192,8 +239,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/9357.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/9357.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Algenone.
 ### Cyclogalbanate
@@ -201,8 +248,8 @@ _None._
 - Formulas used in: Random Concoction - Original, Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / identity_only / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://shop.perfumersapprentice.com/MSDS/6042.pdf
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://shop.perfumersapprentice.com/MSDS/6042.pdf
 - Evidence snippet: View SDS
 - Next automated recommendation: Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cyclogalbanate.
 ### Florol
@@ -250,8 +297,8 @@ _None._
 - Formulas used in: Skin-Air Bridge, Damp Shoreline v1, Damp Shoreline v2
 - Prior status: needed / not_started / review_ready / needs_better_source
 - Acquisition action attempted: official_ifra_source_match, known_csv_supplier_link_harvest, same_domain_supplier_document_link_discovery
-- Result: supplier_document_link_found
-- Best new evidence: supplier_document_link from https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss
+- Result: supplier_document_cached
+- Best new evidence: supplier_document from https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss
 - Evidence snippet: Oakmoss Absolute IFRA 43
 - Next automated recommendation: Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.
 ## No Source Found

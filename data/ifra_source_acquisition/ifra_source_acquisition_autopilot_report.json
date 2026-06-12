@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-12T12:44:21.932Z",
+    "generatedAt": "2026-06-12T12:56:57.009Z",
     "reportName": "IFRA Source Acquisition Autopilot v2",
     "regenerateCommand": "node scripts/run_ifra_source_acquisition_autopilot.mjs --ingredient-reference \"...Ingredient data - Ingredient Data.csv\" --download --markdown --write docs/ifra/ifra_source_acquisition_autopilot_report.md",
-    "mode": "dry_run",
+    "mode": "download",
     "guardrails": [
       "Uses existing local data, official IFRA harvest logic, known CSV links, and same-domain supplier document links only.",
       "No broad web search is used.",
@@ -19,9 +19,9 @@
       "target_unresolved_materials",
       "refresh_official_ifra_candidates",
       "harvest_known_csv_supplier_links",
-      "reuse_cached_known_links",
+      "download_known_csv_links",
       "discover_visible_same_domain_supplier_document_links",
-      "report_visible_supplier_document_links",
+      "download_visible_supplier_document_links",
       "rerun_review_first_evidence_autopilot",
       "regenerate_ifra_promotion_opportunity_ranker"
     ],
@@ -33,9 +33,229 @@
     "officialSearchesAttempted": 32,
     "supplierPagesInspected": 63,
     "newLinksDiscovered": 156,
-    "downloadsAttempted": 0,
+    "downloadsAttempted": 22,
     "downloadsSucceeded": 0,
-    "downloadsFailed": 0,
+    "downloadsFailed": 22,
+    "downloadSkippedExisting": 335,
+    "cachedHits": 335,
+    "downloadBlocked": 40,
+    "downloadSkippedDuplicate": 71,
+    "downloadedOrCachedCount": 335,
+    "downloadedByType": {
+      "supplier_sds": 87,
+      "product_page": 132,
+      "identity_reference": 79,
+      "supplier_ifra": 8,
+      "supplier_specification": 29
+    },
+    "downloadedFetchedByType": {},
+    "cachedHitsByType": {
+      "supplier_sds": 87,
+      "product_page": 132,
+      "identity_reference": 79,
+      "supplier_ifra": 8,
+      "supplier_specification": 29
+    },
+    "downloadFailures": [
+      {
+        "material": "Bacdanol",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/bacdanol/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Cashmeran",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/cashmeran/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Dimetol",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/dimetoltm",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Ethyl Linalool",
+        "sourceType": "product_page",
+        "sourceUrl": "https://studio.dsm-firmenich.com/product/ethyl-linalol-dsm-pe-940889#tab-technical-attributes-1506586633",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Floralozone (10%)",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/floralozone/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Galaxolide 50% IPM",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/galaxolide-50-ipm/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Helional®",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/helional/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Iso E Super",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/iso-e-super/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Isobutyl Quinoline (0.19%)",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/iso-butyl-quinoline/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Maritima",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/maritima/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Methyl Ionone Alpha Extra",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/meth-ionone-alpha-extra/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Oceanol 10%",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/oceanol/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Pink Peppercorn CO2",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/lmr-compendium/pepper-pink-co2/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Pino Acetaldehyde",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/pino-acetaldehyde/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Precyclemone B",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/precyclemone-b/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Iso E Super",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/timbersilk/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Veramoss 20% TEC",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/veramoss/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Veraspice",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/veraspice/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "Hedione",
+        "sourceType": "product_page",
+        "sourceUrl": "https://www.iff.com/scent/ingredients-compendium/kharismal-super/",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "known_csv_link"
+      },
+      {
+        "material": "IFRA Standards Library",
+        "sourceType": "official_ifra_standards_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "official_ifra"
+      },
+      {
+        "material": "IFRA Transparency List",
+        "sourceType": "official_ifra_transparency_list",
+        "sourceUrl": "https://ifrafragrance.org/transparency-list",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "official_ifra"
+      },
+      {
+        "material": "IFRA Standards Documentation",
+        "sourceType": "official_ifra_standards_documentation",
+        "sourceUrl": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
+        "status": "failed",
+        "httpStatus": null,
+        "reason": "fetch failed",
+        "scope": "official_ifra"
+      }
+    ],
     "newOfficialMatchesFound": 0,
     "newSupplierIfraSdsSpecDocsFound": 45,
     "newCandidateSnippets": 0,
@@ -43,7 +263,7 @@
     "newProposedStructuredRecords": 0,
     "remainingNeedsBetterSource": 25,
     "newSourcesFound": 45,
-    "nextAutomatedAction": "Run with --download to cache the discovered same-domain supplier documents, then rerun review."
+    "nextAutomatedAction": "Downloaded/cached discovered source files and reran candidate extraction, resolver, autopilot recommendations, and promotion ranking. Next: review the refreshed evidence outputs."
   },
   "targets": [
     {
@@ -823,8 +1043,8 @@
         "sourceIdentity": "Aldehyde C-18",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/sds/ald-c-18-10-supplier-sds-https-shop-perfumersapprentice-com-msds-5996-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-5996-aldehyde-c-18-coconut-so-called.aspx"
       },
       {
@@ -832,8 +1052,8 @@
         "sourceIdentity": "Aldehyde C-18",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5996.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/aldehyde-c-18-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5996-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-5996-aldehyde-c-18-coconut-so-called.aspx"
       },
       {
@@ -841,8 +1061,8 @@
         "sourceIdentity": "Aldehyde C-18",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.ventos.com/en/company/legislation-and-documentation",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/aldehyde-c-18-supplier-specification-https-www-ventos-com-en-company-legislation-and-documentation.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.ventos.com/index.php/en/producto/2257/ALDEHYDE+C-18+%28GAMMA-NONALACTONE%29/223"
       },
       {
@@ -850,8 +1070,8 @@
         "sourceIdentity": "Aldehyde C-18",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.ventos.com/en/flex-7/legislacion-y-documentacion",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/aldehyde-c-18-supplier-specification-https-www-ventos-com-en-flex-7-legislacion-y-documentacion.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.ventos.com/index.php/en/producto/2257/ALDEHYDE+C-18+%28GAMMA-NONALACTONE%29/223"
       },
       {
@@ -859,8 +1079,8 @@
         "sourceIdentity": "Algenone",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/sds/algenone-supplier-sds-https-shop-perfumersapprentice-com-msds-9357-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-9357-algenone-synarome.aspx"
       },
       {
@@ -868,8 +1088,8 @@
         "sourceIdentity": "Algenone",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/9357.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/algenone-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-9357-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-9357-algenone-synarome.aspx"
       },
       {
@@ -877,8 +1097,8 @@
         "sourceIdentity": "Allyl Amyl Glycolate",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/sds/allyl-amyl-glycolate-supplier-sds-https-shop-perfumersapprentice-com-msds-5999-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-5999-allyl-amyl-glycolate-iff.aspx"
       },
       {
@@ -886,8 +1106,8 @@
         "sourceIdentity": "Allyl Amyl Glycolate",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5999.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/allyl-amyl-glycolate-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-5999-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-5999-allyl-amyl-glycolate-iff.aspx"
       },
       {
@@ -895,8 +1115,8 @@
         "sourceIdentity": "Ambrettolide",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/ambrettolide-50-tec-supplier-ifra-https-fraterworks-com-blogs-information-working-with-ifra-limits.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://fraterworks.com/products/ambrettolide"
       },
       {
@@ -904,8 +1124,8 @@
         "sourceIdentity": "Ambrettolide",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://fraterworks.com/pages/documentation",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-fraterworks-com-pages-documentation.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://fraterworks.com/products/ambrettolide"
       },
       {
@@ -913,8 +1133,8 @@
         "sourceIdentity": "Ambrettolide",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.givaudan.com/files/giv-fb-fragrance-ingredients-sustainability-profile-catalogue.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/ambrettolide-50-tec-supplier-specification-https-www-givaudan-com-files-giv-fb-fragrance-ingredients-sustainability-profile-catalo.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.givaudan.com/fragrance-beauty/fragrance-ingredients-business/fragrance-molecules/ambrettolide"
       },
       {
@@ -922,8 +1142,8 @@
         "sourceIdentity": "Ambroxan Crystals",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://fraterworks.com/pages/sds-request",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/sds/ambroxan-crystals-supplier-sds-https-fraterworks-com-pages-sds-request.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://fraterworks.com/products/cetalox"
       },
       {
@@ -931,8 +1151,8 @@
         "sourceIdentity": "Cyclogalbanate",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/sds/cyclogalbanate-supplier-sds-https-shop-perfumersapprentice-com-msds-6042-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-6042-cyclogalbanate-glycoflor.aspx"
       },
       {
@@ -940,8 +1160,8 @@
         "sourceIdentity": "Dihydromyrcenol",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/sds/dihydromyrcenol-supplier-sds-https-shop-perfumersapprentice-com-msds-6051-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-6051-dihydro-myrcenol.aspx"
       },
       {
@@ -949,8 +1169,8 @@
         "sourceIdentity": "Dihydromyrcenol",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6051.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/dihydromyrcenol-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6051-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-6051-dihydro-myrcenol.aspx"
       },
       {
@@ -958,8 +1178,8 @@
         "sourceIdentity": "Ethyl Vanillin",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/sds/ethyl-vanillin-10-supplier-sds-https-shop-perfumersapprentice-com-msds-6078-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-6078-ethyl-vanillin.aspx"
       },
       {
@@ -967,8 +1187,8 @@
         "sourceIdentity": "Ethyl Vanillin",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6078.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/ethyl-vanillin-10-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-6078-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-6078-ethyl-vanillin.aspx"
       },
       {
@@ -976,8 +1196,8 @@
         "sourceIdentity": "Pink Peppercorn Oil P&N",
         "sourceType": "supplier_sds",
         "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/sds/pink-peppercorn-oil-p-n-supplier-sds-https-shop-perfumersapprentice-com-msds-8016-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx"
       },
       {
@@ -985,8 +1205,8 @@
         "sourceIdentity": "Pink Peppercorn Oil P&N",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/8016.pdf",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/pink-peppercorn-oil-p-n-supplier-ifra-https-shop-perfumersapprentice-com-documents-ifra-51-8016-pdf.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx"
       },
       {
@@ -994,8 +1214,8 @@
         "sourceIdentity": "Pink Peppercorn Oil P&N",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://shop.perfumersapprentice.com/xmlpackage/PlantCert?productid_search=8016",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/pink-peppercorn-oil-p-n-supplier-specification-https-shop-perfumersapprentice-com-xmlpackage-plantcert-productid-search-8016.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://shop.perfumersapprentice.com/p-8016-pink-peppercorn-oil-pn.aspx"
       },
       {
@@ -1003,8 +1223,8 @@
         "sourceIdentity": "Veramoss",
         "sourceType": "supplier_ifra",
         "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/ifra/veramoss-20-tec-supplier-ifra-https-fraterworks-com-products-oakmoss-ifra-43-abs-keyword-oakmoss.txt",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://fraterworks.com/products/veramoss"
       },
       {
@@ -1012,8 +1232,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-62.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1021,8 +1241,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/6",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-6.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1030,8 +1250,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/1",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-1.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1039,8 +1259,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/3",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-3.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1048,8 +1268,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/9",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-9.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1057,8 +1277,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/10",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-10.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1066,8 +1286,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/11",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-11.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1075,8 +1295,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/14",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-14.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1084,8 +1304,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/16",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-16.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1093,8 +1313,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/8",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-8.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1102,8 +1322,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/13",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-13.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1111,8 +1331,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/15",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-15.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1120,8 +1340,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/7",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-7.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1129,8 +1349,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/5",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-5.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1138,8 +1358,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/41",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-41.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1147,8 +1367,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/40",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-home-downloaddeclarationpdf-330-40.pdf",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1156,8 +1376,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p1",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-1.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1165,8 +1385,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p2",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-2.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1174,8 +1394,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p3",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-3.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1183,8 +1403,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p4",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-4.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1192,8 +1412,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p5",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-5.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1201,8 +1421,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p6",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-6.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1210,8 +1430,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p7",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-7.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       },
       {
@@ -1219,8 +1439,8 @@
         "sourceIdentity": "Seaweed Absolute",
         "sourceType": "supplier_specification",
         "sourceUrl": "https://www.natureinbottle.com/download-logo/p8",
-        "localPath": "",
-        "downloadStatus": "not_requested",
+        "localPath": "downloads/source_documents/ifra/autopilot/specs/seaweed-absolute-10-supplier-specification-https-www-natureinbottle-com-download-logo-p-8.html",
+        "downloadStatus": "skipped_cached",
         "discoveredFromUrl": "https://www.natureinbottle.com/product/seaweed_absolute"
       }
     ],
@@ -1345,7 +1565,7 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_ifra",
@@ -1379,7 +1599,7 @@
             "sourceType": "supplier_sds",
             "sourceUrl": "https://fraterworks.com/pages/sds-request",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
@@ -1391,7 +1611,7 @@
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://fraterworks.com/pages/sds-request",
           "snippet": "Request SDS"
@@ -1457,179 +1677,179 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/6",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/1",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/3",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/9",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/10",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/11",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/14",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/16",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/8",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/13",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/15",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/7",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/5",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/41",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/40",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p1",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p2",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p3",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p4",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p5",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p6",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p7",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.natureinbottle.com/download-logo/p8",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_specification",
           "source": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
           "snippet": "(Download Declaration)"
@@ -1657,39 +1877,39 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5996.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.ventos.com/en/company/legislation-and-documentation",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.ventos.com/en/flex-7/legislacion-y-documentacion",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
           "snippet": "View SDS"
@@ -1718,25 +1938,25 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5999.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
           "snippet": "View SDS"
@@ -1764,13 +1984,13 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
@@ -1791,19 +2011,19 @@
             "sourceType": "supplier_specification",
             "sourceUrl": "https://fraterworks.com/pages/documentation",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://www.givaudan.com/files/giv-fb-fragrance-ingredients-sustainability-profile-catalogue.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_ifra",
           "source": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
           "snippet": "Navigating IFRA Limits"
@@ -1905,25 +2125,25 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6051.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
           "snippet": "View SDS"
@@ -2090,25 +2310,25 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6078.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
           "snippet": "View SDS"
@@ -2286,32 +2506,32 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/8016.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_specification",
             "sourceUrl": "https://shop.perfumersapprentice.com/xmlpackage/PlantCert?productid_search=8016",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
           "snippet": "View SDS"
@@ -2340,25 +2560,25 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/9357.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
           "snippet": "View SDS"
@@ -2387,18 +2607,18 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_sds",
             "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_sds",
           "source": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
           "snippet": "View SDS"
@@ -2775,7 +2995,7 @@
           "known_csv_supplier_link_harvest",
           "same_domain_supplier_document_link_discovery"
         ],
-        "result": "supplier_document_link_found",
+        "result": "supplier_document_cached",
         "discoveredLinks": [
           {
             "sourceType": "supplier_ifra",
@@ -2788,7 +3008,7 @@
             "sourceType": "supplier_ifra",
             "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
             "safeFollow": true,
-            "downloadStatus": "not_requested",
+            "downloadStatus": "skipped_cached",
             "error": ""
           },
           {
@@ -2814,7 +3034,7 @@
           }
         ],
         "bestNewEvidence": {
-          "type": "supplier_document_link",
+          "type": "supplier_document",
           "sourceType": "supplier_ifra",
           "source": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
           "snippet": "Oakmoss Absolute IFRA 43"
@@ -4426,7 +4646,7 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_ifra",
@@ -4460,7 +4680,7 @@
           "sourceType": "supplier_sds",
           "sourceUrl": "https://fraterworks.com/pages/sds-request",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
@@ -4472,7 +4692,7 @@
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://fraterworks.com/pages/sds-request",
         "snippet": "Request SDS"
@@ -4538,179 +4758,179 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/6",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/1",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/3",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/9",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/10",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/11",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/14",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/16",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/8",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/13",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/15",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/7",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/5",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/41",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/40",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p1",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p2",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p3",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p4",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p5",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p6",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p7",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.natureinbottle.com/download-logo/p8",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_specification",
         "source": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
         "snippet": "(Download Declaration)"
@@ -4738,39 +4958,39 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5996.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.ventos.com/en/company/legislation-and-documentation",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.ventos.com/en/flex-7/legislacion-y-documentacion",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
         "snippet": "View SDS"
@@ -4831,25 +5051,25 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/5999.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
         "snippet": "View SDS"
@@ -4877,13 +5097,13 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
@@ -4904,19 +5124,19 @@
           "sourceType": "supplier_specification",
           "sourceUrl": "https://fraterworks.com/pages/documentation",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://www.givaudan.com/files/giv-fb-fragrance-ingredients-sustainability-profile-catalogue.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_ifra",
         "source": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
         "snippet": "Navigating IFRA Limits"
@@ -5018,25 +5238,25 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6051.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
         "snippet": "View SDS"
@@ -5203,25 +5423,25 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/6078.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
         "snippet": "View SDS"
@@ -5428,32 +5648,32 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/8016.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_specification",
           "sourceUrl": "https://shop.perfumersapprentice.com/xmlpackage/PlantCert?productid_search=8016",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
         "snippet": "View SDS"
@@ -5482,25 +5702,25 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://shop.perfumersapprentice.com/Documents/IFRA-51/9357.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
         "snippet": "View SDS"
@@ -5529,18 +5749,18 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_sds",
           "sourceUrl": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_sds",
         "source": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
         "snippet": "View SDS"
@@ -5917,7 +6137,7 @@
         "known_csv_supplier_link_harvest",
         "same_domain_supplier_document_link_discovery"
       ],
-      "result": "supplier_document_link_found",
+      "result": "supplier_document_cached",
       "discoveredLinks": [
         {
           "sourceType": "supplier_ifra",
@@ -5930,7 +6150,7 @@
           "sourceType": "supplier_ifra",
           "sourceUrl": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
           "safeFollow": true,
-          "downloadStatus": "not_requested",
+          "downloadStatus": "skipped_cached",
           "error": ""
         },
         {
@@ -5956,7 +6176,7 @@
         }
       ],
       "bestNewEvidence": {
-        "type": "supplier_document_link",
+        "type": "supplier_document",
         "sourceType": "supplier_ifra",
         "source": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
         "snippet": "Oakmoss Absolute IFRA 43"
