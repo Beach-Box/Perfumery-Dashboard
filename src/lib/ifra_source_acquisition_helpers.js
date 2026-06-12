@@ -16,6 +16,9 @@ export const IFRA_EVIDENCE_AUTOPILOT_COMMAND =
 export const IFRA_SOURCE_ACQUISITION_AUTOPILOT_COMMAND =
   'node scripts/run_ifra_source_acquisition_autopilot.mjs --ingredient-reference "...Ingredient data - Ingredient Data.csv" --download --markdown --write docs/ifra/ifra_source_acquisition_autopilot_report.md';
 
+export const LAUNCH_CRITICAL_IFRA_EXCEPTION_PACK_COMMAND =
+  "node scripts/generate_launch_critical_ifra_exception_pack.mjs --markdown --write docs/ifra/launch_critical_ifra_exception_pack.md";
+
 export const IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND =
   "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md";
 
@@ -353,6 +356,70 @@ function isAvailableSourceAcquisitionAutopilotReport(report) {
   return Boolean(report && report.summary);
 }
 
+function isAvailableLaunchCriticalExceptionPack(report) {
+  return Boolean(report && report.summary && report.groups);
+}
+
+function buildTopLaunchCriticalExceptions(report) {
+  if (!isAvailableLaunchCriticalExceptionPack(report)) return [];
+  return (report.groups.launchCriticalAcrossAllActiveFormulas || [])
+    .slice(0, 5)
+    .map((item) => ({
+      queueItemId: item.queueItemId,
+      materialName: item.material,
+      sourceIdentityName: item.sourceIdentity,
+      currentFormulaRelevance: item.currentFormulaRelevance,
+      evidenceQuality: item.evidenceQuality,
+      launchConfidenceImpact: item.launchConfidenceImpact,
+      recommendedNextAction: item.recommendedNextAction,
+    }));
+}
+
+function buildLaunchCriticalExceptionPackProgress(report) {
+  if (!isAvailableLaunchCriticalExceptionPack(report)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Generate the launch-critical exception pack to reduce IFRA review to formula-relevant blockers.",
+      regenerateCommand: LAUNCH_CRITICAL_IFRA_EXCEPTION_PACK_COMMAND,
+      guardrail:
+        "The exception pack is review guidance only; it does not promote IFRA limits or claim launch clearance.",
+      lastRunAt: "",
+      nextRecommendedAction:
+        "Generate the exception pack after source acquisition/autopilot reports are current.",
+      counts: {
+        launchCriticalExceptions: 0,
+        alreadyHandled: 0,
+        deferUntilFinalist: 0,
+        blockedBySourceAvailability: 0,
+      },
+      topLaunchCriticalExceptions: [],
+    };
+  }
+  const summary = report.summary || {};
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      report.metadata?.regenerateCommand ||
+      LAUNCH_CRITICAL_IFRA_EXCEPTION_PACK_COMMAND,
+    guardrail:
+      "Exception-pack output is source review triage only; no runtime IFRA limits are promoted.",
+    lastRunAt: report.metadata?.generatedAt || "",
+    nextRecommendedAction:
+      summary.nextRecommendedAction ||
+      "Resolve launch-critical all-formula exceptions before broad review.",
+    counts: {
+      launchCriticalExceptions: summary.launchCriticalExceptionCount || 0,
+      alreadyHandled: summary.alreadyHandledCount || 0,
+      deferUntilFinalist: summary.deferUntilFinalistCount || 0,
+      blockedBySourceAvailability:
+        summary.blockedBySourceAvailabilityCount || 0,
+    },
+    topLaunchCriticalExceptions: buildTopLaunchCriticalExceptions(report),
+  };
+}
+
 function buildSourceAcquisitionAutopilotProgress(report) {
   if (!isAvailableSourceAcquisitionAutopilotReport(report)) {
     return {
@@ -489,7 +556,8 @@ export function buildIfraSourceAcquisitionPanel(
   evidenceResolution = null,
   autopilotReport = null,
   autopilotRecommendations = null,
-  sourceAcquisitionAutopilotReport = null
+  sourceAcquisitionAutopilotReport = null,
+  launchCriticalExceptionPack = null
 ) {
   if (!isAvailableQueue(queue)) {
     return {
@@ -529,6 +597,8 @@ export function buildIfraSourceAcquisitionPanel(
       evidenceResolver: buildEvidenceResolverProgress(evidenceResolution),
       sourceAcquisitionAutopilot:
         buildSourceAcquisitionAutopilotProgress(sourceAcquisitionAutopilotReport),
+      launchCriticalExceptions:
+        buildLaunchCriticalExceptionPackProgress(launchCriticalExceptionPack),
       autopilot: buildAutopilotProgress(autopilotReport),
       recommendations: buildRecommendationProgress(autopilotRecommendations),
     };
@@ -561,6 +631,8 @@ export function buildIfraSourceAcquisitionPanel(
   const evidenceResolverProgress = buildEvidenceResolverProgress(evidenceResolution);
   const sourceAcquisitionAutopilotProgress =
     buildSourceAcquisitionAutopilotProgress(sourceAcquisitionAutopilotReport);
+  const launchCriticalExceptionPackProgress =
+    buildLaunchCriticalExceptionPackProgress(launchCriticalExceptionPack);
   const autopilotProgress = buildAutopilotProgress(autopilotReport);
   const recommendationProgress = buildRecommendationProgress(autopilotRecommendations);
 
@@ -605,6 +677,7 @@ export function buildIfraSourceAcquisitionPanel(
     candidateReview: candidateReviewProgress,
     evidenceResolver: evidenceResolverProgress,
     sourceAcquisitionAutopilot: sourceAcquisitionAutopilotProgress,
+    launchCriticalExceptions: launchCriticalExceptionPackProgress,
     autopilot: autopilotProgress,
     recommendations: recommendationProgress,
   };

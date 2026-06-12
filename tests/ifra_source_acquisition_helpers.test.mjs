@@ -23,6 +23,11 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
     panel.sourceAcquisitionAutopilot.regenerateCommand,
     /run_ifra_source_acquisition_autopilot/
   );
+  assert.equal(panel.launchCriticalExceptions.isAvailable, false);
+  assert.match(
+    panel.launchCriticalExceptions.regenerateCommand,
+    /generate_launch_critical_ifra_exception_pack/
+  );
   assert.equal(panel.autopilot.isAvailable, false);
   assert.match(panel.autopilot.regenerateCommand, /run_ifra_evidence_autopilot/);
   assert.equal(panel.recommendations.isAvailable, false);
@@ -267,6 +272,36 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
         nextAutomatedAction:
           "Inspect newly cached supplier documents before promotion.",
       },
+    },
+    {
+      metadata: {
+        generatedAt: "2026-06-11T14:00:00.000Z",
+        regenerateCommand:
+          "node scripts/generate_launch_critical_ifra_exception_pack.mjs --markdown --write docs/ifra/launch_critical_ifra_exception_pack.md",
+      },
+      summary: {
+        launchCriticalExceptionCount: 4,
+        alreadyHandledCount: 2,
+        deferUntilFinalistCount: 3,
+        blockedBySourceAvailabilityCount: 1,
+        nextRecommendedAction:
+          "Use this pack as the daily IFRA view and resolve launch-critical exceptions first.",
+      },
+      groups: {
+        launchCriticalAcrossAllActiveFormulas: [
+          {
+            queueItemId: "iso-e",
+            material: "Iso E Super",
+            sourceIdentity: "Iso E Super",
+            currentFormulaRelevance: "Used in all active hero formulas",
+            evidenceQuality: "supplier_product_page_only",
+            launchConfidenceImpact:
+              "High. It appears across all active hero formulas.",
+            recommendedNextAction:
+              "Seek official/global support before promotion.",
+          },
+        ],
+      },
     }
   );
 
@@ -322,6 +357,27 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
   assert.match(
     panel.sourceAcquisitionAutopilot.regenerateCommand,
     /run_ifra_source_acquisition_autopilot/
+  );
+  assert.equal(panel.launchCriticalExceptions.isAvailable, true);
+  assert.equal(
+    panel.launchCriticalExceptions.counts.launchCriticalExceptions,
+    4
+  );
+  assert.equal(panel.launchCriticalExceptions.counts.alreadyHandled, 2);
+  assert.equal(panel.launchCriticalExceptions.counts.deferUntilFinalist, 3);
+  assert.equal(
+    panel.launchCriticalExceptions.counts.blockedBySourceAvailability,
+    1
+  );
+  assert.deepEqual(
+    panel.launchCriticalExceptions.topLaunchCriticalExceptions.map(
+      (item) => item.materialName
+    ),
+    ["Iso E Super"]
+  );
+  assert.match(
+    panel.launchCriticalExceptions.regenerateCommand,
+    /generate_launch_critical_ifra_exception_pack/
   );
   assert.equal(panel.autopilot.isAvailable, true);
   assert.equal(panel.autopilot.counts.reviewReady, 2);

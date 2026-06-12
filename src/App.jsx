@@ -331,6 +331,12 @@ const ifraSourceAcquisitionAutopilotModules = import.meta.glob(
 );
 const ifraSourceAcquisitionAutopilotData =
   Object.values(ifraSourceAcquisitionAutopilotModules)[0]?.default || null;
+const launchCriticalIfraExceptionPackModules = import.meta.glob(
+  "../data/ifra_source_acquisition/launch_critical_ifra_exception_pack.json",
+  { eager: true }
+);
+const launchCriticalIfraExceptionPackData =
+  Object.values(launchCriticalIfraExceptionPackModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81539,7 +81545,8 @@ export default function App() {
       ifraEvidenceResolutionData,
       ifraEvidenceAutopilotData,
       ifraAutopilotRecommendationsData,
-      ifraSourceAcquisitionAutopilotData
+      ifraSourceAcquisitionAutopilotData,
+      launchCriticalIfraExceptionPackData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82515,6 +82522,236 @@ export default function App() {
                       ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
                         .guardrail
                     }
+                  </div>
+                </>
+              )}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#A7F3D0",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                    }}
+                  >
+                    Launch-Critical Exceptions
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: 8.1,
+                      color: "#94A3B8",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.launchCriticalExceptions
+                      .isAvailable
+                      ? `Last run: ${ifraSourceAcquisitionPanel.launchCriticalExceptions.lastRunAt || "available"}`
+                      : ifraSourceAcquisitionPanel.launchCriticalExceptions
+                          .missingMessage}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 7.5,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                    overflowWrap: "anywhere",
+                    maxWidth: 460,
+                  }}
+                >
+                  {ifraSourceAcquisitionPanel.launchCriticalExceptions.regenerateCommand}
+                </div>
+              </div>
+              {ifraSourceAcquisitionPanel.launchCriticalExceptions
+                .isAvailable && (
+                <>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                      gap: 7,
+                    }}
+                  >
+                    {[
+                      [
+                        "Launch-critical",
+                        ifraSourceAcquisitionPanel.launchCriticalExceptions.counts
+                          .launchCriticalExceptions,
+                        "#FDE68A",
+                      ],
+                      [
+                        "Handled",
+                        ifraSourceAcquisitionPanel.launchCriticalExceptions.counts
+                          .alreadyHandled,
+                        "#86EFAC",
+                      ],
+                      [
+                        "Defer",
+                        ifraSourceAcquisitionPanel.launchCriticalExceptions.counts
+                          .deferUntilFinalist,
+                        "#7DD3FC",
+                      ],
+                      [
+                        "Source-blocked",
+                        ifraSourceAcquisitionPanel.launchCriticalExceptions.counts
+                          .blockedBySourceAvailability,
+                        "#FCA5A5",
+                      ],
+                    ].map(([label, value, color]) => (
+                      <div
+                        key={label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "6px 8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color,
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {Number(value).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            fontSize: 7,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(230px,1fr))",
+                      gap: 8,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 9px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 7.4,
+                          color: "#FDE68A",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 800,
+                          marginBottom: 5,
+                        }}
+                      >
+                        Top launch-critical exceptions
+                      </div>
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: 5,
+                          fontSize: 8.1,
+                          color: "#94A3B8",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {ifraSourceAcquisitionPanel.launchCriticalExceptions
+                          .topLaunchCriticalExceptions.length ? (
+                          ifraSourceAcquisitionPanel.launchCriticalExceptions.topLaunchCriticalExceptions.map(
+                            (item) => (
+                              <div key={`${item.queueItemId}-${item.materialName}`}>
+                                <span
+                                  style={{ color: "#E2E8F0", fontWeight: 800 }}
+                                >
+                                  {item.materialName}
+                                </span>{" "}
+                                - {item.evidenceQuality}
+                              </div>
+                            )
+                          )
+                        ) : (
+                          <div>No launch-critical exception rows in the pack.</div>
+                        )}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: "#060E1E",
+                        border: "1px solid #1E3A52",
+                        borderRadius: 8,
+                        padding: "8px 9px",
+                        display: "grid",
+                        gap: 6,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: 7.4,
+                          color: "#A7F3D0",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                          fontWeight: 800,
+                        }}
+                      >
+                        Next action
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 8.3,
+                          color: "#E2E8F0",
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {
+                          ifraSourceAcquisitionPanel.launchCriticalExceptions
+                            .nextRecommendedAction
+                        }
+                      </div>
+                      <div
+                        style={{
+                          color: "#FDE68A",
+                          fontSize: 8.1,
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        {ifraSourceAcquisitionPanel.launchCriticalExceptions.guardrail}
+                      </div>
+                    </div>
                   </div>
                 </>
               )}

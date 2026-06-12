@@ -1,0 +1,2123 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-12T14:30:44.753Z",
+    "reportName": "Launch-Critical IFRA Exception Pack",
+    "regenerateCommand": "node scripts/generate_launch_critical_ifra_exception_pack.mjs --markdown --write docs/ifra/launch_critical_ifra_exception_pack.md",
+    "guardrails": [
+      "Exception pack is a launch-confidence review aid only.",
+      "No IFRA limits are promoted.",
+      "No runtime IFRA classification is changed.",
+      "No broad scraping is performed.",
+      "No formula, pricing, accord recipe, GCMS, or AI behavior is changed.",
+      "No launch clearance is claimed."
+    ]
+  },
+  "decisionSummary": {
+    "alreadyHandled": "Reviewed provenance exists for narrow cases such as Vetiveryl Acetate structured IFRA and reviewed FCF source evidence.",
+    "launchConfidenceBlockers": "All-formula materials with source-quality gaps, no useful allowed source, or proposed records that are not safe to promote.",
+    "canWaitUntilFinalistSelection": "Materials used only by some variants, deferred accord expansion, and DS2-only specialty/natural materials.",
+    "noFurtherActionRightNow": "Reviewed or redundant official-source items that do not reduce the next launch decision risk.",
+    "recommendedNextIfraAction": "Use this pack as the daily IFRA view: resolve launch-critical all-formula exceptions first, then defer variant-only gaps until a finalist is selected."
+  },
+  "summary": {
+    "activeFormulaCount": 4,
+    "activeFormulaNames": [
+      "Random Concoction - Original",
+      "Skin-Air Bridge",
+      "Damp Shoreline v1",
+      "Damp Shoreline v2"
+    ],
+    "modelGuidedPriorityFormula": "Damp Shoreline v2",
+    "totalMaterialsAudited": 44,
+    "launchCriticalExceptionCount": 15,
+    "alreadyHandledCount": 7,
+    "deferUntilFinalistCount": 16,
+    "variantSpecificOnlyCount": 6,
+    "blockedBySourceAvailabilityCount": 2,
+    "needsSupplierIfraSdsCount": 16,
+    "needsOfficialGlobalSourceCount": 16,
+    "specialCaseEvidenceOnlyCount": 2,
+    "evidenceQualityCounts": {
+      "supplier_document_cached": 11,
+      "no_useful_allowed_source": 6,
+      "supplier_product_page_only": 20,
+      "reviewed_non_limit_evidence": 1,
+      "official_review_candidate": 5,
+      "reviewed_official_runtime": 1
+    },
+    "nextRecommendedAction": "Use this pack as the daily IFRA view: resolve launch-critical all-formula exceptions first, then defer variant-only gaps until a finalist is selected."
+  },
+  "groups": {
+    "launchCriticalAcrossAllActiveFormulas": [
+      {
+        "material": "Aldehyde C-8",
+        "sourceIdentity": "Aldehyde C-8",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-8.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 141,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed"
+      },
+      {
+        "material": "Calone 1951 20%",
+        "sourceIdentity": "Calone 1951",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/calone-plus",
+        "bestEvidenceSnippet": "use because it comes in a liquid form, making it a cinch to add to your formulas. aromachem Best Seller locale:pure is powder no_reg power IFRA 51: No restriction for category 4 Odour Family: Ozonic Appearance: Colourless liquid Longevit...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as launch-critical exception; seek formal supplier IFRA/SDS or official/global support before promotion.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 137,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed"
+      },
+      {
+        "material": "Cetalox",
+        "sourceIdentity": "Cetalox",
+        "formulasUsedIn": [
+          "Damp Shoreline v2",
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/cetalox",
+        "bestEvidenceSnippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity:...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as launch-critical exception; seek formal supplier IFRA/SDS or official/global support before promotion.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 137,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Hedione",
+        "sourceIdentity": "Hedione",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Hedione.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/hedione-high-cis",
+        "bestEvidenceSnippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourles...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-hedione-global_ifra_standard_needed"
+      },
+      {
+        "material": "Iso E Super",
+        "sourceIdentity": "Iso E Super",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Iso E Super.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.takasago.com/en/node/700",
+        "bestEvidenceSnippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed"
+      },
+      {
+        "material": "Maritima",
+        "sourceIdentity": "Maritima",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Maritima.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/maritima",
+        "bestEvidenceSnippet": "ima shows balanced behavior with moderate strength (6/10) and proportional impact in blends (5/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: 0.0075% in a perfume compound Odour Family: M...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-maritima-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Oceanol 10%",
+        "sourceIdentity": "Oceanol",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Oceanol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/oceanol",
+        "bestEvidenceSnippet": "nol shows balanced behavior with moderate strength (6/10) and proportional impact in blends (7/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: Traces – 2% in a perfume compound Odour Famil...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-oceanol-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Algenone",
+        "sourceIdentity": "Algenone",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Algenone.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-algenone-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Allyl Amyl Glycolate",
+        "sourceIdentity": "Allyl Amyl Glycolate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Allyl Amyl Glycolate.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ambroxan Crystals",
+        "sourceIdentity": "Ambroxan Crystals",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambroxan Crystals.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://fraterworks.com/pages/sds-request",
+        "bestEvidenceSnippet": "Request SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      },
+      {
+        "material": "Cyclogalbanate",
+        "sourceIdentity": "Cyclogalbanate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cyclogalbanate.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Dihydromyrcenol",
+        "sourceIdentity": "Dihydromyrcenol",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Dihydromyrcenol.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed"
+      },
+      {
+        "material": "Pink Peppercorn Oil P&N",
+        "sourceIdentity": "Pink Peppercorn Oil P&N",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Pink Peppercorn Oil P&N.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Seaweed Absolute 10%",
+        "sourceIdentity": "Seaweed Absolute",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Seaweed Absolute.",
+        "bestAvailableEvidence": "supplier_document available from supplier_specification.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_specification",
+        "bestEvidenceSource": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
+        "bestEvidenceSnippet": "(Download Declaration)",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Bergamot EO FCF",
+        "sourceIdentity": "Bergamot EO FCF",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "likely_fcf_evidence: promote_fcf_evidence_after_review",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/bergamot-oil-fcf",
+        "bestEvidenceSnippet": "ily: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Bright, fruity-sweet citrus without phototoxic components. Uses: Essential in skin-safe fine fragrance formulations, especially for c...",
+        "whatIsMissing": "Keep this as non-limit source evidence unless a separate category-limit source is reviewed.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as special-case evidence; do not convert FCF/phototoxic wording into a runtime category limit.",
+        "doNotDo": "Do not convert non-limit FCF/phototoxic evidence into a category limit.",
+        "exceptionScore": 107,
+        "sourceTags": [
+          "special_case_evidence_only"
+        ],
+        "requiredSourceType": "fcf_special_case",
+        "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case"
+      }
+    ],
+    "importantButDeferUntilFinalistSelected": [
+      {
+        "material": "Methyl Ionone Alpha Extra",
+        "sourceIdentity": "Methyl Ionone Alpha Extra",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+        "bestEvidenceSnippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Long...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 89,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed"
+      },
+      {
+        "material": "Botanical Musk Accord",
+        "sourceIdentity": "Botanical Musk Accord",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "deferred: defer",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "Review-ready deferred accord component expansion evidence.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 79,
+        "sourceTags": [],
+        "requiredSourceType": "accord_component_expansion_deferred",
+        "queueItemId": "hero-ifra-source-botanical-musk-accord-accord_component_expansion_deferred"
+      },
+      {
+        "material": "Florol",
+        "sourceIdentity": "Florol",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Florol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/florol",
+        "bestEvidenceSnippet": "g it ideal as a building block. Florol is effective in traces to overdose. aromachem Best Seller MISSING_HS_CODE_ORIGIN missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 2.1% in a perfume compound Odour Family: Flor...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-florol-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Hedione HC",
+        "sourceIdentity": "Hedione HC",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Hedione HC.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/hedione-high-cis",
+        "bestEvidenceSnippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourles...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Caryophyllene Oxide",
+        "sourceIdentity": "Caryophyllene Oxide",
+        "formulasUsedIn": [
+          "Damp Shoreline v2",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Caryophyllene Oxide.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/caryophyllene-oxide",
+        "bestEvidenceSnippet": "notes. Its unique dry-sweet character prevents fruity accords from becoming cloying while lifting heavier base materials. aromachem powder IFRA 51: No restriction for category 4 Average Use: 0.1% in a perfume compound Odour Family: Woody...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed"
+      },
+      {
+        "material": "Celestafleur",
+        "sourceIdentity": "Celestafleur",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s)",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/celestafleur",
+        "bestEvidenceSnippet": "ith Celestafleur ™, and herbal bases such as Suralette™ Extra and Artemal ™ are wonderful with it. Best Seller floral lyral mahonial no_reg IFRA 51: 9.4% in finished product (Cat. 4) Appearance: Colourless liquid Longevity: Lasts 240 hou...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Ethyl Linalool",
+        "sourceIdentity": "Ethyl Linalool",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Linalool.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/ethyl-linalool",
+        "bestEvidenceSnippet": "Muguet, Lilac, Lily, Appleblossom, etc. as well as in fantasy creations.” aromachem Best Seller MISSING_HS_CODE_ORIGIN missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 4.2% in a perfume compound Odour Family: Flora...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ethyl Linalyl Acetate",
+        "sourceIdentity": "Ethyl Linalyl Acetate",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Linalyl Acetate.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/ethyl-linalyl-acetate",
+        "bestEvidenceSnippet": "ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More…...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Veramoss 20% TEC",
+        "sourceIdentity": "Veramoss",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
+        "bestAvailableEvidence": "supplier_document available from supplier_ifra.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_ifra",
+        "bestEvidenceSource": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+        "bestEvidenceSnippet": "Oakmoss Absolute IFRA 43",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 70,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Phenyl Ethyl Acetate",
+        "sourceIdentity": "Phenyl Ethyl Acetate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Phenyl Ethyl Acetate.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/phenyl-ethyl-acetate",
+        "bestEvidenceSnippet": "ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More…...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 65,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Driftwood Accord v2",
+        "sourceIdentity": "Driftwood Accord v2",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "deferred: defer",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "Review-ready deferred accord component expansion evidence.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 61,
+        "sourceTags": [],
+        "requiredSourceType": "accord_component_expansion_deferred",
+        "queueItemId": "hero-ifra-source-driftwood-accord-v2-accord_component_expansion_deferred"
+      },
+      {
+        "material": "Iso E + AmberXtreme 1%",
+        "sourceIdentity": "Iso E + AmberXtreme 1%",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "deferred: defer",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "Review-ready deferred accord component expansion evidence.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 61,
+        "sourceTags": [],
+        "requiredSourceType": "accord_component_expansion_deferred",
+        "queueItemId": "hero-ifra-source-iso-e-amberxtreme-1-accord_component_expansion_deferred"
+      },
+      {
+        "material": "Aldehyde C-18",
+        "sourceIdentity": "Aldehyde C-18",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-18.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ambrettolide 50% TEC",
+        "sourceIdentity": "Ambrettolide",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+        "bestAvailableEvidence": "supplier_document available from supplier_ifra.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_ifra",
+        "bestEvidenceSource": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+        "bestEvidenceSnippet": "Navigating IFRA Limits",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ethyl Vanillin 10%",
+        "sourceIdentity": "Ethyl Vanillin",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Vanillin.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed"
+      },
+      {
+        "material": "Driftwood Accord",
+        "sourceIdentity": "Driftwood Accord",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "deferred: defer",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "Review-ready deferred accord component expansion evidence.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 49,
+        "sourceTags": [],
+        "requiredSourceType": "accord_component_expansion_deferred",
+        "queueItemId": "hero-ifra-source-driftwood-accord-accord_component_expansion_deferred"
+      }
+    ],
+    "variantSpecificOnly": [
+      {
+        "material": "Cedarwood Virginia EO",
+        "sourceIdentity": "Cedarwood Virginia EO",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cedarwood Virginia EO.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 73,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Clearwood",
+        "sourceIdentity": "Clearwood",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/clearwood",
+        "bestEvidenceSnippet": "Clearwood PRISMA range, launched by Firmenich in 2024. Contains 0.05% of Tocopherol as a preservative. Best Seller natural no_reg patchouli IFRA 51: No restriction for category 4 Odour Family: Woody Appearance: Colourless liquid Longevit...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Geosmin 1% TEC",
+        "sourceIdentity": "Geosmin",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/geosmin",
+        "bestEvidenceSnippet": "areful overdose gives interesting effects. Geosmin is a radiant and adds power and diffusion to any fragrance. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Odour Family: Earthy Appearance: Colourless liquid Longevi...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed"
+      },
+      {
+        "material": "Timbersilk",
+        "sourceIdentity": "Timbersilk",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/timbersilk",
+        "bestEvidenceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Cypriol",
+        "sourceIdentity": "Cypriol",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cypriol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.edenbotanicals.com/nagarmotha-cyperus.html",
+        "bestEvidenceSnippet": "es and uniformity of odor throughout the drydown. Appearance Light amber or brownish-yellow, transparent, slightly viscous liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations No known concerns.* Dilute before using. A pa...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 57,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Orbitone T Neo",
+        "sourceIdentity": "Orbitone T Neo",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Orbitone T Neo.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.takasago.com/en/node/700",
+        "bestEvidenceSnippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 57,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed"
+      }
+    ],
+    "alreadyHandled": [
+      {
+        "material": "Cashmeran",
+        "sourceIdentity": "Cashmeran",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "not_applicable: ignore_not_relevant",
+        "bestAvailableEvidence": "High-confidence official IFRA candidate staged for review.",
+        "evidenceQuality": "official_review_candidate",
+        "bestEvidenceSourceType": "official_ifra_standard_library",
+        "bestEvidenceSource": "https://ifrafragrance.org/standards-library",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -40,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-cashmeran-already_structured"
+      },
+      {
+        "material": "Helional®",
+        "sourceIdentity": "Helional®",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "not_applicable: ignore_not_relevant",
+        "bestAvailableEvidence": "High-confidence official IFRA candidate staged for review.",
+        "evidenceQuality": "official_review_candidate",
+        "bestEvidenceSourceType": "official_ifra_standard_library",
+        "bestEvidenceSource": "https://ifrafragrance.org/standards-library",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -40,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-helional-already_structured"
+      },
+      {
+        "material": "Oakmoss Absolute 10%",
+        "sourceIdentity": "Oakmoss Absolute",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "not_applicable: ignore_not_relevant",
+        "bestAvailableEvidence": "High-confidence official IFRA candidate staged for review.",
+        "evidenceQuality": "official_review_candidate",
+        "bestEvidenceSourceType": "official_ifra_standard_library",
+        "bestEvidenceSource": "https://ifrafragrance.org/standards-library",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -58,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-oakmoss-absolute-already_structured"
+      },
+      {
+        "material": "Lemon FCF",
+        "sourceIdentity": "Lemon FCF",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Reviewed non-limit source evidence exists.",
+        "bestAvailableEvidence": "Reviewed non-limit FCF/source evidence.",
+        "evidenceQuality": "reviewed_non_limit_evidence",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -68,
+        "sourceTags": [
+          "special_case_evidence_only"
+        ],
+        "requiredSourceType": "fcf_special_case",
+        "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case"
+      },
+      {
+        "material": "Cyclamen Aldehyde",
+        "sourceIdentity": "Cyclamen Aldehyde",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "not_applicable: ignore_not_relevant",
+        "bestAvailableEvidence": "High-confidence official IFRA candidate staged for review.",
+        "evidenceQuality": "official_review_candidate",
+        "bestEvidenceSourceType": "official_ifra_standard_library",
+        "bestEvidenceSource": "https://ifrafragrance.org/standards-library",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -70,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-cyclamen-aldehyde-already_structured"
+      },
+      {
+        "material": "Ylang-Ylang Complete Oil",
+        "sourceIdentity": "Ylang-Ylang Complete Oil",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "not_applicable: ignore_not_relevant",
+        "bestAvailableEvidence": "High-confidence official IFRA candidate staged for review.",
+        "evidenceQuality": "official_review_candidate",
+        "bestEvidenceSourceType": "official_ifra_standard_library",
+        "bestEvidenceSource": "https://ifrafragrance.org/standards-library",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -70,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-ylang-ylang-complete-oil-already_structured"
+      },
+      {
+        "material": "Vetiveryl Acetate",
+        "sourceIdentity": "Vetiveryl Acetate",
+        "formulasUsedIn": [
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Variant-specific to Damp Shoreline v1",
+        "currentIfraSourceStatus": "Reviewed structured runtime IFRA source exists.",
+        "bestAvailableEvidence": "Reviewed structured runtime IFRA override.",
+        "evidenceQuality": "reviewed_official_runtime",
+        "bestEvidenceSourceType": "official_ifra_standard_pdf",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -80,
+        "sourceTags": [],
+        "requiredSourceType": "already_structured",
+        "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured"
+      }
+    ],
+    "blockedBySourceAvailability": [
+      {
+        "material": "Aldehyde C-8",
+        "sourceIdentity": "Aldehyde C-8",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-8.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 141,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed"
+      },
+      {
+        "material": "Cedarwood Virginia EO",
+        "sourceIdentity": "Cedarwood Virginia EO",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cedarwood Virginia EO.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 73,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed"
+      }
+    ],
+    "needsSupplierIfraSds": [
+      {
+        "material": "Cetalox",
+        "sourceIdentity": "Cetalox",
+        "formulasUsedIn": [
+          "Damp Shoreline v2",
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/cetalox",
+        "bestEvidenceSnippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity:...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as launch-critical exception; seek formal supplier IFRA/SDS or official/global support before promotion.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 137,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cetalox-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Maritima",
+        "sourceIdentity": "Maritima",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Maritima.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/maritima",
+        "bestEvidenceSnippet": "ima shows balanced behavior with moderate strength (6/10) and proportional impact in blends (5/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: 0.0075% in a perfume compound Odour Family: M...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-maritima-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Oceanol 10%",
+        "sourceIdentity": "Oceanol",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Oceanol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/oceanol",
+        "bestEvidenceSnippet": "nol shows balanced behavior with moderate strength (6/10) and proportional impact in blends (7/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Average Use: Traces – 2% in a perfume compound Odour Famil...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-oceanol-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Algenone",
+        "sourceIdentity": "Algenone",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Algenone.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/9357.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-algenone-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Cyclogalbanate",
+        "sourceIdentity": "Cyclogalbanate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cyclogalbanate.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6042.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cyclogalbanate-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Pink Peppercorn Oil P&N",
+        "sourceIdentity": "Pink Peppercorn Oil P&N",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Pink Peppercorn Oil P&N.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/8016.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-pink-peppercorn-oil-p-n-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Seaweed Absolute 10%",
+        "sourceIdentity": "Seaweed Absolute",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Seaweed Absolute.",
+        "bestAvailableEvidence": "supplier_document available from supplier_specification.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_specification",
+        "bestEvidenceSource": "https://www.natureinbottle.com/home/downloadDeclarationPDF/330/62",
+        "bestEvidenceSnippet": "(Download Declaration)",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-seaweed-absolute-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Florol",
+        "sourceIdentity": "Florol",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Florol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/florol",
+        "bestEvidenceSnippet": "g it ideal as a building block. Florol is effective in traces to overdose. aromachem Best Seller MISSING_HS_CODE_ORIGIN missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 2.1% in a perfume compound Odour Family: Flor...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-florol-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Hedione HC",
+        "sourceIdentity": "Hedione HC",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Hedione HC.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/hedione-high-cis",
+        "bestEvidenceSnippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourles...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-hedione-hc-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Celestafleur",
+        "sourceIdentity": "Celestafleur",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s)",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/celestafleur",
+        "bestEvidenceSnippet": "ith Celestafleur ™, and herbal bases such as Suralette™ Extra and Artemal ™ are wonderful with it. Best Seller floral lyral mahonial no_reg IFRA 51: 9.4% in finished product (Cat. 4) Appearance: Colourless liquid Longevity: Lasts 240 hou...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-celestafleur-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Cedarwood Virginia EO",
+        "sourceIdentity": "Cedarwood Virginia EO",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cedarwood Virginia EO.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 73,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cedarwood-virginia-eo-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Veramoss 20% TEC",
+        "sourceIdentity": "Veramoss",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Veramoss.",
+        "bestAvailableEvidence": "supplier_document available from supplier_ifra.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_ifra",
+        "bestEvidenceSource": "https://fraterworks.com/products/oakmoss-ifra-43-abs?keyword=oakmoss",
+        "bestEvidenceSnippet": "Oakmoss Absolute IFRA 43",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then request supplier IFRA/SDS if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 70,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-veramoss-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Clearwood",
+        "sourceIdentity": "Clearwood",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/clearwood",
+        "bestEvidenceSnippet": "Clearwood PRISMA range, launched by Firmenich in 2024. Contains 0.05% of Tocopherol as a preservative. Best Seller natural no_reg patchouli IFRA 51: No restriction for category 4 Odour Family: Woody Appearance: Colourless liquid Longevit...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-clearwood-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Timbersilk",
+        "sourceIdentity": "Timbersilk",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/timbersilk",
+        "bestEvidenceSnippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 20% IFRA 49: 20% These are derived...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-timbersilk-specialty_supplier_document_needed"
+      },
+      {
+        "material": "Cypriol",
+        "sourceIdentity": "Cypriol",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Cypriol.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.edenbotanicals.com/nagarmotha-cyperus.html",
+        "bestEvidenceSnippet": "es and uniformity of odor throughout the drydown. Appearance Light amber or brownish-yellow, transparent, slightly viscous liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations No known concerns.* Dilute before using. A pa...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 57,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "natural_uvcb_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed"
+      },
+      {
+        "material": "Orbitone T Neo",
+        "sourceIdentity": "Orbitone T Neo",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need supplier IFRA certificate, SDS, or product-page IFRA limit for source identity: Orbitone T Neo.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.takasago.com/en/node/700",
+        "bestEvidenceSnippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5...",
+        "whatIsMissing": "Product-specific supplier IFRA certificate, SDS, or specification strong enough for review.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 57,
+        "sourceTags": [
+          "needs_supplier_ifra_sds"
+        ],
+        "requiredSourceType": "specialty_supplier_document_needed",
+        "queueItemId": "hero-ifra-source-orbitone-t-neo-specialty_supplier_document_needed"
+      }
+    ],
+    "needsOfficialGlobalSource": [
+      {
+        "material": "Aldehyde C-8",
+        "sourceIdentity": "Aldehyde C-8",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-8.",
+        "bestAvailableEvidence": "No useful allowed source found in current outputs.",
+        "evidenceQuality": "no_useful_allowed_source",
+        "bestEvidenceSourceType": "",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "A useful allowed public source is missing from current cached/official/supplier outputs.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as a source-availability exception and request/upload an allowed supplier or official document only if this formula remains launch-relevant.",
+        "doNotDo": "Do not broaden scraping or guess URLs to fill this gap.",
+        "exceptionScore": 141,
+        "sourceTags": [
+          "blocked_by_source_availability",
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-aldehyde-c-8-global_ifra_standard_needed"
+      },
+      {
+        "material": "Calone 1951 20%",
+        "sourceIdentity": "Calone 1951",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/calone-plus",
+        "bestEvidenceSnippet": "use because it comes in a liquid form, making it a cinch to add to your formulas. aromachem Best Seller locale:pure is powder no_reg power IFRA 51: No restriction for category 4 Odour Family: Ozonic Appearance: Colourless liquid Longevit...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as launch-critical exception; seek formal supplier IFRA/SDS or official/global support before promotion.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 137,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-calone-1951-global_ifra_standard_needed"
+      },
+      {
+        "material": "Hedione",
+        "sourceIdentity": "Hedione",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Hedione.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/hedione-high-cis",
+        "bestEvidenceSnippet": "glorious, check out our Paradise Molecule® , the closest thing you can get to Firmenich's captive Paradisone. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Average Use: 4% in a perfume compound Appearance: Colourles...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-hedione-global_ifra_standard_needed"
+      },
+      {
+        "material": "Iso E Super",
+        "sourceIdentity": "Iso E Super",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Iso E Super.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://www.takasago.com/en/node/700",
+        "bestEvidenceSnippet": "Compliance Enhancing Value through Digitalization Sustainability News Careers News Release JA compendium catalog Orbitone® T Download Image CAS NO.54464-57-2 Orbitone® T WOODY AMBERGRIS FLORAL VIOLET WOODY CHEMICAL STRUCTURE 1-(1,2,3,4,5...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 125,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-iso-e-super-global_ifra_standard_needed"
+      },
+      {
+        "material": "Allyl Amyl Glycolate",
+        "sourceIdentity": "Allyl Amyl Glycolate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Allyl Amyl Glycolate.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/5999.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-allyl-amyl-glycolate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ambroxan Crystals",
+        "sourceIdentity": "Ambroxan Crystals",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambroxan Crystals.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://fraterworks.com/pages/sds-request",
+        "bestEvidenceSnippet": "Request SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ambroxan-crystals-global_ifra_standard_needed"
+      },
+      {
+        "material": "Dihydromyrcenol",
+        "sourceIdentity": "Dihydromyrcenol",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Dihydromyrcenol.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6051.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Review the best cached evidence packet and request the missing official or supplier IFRA document if this remains in the launch candidate.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 118,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-dihydromyrcenol-global_ifra_standard_needed"
+      },
+      {
+        "material": "Methyl Ionone Alpha Extra",
+        "sourceIdentity": "Methyl Ionone Alpha Extra",
+        "formulasUsedIn": [
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/methyl-ionone-alpha-extra",
+        "bestEvidenceSnippet": "thyl ionone 5-10 79-89-0 Beta Isomethyl Ionone 3-5 127-43-5 Beta methyl Ionone 1-2.5 128-37-0 BHT 0.1-0.25 --> aromachem Best Seller no_reg IFRA 51: 30% in finished product (Cat. 4) Odour Family: Floral Appearance: Colourless liquid Long...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 89,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed"
+      },
+      {
+        "material": "Caryophyllene Oxide",
+        "sourceIdentity": "Caryophyllene Oxide",
+        "formulasUsedIn": [
+          "Damp Shoreline v2",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Caryophyllene Oxide.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/caryophyllene-oxide",
+        "bestEvidenceSnippet": "notes. Its unique dry-sweet character prevents fruity accords from becoming cloying while lifting heavier base materials. aromachem powder IFRA 51: No restriction for category 4 Average Use: 0.1% in a perfume compound Odour Family: Woody...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-caryophyllene-oxide-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ethyl Linalool",
+        "sourceIdentity": "Ethyl Linalool",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Linalool.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/ethyl-linalool",
+        "bestEvidenceSnippet": "Muguet, Lilac, Lily, Appleblossom, etc. as well as in fantasy creations.” aromachem Best Seller MISSING_HS_CODE_ORIGIN missing_info no_reg IFRA 51: No restriction for category 4 Average Use: 4.2% in a perfume compound Odour Family: Flora...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-linalool-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ethyl Linalyl Acetate",
+        "sourceIdentity": "Ethyl Linalyl Acetate",
+        "formulasUsedIn": [
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 2 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Linalyl Acetate.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/ethyl-linalyl-acetate",
+        "bestEvidenceSnippet": "ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More…...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 77,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-linalyl-acetate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Geosmin 1% TEC",
+        "sourceIdentity": "Geosmin",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Proposed structured record exists, but promotion ranker requires better source.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/geosmin",
+        "bestEvidenceSnippet": "areful overdose gives interesting effects. Geosmin is a radiant and adds power and diffusion to any fragrance. aromachem Best Seller no_reg IFRA 51: No restriction for category 4 Odour Family: Earthy Appearance: Colourless liquid Longevi...",
+        "whatIsMissing": "A stronger source or final review confirming identity/category context before any runtime use.",
+        "launchConfidenceImpact": "Medium-high. It affects the current model-guided priority formula (Damp Shoreline v2) but can wait until finalist selection.",
+        "recommendedNextAction": "Defer until this variant is selected as finalist; then review the cached evidence or request supplier IFRA/SDS.",
+        "doNotDo": "Do not promote weak supplier/product-page snippets as runtime IFRA limits.",
+        "exceptionScore": 69,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-geosmin-global_ifra_standard_needed"
+      },
+      {
+        "material": "Phenyl Ethyl Acetate",
+        "sourceIdentity": "Phenyl Ethyl Acetate",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Phenyl Ethyl Acetate.",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/phenyl-ethyl-acetate",
+        "bestEvidenceSnippet": "ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More…...",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 65,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-phenyl-ethyl-acetate-global_ifra_standard_needed"
+      },
+      {
+        "material": "Aldehyde C-18",
+        "sourceIdentity": "Aldehyde C-18",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Aldehyde C-18.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/5996.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-aldehyde-c-18-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ambrettolide 50% TEC",
+        "sourceIdentity": "Ambrettolide",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ambrettolide.",
+        "bestAvailableEvidence": "supplier_document available from supplier_ifra.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_ifra",
+        "bestEvidenceSource": "https://fraterworks.com/blogs/information/working-with-ifra-limits",
+        "bestEvidenceSnippet": "Navigating IFRA Limits",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ambrettolide-global_ifra_standard_needed"
+      },
+      {
+        "material": "Ethyl Vanillin 10%",
+        "sourceIdentity": "Ethyl Vanillin",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1"
+        ],
+        "currentFormulaRelevance": "Used in 3 active formula(s)",
+        "currentIfraSourceStatus": "Need source-backed global IFRA standard or Cat 4 record for source identity: Ethyl Vanillin.",
+        "bestAvailableEvidence": "supplier_document available from supplier_sds.",
+        "evidenceQuality": "supplier_document_cached",
+        "bestEvidenceSourceType": "supplier_sds",
+        "bestEvidenceSource": "https://shop.perfumersapprentice.com/MSDS/6078.pdf",
+        "bestEvidenceSnippet": "View SDS",
+        "whatIsMissing": "Official/global IFRA standard or source-backed Cat 4 evidence for the source identity.",
+        "launchConfidenceImpact": "Medium. It matters if one of the formulas using it becomes the finalist.",
+        "recommendedNextAction": "Defer until finalist selection, then seek official/global IFRA support if still present.",
+        "doNotDo": "Do not promote runtime IFRA data from this exception pack.",
+        "exceptionScore": 58,
+        "sourceTags": [
+          "needs_official_global_source"
+        ],
+        "requiredSourceType": "global_ifra_standard_needed",
+        "queueItemId": "hero-ifra-source-ethyl-vanillin-global_ifra_standard_needed"
+      }
+    ],
+    "specialCaseEvidenceOnly": [
+      {
+        "material": "Bergamot EO FCF",
+        "sourceIdentity": "Bergamot EO FCF",
+        "formulasUsedIn": [
+          "Random Concoction - Original",
+          "Skin-Air Bridge",
+          "Damp Shoreline v1",
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in all active hero formulas",
+        "currentIfraSourceStatus": "likely_fcf_evidence: promote_fcf_evidence_after_review",
+        "bestAvailableEvidence": "Review-ready candidate snippet exists.",
+        "evidenceQuality": "supplier_product_page_only",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "https://fraterworks.com/products/bergamot-oil-fcf",
+        "bestEvidenceSnippet": "ily: Citrus Appearance: Pale yellow liquid Longevity: Lasts 4 hours on a smelling strip. Odour Profile: Bright, fruity-sweet citrus without phototoxic components. Uses: Essential in skin-safe fine fragrance formulations, especially for c...",
+        "whatIsMissing": "Keep this as non-limit source evidence unless a separate category-limit source is reviewed.",
+        "launchConfidenceImpact": "High. It appears across all active hero formulas, so unresolved source quality affects every launch path.",
+        "recommendedNextAction": "Keep as special-case evidence; do not convert FCF/phototoxic wording into a runtime category limit.",
+        "doNotDo": "Do not convert non-limit FCF/phototoxic evidence into a category limit.",
+        "exceptionScore": 107,
+        "sourceTags": [
+          "special_case_evidence_only"
+        ],
+        "requiredSourceType": "fcf_special_case",
+        "queueItemId": "hero-ifra-source-bergamot-eo-fcf-fcf_special_case"
+      },
+      {
+        "material": "Lemon FCF",
+        "sourceIdentity": "Lemon FCF",
+        "formulasUsedIn": [
+          "Damp Shoreline v2"
+        ],
+        "currentFormulaRelevance": "Used in 1 active formula(s), including Damp Shoreline v2",
+        "currentIfraSourceStatus": "Reviewed non-limit source evidence exists.",
+        "bestAvailableEvidence": "Reviewed non-limit FCF/source evidence.",
+        "evidenceQuality": "reviewed_non_limit_evidence",
+        "bestEvidenceSourceType": "supplier_product_page",
+        "bestEvidenceSource": "",
+        "bestEvidenceSnippet": "",
+        "whatIsMissing": "No immediate source action.",
+        "launchConfidenceImpact": "Low. Current reviewed evidence is already recorded; still not launch clearance.",
+        "recommendedNextAction": "No further IFRA action right now; keep provenance visible.",
+        "doNotDo": "Do not re-promote or treat reviewed evidence as launch clearance.",
+        "exceptionScore": -68,
+        "sourceTags": [
+          "special_case_evidence_only"
+        ],
+        "requiredSourceType": "fcf_special_case",
+        "queueItemId": "hero-ifra-source-lemon-fcf-fcf_special_case"
+      }
+    ]
+  }
+}

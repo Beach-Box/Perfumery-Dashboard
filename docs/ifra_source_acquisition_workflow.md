@@ -371,6 +371,44 @@ Runtime promotion stays separate because source acquisition can still find wrong
 
 The report groups work into new official matches, new supplier IFRA/SDS/spec docs, new snippets, new proposed structured records, still-needs-better-source, no-source-found, skipped/blocked downloads, and already-handled materials. Use it to focus review on what the system acquired automatically instead of manually researching every unresolved material.
 
+## Launch-Critical IFRA Exception Pack
+
+The launch-critical exception pack is the preferred daily IFRA/source-confidence view. It compresses the queue, resolver, autopilot, promotion-ranker, reviewed-record, runtime-override, and source-acquisition outputs into a short formula-relevant action report.
+
+Generate the JSON report:
+
+```bash
+node scripts/generate_launch_critical_ifra_exception_pack.mjs
+```
+
+Generate the Markdown report:
+
+```bash
+node scripts/generate_launch_critical_ifra_exception_pack.mjs \
+  --markdown \
+  --write docs/ifra/launch_critical_ifra_exception_pack.md
+```
+
+The JSON report is written to:
+
+```bash
+data/ifra_source_acquisition/launch_critical_ifra_exception_pack.json
+```
+
+This report answers a narrower launch question than the candidate, resolver, or autopilot reports: which remaining IFRA/source exceptions matter for the active hero formulas right now? It ranks all-formula materials, current model-guided priority formula exposure, meaningful source-quality problems, proposed-but-not-promotable records, and source-availability blocks above variant-only or already reviewed items.
+
+The report groups materials into launch-critical across all active formulas, important but deferred until finalist selection, variant-specific only, already handled, blocked by source availability, needs supplier IFRA/SDS, needs official/global source, and special-case evidence only. Each material is capped to one best evidence snippet, one source, one recommended next action, and one explicit "do not do" note so the report stays readable in a few minutes.
+
+It differs from the deeper generated reports:
+
+- candidate/review queues preserve detailed evidence inspection state;
+- resolver and autopilot reports rank snippets and review actions;
+- source acquisition reports explain what was found, cached, skipped, or blocked;
+- promotion opportunities rank reviewed records that might later be promoted;
+- the exception pack hides the bulk detail and surfaces only formula-relevant exceptions.
+
+The exception pack does not claim compliance, launch clearance, or runtime IFRA coverage. It does not scrape new sources, write structured IFRA standards, promote limits, overwrite review notes, change formulas, or change runtime classification. Runtime promotion remains a separate one-record-at-a-time reviewed task because even launch-critical evidence can still be identity-ambiguous, supplier-specific, product-page-only, outdated, or non-limit context.
+
 ## Autopilot Recommendations And Proposed Records
 
 After running evidence autopilot, generate the short recommendation report:
