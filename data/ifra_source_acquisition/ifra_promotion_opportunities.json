@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T16:19:29.249Z",
+    "generatedAt": "2026-06-12T12:44:27.788Z",
     "reportName": "IFRA Promotion Opportunities",
     "guardrails": [
       "This report ranks review opportunities only.",
@@ -12,22 +12,20 @@
   "summary": {
     "proposedRecordCount": 15,
     "auditedRecordCount": 15,
-    "remainingUnpromotedProposedCount": 14,
+    "remainingUnpromotedProposedCount": 15,
     "recommendedNextPromotionCount": 0,
-    "goodCandidateAfterReviewCount": 5,
+    "goodCandidateAfterReviewCount": 6,
     "needsBetterSourceCount": 7,
     "doNotPromoteYetCount": 0,
-    "alreadyPromotedCount": 1,
+    "alreadyPromotedCount": 0,
     "specialCaseOnlyCount": 2,
     "sourceTypeCounts": {
-      "official_ifra_standard_library": 5,
-      "supplier_product_page": 9,
-      "official_ifra_standard_pdf": 1
+      "official_ifra_standard_library": 6,
+      "supplier_product_page": 9
     },
     "classificationCounts": {
-      "good_candidate_after_review": 5,
+      "good_candidate_after_review": 6,
       "needs_better_source": 7,
-      "already_promoted": 1,
       "special_case_only": 2
     }
   },
@@ -230,6 +228,60 @@
       "formulasUsedIn": [
         "Damp Shoreline v1",
         "Damp Shoreline v2"
+      ],
+      "promotionStatus": "proposed",
+      "reviewedSourceRecordIds": [],
+      "score": 109,
+      "confidenceLabel": "high",
+      "classification": "good_candidate_after_review",
+      "why": [
+        "official IFRA source candidate",
+        "exact high-confidence CAS match",
+        "exact source identity match",
+        "category value is parseable or explicitly no restriction",
+        "Cat 4 / fine-fragrance context is explicit",
+        "source snippet contains IFRA category/max-use language",
+        "source artifact is cached locally or committed",
+        "material appears in an active hero formula",
+        "autopilot confidence is high"
+      ],
+      "risk": [
+        "material already has structured IFRA coverage; overlay promotion may be redundant"
+      ],
+      "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+      "promotionCommand": "",
+      "guardrails": [
+        "Do not bulk promote.",
+        "Do not claim launch clearance.",
+        "Review source identity, category, and value context before promotion."
+      ]
+    },
+    {
+      "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-li",
+      "materialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "formulaMaterialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.9,
+      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+      "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil",
+      "officialStandardTitle": "Acetylated Vetiver oil",
+      "officialMatchType": "cas",
+      "officialMatchConfidence": "high",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
+      "queuePriority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
       ],
       "promotionStatus": "proposed",
       "reviewedSourceRecordIds": [],
@@ -699,63 +751,6 @@
       ]
     },
     {
-      "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
-      "materialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "formulaMaterialNames": [
-        "Vetiveryl Acetate"
-      ],
-      "recordType": "ifra_category_limit",
-      "sourceType": "official_ifra_standard_pdf",
-      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-      "category": "4",
-      "candidateValue": "0.9",
-      "candidateUnit": "%",
-      "normalizedCandidateValue": 0.9,
-      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
-      "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
-      "officialStandardTitle": "Acetylated Vetiver oil",
-      "officialMatchType": "cas",
-      "officialMatchConfidence": "high",
-      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-      "queuePriority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
-      "promotionStatus": "promoted",
-      "reviewedSourceRecordIds": [],
-      "score": 0,
-      "confidenceLabel": "low",
-      "classification": "already_promoted",
-      "why": [
-        "official IFRA source candidate",
-        "official IFRA PDF/source file present",
-        "exact high-confidence CAS match",
-        "exact source identity match",
-        "category value is parseable or explicitly no restriction",
-        "Cat 4 / fine-fragrance context is explicit",
-        "source snippet contains IFRA category/max-use language",
-        "source artifact is cached locally or committed",
-        "material appears in an active hero formula",
-        "high-priority hero IFRA queue item",
-        "autopilot confidence is high",
-        "record has already been promoted into runtime structured overlay"
-      ],
-      "risk": [
-        "No major ranking risk detected, but source review is still required."
-      ],
-      "recommendedAction": "No action. This record is already represented in the reviewed runtime overlay.",
-      "promotionCommand": "",
-      "guardrails": [
-        "Do not bulk promote.",
-        "Do not claim launch clearance.",
-        "Review source identity, category, and value context before promotion."
-      ]
-    },
-    {
       "proposedRecordId": "proposed-ifra-bergamot-eo-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
       "materialName": "Bergamot EO FCF",
       "sourceIdentityName": "Bergamot EO FCF",
@@ -1066,6 +1061,60 @@
         "formulasUsedIn": [
           "Damp Shoreline v1",
           "Damp Shoreline v2"
+        ],
+        "promotionStatus": "proposed",
+        "reviewedSourceRecordIds": [],
+        "score": 109,
+        "confidenceLabel": "high",
+        "classification": "good_candidate_after_review",
+        "why": [
+          "official IFRA source candidate",
+          "exact high-confidence CAS match",
+          "exact source identity match",
+          "category value is parseable or explicitly no restriction",
+          "Cat 4 / fine-fragrance context is explicit",
+          "source snippet contains IFRA category/max-use language",
+          "source artifact is cached locally or committed",
+          "material appears in an active hero formula",
+          "autopilot confidence is high"
+        ],
+        "risk": [
+          "material already has structured IFRA coverage; overlay promotion may be redundant"
+        ],
+        "recommendedAction": "Review source identity/provenance; promote later only if the source review is clean and value context is unambiguous.",
+        "promotionCommand": "",
+        "guardrails": [
+          "Do not bulk promote.",
+          "Do not claim launch clearance.",
+          "Review source identity, category, and value context before promotion."
+        ]
+      },
+      {
+        "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-li",
+        "materialName": "Vetiveryl Acetate",
+        "sourceIdentityName": "Vetiveryl Acetate",
+        "formulaMaterialNames": [
+          "Vetiveryl Acetate"
+        ],
+        "recordType": "ifra_category_limit",
+        "sourceType": "official_ifra_standard_library",
+        "sourceUrl": "https://ifrafragrance.org/standards-library",
+        "sourceFile": "src/data/ifra_master_standards.json",
+        "category": "4",
+        "candidateValue": "0.9",
+        "candidateUnit": "%",
+        "normalizedCandidateValue": 0.9,
+        "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+        "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil",
+        "officialStandardTitle": "Acetylated Vetiver oil",
+        "officialMatchType": "cas",
+        "officialMatchConfidence": "high",
+        "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
+        "queuePriority": "low",
+        "requiredSourceType": "already_structured",
+        "currentIfraCategory": "aliasIfraMatch",
+        "formulasUsedIn": [
+          "Damp Shoreline v1"
         ],
         "promotionStatus": "proposed",
         "reviewedSourceRecordIds": [],
@@ -1538,65 +1587,7 @@
       }
     ],
     "do_not_promote_yet": [],
-    "already_promoted": [
-      {
-        "proposedRecordId": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
-        "materialName": "Vetiveryl Acetate",
-        "sourceIdentityName": "Vetiveryl Acetate",
-        "formulaMaterialNames": [
-          "Vetiveryl Acetate"
-        ],
-        "recordType": "ifra_category_limit",
-        "sourceType": "official_ifra_standard_pdf",
-        "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-        "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-        "category": "4",
-        "candidateValue": "0.9",
-        "candidateUnit": "%",
-        "normalizedCandidateValue": 0.9,
-        "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
-        "officialCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
-        "officialStandardTitle": "Acetylated Vetiver oil",
-        "officialMatchType": "cas",
-        "officialMatchConfidence": "high",
-        "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-        "queuePriority": "high",
-        "requiredSourceType": "global_ifra_standard_needed",
-        "currentIfraCategory": "sourceUnavailable",
-        "formulasUsedIn": [
-          "Damp Shoreline v1"
-        ],
-        "promotionStatus": "promoted",
-        "reviewedSourceRecordIds": [],
-        "score": 0,
-        "confidenceLabel": "low",
-        "classification": "already_promoted",
-        "why": [
-          "official IFRA source candidate",
-          "official IFRA PDF/source file present",
-          "exact high-confidence CAS match",
-          "exact source identity match",
-          "category value is parseable or explicitly no restriction",
-          "Cat 4 / fine-fragrance context is explicit",
-          "source snippet contains IFRA category/max-use language",
-          "source artifact is cached locally or committed",
-          "material appears in an active hero formula",
-          "high-priority hero IFRA queue item",
-          "autopilot confidence is high",
-          "record has already been promoted into runtime structured overlay"
-        ],
-        "risk": [
-          "No major ranking risk detected, but source review is still required."
-        ],
-        "recommendedAction": "No action. This record is already represented in the reviewed runtime overlay.",
-        "promotionCommand": "",
-        "guardrails": [
-          "Do not bulk promote.",
-          "Do not claim launch clearance.",
-          "Review source identity, category, and value context before promotion."
-        ]
-      }
-    ],
+    "already_promoted": [],
     "special_case_only": [
       {
         "proposedRecordId": "proposed-ifra-bergamot-eo-fcf-phototoxic-note-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",

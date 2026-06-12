@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "IFRA Source Document Inventory",
     "sourceDirectory": "downloads/source_documents/ifra",
     "queueItemCount": 44,
@@ -11,9 +11,9 @@
   },
   "summary": {
     "documentCount": 87,
-    "matchedDocumentCount": 24,
+    "matchedDocumentCount": 25,
     "possibleMatchDocumentCount": 0,
-    "unmatchedDocumentCount": 63,
+    "unmatchedDocumentCount": 62,
     "sourceTypeGuessCounts": {
       "global_ifra_standard": 1,
       "unknown": 7,
@@ -46,9 +46,22 @@
       "titleGuess": "Acetylated Vetiver Oil",
       "materialGuess": "Acetylated Vetiver Oil",
       "sourceTypeGuess": "unknown",
-      "matchedQueueItemIds": [],
-      "matchConfidence": "none",
-      "possibleMatches": [],
+      "matchedQueueItemIds": [
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
+      ],
+      "matchConfidence": "medium",
+      "possibleMatches": [
+        {
+          "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
+          "materialName": "Vetiveryl Acetate",
+          "requiredSourceType": "already_structured",
+          "score": 3,
+          "sourceTypeCompatible": true,
+          "matchedTerms": [
+            "acetylated vetiver oil"
+          ]
+        }
+      ],
       "status": "available_for_review"
     },
     {
@@ -1598,14 +1611,14 @@
       "materialGuess": "Vetiveryl Acetate Https Cdn Shopify Com S Files 1 0682 1448 9400 Files Vetiveryl Acetate Pdf V 1761164988",
       "sourceTypeGuess": "supplier_sds",
       "matchedQueueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "matchConfidence": "medium",
       "possibleMatches": [
         {
-          "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+          "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
           "materialName": "Vetiveryl Acetate",
-          "requiredSourceType": "global_ifra_standard_needed",
+          "requiredSourceType": "already_structured",
           "score": 2,
           "sourceTypeCompatible": false,
           "matchedTerms": [

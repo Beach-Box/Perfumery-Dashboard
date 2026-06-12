@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:27:58.626Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Official IFRA Source Candidates",
     "sourceReport": "official_ifra_harvest_report",
     "guardrails": [
@@ -18,13 +18,13 @@
     "noOfficialMatchCount": 38,
     "needsSupplierDocumentInsteadCount": 18,
     "weakAmbiguousMatchCount": 10,
-    "officialDownloadAttemptCount": 4,
-    "officialDownloadSuccessCount": 4,
+    "officialDownloadAttemptCount": 0,
+    "officialDownloadSuccessCount": 0,
     "officialDownloadFailureCount": 0,
-    "officialPageCacheCount": 3,
-    "officialPdfDownloadAttemptCount": 1,
+    "officialPageCacheCount": 0,
+    "officialPdfDownloadAttemptCount": 0,
     "officialPdfDownloadFailureCount": 0,
-    "downloadedPdfCount": 1,
+    "downloadedPdfCount": 0,
     "candidateUseCounts": {
       "standard_candidate": 6
     },
@@ -230,7 +230,7 @@
       ]
     },
     {
-      "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
+      "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil",
       "materialName": "Vetiveryl Acetate",
       "formulaMaterialName": "Vetiveryl Acetate",
       "sourceIdentityName": "Vetiveryl Acetate",
@@ -240,9 +240,9 @@
       "sourceIdentityNames": [
         "Vetiveryl Acetate"
       ],
-      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "sourceType": "official_ifra_standard_library",
       "matchType": "cas",
@@ -259,12 +259,12 @@
       "amendment": "49",
       "publicationDate": "2020",
       "status": "active",
-      "downloadUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
+      "downloadUrl": "",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
       "sourceFile": "src/data/ifra_master_standards.json",
       "localFile": "src/data/ifra_master_standards.json",
-      "officialLibraryLocalFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "officialLibraryMetadataFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html.metadata.json",
+      "officialLibraryLocalFile": "",
+      "officialLibraryMetadataFile": "",
       "candidateUse": "standard_candidate",
       "reviewStatus": "needs_review",
       "candidateLimitType": "ifra_category_limit",
@@ -277,9 +277,7 @@
         "Official IFRA source candidate; review before structured promotion.",
         "This candidate does not update runtime IFRA limits.",
         "Matched through committed structured master standards."
-      ],
-      "officialPdfLocalFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-      "officialPdfMetadataFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf.metadata.json"
+      ]
     },
     {
       "id": "official-ifra-hero-ifra-source-ylang-ylang-complete-oil-already-structured-ifra-category-limit-cas-ylang-ylang-extracts",

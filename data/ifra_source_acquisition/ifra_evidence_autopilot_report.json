@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "IFRA Evidence Autopilot Report",
     "regenerateCommand": "node scripts/run_ifra_evidence_autopilot.mjs --ingredient-reference \"...Ingredient data - Ingredient Data.csv\" --download --markdown --write docs/ifra/ifra_evidence_autopilot_report.md",
     "mode": "dry_run",
@@ -23,43 +23,43 @@
       "apply_safe_review_metadata_updates",
       "write_autopilot_report"
     ],
-    "sourceQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "harvestGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "documentInventoryGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "evidenceResolutionGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "sourceQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "harvestGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "documentInventoryGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "candidateExtractionGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "evidenceResolutionGeneratedAt": "2026-06-12T12:44:21.932Z",
     "reviewedSourceRecordCount": 1
   },
   "summary": {
     "queueItemCount": 44,
-    "candidatesConsidered": 1088,
+    "candidatesConsidered": 1072,
     "classCounts": {
-      "auto_review_ready": 24,
+      "auto_review_ready": 23,
       "auto_likely_fcf_evidence": 1,
       "auto_needs_supplier_doc": 1,
       "auto_needs_global_standard": 1,
       "auto_identity_only": 7,
-      "auto_already_reviewed": 6,
+      "auto_already_reviewed": 7,
       "auto_deferred": 4
     },
-    "reviewReadyCount": 24,
+    "reviewReadyCount": 23,
     "likelyFcfEvidenceCount": 1,
-    "alreadyReviewedCount": 6,
+    "alreadyReviewedCount": 7,
     "needsSupplierDocCount": 1,
     "needsGlobalStandardCount": 1,
     "identityOnlyCount": 7,
     "insufficientEvidenceCount": 0,
     "deferredCount": 4,
     "unresolvedCount": 9,
-    "manualReviewStillRequiredCount": 34,
+    "manualReviewStillRequiredCount": 33,
     "autoUpdatedReviewStatusCount": 0,
     "sourceQueueAutoUpdateCount": 0,
     "candidateReviewAutoUpdateCount": 0,
     "downloadedOrCachedSourceCount": 87,
     "failedDownloadCount": 0,
     "documentCount": 87,
-    "matchedDocumentCount": 24,
+    "matchedDocumentCount": 25,
     "nextRecommendedAction": "Review likely FCF evidence first; promote only as non-limit FCF source evidence after review."
   },
   "autoUpdates": {
@@ -67,34 +67,6 @@
     "candidateReviewQueue": []
   },
   "topReviewReadyMaterials": [
-    {
-      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-      "materialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
-      "requiredSourceType": "global_ifra_standard_needed",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "autopilotClass": "auto_review_ready",
-      "confidence": "high",
-      "score": 211,
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "in_review",
-      "bestCandidateId": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
-      "bestCandidateType": "ifra_category_limit",
-      "sourceType": "official_ifra_standard_library",
-      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-      "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "generatedCommand": ""
-    },
     {
       "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
       "materialName": "Methyl Ionone Alpha Extra",
@@ -355,6 +327,34 @@
       "sourceUrl": "https://fraterworks.com/products/cetalox",
       "sourceFile": "downloads/source_documents/ifra/product_pages/cetalox-product-page-https-fraterworks-com-products-cetalox.html",
       "snippet": "ox® shows balanced behavior with moderate strength (4/10) and proportional impact in blends (6/10). Versatile and predictable to work with. IFRA 51: No restriction for category 4 Odour Family: Amber Appearance: White crystals Longevity: Lasts > 182 hours on a smelling strip. Odour Profile: Ambrotec...",
+      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
+      "limitations": [
+        "Review candidate and mark accepted only.",
+        "Structured limit promotion is a later task."
+      ],
+      "generatedCommand": ""
+    },
+    {
+      "queueItemId": "hero-ifra-source-cypriol-natural_uvcb_supplier_document_needed",
+      "materialName": "Cypriol",
+      "sourceIdentityName": "Cypriol",
+      "formulasUsedIn": [
+        "Damp Shoreline v2"
+      ],
+      "requiredSourceType": "natural_uvcb_supplier_document_needed",
+      "evidenceStatus": "review_ready",
+      "suggestedAction": "review_top_candidate",
+      "autopilotClass": "auto_review_ready",
+      "confidence": "high",
+      "score": 167,
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-cypriol-natural-uvcb-supplier-document-needed",
+      "candidateReviewStatus": "in_review",
+      "bestCandidateId": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-cypriol-product-page-https-www-edenbotanicals-com-nagarmotha-cyperus-html-html-1-es-and-uniformity-of-odor-throughout-the-drydown",
+      "bestCandidateType": "allergen_or_restriction",
+      "sourceType": "supplier_product_page",
+      "sourceUrl": "https://www.edenbotanicals.com/nagarmotha-cyperus.html",
+      "sourceFile": "downloads/source_documents/ifra/product_pages/cypriol-product-page-https-www-edenbotanicals-com-nagarmotha-cyperus-html.html",
+      "snippet": "es and uniformity of odor throughout the drydown. Appearance Light amber or brownish-yellow, transparent, slightly viscous liquid. Shipping Restriction 0 – Non-Hazardous Safety Considerations No known concerns.* Dilute before using. A patch test should be performed before use for those with sensiti...",
       "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
       "limitations": [
         "Review candidate and mark accepted only.",

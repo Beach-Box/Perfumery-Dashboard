@@ -1,6 +1,6 @@
 # Official IFRA Source Harvest
 
-Generated: 2026-06-11T15:27:58.626Z
+Generated: 2026-06-12T12:44:21.932Z
 
 This report uses official IFRA source roles conservatively: the Standards Library can produce standard candidates for review, while the Transparency List is identity/CAS support only. It does not promote runtime IFRA limits or prove launch clearance.
 
@@ -12,12 +12,12 @@ This report uses official IFRA source roles conservatively: the Standards Librar
 - No official match found: 38
 - Needs supplier document instead: 18
 - Weak/ambiguous matches: 10
-- Official download attempts: 4
-- Official download successes: 4
+- Official download attempts: 0
+- Official download successes: 0
 - Official download failures: 0
-- Official HTML/pages cached: 3
-- Official PDF download attempts: 1
-- Downloaded standard PDFs: 1
+- Official HTML/pages cached: 0
+- Official PDF download attempts: 0
+- Downloaded standard PDFs: 0
 
 ## Official IFRA Matches Found
 
@@ -73,8 +73,7 @@ This report uses official IFRA source roles conservatively: the Standards Librar
 - CAS: 84082-84-8, 68917-34-0, 73246-97-6, 62563-80-8
 - Standard type: Restriction
 - Amendment: 49
-- Source: https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf
-- Official PDF: downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf
+- Source: https://ifrafragrance.org/standards-library
 - Local file: src/data/ifra_master_standards.json
 - Recommended next action: Review official standard candidate before any structured promotion.
 ### Ylang-Ylang Complete Oil
@@ -104,7 +103,7 @@ _No supplier-document-only blockers identified from official harvest._
 
 ## Downloaded Standard PDFs
 
-- Vetiveryl Acetate: skipped_cached downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf
+_No official standard PDFs downloaded in this run._
 
 ## Official Download Failures
 

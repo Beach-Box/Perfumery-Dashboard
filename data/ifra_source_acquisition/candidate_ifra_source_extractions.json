@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Candidate IFRA Source Extractions",
     "sourceDirectory": "downloads/source_documents/ifra",
     "guardrails": [
@@ -10,26 +10,26 @@
   },
   "summary": {
     "sourceFileCount": 295,
-    "candidateCount": 1088,
+    "candidateCount": 1072,
     "candidateTypeCounts": {
-      "identity": 578,
-      "allergen_or_restriction": 198,
+      "identity": 577,
+      "allergen_or_restriction": 197,
       "ifra_category_limit": 123,
       "phototoxic_note": 155,
-      "unknown": 34
+      "unknown": 20
     },
     "reviewPriorityCounts": {
-      "low": 365,
+      "low": 350,
       "high": 318,
-      "medium": 405
+      "medium": 404
     },
-    "queueItemIdsWithCandidates": 42,
+    "queueItemIdsWithCandidates": 43,
     "linkedCandidateCount": 483,
-    "unlinkedCandidateCount": 605,
+    "unlinkedCandidateCount": 589,
     "ambiguousCandidateCount": 0,
-    "suppressedSnippetCount": 877,
+    "suppressedSnippetCount": 876,
     "suppressedReasonCounts": {
-      "navigation_or_directory_noise": 384,
+      "navigation_or_directory_noise": 383,
       "identity_reference_identity_cap": 297,
       "identity_reference_unresolved_safety_context": 93,
       "identity_reference_sds_directory_noise": 97,
@@ -9328,7 +9328,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9357,7 +9358,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9386,7 +9388,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9415,7 +9418,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9444,7 +9448,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9473,7 +9478,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9502,7 +9508,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -9755,231 +9762,6 @@
       "candidateUnit": "",
       "snippet": "flavoring ingredient as defined by the IOFI Code of Practice (www.iofi.org). For more details see chapter 1 of the Guidance for the use of IFRA Standards. Use levels for FEMA GRAS flavoring substances on which the FEMA Expert Panel based its judgments that the substances are generally recognized as safe (GRAS). The Expert Panel also publishes separate exten",
       "confidence": "medium",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-0-ifra-standards-library-ifra-skip-to-content-th",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "IFRA Standards library | IFRA Skip to content The International Fragrance Association Help and enquiries Press and media Member login EN ES ZH Search Search About About fragrance What is a fragrance? How is fragrance mad",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-1-chain-where-is-fragrance-sourced-questions-abou",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "chain Where is fragrance sourced? Questions about fragrance About IFRA About IFRA Purpose, vision and mission Board Membership Secretariat IFRA bylaws Latest updates Latest updates News Events Press releases All latest updates Initiatives and positions Initiatives and positions General affairs Environment and health Innovation and sustainability Safe use an",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-2-fragrance-science-all-initiatives-and-positions",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "fragrance science All initiatives and positions IFRA Standards Library IFRA Standards Library A sortable and searchable database of all the IFRA Standards. Read more IFRA Transparency List IFRA Transparency List All fragrance ingredients disclosed publicly Read more IFRA Regions IFRA regions Global issues Asia Pacific China India Europe, Africa and Middle Ea",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-3-ions-publications-all-publications-brochure-repo",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "ions Publications All publications Brochure Reports Scientific publications Position papers Guidance & reference documents All publications IFRA Standards library Menu About About fragrance What is a fragrance? How is fragrance made? The fragrance value chain Where is fragrance sourced? Questions about fragrance About IFRA About IFRA Purpose, vision and miss",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-4-positions-general-affairs-environment-and-health",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "positions General affairs Environment and health Innovation and sustainability Safe use and fragrance science All initiatives and positions IFRA Regions IFRA regions Global issues Asia Pacific China India Europe, Africa and Middle East Latin America All regions Publications All publications Brochure Reports Scientific publications Position papers Guidance &",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-5-all-publications-ifra-standards-library-help-and",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "All publications IFRA Standards library Help and enquiries Press and media Member login EN ES ZH Search Search Home IFRA Standards library IFRA Standards library In the IFRA Standards, you will find a sortable and searchable database of all the IFRA Standards. IFRA Standards Documentation About the IFRA Standards IFRA Standards Library Search Search Type Se",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-6-an-option-restriction-specification-prohibition",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "allergen_or_restriction",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "an option Restriction Specification Prohibition Standards Amendment Select an option 51 50 49 48 47 45 44 43 40 39 38 29 28 17 10 4 Select Cas n° Title Type Publication Date Amendment Status Actions Select 144020-22-4 28371-99-5 &quot;Acetic acid, anhydride, reaction products with 1,5,10-Trimethyl-1,5,9-cyclododecatriene&quot; R 2020-01 49 Download Select 8",
-      "confidence": "medium",
-      "reviewPriority": "medium",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-7-t-r-2020-01-49-download-clear-selection-0-item",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "t; R 2020-01 49 Download Clear selection (0 item(s) selected) Download files Pagination Page 1 of 11 1 2 3 4 ... 11 Next Receive the newest IFRA Standards in your inbox First name * Last name * Your e-mail * Company or organization Is your company an IFRA member? No Yes I wish to be added to the IFRA mailing list * Yes No Leave this field blank Subscribe Fol",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-8-ca-and-middle-east-india-latin-america-publicati",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_standards_library",
-      "sourceUrl": "https://ifrafragrance.org/standards-library",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "ca and Middle East India Latin America Publications Brochure Reports Scientific Publications Position papers Guidance & reference documents IFRA IFRA Standards Initiatives & Positions Help and enquiries Latest updates News Events Press releases IFRA Regions Global issues Asia Pacific Europe, Africa and Middle East India Latin America Publications Brochure Re",
-      "confidence": "low",
       "reviewPriority": "low",
       "reviewStatus": "needs_review",
       "notes": [
@@ -10429,181 +10211,6 @@
       "candidateValue": "",
       "candidateUnit": "",
       "snippet": "ghts Read more View more Follow us IFRA IFRA Standards Initiatives & Positions Help and enquiries Latest updates News Events Press releases IFRA Regions Global issues Asia Pacific Europe, Africa and Middle East India Latin America Publications Brochure Reports Scientific Publications Position papers Guidance & reference documents IFRA IFRA Standards Initiati",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-0-transparency-list-ifra-skip-to-content-the-int",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "Transparency List | IFRA Skip to content The International Fragrance Association Help and enquiries Press and media Member login EN ES ZH Search Search About About fragrance What is a fragrance? How is fragrance made? The fragrance value ch",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-1-positions-general-affairs-environment-and-health",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "positions General affairs Environment and health Innovation and sustainability Safe use and fragrance science All initiatives and positions IFRA Standards Library IFRA Standards Library A sortable and searchable database of all the IFRA Standards. Read more IFRA Transparency List IFRA Transparency List All fragrance ingredients disclosed publicly Read more I",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-2-ions-publications-all-publications-brochure-repo",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "ions Publications All publications Brochure Reports Scientific publications Position papers Guidance & reference documents All publications IFRA Standards library Menu About About fragrance What is a fragrance? How is fragrance made? The fragrance value chain Where is fragrance sourced? Questions about fragrance About IFRA About IFRA Purpose, vision and miss",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-3-positions-general-affairs-environment-and-health",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "positions General affairs Environment and health Innovation and sustainability Safe use and fragrance science All initiatives and positions IFRA Regions IFRA regions Global issues Asia Pacific China India Europe, Africa and Middle East Latin America All regions Publications All publications Brochure Reports Scientific publications Position papers Guidance &",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-4-ifra-standards-library-help-and-enquiries-press",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "IFRA Standards library Help and enquiries Press and media Member login EN ES ZH Search Search Home Transparency List Transparency List The IFRA Transparency List is the ​ ‘ perfumer’s palette’ – an overview of the ingredients used to create fragrance mixtures employed by consumer goods companies in personal care products, home care products and fine fragran",
-      "confidence": "low",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-5-4-5-6-7-7-a-octahydronapth-3-3-b-oxirene-389083",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "identity",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": ",4,5,6,7,7a-octahydronapth[3,3-b]oxirene 389083-83-4 (1-Ethoxyethoxy)-cyclododecane Pagination Page 1 of 154 1 2 3 4 ... 154 Next About the IFRA Transparency List The IFRA Transparency List is the ​ ‘ perfumer’s palette’ – an overview of the ingredients used to create fragrance mixtures employed by consumer goods companies in personal care products, home car",
-      "confidence": "medium",
-      "reviewPriority": "low",
-      "reviewStatus": "needs_review",
-      "notes": [
-        "Candidate extraction only. Requires human review before any structured IFRA promotion."
-      ]
-    },
-    {
-      "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-6-nce-worldwide-read-more-follow-us-ifra-ifra-sta",
-      "materialName": "",
-      "materialNames": [],
-      "formulaMaterialName": "",
-      "sourceIdentityName": "",
-      "sourceIdentityNames": [],
-      "queueItemIds": [],
-      "ambiguousQueueItemIds": [],
-      "queueLinkConfidence": "none",
-      "sourceType": "official_ifra_transparency_list",
-      "sourceUrl": "https://ifrafragrance.org/transparency-list",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
-      "candidateLimitType": "unknown",
-      "category": "",
-      "candidateValue": "",
-      "candidateUnit": "",
-      "snippet": "nce worldwide. Read more Follow us IFRA IFRA Standards Initiatives & Positions Help and enquiries Latest updates News Events Press releases IFRA Regions Global issues Asia Pacific Europe, Africa and Middle East India Latin America Publications Brochure Reports Scientific Publications Position papers Guidance & reference documents IFRA IFRA Standards Initiati",
       "confidence": "low",
       "reviewPriority": "low",
       "reviewStatus": "needs_review",
@@ -28680,7 +28287,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28709,7 +28317,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28738,7 +28347,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28767,7 +28377,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28796,7 +28407,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28825,7 +28437,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28854,7 +28467,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28883,7 +28497,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28912,7 +28527,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28941,7 +28557,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28970,7 +28587,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -28999,7 +28617,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29028,7 +28647,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29057,7 +28677,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29086,7 +28707,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29115,7 +28737,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29144,7 +28767,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29173,7 +28797,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29202,7 +28827,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29231,7 +28857,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29260,7 +28887,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29289,7 +28917,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",
@@ -29318,7 +28947,8 @@
       "sourceIdentityName": "Vetiveryl Acetate",
       "sourceIdentityNames": [],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "ambiguousQueueItemIds": [],
       "queueLinkConfidence": "source_metadata",

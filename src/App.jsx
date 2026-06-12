@@ -325,6 +325,12 @@ const ifraAutopilotRecommendationsModules = import.meta.glob(
 );
 const ifraAutopilotRecommendationsData =
   Object.values(ifraAutopilotRecommendationsModules)[0]?.default || null;
+const ifraSourceAcquisitionAutopilotModules = import.meta.glob(
+  "../data/ifra_source_acquisition/ifra_source_acquisition_autopilot_report.json",
+  { eager: true }
+);
+const ifraSourceAcquisitionAutopilotData =
+  Object.values(ifraSourceAcquisitionAutopilotModules)[0]?.default || null;
 
 // ─────────────────────────────────────────────────────────────
 // CORE CHEMISTRY DATABASE (MW, xLogP, TPSA, HBD, HBA, VP, ODT, n, note, type, ifra, supplier, char, rep)
@@ -81532,7 +81538,8 @@ export default function App() {
       candidateIfraReviewQueueData,
       ifraEvidenceResolutionData,
       ifraEvidenceAutopilotData,
-      ifraAutopilotRecommendationsData
+      ifraAutopilotRecommendationsData,
+      ifraSourceAcquisitionAutopilotData
     );
     const nextControlledWearTestPlan = buildNextControlledWearTestPlan({
       candidateItems: heroCandidateItems,
@@ -82337,6 +82344,180 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div
+              style={{
+                background: "#071826",
+                border: "1px solid #1E3A52",
+                borderRadius: 9,
+                padding: "9px 10px",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: 7.8,
+                      color: "#FDE68A",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      fontWeight: 800,
+                    }}
+                  >
+                    Source Acquisition Autopilot
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontSize: 8.1,
+                      color: "#94A3B8",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                      .isAvailable
+                      ? `Last run: ${ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot.lastRunAt || "available"}`
+                      : ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .missingMessage}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 7.5,
+                    color: "#CBD5E1",
+                    lineHeight: 1.45,
+                    overflowWrap: "anywhere",
+                    maxWidth: 460,
+                  }}
+                >
+                  {
+                    ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                      .regenerateCommand
+                  }
+                </div>
+              </div>
+              {ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                .isAvailable && (
+                <>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(118px,1fr))",
+                      gap: 7,
+                    }}
+                  >
+                    {[
+                      [
+                        "Targeted",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.materialsTargeted,
+                        "#FDE68A",
+                      ],
+                      [
+                        "Sources found",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.newSourcesFound,
+                        "#86EFAC",
+                      ],
+                      [
+                        "Proposed",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.newProposedStructuredRecords,
+                        "#A7F3D0",
+                      ],
+                      [
+                        "Unresolved",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.remainingNeedsBetterSource,
+                        "#FCA5A5",
+                      ],
+                      [
+                        "Links found",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.newLinksDiscovered,
+                        "#7DD3FC",
+                      ],
+                      [
+                        "Downloads",
+                        ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                          .counts.downloadsSucceeded,
+                        "#C4B5FD",
+                      ],
+                    ].map(([label, value, color]) => (
+                      <div
+                        key={label}
+                        style={{
+                          background: "#060E1E",
+                          border: "1px solid #1E3A52",
+                          borderRadius: 8,
+                          padding: "6px 8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color,
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {Number(value).toLocaleString()}
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 2,
+                            fontSize: 7,
+                            color: "#64748B",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div
+                    style={{
+                      background: "#060E1E",
+                      border: "1px solid #1E3A52",
+                      borderRadius: 8,
+                      padding: "8px 9px",
+                      color: "#E2E8F0",
+                      fontSize: 8.3,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {
+                      ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                        .nextAutomatedAction
+                    }
+                  </div>
+                  <div
+                    style={{
+                      color: "#FDE68A",
+                      fontSize: 8.1,
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {
+                      ifraSourceAcquisitionPanel.sourceAcquisitionAutopilot
+                        .guardrail
+                    }
+                  </div>
+                </>
+              )}
             </div>
             <div
               style={{

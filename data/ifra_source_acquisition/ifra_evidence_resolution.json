@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "IFRA Evidence Resolution",
     "regenerateCommand": "node scripts/resolve_ifra_evidence_candidates.mjs --markdown --write docs/ifra/ifra_evidence_resolution.md",
-    "sourceQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "candidateExtractionGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "officialIfraSourceCandidateGeneratedAt": "2026-06-11T15:27:58.626Z",
-    "candidateReviewQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "ingredientSourceHarvestGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "sourceQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "candidateExtractionGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "officialIfraSourceCandidateGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "candidateReviewQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "ingredientSourceHarvestGeneratedAt": "2026-06-12T12:44:21.932Z",
     "topCandidatesPerMaterial": 1,
     "guardrails": [
       "Evidence resolver output is review triage only.",
@@ -17,130 +17,48 @@
   },
   "summary": {
     "queueItemCount": 44,
-    "candidateCount": 1088,
-    "retainedCandidateCount": 1088,
+    "candidateCount": 1072,
+    "retainedCandidateCount": 1072,
     "reviewedSourceRecordCount": 1,
     "evidenceStatusCounts": {
-      "review_ready": 24,
+      "review_ready": 23,
       "likely_fcf_evidence": 1,
       "needs_supplier_doc": 1,
       "insufficient_evidence": 1,
       "identity_only": 7,
       "already_reviewed": 1,
-      "not_applicable": 5,
+      "not_applicable": 6,
       "deferred": 4
     },
     "suggestedActionCounts": {
-      "review_top_candidate": 24,
+      "review_top_candidate": 23,
       "promote_fcf_evidence_after_review": 1,
       "request_supplier_ifra_or_sds": 4,
       "find_global_ifra_standard": 5,
       "already_reviewed": 1,
-      "ignore_not_relevant": 5,
+      "ignore_not_relevant": 6,
       "defer": 4
     },
     "confidenceCounts": {
       "high": 31,
       "low": 13
     },
-    "reviewReadyCount": 24,
+    "reviewReadyCount": 23,
     "likelyFcfEvidenceCount": 1,
     "insufficientEvidenceCount": 8,
     "needsSupplierDocCount": 1,
     "alreadyReviewedCount": 1,
     "deferredCount": 4,
     "topReviewFirstMaterials": [
-      "Vetiveryl Acetate",
       "Methyl Ionone Alpha Extra",
       "Calone 1951 20%",
       "Cetalox",
-      "Clearwood"
+      "Clearwood",
+      "Geosmin 1% TEC"
     ],
     "officialIfraSourceCandidateCount": 6
   },
   "items": [
-    {
-      "id": "ifra-evidence-resolution-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-      "materialName": "Vetiveryl Acetate",
-      "normalizedName": "Vetiveryl Acetate",
-      "formulaMaterialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "activeMaterialName": "Vetiveryl Acetate",
-      "dilutionLabel": "",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "currentIfraCategory": "sourceUnavailable",
-      "queueStatus": "needed",
-      "queueReviewStatus": "not_started",
-      "evidenceStatus": "review_ready",
-      "suggestedAction": "review_top_candidate",
-      "confidence": "high",
-      "score": 211,
-      "whySelected": "A material-linked supplier/SDS/product-page candidate contains source-specific IFRA, restriction, or SDS language.",
-      "limitations": [
-        "Review candidate and mark accepted only.",
-        "Structured limit promotion is a later task."
-      ],
-      "candidateCounts": {
-        "totalMatched": 31,
-        "linked": 31,
-        "highValue": 12,
-        "identityOnly": 19,
-        "suppressedWeak": 30
-      },
-      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed",
-      "candidateReviewStatus": "in_review",
-      "reviewedSourceRecordIds": [],
-      "bestCandidates": [
-        {
-          "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil",
-          "materialName": "Vetiveryl Acetate",
-          "score": 211,
-          "candidateLimitType": "ifra_category_limit",
-          "reviewPriority": "high",
-          "sourceType": "official_ifra_standard_library",
-          "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-          "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-          "category": "4",
-          "candidateValue": "0.9",
-          "candidateUnit": "%",
-          "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
-          "queueItemIds": [
-            "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
-          ],
-          "queueLinkConfidence": "high",
-          "reasons": [
-            "linked to this queue item",
-            "exact material-name match",
-            "high review priority",
-            "official_ifra_standard_library source",
-            "ifra_category_limit candidate",
-            "IFRA language present"
-          ],
-          "warnings": [],
-          "generatedCommand": "",
-          "signals": {
-            "linked": true,
-            "exactName": true,
-            "hasCasMatch": false,
-            "hasIfra": true,
-            "hasCategory4": true,
-            "hasMaxUse": true,
-            "hasFcf": false,
-            "hasSds": false,
-            "hasAllergen": true,
-            "hasGhsCategory4": false,
-            "hasRifmUsage": false,
-            "normalizedSnippet": "official ifra standards library match for acetylated vetiver oil type restriction amendment 49 publication date 2020 category 4 0 9"
-          }
-        }
-      ]
-    },
     {
       "id": "ifra-evidence-resolution-hero-ifra-source-methyl-ionone-alpha-extra-global-ifra-standard-needed",
       "queueItemId": "hero-ifra-source-methyl-ionone-alpha-extra-global_ifra_standard_needed",
@@ -3277,6 +3195,87 @@
             "hasGhsCategory4": false,
             "hasRifmUsage": false,
             "normalizedSnippet": "official ifra standards library match for oakmoss extracts type restriction amendment 49 publication date 2020 category 4 0 1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ifra-evidence-resolution-hero-ifra-source-vetiveryl-acetate-already-structured",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
+      "materialName": "Vetiveryl Acetate",
+      "normalizedName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "currentIfraCategory": "aliasIfraMatch",
+      "queueStatus": "not_applicable",
+      "queueReviewStatus": "reviewed_ok",
+      "evidenceStatus": "not_applicable",
+      "suggestedAction": "ignore_not_relevant",
+      "confidence": "high",
+      "score": 211,
+      "whySelected": "Current structured IFRA coverage already exists.",
+      "limitations": [
+        "Existing coverage is still not launch clearance."
+      ],
+      "candidateCounts": {
+        "totalMatched": 31,
+        "linked": 31,
+        "highValue": 12,
+        "identityOnly": 19,
+        "suppressedWeak": 30
+      },
+      "candidateReviewItemId": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-already-structured",
+      "candidateReviewStatus": "not_started",
+      "reviewedSourceRecordIds": [],
+      "bestCandidates": [
+        {
+          "id": "official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil",
+          "materialName": "Vetiveryl Acetate",
+          "score": 211,
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "official_ifra_standard_library",
+          "sourceUrl": "https://ifrafragrance.org/standards-library",
+          "sourceFile": "src/data/ifra_master_standards.json",
+          "category": "4",
+          "candidateValue": "0.9",
+          "candidateUnit": "%",
+          "snippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
+          "queueItemIds": [
+            "hero-ifra-source-vetiveryl-acetate-already_structured"
+          ],
+          "queueLinkConfidence": "high",
+          "reasons": [
+            "linked to this queue item",
+            "exact material-name match",
+            "high review priority",
+            "official_ifra_standard_library source",
+            "ifra_category_limit candidate",
+            "IFRA language present"
+          ],
+          "warnings": [],
+          "generatedCommand": "",
+          "signals": {
+            "linked": true,
+            "exactName": true,
+            "hasCasMatch": false,
+            "hasIfra": true,
+            "hasCategory4": true,
+            "hasMaxUse": true,
+            "hasFcf": false,
+            "hasSds": false,
+            "hasAllergen": true,
+            "hasGhsCategory4": false,
+            "hasRifmUsage": false,
+            "normalizedSnippet": "official ifra standards library match for acetylated vetiver oil type restriction amendment 49 publication date 2020 category 4 0 9"
           }
         }
       ]

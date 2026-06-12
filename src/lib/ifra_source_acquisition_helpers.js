@@ -13,6 +13,9 @@ export const IFRA_EVIDENCE_RESOLVER_COMMAND =
 export const IFRA_EVIDENCE_AUTOPILOT_COMMAND =
   'node scripts/run_ifra_evidence_autopilot.mjs --ingredient-reference "...Ingredient data - Ingredient Data.csv" --download --markdown --write docs/ifra/ifra_evidence_autopilot_report.md';
 
+export const IFRA_SOURCE_ACQUISITION_AUTOPILOT_COMMAND =
+  'node scripts/run_ifra_source_acquisition_autopilot.mjs --ingredient-reference "...Ingredient data - Ingredient Data.csv" --download --markdown --write docs/ifra/ifra_source_acquisition_autopilot_report.md';
+
 export const IFRA_AUTOPILOT_RECOMMENDATIONS_COMMAND =
   "node scripts/generate_ifra_autopilot_recommendations.mjs --markdown --write docs/ifra/ifra_autopilot_recommendations.md";
 
@@ -346,6 +349,60 @@ function buildAutopilotProgress(autopilotReport) {
   };
 }
 
+function isAvailableSourceAcquisitionAutopilotReport(report) {
+  return Boolean(report && report.summary);
+}
+
+function buildSourceAcquisitionAutopilotProgress(report) {
+  if (!isAvailableSourceAcquisitionAutopilotReport(report)) {
+    return {
+      isAvailable: false,
+      missingMessage:
+        "Run Source Acquisition Autopilot v2 to target unresolved materials, acquire allowed sources, and refresh the review pipeline.",
+      regenerateCommand: IFRA_SOURCE_ACQUISITION_AUTOPILOT_COMMAND,
+      guardrail:
+        "Source acquisition autopilot does not promote runtime IFRA limits or claim launch clearance.",
+      lastRunAt: "",
+      nextAutomatedAction:
+        "Run source acquisition autopilot after adding or updating ingredient reference links.",
+      counts: {
+        materialsTargeted: 0,
+        newSourcesFound: 0,
+        newProposedStructuredRecords: 0,
+        remainingNeedsBetterSource: 0,
+        newLinksDiscovered: 0,
+        downloadsSucceeded: 0,
+      },
+    };
+  }
+  const summary = report.summary || {};
+  return {
+    isAvailable: true,
+    missingMessage: "",
+    regenerateCommand:
+      report.metadata?.regenerateCommand ||
+      IFRA_SOURCE_ACQUISITION_AUTOPILOT_COMMAND,
+    guardrail:
+      "Source acquisition autopilot only caches candidates and refreshes review outputs; no runtime IFRA limits are promoted.",
+    lastRunAt: report.metadata?.generatedAt || "",
+    nextAutomatedAction:
+      summary.nextAutomatedAction ||
+      "Review newly acquired sources before any separate promotion task.",
+    counts: {
+      materialsTargeted: summary.materialsTargeted || 0,
+      newSourcesFound:
+        summary.newSourcesFound ||
+        (summary.newOfficialMatchesFound || 0) +
+          (summary.newSupplierIfraSdsSpecDocsFound || 0),
+      newProposedStructuredRecords:
+        summary.newProposedStructuredRecords || 0,
+      remainingNeedsBetterSource: summary.remainingNeedsBetterSource || 0,
+      newLinksDiscovered: summary.newLinksDiscovered || 0,
+      downloadsSucceeded: summary.downloadsSucceeded || 0,
+    },
+  };
+}
+
 function isAvailableRecommendationReport(recommendations) {
   return Boolean(recommendations && recommendations.summary);
 }
@@ -431,7 +488,8 @@ export function buildIfraSourceAcquisitionPanel(
   candidateReviewQueue = null,
   evidenceResolution = null,
   autopilotReport = null,
-  autopilotRecommendations = null
+  autopilotRecommendations = null,
+  sourceAcquisitionAutopilotReport = null
 ) {
   if (!isAvailableQueue(queue)) {
     return {
@@ -469,6 +527,8 @@ export function buildIfraSourceAcquisitionPanel(
       },
       candidateReview: buildCandidateReviewProgress(candidateReviewQueue),
       evidenceResolver: buildEvidenceResolverProgress(evidenceResolution),
+      sourceAcquisitionAutopilot:
+        buildSourceAcquisitionAutopilotProgress(sourceAcquisitionAutopilotReport),
       autopilot: buildAutopilotProgress(autopilotReport),
       recommendations: buildRecommendationProgress(autopilotRecommendations),
     };
@@ -499,6 +559,8 @@ export function buildIfraSourceAcquisitionPanel(
   });
   const candidateReviewProgress = buildCandidateReviewProgress(candidateReviewQueue);
   const evidenceResolverProgress = buildEvidenceResolverProgress(evidenceResolution);
+  const sourceAcquisitionAutopilotProgress =
+    buildSourceAcquisitionAutopilotProgress(sourceAcquisitionAutopilotReport);
   const autopilotProgress = buildAutopilotProgress(autopilotReport);
   const recommendationProgress = buildRecommendationProgress(autopilotRecommendations);
 
@@ -542,6 +604,7 @@ export function buildIfraSourceAcquisitionPanel(
     },
     candidateReview: candidateReviewProgress,
     evidenceResolver: evidenceResolverProgress,
+    sourceAcquisitionAutopilot: sourceAcquisitionAutopilotProgress,
     autopilot: autopilotProgress,
     recommendations: recommendationProgress,
   };

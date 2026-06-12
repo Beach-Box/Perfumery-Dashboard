@@ -309,6 +309,68 @@ Safe automatic updates are limited to review workflow metadata:
 
 Autopilot refuses to auto-accept category-limit candidates, promote category limits, write runtime IFRA standards, overwrite manual notes, or claim launch clearance. `review_ready` means “look here first,” not “approved.” `accepted` still means “suitable evidence for a later reviewed promotion task,” not runtime compliance.
 
+## IFRA Source Acquisition Autopilot v2
+
+Source Acquisition Autopilot v2 sits one layer earlier than evidence autopilot. It reduces manual source research by targeting unresolved/high-value materials, refreshing official and known supplier source candidates, discovering allowed same-domain document links from already-known product pages, caching what it is allowed to fetch, and then rerunning the review-first resolver/autopilot/recommendation/ranker pipeline.
+
+Run a dry-run/current-cache acquisition pass:
+
+```bash
+node scripts/run_ifra_source_acquisition_autopilot.mjs \
+  --ingredient-reference "/Users/b.russmacbetch/Library/Mobile Documents/com~apple~CloudDocs/Ingredient data - Ingredient Data.csv"
+```
+
+Fetch allowed public documents/pages and write the Markdown report:
+
+```bash
+node scripts/run_ifra_source_acquisition_autopilot.mjs \
+  --ingredient-reference "/Users/b.russmacbetch/Library/Mobile Documents/com~apple~CloudDocs/Ingredient data - Ingredient Data.csv" \
+  --download \
+  --markdown \
+  --write docs/ifra/ifra_source_acquisition_autopilot_report.md
+```
+
+The JSON report is written to:
+
+```bash
+data/ifra_source_acquisition/ifra_source_acquisition_autopilot_report.json
+```
+
+The acquisition pass uses these layers, in order:
+
+- existing local queue, resolver, recommendation, ranker, harvest, and structured master-standard files,
+- official IFRA harvest logic for the Standards Library, Transparency List, and Standards Documentation,
+- known SDS/product/supplier/identity links already present in the ingredient reference CSV,
+- visible IFRA certificate, SDS, Safety Data Sheet, GHS, Downloads, Documentation, Specification, Spec Sheet, and Allergen links found on already-known product pages.
+
+Official source roles stay conservative. The Standards Library can produce review-first official standard candidates. The Transparency List can support identity/CAS only and must not be used as IFRA category-limit evidence. Standards Documentation is context/methodology only unless a later reviewed task extracts explicit source-backed material data.
+
+Supplier-domain following is intentionally narrow. The autopilot may inspect cached or newly fetched product pages from CSV/harvested links, then follow only visible same-domain supplier IFRA/SDS/spec/allergen/document links. It refuses broad Google/Bing search, unrelated crawling, guessed URLs, offsite document hops, login/private/member bypass, and sites that block access.
+
+Newly discovered downloads are cached under ignored local folders:
+
+```bash
+downloads/source_documents/ifra/autopilot/
+downloads/source_documents/ifra/autopilot/sds/
+downloads/source_documents/ifra/autopilot/ifra/
+downloads/source_documents/ifra/autopilot/product_pages/
+downloads/source_documents/ifra/autopilot/specs/
+```
+
+Downloaded files and pages stay local and must not be committed.
+
+This differs from evidence autopilot and promotion:
+
+- source acquisition finds and caches possible source material;
+- candidate extraction turns cached pages into snippets;
+- the resolver ranks snippets into review-first material decisions;
+- recommendations stage proposed structured records only when evidence looks strong enough for final review;
+- promotion remains a separate one-at-a-time reviewed task.
+
+Runtime promotion stays separate because source acquisition can still find wrong identities, supplier marketing pages, ambiguous category wording, outdated documents, or identity-only references. Keeping acquisition, review, recommendation, and runtime promotion separate prevents accidental IFRA limit changes and keeps manual source notes intact.
+
+The report groups work into new official matches, new supplier IFRA/SDS/spec docs, new snippets, new proposed structured records, still-needs-better-source, no-source-found, skipped/blocked downloads, and already-handled materials. Use it to focus review on what the system acquired automatically instead of manually researching every unresolved material.
+
 ## Autopilot Recommendations And Proposed Records
 
 After running evidence autopilot, generate the short recommendation report:

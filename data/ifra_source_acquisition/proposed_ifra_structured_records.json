@@ -1,13 +1,12 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:22.389Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Proposed IFRA Structured Records",
     "guardrails": [
       "Proposed records are not runtime-active.",
       "They require final review before promotion.",
       "They do not prove compliance or launch clearance."
-    ],
-    "lastPromotionAt": "2026-06-11T15:39:27.005Z"
+    ]
   },
   "summary": {
     "recordCount": 15,
@@ -18,52 +17,11 @@
       "phototoxic_note": 2
     },
     "promotionStatusCounts": {
-      "promoted": 1,
-      "proposed": 12,
+      "proposed": 13,
       "reviewed_ok": 2
-    },
-    "reviewStatusCounts": {
-      "reviewed_ok": 1,
-      "unknown": 14
     }
   },
   "records": [
-    {
-      "id": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-ca",
-      "materialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "formulaMaterialNames": [
-        "Vetiveryl Acetate"
-      ],
-      "recordType": "ifra_category_limit",
-      "sourceType": "official_ifra_standard_library",
-      "sourceUrl": "https://d3t14p1xronwr0.cloudfront.net/docs/standards/IFRA_STD_002.pdf",
-      "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/acetylated-vetiver-oil.pdf",
-      "candidateIds": [
-        "official-ifra-hero-ifra-source-vetiveryl-acetate-global-ifra-standard-needed-ifra-category-limit-cas-acetylated-vetiver-oil"
-      ],
-      "category": "4",
-      "candidateValue": "0.9",
-      "candidateUnit": "%",
-      "normalizedCandidateValue": 0.9,
-      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
-      "evidenceConfidence": "high",
-      "autopilotRecommendation": "propose_for_review",
-      "promotionStatus": "promoted",
-      "limitations": [
-        "Not launch clearance",
-        "Promoted as one reviewed runtime structured IFRA record"
-      ],
-      "notes": [
-        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
-        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
-      ],
-      "promotedRecordId": "reviewed-ifra-structured-vetiveryl-acetate-acetylated-vetiver-oil",
-      "promotedAt": "2026-06-11T15:39:27.005Z",
-      "reviewStatus": "reviewed_ok",
-      "reviewNotes": "Reviewed official IFRA source PDF for acetylated vetiver oil. Promote one source-backed standard record with provenance. Not launch clearance.",
-      "runtimeUse": "structured_ifra_standard"
-    },
     {
       "id": "proposed-ifra-methyl-ionone-alpha-extra-ifra-category-limit-candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-doc",
       "materialName": "Methyl Ionone Alpha Extra",
@@ -404,6 +362,38 @@
       "candidateUnit": "%",
       "normalizedCandidateValue": 0.1,
       "sourceSnippet": "Official IFRA Standards Library match for Oakmoss extracts. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.1%.",
+      "evidenceConfidence": "high",
+      "autopilotRecommendation": "propose_for_review",
+      "promotionStatus": "proposed",
+      "limitations": [
+        "Not runtime-active",
+        "Requires review before promotion",
+        "Not launch clearance"
+      ],
+      "notes": [
+        "Autopilot found linked supplier/product evidence with IFRA Cat 4 or fine-fragrance language.",
+        "Final review must confirm source identity, category context, amendment/source date, and supplier wording."
+      ]
+    },
+    {
+      "id": "proposed-ifra-vetiveryl-acetate-ifra-category-limit-official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-li",
+      "materialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "formulaMaterialNames": [
+        "Vetiveryl Acetate"
+      ],
+      "recordType": "ifra_category_limit",
+      "sourceType": "official_ifra_standard_library",
+      "sourceUrl": "https://ifrafragrance.org/standards-library",
+      "sourceFile": "src/data/ifra_master_standards.json",
+      "candidateIds": [
+        "official-ifra-hero-ifra-source-vetiveryl-acetate-already-structured-ifra-category-limit-cas-acetylated-vetiver-oil"
+      ],
+      "category": "4",
+      "candidateValue": "0.9",
+      "candidateUnit": "%",
+      "normalizedCandidateValue": 0.9,
+      "sourceSnippet": "Official IFRA Standards Library match for Acetylated Vetiver oil. Type: Restriction. Amendment: 49. Publication date: 2020. Category 4: 0.9%.",
       "evidenceConfidence": "high",
       "autopilotRecommendation": "propose_for_review",
       "promotionStatus": "proposed",

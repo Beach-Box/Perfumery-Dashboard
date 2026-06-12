@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Ingredient Source Harvest Report",
     "ingredientReferencePath": "/Users/b.russmacbetch/Library/Mobile Documents/com~apple~CloudDocs/Ingredient data - Ingredient Data.csv",
     "mode": "dry_run",
@@ -4160,7 +4160,7 @@
       "supplier": "MANE",
       "queueMatches": [
         {
-          "queueItemId": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
+          "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
           "materialName": "Vetiveryl Acetate",
           "normalizedName": "Vetiveryl Acetate",
           "formulaMaterialName": "Vetiveryl Acetate",
@@ -4168,21 +4168,14 @@
           "activeMaterialName": "Vetiveryl Acetate",
           "dilutionLabel": "",
           "carrierLabel": "",
-          "requiredSourceType": "global_ifra_standard_needed",
+          "requiredSourceType": "already_structured",
           "matchedTerms": [
             "vetiveryl acetate",
             "vetiveryl acetate",
             "vetiveryl acetate",
             "vetiveryl acetate",
             "vetiveryl acetate",
-            "vetiveryl acetate",
-            "vetiveryl acetate",
-            "vetiveryl acetate",
-            "vetiveryl acetate",
-            "vetiveryl acetate",
-            "68917 34 0",
-            "vetiveryl acetate",
-            "vetiveryl acetate"
+            "68917 34 0"
           ]
         }
       ],
@@ -12303,7 +12296,7 @@
         "MANE"
       ],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "materialNames": [
         "Vetiveryl Acetate"
@@ -12333,7 +12326,7 @@
         "MANE"
       ],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "materialNames": [
         "Vetiveryl Acetate"
@@ -12363,7 +12356,7 @@
         "MANE"
       ],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "materialNames": [
         "Vetiveryl Acetate"
@@ -12393,7 +12386,7 @@
         "MANE"
       ],
       "queueItemIds": [
-        "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed"
+        "hero-ifra-source-vetiveryl-acetate-already_structured"
       ],
       "materialNames": [
         "Vetiveryl Acetate"

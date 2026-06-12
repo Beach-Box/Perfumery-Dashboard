@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Hero IFRA Source Acquisition Queue",
-    "sourceGapReportGeneratedAt": "2026-06-11T15:28:12.857Z",
+    "sourceGapReportGeneratedAt": "2026-06-12T12:44:23.028Z",
     "sourceGapReportName": "Hero IFRA Source Gap Report",
     "regenerateCommand": "node scripts/build_hero_ifra_source_acquisition_queue.mjs --markdown --write docs/ifra/hero_ifra_source_acquisition_queue.md",
     "guardrails": [
@@ -14,40 +14,40 @@
   "summary": {
     "itemCount": 44,
     "statusCounts": {
-      "needed": 35,
+      "needed": 34,
       "deferred": 4,
-      "not_applicable": 5
+      "not_applicable": 6
     },
     "reviewStatusCounts": {
-      "not_started": 37,
+      "not_started": 36,
       "needs_more_source": 2,
-      "reviewed_ok": 5
+      "reviewed_ok": 6
     },
     "priorityCounts": {
-      "high": 33,
+      "high": 32,
       "medium": 2,
-      "low": 9
+      "low": 10
     },
     "requiredSourceTypeCounts": {
-      "global_ifra_standard_needed": 17,
+      "global_ifra_standard_needed": 16,
       "natural_uvcb_supplier_document_needed": 4,
       "specialty_supplier_document_needed": 12,
       "fcf_special_case": 2,
       "accord_component_expansion_deferred": 4,
-      "already_structured": 5
+      "already_structured": 6
     },
-    "highPriorityCount": 33,
+    "highPriorityCount": 32,
     "mediumPriorityCount": 2,
-    "lowPriorityCount": 9,
-    "highPriorityRemainingCount": 33,
-    "neededCount": 35,
+    "lowPriorityCount": 10,
+    "highPriorityRemainingCount": 32,
+    "neededCount": 34,
     "searchingCount": 0,
     "acquiredCount": 0,
     "reviewedCount": 0,
     "promotedCount": 0,
     "deferredCount": 4,
     "supplierDocsNeededCount": 12,
-    "globalStandardsNeededCount": 17,
+    "globalStandardsNeededCount": 16,
     "naturalUvcbDocsNeededCount": 4
   },
   "items": [
@@ -1186,76 +1186,6 @@
       "reason": "Current IFRA category is sourceUnavailable. Appears in 3 active hero formulas.",
       "sourceRowNames": [
         "Phenyl Ethyl Acetate"
-      ],
-      "status": "needed",
-      "reviewStatus": "not_started",
-      "sourceFile": "",
-      "sourceNotes": "",
-      "reviewNotes": "",
-      "lastUpdated": "2026-06-11T11:50:06.162Z"
-    },
-    {
-      "id": "hero-ifra-source-vetiveryl-acetate-global_ifra_standard_needed",
-      "materialName": "Vetiveryl Acetate",
-      "normalizedName": "Vetiveryl Acetate",
-      "formulaMaterialName": "Vetiveryl Acetate",
-      "sourceIdentityName": "Vetiveryl Acetate",
-      "activeMaterialName": "Vetiveryl Acetate",
-      "dilutionLabel": "",
-      "carrierLabel": "",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
-      "priority": "high",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "suggestedDocumentName": "IFRA 51st Amendment standard for Vetiveryl Acetate",
-      "suggestedSource": "IFRA Standards Library or committed IFRA standard source package",
-      "candidateSearchTerms": [
-        "Vetiveryl Acetate",
-        "Vetiveryl acetate",
-        "MANE",
-        "CAS 68917-34-0",
-        "supplier SDS Vetiveryl Acetate",
-        "supplier product Vetiveryl Acetate",
-        "IFRA Vetiveryl Acetate",
-        "IFRA Vetiveryl acetate"
-      ],
-      "sourceSearchTerms": [
-        "Vetiveryl Acetate",
-        "Vetiveryl acetate",
-        "MANE",
-        "CAS 68917-34-0",
-        "supplier SDS Vetiveryl Acetate",
-        "supplier product Vetiveryl Acetate",
-        "IFRA Vetiveryl Acetate",
-        "IFRA Vetiveryl acetate"
-      ],
-      "knownReferenceLinks": [
-        {
-          "type": "sds",
-          "label": "SDS",
-          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Vetiveryl_Acetate_SDS.pdf?v=1761164988"
-        },
-        {
-          "type": "product_page",
-          "label": "Product page",
-          "url": "https://fraterworks.com/products/vetiveryl-acetate-20326"
-        },
-        {
-          "type": "supplier_page",
-          "label": "Supplier page",
-          "url": "https://compendium.mane.com/wo.html#detail/molecules/mapping"
-        },
-        {
-          "type": "identity_reference",
-          "label": "Identity reference",
-          "url": "https://www.thegoodscentscompany.com/data/rw1006201.html"
-        }
-      ],
-      "currentIfraCategory": "sourceUnavailable",
-      "reason": "Current IFRA category is sourceUnavailable. Appears in 1 active hero formula.",
-      "sourceRowNames": [
-        "Vetiveryl Acetate"
       ],
       "status": "needed",
       "reviewStatus": "not_started",
@@ -3124,6 +3054,78 @@
       "sourceNotes": "",
       "reviewNotes": "",
       "lastUpdated": "2026-06-11T11:50:06.162Z"
+    },
+    {
+      "id": "hero-ifra-source-vetiveryl-acetate-already_structured",
+      "materialName": "Vetiveryl Acetate",
+      "normalizedName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "priority": "low",
+      "requiredSourceType": "already_structured",
+      "suggestedDocumentName": "Existing structured IFRA standard for Acetylated Vetiver oil",
+      "suggestedSource": "Current structured IFRA dataset",
+      "candidateSearchTerms": [
+        "Vetiveryl Acetate",
+        "Acetylated Vetiver oil",
+        "CAS 84082-84-8",
+        "CAS 68917-34-0",
+        "CAS 73246-97-6",
+        "CAS 62563-80-8",
+        "MANE",
+        "supplier SDS Vetiveryl Acetate",
+        "supplier product Vetiveryl Acetate"
+      ],
+      "sourceSearchTerms": [
+        "Vetiveryl Acetate",
+        "Acetylated Vetiver oil",
+        "CAS 84082-84-8",
+        "CAS 68917-34-0",
+        "CAS 73246-97-6",
+        "CAS 62563-80-8",
+        "MANE",
+        "supplier SDS Vetiveryl Acetate",
+        "supplier product Vetiveryl Acetate"
+      ],
+      "knownReferenceLinks": [
+        {
+          "type": "sds",
+          "label": "SDS",
+          "url": "https://cdn.shopify.com/s/files/1/0682/1448/9400/files/Vetiveryl_Acetate_SDS.pdf?v=1761164988"
+        },
+        {
+          "type": "product_page",
+          "label": "Product page",
+          "url": "https://fraterworks.com/products/vetiveryl-acetate-20326"
+        },
+        {
+          "type": "supplier_page",
+          "label": "Supplier page",
+          "url": "https://compendium.mane.com/wo.html#detail/molecules/mapping"
+        },
+        {
+          "type": "identity_reference",
+          "label": "Identity reference",
+          "url": "https://www.thegoodscentscompany.com/data/rw1006201.html"
+        }
+      ],
+      "currentIfraCategory": "aliasIfraMatch",
+      "reason": "Current IFRA category is aliasIfraMatch. Appears in 1 active hero formula. Already has a structured runtime IFRA match.",
+      "sourceRowNames": [
+        "Vetiveryl Acetate"
+      ],
+      "status": "not_applicable",
+      "reviewStatus": "reviewed_ok",
+      "sourceFile": "",
+      "sourceNotes": "",
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-12T12:40:28.610Z"
     },
     {
       "id": "hero-ifra-source-ylang-ylang-complete-oil-already_structured",

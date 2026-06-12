@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "generatedAt": "2026-06-11T15:28:12.854Z",
+    "generatedAt": "2026-06-12T12:44:21.932Z",
     "reportName": "Candidate IFRA Review Queue",
-    "candidateExtractionGeneratedAt": "2026-06-11T15:28:12.854Z",
-    "sourceQueueGeneratedAt": "2026-06-11T15:28:12.854Z",
+    "candidateExtractionGeneratedAt": "2026-06-12T12:44:21.932Z",
+    "sourceQueueGeneratedAt": "2026-06-12T12:44:21.932Z",
     "regenerateCommand": "node scripts/build_candidate_ifra_review_queue.mjs --markdown --write docs/ifra/candidate_ifra_review_queue.md",
     "guardrails": [
       "This queue organizes candidate IFRA/SDS/source snippets for human review only.",
@@ -13,26 +13,26 @@
     "missingCandidateExtractions": false
   },
   "summary": {
-    "itemCount": 92,
-    "linkedItemCount": 42,
+    "itemCount": 93,
+    "linkedItemCount": 43,
     "unlinkedItemCount": 50,
-    "candidateCount": 1088,
-    "candidateAssignmentCount": 1278,
+    "candidateCount": 1072,
+    "candidateAssignmentCount": 1292,
     "linkedCandidateCount": 483,
-    "unlinkedCandidateCount": 605,
+    "unlinkedCandidateCount": 589,
     "highestPriorityCounts": {
-      "high": 68,
+      "high": 69,
       "medium": 24
     },
     "reviewStatusCounts": {
-      "not_started": 66,
+      "not_started": 67,
       "in_review": 24,
       "accepted": 2
     },
-    "highPriorityItemCount": 68,
+    "highPriorityItemCount": 69,
     "mediumPriorityItemCount": 24,
     "lowPriorityItemCount": 0,
-    "notStartedCount": 66,
+    "notStartedCount": 67,
     "inReviewCount": 24,
     "acceptedCount": 2,
     "rejectedCount": 0,
@@ -935,6 +935,147 @@
           "candidateValue": "",
           "candidateUnit": "",
           "snippet": "y. Delivered with no import fees or tariffs FREE US shipping over $120 . Order within 13 hrs 10 mins for delivery Monday, June 15 – June 17 Manufacturer: Superpower synthetic in Baccarat Rouge 540 . Backbone of contemporary woody-mossy accords. Sustainable moss character for allergen-free fragrances. Weight 5g 15g 25g 50g 100g 250g Product variants 5g - $5.0"
+        }
+      ]
+    },
+    {
+      "id": "candidate-ifra-review-hero-ifra-source-vetiveryl-acetate-already-structured",
+      "queueItemId": "hero-ifra-source-vetiveryl-acetate-already_structured",
+      "materialName": "Vetiveryl Acetate",
+      "formulaMaterialName": "Vetiveryl Acetate",
+      "sourceIdentityName": "Vetiveryl Acetate",
+      "activeMaterialName": "Vetiveryl Acetate",
+      "dilutionLabel": "",
+      "carrierLabel": "",
+      "requiredSourceType": "already_structured",
+      "formulasUsedIn": [
+        "Damp Shoreline v1"
+      ],
+      "candidateIds": [
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-7-d-we-also-stock-vetiver-acetate-from-v-mane-fil",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-4-to-the-lips-0-05-category-2-products-applied",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-0-ss-green-absolute-orris-pallida-signature-resi",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-2-premium-oakmoss-green-absolute-orris-pallida-s",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-6-is-produced-by-direct-acetylation-of-the-whole-v",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-13-23-2009-and-the-nzcpgs-none-of-our-bases-contai",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-0-cypress-fir-balsam-hemlock-juniper-berry-licoric",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-1-butyrate-m-50640-3539-cis-ocimene-m-52890-3581-eth",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-2-rees-naturally-grow-in-kept-fields-they-are-reg",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-3-are-among-the-most-commonly-used-raw-materials-f",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-4-umery-once-pruned-fresh-branches-are-then-dist",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-5-erapeutic-benefits-or-in-perfumery-for-its-long",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-6-nd-natural-makeup-its-cultivation-has-been-deve",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-7-a-magic-plant-from-ancient-times-it-is-one-of-t",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-8-not-only-appreciated-as-a-sweetener-but-also-for",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-9-fferent-religious-temples-this-woody-scent-has",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-11-olecules-for-many-centuries-this-essence-was-u",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-12-in-perfumes-also-the-vetyver-plant-is-highly-t",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping-html-13-pm-dpg-tec-absolute-m-53863-incolor-a",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-4-ly-delivered-with-no-import-fees-or-tariffs-fre",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-5-oad-pickup-availability-refresh-my-go-to-vetive",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-11-our-products-that-indicates-that-we-have-not-ad",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-12-roducts-that-indicates-that-we-have-not-added-a",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-2-inhalation-toxicity-not-determined-safety-in-us",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-3-recommendation-is-based-on-test-results-of-rifm",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-5-with-potential-uv-exposure-0-033-category-12",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-6-flavoring-ingredient-as-defined-by-the-iofi-code",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-0-search-eu-us-properties-organoleptics-cosmetics",
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-7-oot-fr-sandalwood-scandal-tabu-tweed-fr-vetiver"
+      ],
+      "highestPriority": "high",
+      "candidateCount": 30,
+      "sourceFiles": [
+        "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+        "downloads/source_documents/ifra/from_csv/vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html.html",
+        "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-compendium-mane-com-wo-html-detail-molecules-mapping.html"
+      ],
+      "sourceUrls": [
+        "https://fraterworks.com/products/vetiveryl-acetate-20326",
+        "https://www.thegoodscentscompany.com/data/rw1006201.html",
+        "https://compendium.mane.com/wo.html#detail/molecules/mapping"
+      ],
+      "suggestedReviewAction": "Review the source, material identity, amendment/category context, and supplier wording before accepting any Cat 4/fine-fragrance candidate for a later promotion task.",
+      "reviewStatus": "not_started",
+      "acceptedCandidateIds": [],
+      "rejectedCandidateIds": [],
+      "reviewNotes": "",
+      "lastUpdated": "2026-06-12T12:40:28.610Z",
+      "topCandidates": [
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-7-d-we-also-stock-vetiver-acetate-from-v-mane-fil",
+          "materialName": "Vetiveryl Acetate",
+          "formulaMaterialName": "Vetiveryl Acetate",
+          "sourceIdentityName": "Vetiveryl Acetate",
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+          "category": "4",
+          "candidateValue": "0.909",
+          "candidateUnit": "%",
+          "snippet": "d. We also stock Vetiver Acetate from V Mane Fils. Used in: Chanel No 19, Poison, Ma Griffe and Dior Homme. aromachem Best Seller Regs_done IFRA 51: 0.909% in finished product (Cat. 4) Average Use: 2.8% in a perfume compound Odour Family: Woody Appearance: Green yellow to dark orange liquid Longevity: Lasts > 360 hours on a smelling strip. Odour Profile: Vet"
+        },
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before",
+          "materialName": "Vetiveryl Acetate",
+          "formulaMaterialName": "Vetiveryl Acetate",
+          "sourceIdentityName": "Vetiveryl Acetate",
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+          "category": "",
+          "candidateValue": "0.909",
+          "candidateUnit": "%",
+          "snippet": "n chilled in a moderate freezer overnight before being filtered fine. This will remove all cloudiness or detritus and is the industry norm. IFRA Standards Permitted amounts in finished product: IFRA 51: 0.909% IFRA 49: 0.909% These are derived from calculated concentrations which do not replace chromatographic quantification on individual lots. Disclaimer..."
+        },
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-from-csv-vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html-html-4-to-the-lips-0-05-category-2-products-applied",
+          "materialName": "Vetiveryl Acetate",
+          "formulaMaterialName": "Vetiveryl Acetate",
+          "sourceIdentityName": "Vetiveryl Acetate",
+          "candidateLimitType": "ifra_category_limit",
+          "reviewPriority": "high",
+          "sourceType": "identity_reference",
+          "sourceUrl": "https://www.thegoodscentscompany.com/data/rw1006201.html",
+          "sourceFile": "downloads/source_documents/ifra/from_csv/vetiveryl-acetate-identity-reference-https-www-thegoodscentscompany-com-data-rw-1006201-html.html",
+          "category": "4",
+          "candidateValue": "0.90",
+          "candidateUnit": "%",
+          "snippet": "to the lips 0.05 % Category 2: Products applied to the axillae 0.05 % Category 3: Products applied to the face/body using fingertips 0.05 % Category 4: Products related to fine fragrance 0.90 % Category 5: Products applied to the face and body using the hands (palms), primarily leave-on Category 5A: Body lotion products applied to the body using the hands (p"
+        },
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-0-ss-green-absolute-orris-pallida-signature-resi",
+          "materialName": "Vetiveryl Acetate",
+          "formulaMaterialName": "Vetiveryl Acetate",
+          "sourceIdentityName": "Vetiveryl Acetate",
+          "candidateLimitType": "phototoxic_note",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "ss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarw"
+        },
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-2-premium-oakmoss-green-absolute-orris-pallida-s",
+          "materialName": "Vetiveryl Acetate",
+          "formulaMaterialName": "Vetiveryl Acetate",
+          "sourceIdentityName": "Vetiveryl Acetate",
+          "candidateLimitType": "phototoxic_note",
+          "reviewPriority": "high",
+          "sourceType": "supplier_product_page",
+          "sourceUrl": "https://fraterworks.com/products/vetiveryl-acetate-20326",
+          "sourceFile": "downloads/source_documents/ifra/product_pages/vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "Premium” Oakmoss Green Absolute Orris Pallida “Signature” Resinoid Styrax Resinoid EAL, Wild More… ESSENTIAL OILS Bergamot “Superior” Oil, FCF Lavender Oil “Avice Hill” Sandalwood Mysore “Signature” Vetiver Bourbon “Signature” Oil More… NATURAL ISOLATES Fleur de Cuir Patchoulol Crystals PA99 Rhodinol Ex Geranium Bourbon Thujopsene Ex Cedarwood More… TINCTUR"
         }
       ]
     },
@@ -5006,10 +5147,8 @@
       "activeMaterialName": "Vetiveryl Acetate",
       "dilutionLabel": "",
       "carrierLabel": "",
-      "requiredSourceType": "global_ifra_standard_needed",
-      "formulasUsedIn": [
-        "Damp Shoreline v1"
-      ],
+      "requiredSourceType": "",
+      "formulasUsedIn": [],
       "candidateIds": [
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-7-d-we-also-stock-vetiver-acetate-from-v-mane-fil",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-product-pages-vetiveryl-acetate-product-page-https-fraterworks-com-products-vetiveryl-acetate-20326-html-8-n-chilled-in-a-moderate-freezer-overnight-before",
@@ -11172,19 +11311,9 @@
       "requiredSourceType": "unlinked_candidate",
       "formulasUsedIn": [],
       "candidateIds": [
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-6-an-option-restriction-specification-prohibition",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-10-mber-2019-template-for-certificate-of-conformity",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-11-07-clarifications-related-to-the-implementatio",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-14-esents-the-interests-of-the-fragrance-industry-w",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-5-4-5-6-7-7-a-octahydronapth-3-3-b-oxirene-389083",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-0-ifra-standards-library-ifra-skip-to-content-th",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-1-chain-where-is-fragrance-sourced-questions-abou",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-2-fragrance-science-all-initiatives-and-positions",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-3-ions-publications-all-publications-brochure-repo",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-4-positions-general-affairs-environment-and-health",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-5-all-publications-ifra-standards-library-help-and",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-7-t-r-2020-01-49-download-clear-selection-0-item",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-8-ca-and-middle-east-india-latin-america-publicati",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-0-ifra-standards-documentation-ifra-skip-to-cont",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-1-chain-where-is-fragrance-sourced-questions-abou",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-2-fragrance-science-all-initiatives-and-positions",
@@ -11199,25 +11328,15 @@
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-13-mendment-zip-05-december-2018-38-th-amendmen",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-15-ance-with-the-ifra-standards-on-this-page-is-a",
         "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-16-ection-scientific-progress-and-strengthened-eng",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-17-ghts-read-more-view-more-follow-us-ifra-ifra-sta",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-0-transparency-list-ifra-skip-to-content-the-int",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-1-positions-general-affairs-environment-and-health",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-2-ions-publications-all-publications-brochure-repo",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-3-positions-general-affairs-environment-and-health",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-4-ifra-standards-library-help-and-enquiries-press",
-        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-6-nce-worldwide-read-more-follow-us-ifra-ifra-sta"
+        "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-17-ghts-read-more-view-more-follow-us-ifra-ifra-sta"
       ],
       "highestPriority": "medium",
-      "candidateCount": 34,
+      "candidateCount": 18,
       "sourceFiles": [
-        "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-        "downloads/source_documents/ifra/official_ifra/standards-documentation.html",
-        "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html"
+        "downloads/source_documents/ifra/official_ifra/standards-documentation.html"
       ],
       "sourceUrls": [
-        "https://ifrafragrance.org/standards-library",
-        "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
-        "https://ifrafragrance.org/transparency-list"
+        "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation"
       ],
       "suggestedReviewAction": "Confirm the material/source match before accepting any candidate for later promotion review.",
       "reviewStatus": "not_started",
@@ -11226,21 +11345,6 @@
       "reviewNotes": "",
       "lastUpdated": "2026-06-11T15:26:10.032Z",
       "topCandidates": [
-        {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-standards-library-html-6-an-option-restriction-specification-prohibition",
-          "materialName": "",
-          "formulaMaterialName": "",
-          "sourceIdentityName": "",
-          "candidateLimitType": "allergen_or_restriction",
-          "reviewPriority": "medium",
-          "sourceType": "official_ifra_standards_library",
-          "sourceUrl": "https://ifrafragrance.org/standards-library",
-          "sourceFile": "downloads/source_documents/ifra/official_ifra/standards/standards-library.html",
-          "category": "",
-          "candidateValue": "",
-          "candidateUnit": "",
-          "snippet": "an option Restriction Specification Prohibition Standards Amendment Select an option 51 50 49 48 47 45 44 43 40 39 38 29 28 17 10 4 Select Cas n° Title Type Publication Date Amendment Status Actions Select 144020-22-4 28371-99-5 &quot;Acetic acid, anhydride, reaction products with 1,5,10-Trimethyl-1,5,9-cyclododecatriene&quot; R 2020-01 49 Download Select 8"
-        },
         {
           "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-10-mber-2019-template-for-certificate-of-conformity",
           "materialName": "",
@@ -11287,19 +11391,34 @@
           "snippet": "esents the interests of the fragrance industry worldwide. Its mission is to promote the safe us… Read more Certification of conformity with IFRA Standards Ensuring conformity with the IFRA Standards helps consumer goods companies and people using fragranced products be confident that fragrances conform with the IFRA Standards. Although IFRA does not itself c"
         },
         {
-          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-transparency-transparency-list-html-5-4-5-6-7-7-a-octahydronapth-3-3-b-oxirene-389083",
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-0-ifra-standards-documentation-ifra-skip-to-cont",
           "materialName": "",
           "formulaMaterialName": "",
           "sourceIdentityName": "",
-          "candidateLimitType": "identity",
+          "candidateLimitType": "unknown",
           "reviewPriority": "low",
-          "sourceType": "official_ifra_transparency_list",
-          "sourceUrl": "https://ifrafragrance.org/transparency-list",
-          "sourceFile": "downloads/source_documents/ifra/official_ifra/transparency/transparency-list.html",
+          "sourceType": "official_ifra_standards_documentation",
+          "sourceUrl": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
+          "sourceFile": "downloads/source_documents/ifra/official_ifra/standards-documentation.html",
           "category": "",
           "candidateValue": "",
           "candidateUnit": "",
-          "snippet": ",4,5,6,7,7a-octahydronapth[3,3-b]oxirene 389083-83-4 (1-Ethoxyethoxy)-cyclododecane Pagination Page 1 of 154 1 2 3 4 ... 154 Next About the IFRA Transparency List The IFRA Transparency List is the ​ ‘ perfumer’s palette’ – an overview of the ingredients used to create fragrance mixtures employed by consumer goods companies in personal care products, home car"
+          "snippet": "IFRA Standards documentation | IFRA Skip to content The International Fragrance Association Help and enquiries Press and media Member login EN ES ZH Search Search About About fragrance What is a fragrance? How is fragran"
+        },
+        {
+          "id": "candidate-ifra-users-b-russmacbetch-desktop-perfumery-dashboard-downloads-source-documents-ifra-official-ifra-standards-documentation-html-1-chain-where-is-fragrance-sourced-questions-abou",
+          "materialName": "",
+          "formulaMaterialName": "",
+          "sourceIdentityName": "",
+          "candidateLimitType": "unknown",
+          "reviewPriority": "low",
+          "sourceType": "official_ifra_standards_documentation",
+          "sourceUrl": "https://ifrafragrance.org/initiatives-positions/safe-use-fragrance-science/ifra-standards/ifra-standards-documentation",
+          "sourceFile": "downloads/source_documents/ifra/official_ifra/standards-documentation.html",
+          "category": "",
+          "candidateValue": "",
+          "candidateUnit": "",
+          "snippet": "chain Where is fragrance sourced? Questions about fragrance About IFRA About IFRA Purpose, vision and mission Board Membership Secretariat IFRA bylaws Latest updates Latest updates News Events Press releases All latest updates Initiatives and positions Initiatives and positions General affairs Environment and health Innovation and sustainability Safe use an"
         }
       ]
     },
