@@ -18,6 +18,11 @@ test("IFRA source acquisition panel returns a missing queue fallback", () => {
   assert.match(panel.candidateReview.regenerateCommand, /build_candidate_ifra_review_queue/);
   assert.equal(panel.evidenceResolver.isAvailable, false);
   assert.match(panel.evidenceResolver.regenerateCommand, /resolve_ifra_evidence_candidates/);
+  assert.equal(panel.sourceAcquisitionAutopilot.isAvailable, false);
+  assert.match(
+    panel.sourceAcquisitionAutopilot.regenerateCommand,
+    /run_ifra_source_acquisition_autopilot/
+  );
   assert.equal(panel.autopilot.isAvailable, false);
   assert.match(panel.autopilot.regenerateCommand, /run_ifra_evidence_autopilot/);
   assert.equal(panel.recommendations.isAvailable, false);
@@ -243,6 +248,25 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
           evidenceStatus: "needs_supplier_doc",
         },
       ],
+    },
+    {
+      metadata: {
+        generatedAt: "2026-06-11T13:00:00.000Z",
+        regenerateCommand:
+          "node scripts/run_ifra_source_acquisition_autopilot.mjs --markdown --write docs/ifra/ifra_source_acquisition_autopilot_report.md",
+      },
+      summary: {
+        materialsTargeted: 11,
+        newSourcesFound: 3,
+        newOfficialMatchesFound: 1,
+        newSupplierIfraSdsSpecDocsFound: 2,
+        newProposedStructuredRecords: 2,
+        remainingNeedsBetterSource: 7,
+        newLinksDiscovered: 4,
+        downloadsSucceeded: 3,
+        nextAutomatedAction:
+          "Inspect newly cached supplier documents before promotion.",
+      },
     }
   );
 
@@ -286,6 +310,18 @@ test("IFRA source acquisition panel summarizes counts, review status, and top ga
   assert.deepEqual(
     panel.evidenceResolver.topReviewFirstMaterials.map((item) => item.materialName),
     ["Iso E Super", "Bergamot EO FCF"]
+  );
+  assert.equal(panel.sourceAcquisitionAutopilot.isAvailable, true);
+  assert.equal(panel.sourceAcquisitionAutopilot.counts.materialsTargeted, 11);
+  assert.equal(panel.sourceAcquisitionAutopilot.counts.newSourcesFound, 3);
+  assert.equal(
+    panel.sourceAcquisitionAutopilot.counts.newProposedStructuredRecords,
+    2
+  );
+  assert.equal(panel.sourceAcquisitionAutopilot.counts.remainingNeedsBetterSource, 7);
+  assert.match(
+    panel.sourceAcquisitionAutopilot.regenerateCommand,
+    /run_ifra_source_acquisition_autopilot/
   );
   assert.equal(panel.autopilot.isAvailable, true);
   assert.equal(panel.autopilot.counts.reviewReady, 2);
